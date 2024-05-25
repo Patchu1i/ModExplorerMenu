@@ -76,7 +76,7 @@ void Frame::Draw()
 	ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y - screen_size_y));
 
 	if (ImGui::Begin("##AddItemMenuHeader", nullptr, header_flag)) {
-		ImGui::Image(header_texture, ImVec2(screen_size_x * 0.35f, screen_size_y * 0.75f));
+		ImGui::Image(header_texture, ImVec2(screen_size_x * 0.35f, screen_size_y * 0.80f));
 		ImGui::End();
 	}
 }
@@ -89,7 +89,7 @@ void Frame::Install()
 	HomeWindow::Init();
 
 	// Setup textures
-	Frame::header_texture = GraphicManager::GetImage("add-item").texture;
+	Frame::header_texture = GraphicManager::GetImage("mod-explorer-menu-header").texture;
 
 	// Let Input know we're done. TO-DO: Probably not needed.
 	Frame::_init.store(true);

@@ -1,4 +1,5 @@
-#include "Console.h"
+#	include "Console.h"
+#	include "Menu.h"
 
 // Define ConsoleCommand t_Execute callback function.
 bool ConsoleCommand::Run(const RE::SCRIPT_PARAMETER*, RE::SCRIPT_FUNCTION::ScriptData* a_scriptData,
@@ -15,9 +16,11 @@ bool ConsoleCommand::Run(const RE::SCRIPT_PARAMETER*, RE::SCRIPT_FUNCTION::Scrip
 
 	// UIMessageQueue -> AddMessage -> kHide
 	auto queue = RE::UIMessageQueue::GetSingleton();
+	auto menu = Menu::GetSingleton();
 
 	if (queue) {
 		queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kHide, nullptr);
+		menu->SetEnabled(true);
 	}
 
 	return true;
