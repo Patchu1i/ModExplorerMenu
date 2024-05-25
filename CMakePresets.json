@@ -53,6 +53,21 @@
 			}
 		},
 		{
+			"name": "vscode",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": "cl.exe",
+				"CMAKE_C_COMPILER": "cl.exe",
+				"MSVC_TOOLSET_VERSION": "143",
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"generator": "Ninja",
+			"toolset": {
+				"value": "v143",
+				"strategy": "external"
+			}
+		},
+		{
 			"name": "ALL",
 			"cacheVariables": {
 				"BUILD_SKYRIM": true,
@@ -66,6 +81,22 @@
 				"vcpkg",
 				"win64",
 				"msvc"
+			]
+		},
+		{
+			"name": "ALL-VSCODE",
+			"cacheVariables": {
+				"BUILD_SKYRIM": true,
+				"ENABLE_SKYRIM_AE": "ON",
+				"ENABLE_SKYRIM_SE": "ON",
+				"ENABLE_SKYRIM_VR": "OFF",
+				"AUTO_PLUGIN_DEPLOYMENT": "ON"
+			},
+			"inherits": [
+				"common",
+				"vcpkg",
+				"win64",
+				"vscode"
 			]
 		}
 	]

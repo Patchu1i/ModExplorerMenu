@@ -36,6 +36,7 @@ public:
         const char *typeName;
         std::int32_t goldValue;
         RE::TESFile *mod;
+        bool nonPlayable;
         bool favorite;
         int quantity;
         bool selected;

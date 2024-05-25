@@ -110,7 +110,13 @@ void AddItemWindow::CacheItems(RE::TESDataHandler *a_data, const AddItemWindow::
         std::int32_t goldValue = form->GetGoldValue();
         RE::TESFile* mod = form->GetFile();
 
-        _cachedList.push_back({name, formid, form, editorid, a_formType, typeName, goldValue, mod});
+        bool non_playable = false;
+
+        if (a_formType == AddItemWindow::Weapon) {
+            non_playable = form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+        }
+
+        _cachedList.push_back({name, formid, form, editorid, a_formType, typeName, goldValue, mod, non_playable});
 
         // Add mod file to list.
         if (!_modList.contains(mod))
@@ -522,13 +528,19 @@ void AddItemWindow::ApplyFilters()
             break;
         }
 
-        //auto lower_input = strlwr(_searchBuffer);
-        //auto lower_compare = strlwr(compare);
+        auto lower_input = strlwr(_searchBuffer);
+        auto lower_compare = strlwr(compare);
 
-        if (strstr(compare, _searchBuffer) != nullptr || strstr(compare, _searchBuffer) != nullptr)
+        if (strstr(lower_compare, lower_input) != nullptr)
         {
-            if (_currentMod != nullptr && item.mod != _currentMod)
+			if (_currentMod != nullptr && item.mod != _currentMod)  // skip non-active mods
 				continue;
+
+            if (item.nonPlayable) // skip non-usable
+                continue;
+
+            if (strcmp(item.name, "") == 0) // skip empty names
+                continue;
 
             // Only append if the item is in the filter list.
             if (_filters.count(item.formType) > 0)
