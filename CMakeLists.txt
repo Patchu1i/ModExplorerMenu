@@ -11,6 +11,33 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # ########################################################################################################################
+# ## Automate Git Submodule initialization 
+# ########################################################################################################################
+
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Submodule update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
+    endif()
+endif()
+
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/CommonLibSSE-NG/CMakeLists.txt")
+    message(
+      FATAL_ERROR 
+      "The CommonLibSSE-NG submodule was not found in ${CMAKE_SOURCE_DIR}/extern/CommonLibSSE-NG/ 
+      This may be the result of renaming or moving folders in your project. It also may be the result 
+      of modifying the CMake incorrectly. Please refer to the Repo for defaults."
+    )
+endif()
+
+# ########################################################################################################################
 # ## Build options
 # ########################################################################################################################
 message("Options:")
@@ -73,16 +100,24 @@ endif()
 # #######################################################################################################################
 # # Automatic deployment
 # #######################################################################################################################
-if(AUTO_PLUGIN_DEPLOYMENT)
-	foreach(DEPLOY_TARGET $ENV{SamplePluginOutputDir})
-		message("Copying AIO to ${DEPLOY_TARGET}")
-		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/"
-			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/"
-		)
-	endforeach()
+if (AUTO_PLUGIN_DEPLOYMENT)
+    set(OUTPUT_FOLDER "${CMAKE_SOURCE_DIR}/build")
+    if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
+        set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/${PROJECT_NAME}")
+    endif()
 
-	if(NOT DEFINED ENV{SamplePluginOutputDir})
-		message("When using AUTO_PLUGIN_DEPLOYMENT option, you need to set environment variable 'SamplePluginOutputDir'")
-	endif()
+    if(DEFINED OUTPUT_FOLDER)
+        set(DLL_FOLDER "${OUTPUT_FOLDER}/SKSE/Plugins")
+
+        message(STATUS "SKSE plugin output folder: ${DLL_FOLDER}")
+
+        add_custom_command(
+            TARGET "${PROJECT_NAME}"
+            POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
+            VERBATIM
+        )
+    endif()
 endif()
