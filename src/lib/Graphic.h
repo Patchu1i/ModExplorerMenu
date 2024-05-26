@@ -1,6 +1,6 @@
 #pragma once
 
-#	include "d3d11.h"
+#include "d3d11.h"
 
 // Sourced from dTry's Wheeler and Llama's Tiny Hud. Adapted to NG.
 // Huge gratitude for their public works.
@@ -8,6 +8,7 @@
 class GraphicManager
 {
 private:
+public:
 	struct Image
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
@@ -15,7 +16,6 @@ private:
 		int32_t height = 0;
 	};
 
-public:
 	static std::map<std::string, GraphicManager::Image> image_library;
 	static std::map<std::string, ImFont*> font_library;
 
@@ -30,10 +30,10 @@ public:
 
 	static inline std::atomic_bool initialized = false;
 
-    [[nodiscard]] static ImFont* GetFont(const char* a_size)
-    {
+	[[nodiscard]] static ImFont* GetFont(const char* a_size)
+	{
 		return font_library[std::string(a_size)];
-    }
+	}
 
 	[[nodiscard]] static Image GetImage(const char* a_name)
 	{

@@ -441,10 +441,12 @@ void AddItemWindow::Draw_FormTable()
 
 		ImGui::PopStyleVar(1);
 
-		if (count > 1000)
+		if (count > 1000) {
 			ImGui::SeparatorText("Too many results, please refine your search. (1000+ items)");
+		}
+
+		ImGui::EndTable();
 	}
-	ImGui::EndTable();
 
 	//ImGui::EndChild();
 }
@@ -672,6 +674,12 @@ void AddItemWindow::Draw_AdvancedOptions()
 		ImGui::SeparatorText("Select a mod to search:");
 		auto combo_text = _currentMod ? _currentMod->GetFilename().data() : "Filter by mods";
 
+		float width = static_cast<float>(list_arrow.width);
+		float height = static_cast<float>(list_arrow.height);
+		ImGui::ImageButton("##FilterByModHelp", list_arrow.texture, ImVec2(width / 3, height / 3));
+
+		ImGui::SameLine();
+
 		if (ImGui::BeginCombo("##FilterByMod", combo_text)) {
 			for (auto& mod : _modList) {
 				const char* modName = mod->GetFilename().data();
@@ -763,4 +771,5 @@ void AddItemWindow::Init()
 
 	favorite_disabled_texture = GraphicManager::GetImage("favorite-disabled-new").texture;
 	favorite_enabled_texture = GraphicManager::GetImage("favorite-enabled-new").texture;
+	list_arrow = GraphicManager::GetImage("list-arrow");
 }

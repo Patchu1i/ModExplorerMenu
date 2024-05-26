@@ -41,6 +41,20 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 
 	this->device = a_device;
 	this->context = a_context;
+
+	SetupStyle();
+}
+
+void Menu::SetupStyle()
+{
+	auto& style = ImGui::GetStyle();
+	auto& colors = style.Colors;
+
+	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.5f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)

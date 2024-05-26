@@ -1,4 +1,5 @@
 #include "Data.h"
+#include "lib/Worldspace.h"
 
 using _GetFormEditorID = const char* (*)(std::uint32_t);
 std::string getFormEditorID(const RE::TESForm* a_form)
@@ -111,25 +112,14 @@ void MEMData::Run()
 	CacheItems<RE::AlchemyItem>(dataHandler);
 	CacheItems<RE::IngredientItem>(dataHandler);
 
-	// NPC
+	// NPC -- TODO: Implement
 	CacheItems<RE::TESNPC>(dataHandler);
 
-	// WORLDSPACE
-	CacheItems<RE::TESWorldSpace>(dataHandler);
+	// Cells -- TODO:: Implement
+	WorldspaceCells cells;
 
-	for (auto world : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
-		logger::info("WorldSpace: {}", world->GetFullName());
-
-		for (auto pair : world->cellMap) {
-			auto form = pair.second;
-			logger::info("CELL: {}", getFormEditorID(form));
-			//.logger::info("CELL: {}", cell.second->GetFormID());
-		}
+	for (const auto& cell : cells.table) {
+		const auto& [plugin, space, place, name, id] = cell;
+		//logger::info("Cell: {}, {}, {}, {}, {}", plugin, space, place, name, id);
 	}
-
-	// CacheItems<RE::CellID>(dataHandler);
-
-	//CacheItems<RE::TESObjectREFR>(dataHandler);
-
-	logger::info("Cache size: {}", _cache.size());
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBaseClass.h"
+#include "lib/Graphic.h"
 #include <unordered_set>
 
 // #include "Console.h"
@@ -80,6 +81,7 @@ public:
 
 	static inline ID3D11ShaderResourceView* favorite_enabled_texture;
 	static inline ID3D11ShaderResourceView* favorite_disabled_texture;
+	static inline GraphicManager::Image list_arrow;
 	static inline ImFont* list_font;
 	static inline ImFont* header_font;
 

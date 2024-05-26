@@ -1,8 +1,8 @@
 #pragma once
 
-#   include <PCH.h>
+#include <PCH.h>
 
 namespace Hooks
 {
-    void Install();
+	void Install();
 }
