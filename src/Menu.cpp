@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Frame.h"
+#include "Settings.h"
 #include <dinput.h>
 
 void Menu::Draw()
@@ -41,20 +42,54 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 
 	this->device = a_device;
 	this->context = a_context;
-
-	SetupStyle();
 }
 
+// https://github.com/powerof3/PhotoMode
+// License: MIT
+template <class T>
+static inline std::string ToString(const T& a_style)
+{
+	if constexpr (std::is_same_v<ImVec4, T>) {
+		return std::format("{},{},{},{}", std::uint8_t(255.0f * a_style.x), std::uint8_t(255.0f * a_style.y), std::uint8_t(255.0f * a_style.z), std::uint8_t(255.0f * a_style.w));
+	} else {
+		return std::format("{:.3f}", a_style);
+	}
+}
+
+template <class T>
+T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
+{
+	std::string value = a_ini.GetValue(section, key, ToString(a_default).c_str());
+
+	if (value[0] == '#') {
+		value.erase(0, 1);  // remove the hash
+	}
+
+	if constexpr (std::is_same_v<T, ImVec4>) {
+		return Settings::GetColor(value);
+	} else if constexpr (std::is_same_v<T, bool>) {
+		return Settings::GetBool(value);
+	} else if constexpr (std::is_same_v<T, int>) {
+		return Settings::GetInt(value);
+	}
+}
+
+void Menu::LoadSettings(CSimpleIniA& a_ini)
+{
+	user.background = GET_VALUE<ImVec4>("Style", "BackgroundColor", def.background, a_ini);
+}
 void Menu::SetupStyle()
 {
-	auto& style = ImGui::GetStyle();
-	auto& colors = style.Colors;
+	//auto& style = ImGui::GetStyle();
+	//auto& colors = style.Colors;
 
-	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-	colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-	colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.5f);
-	colors[ImGuiCol_BorderShadow] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+	//colors[ImGuiCol_FrameBg] = ImVec4(GetVar<());
+
+	// colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	// colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	// colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	// colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.5f);
+	// colors[ImGuiCol_BorderShadow] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)

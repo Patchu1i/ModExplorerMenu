@@ -4,6 +4,7 @@
 #include "Data.h"
 #include "Frame.h"
 #include "Hooks.h"
+#include "Settings.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 //#include "versiondb.h"
@@ -52,6 +53,7 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:
 			MEMData::GetSingleton()->Run();
+			Settings::GetSingleton()->LoadSettings(L"Data/SKSE/Plugins/ModExplorerMenu.ini");
 			Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:

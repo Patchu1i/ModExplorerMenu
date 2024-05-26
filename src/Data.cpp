@@ -59,7 +59,7 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 		std::int32_t goldValue = 0;
 		bool non_playable = false;
 
-		logger::info("FormType: {}", typeName);
+		//logger::info("FormType: {}", typeName);
 
 		if (formType == RE::FormType::NPC) {
 			auto npc = form->As<RE::TESNPC>();

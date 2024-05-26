@@ -64,6 +64,7 @@ target_include_directories(
 	${PROJECT_NAME}
 	PRIVATE
 	${CLIB_UTIL_INCLUDE_DIRS}
+  ${SIMPLEINI_INCLUDE_DIRS}
 )
 
 target_link_libraries(
