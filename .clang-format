@@ -97,3 +97,4 @@ Standard: Latest
 TabWidth: 4
 UseCRLF: 'true'
 UseTab: AlignWithSpaces
+BasedOnStyle: Microsoft

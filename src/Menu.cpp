@@ -5,7 +5,7 @@
 void Menu::Draw()
 {
 	if (!IsEnabled()) {
-		return; // TO-DO Maybe call one level up?
+		return;  // TO-DO Maybe call one level up?
 	}
 
 	ImGui_ImplDX11_NewFrame();
@@ -472,7 +472,7 @@ void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 					if (button->IsDown()) {
 						Menu::Toggle();
 					}
-				} else if (button->GetIDCode() == uint32_t(41)) { // console escape.
+				} else if (button->GetIDCode() == uint32_t(41)) {  // console escape.
 					if (button->IsDown() && Menu::IsEnabled()) {
 						Menu::SetEnabled(false);
 					}

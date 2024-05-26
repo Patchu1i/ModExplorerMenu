@@ -1,14 +1,13 @@
 #define DLLEXPORT __declspec(dllexport)
 
-#	include "Console.h"
-#	include "Hooks.h"
-#	include "Frame.h"
-
-
+#include "Console.h"
+#include "Data.h"
+#include "Frame.h"
+#include "Hooks.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 //#include "versiondb.h"
-#	include "versionlibdb.h"
+#include "versionlibdb.h"
 
 // for SE versions
 //bool DumpSpecificVersion()
@@ -29,20 +28,20 @@
 
 //void DumpSpecificVersion()
 //{
-	//VersionDb db;
+//VersionDb db;
 
-	// Try to load database of version 1.5.62.0 regardless of running executable version.
-	//if (!db.Load(1, 6, 1170, 0)) {
-	//	logger::info("Failed to load database for 1.6.1170.0!");
-	//	return false;
-	//}
+// Try to load database of version 1.5.62.0 regardless of running executable version.
+//if (!db.Load(1, 6, 1170, 0)) {
+//	logger::info("Failed to load database for 1.6.1170.0!");
+//	return false;
+//}
 
-	// Write out a file called offsets-1.5.62.0.txt where each line is the ID and offset.
-	//db.Dump("offsets-1.6.1170.txt");
-	//logger::info("Dumped offsets for 1.6.1170.0");
-	//return true;
+// Write out a file called offsets-1.5.62.0.txt where each line is the ID and offset.
+//db.Dump("offsets-1.6.1170.txt");
+//logger::info("Dumped offsets for 1.6.1170.0");
+//return true;
 
-	//void* test_address = db.FindAddressById(67315);
+//void* test_address = db.FindAddressById(67315);
 
 //}
 
@@ -52,6 +51,7 @@ namespace
 	{
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:
+			MEMData::GetSingleton()->Run();
 			Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
@@ -63,7 +63,7 @@ namespace
 			break;
 		}
 	}
-    void SetupLog()
+	void SetupLog()
 	{
 		auto logsFolder = SKSE::log::log_directory();
 		if (!logsFolder)
@@ -77,7 +77,6 @@ namespace
 		spdlog::flush_on(spdlog::level::trace);
 	}
 }
-
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {

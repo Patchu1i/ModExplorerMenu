@@ -1,7 +1,7 @@
-#	include "Frame.h"
-#	include "lib/Graphic.h"
-#	include "windows/AddItemWindow.h"
-#	include "windows/HomeWindow.h"
+#include "Frame.h"
+#include "lib/Graphic.h"
+#include "windows/AddItemWindow.h"
+#include "windows/HomeWindow.h"
 
 Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
 

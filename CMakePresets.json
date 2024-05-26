@@ -53,21 +53,6 @@
 			}
 		},
 		{
-			"name": "vscode",
-			"hidden": true,
-			"cacheVariables": {
-				"CMAKE_CXX_COMPILER": "cl.exe",
-				"CMAKE_C_COMPILER": "cl.exe",
-				"MSVC_TOOLSET_VERSION": "143",
-				"CMAKE_BUILD_TYPE": "Debug"
-			},
-			"generator": "Ninja",
-			"toolset": {
-				"value": "v143",
-				"strategy": "external"
-			}
-		},
-		{
 			"name": "ALL",
 			"cacheVariables": {
 				"BUILD_SKYRIM": true,
