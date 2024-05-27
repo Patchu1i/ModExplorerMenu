@@ -26,79 +26,59 @@ void Settings::LoadSettings(const wchar_t* a_path)
 	logger::info("Settings Loaded");
 
 	GetIni(a_path, [](CSimpleIniA& a_ini) {
-		auto menu = Menu::GetSingleton();
-
-		menu->LoadSettings(a_ini);
+		//auto menu = Menu::GetSingleton();
+		//menu->LoadSettings(a_ini);
+		//Settings::LoadStyleSettings(a_ini);
+		Settings::GetSingleton()->LoadStyleSettings(a_ini);
 	});
 }
 
-// Deserialization starts here.
-// Worst deserialization code I've ever seen.
+bool ResetIni = true;
 
-int Settings::GetInt(std::string& a_str)
+template <class T>
+T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
 {
-	return std::stoi(a_str);
+	std::string _default = Settings::ToString(a_default, false);
+	std::string value = a_ini.GetValue(section, key, _default.c_str());
+
+	// Generate defaults in ini if they don't exist.
+	if (value == _default || ResetIni) {
+		a_ini.SetValue(section, key, _default.c_str());
+	}
+
+	if constexpr (std::is_same_v<T, ImVec4>) {
+		auto color = Settings::GetColor<T>(value);
+		return (color.second ? color.first : a_default);
+	} else if constexpr (std::is_same_v<T, bool>) {
+		return Settings::GetBool(value);
+	} else if constexpr (std::is_same_v<T, int>) {
+		return Settings::GetInt(value);
+	} else if constexpr (std::is_same_v<T, float>) {
+		return Settings::GetFloat(value);
+	} else {
+		stl::report_and_fail("Unhandled type passed to GET_VALUE in Menu.cpp!");
+		return a_default;
+	}
 }
 
-bool Settings::GetBool(std::string& a_str)
+void Settings::LoadStyleSettings(CSimpleIniA& a_ini)
 {
-	if (a_str == "true") {
-		return true;
-	}
+	user.background = GET_VALUE<ImVec4>("Style", "BackgroundColor", def.background, a_ini);
+	user.border = GET_VALUE<ImVec4>("Style", "BorderColor", def.border, a_ini);
+	user.borderSize = GET_VALUE<float>("Style", "BorderSize", def.borderSize, a_ini);
 
-	if (a_str == "false") {
-		return false;
-	}
+	user.text = GET_VALUE<ImVec4>("Style", "TextColor", def.text, a_ini);
+	user.textDisabled = GET_VALUE<ImVec4>("Style", "TextDisabledColor", def.textDisabled, a_ini);
 
-	return false;
-}
+	user.comboBoxText = GET_VALUE<ImVec4>("Style", "ComboBoxTextColor", def.comboBoxText, a_ini);
+	user.comboBoxTextBox = GET_VALUE<ImVec4>("Style", "ComboBoxTextBoxColor", def.comboBoxTextBox, a_ini);
 
-// Remove # before calling this.
-// Supports #FF00FF, #FF00FF00, 255,0,255,0 only.
-ImVec4 Settings::GetColor(std::string& a_str)
-{
-	logger::info("Color: {}", a_str.size());
+	user.button = GET_VALUE<ImVec4>("Style", "ButtonColor", def.button, a_ini);
 
-	if (a_str.size() == 8) {
-		auto r = std::stoi(a_str.substr(0, 2), 0, 16);
-		auto g = std::stoi(a_str.substr(2, 2), 0, 16);
-		auto b = std::stoi(a_str.substr(4, 2), 0, 16);
-		auto a = std::stoi(a_str.substr(6, 2), 0, 16);
+	user.frameBG = GET_VALUE<ImVec4>("Style", "FrameBGColor", def.frameBG, a_ini);
 
-		logger::info("Color: {} {} {} {}", r, g, b, a);
-		return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-	}
+	user.separator = GET_VALUE<ImVec4>("Style", "SeparatorColor", def.separator, a_ini);
+	user.separatorThickness = GET_VALUE<float>("Style", "SeparatorThickness", def.separatorThickness, a_ini);
 
-	if (a_str.size() == 6) {
-		auto r = std::stoi(a_str.substr(0, 2), 0, 16);
-		auto g = std::stoi(a_str.substr(2, 2), 0, 16);
-		auto b = std::stoi(a_str.substr(4, 2), 0, 16);
-
-		logger::info("Color: {} {} {}", r, g, b);
-		return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-	}
-
-	// This works but ini settings using {x,x,x,x} has variable size
-	// while ImVec4 is a fixed size of 9 (maybe)
-	// So this needs to be more dynamic.
-	if (a_str.size() == 9) {
-		std::regex rgx("(.+),(.+),(.+),(.+)");
-		std::smatch match;
-
-		logger::info("Found default format");
-		logger::info("String: {}", a_str);
-
-		if (std::regex_search(a_str, match, rgx)) {
-			logger::info("regex search started");
-			auto r = std::stoi(match[1].str());
-			auto g = std::stoi(match[2].str());
-			auto b = std::stoi(match[3].str());
-			auto a = std::stoi(match[4].str());
-
-			logger::info("Color: {} {} {} {}", r, g, b, a);
-			return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-		}
-	}
-
-	return ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+	Menu::GetSingleton()->SetupStyle(user);
 }
