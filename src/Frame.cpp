@@ -2,6 +2,7 @@
 #include "lib/Graphic.h"
 #include "windows/AddItemWindow.h"
 #include "windows/HomeWindow.h"
+#include "windows/SettingsWindow.h"
 
 Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
 
@@ -47,6 +48,10 @@ void Frame::Draw()
 			_activeWindow = ActiveWindow::AddItem;
 		}
 
+		if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+			_activeWindow = ActiveWindow::Settings;
+		}
+
 		ImGui::End();
 	}
 
@@ -62,6 +67,9 @@ void Frame::Draw()
 			break;
 		case ActiveWindow::AddItem:
 			AddItemWindow::Draw();
+			break;
+		case ActiveWindow::Settings:
+			SettingsWindow::Draw();
 			break;
 		}
 

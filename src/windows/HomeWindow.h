@@ -1,18 +1,15 @@
-#include "WindowBaseClass.h"
-
+#pragma once
 
 class HomeWindow
 {
 public:
-    static void Draw();
-    static void Init();
+	static void Draw();
+	static void Init();
 
-
-
-    //HomeWindow()
-    //{
-    //    Name = "Home";
-    //    Type = WindowType::window_homepage;
-    //    Open = true;
-    //}
+	//HomeWindow()
+	//{
+	//    Name = "Home";
+	//    Type = WindowType::window_homepage;
+	//    Open = true;
+	//}
 };
