@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Frame.h"
+#include "windows/SettingsWindow.h"
 #include <dinput.h>
 
 void Menu::Draw()
@@ -19,7 +20,10 @@ void Menu::Draw()
 	}
 
 	Frame::Draw();
-	//ImGui::ShowDemoWindow();
+
+	if (is_settings_popped) {
+		SettingsWindow::DrawPopped();
+	}
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -43,21 +47,82 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 	this->context = a_context;
 }
 
+void Menu::RefreshStyle()
+{
+	auto& user = Settings::GetSingleton()->GetStyle();
+	SetupStyle(user);
+}
+
 void Menu::SetupStyle(Settings::Style user)
 {
 	auto& style = ImGui::GetStyle();
 	auto& colors = style.Colors;
 
-	colors[ImGuiCol_FrameBg] = user.frameBG;
-	colors[ImGuiCol_Border] = user.border;
-	colors[ImGuiCol_BorderShadow] = user.border;
 	colors[ImGuiCol_Text] = user.text;
 	colors[ImGuiCol_TextDisabled] = user.textDisabled;
-	colors[ImGuiCol_WindowBg] = user.background;
+	colors[ImGuiCol_WindowBg] = user.windowBg;
+	colors[ImGuiCol_ChildBg] = user.childBg;
+	colors[ImGuiCol_PopupBg] = user.popupBg;
+	colors[ImGuiCol_Border] = user.border;
+	colors[ImGuiCol_BorderShadow] = user.borderShadow;
+	colors[ImGuiCol_FrameBg] = user.frameBg;
+	colors[ImGuiCol_FrameBgHovered] = user.frameBgHovered;
+	colors[ImGuiCol_FrameBgActive] = user.frameBgHovered;
+	colors[ImGuiCol_TitleBg] = user.titleBg;
+	colors[ImGuiCol_TitleBgActive] = user.titleBg;
+	colors[ImGuiCol_TitleBgCollapsed] = user.titleBg;
+	colors[ImGuiCol_MenuBarBg] = user.menuBarBg;
+	colors[ImGuiCol_ScrollbarBg] = user.scrollbarBg;
+	colors[ImGuiCol_ScrollbarGrab] = user.scrollbarGrab;
+	colors[ImGuiCol_ScrollbarGrabHovered] = user.scrollbarGrab;
+	colors[ImGuiCol_ScrollbarGrabActive] = user.scrollbarGrab;
+	colors[ImGuiCol_CheckMark] = user.checkMark;
+	colors[ImGuiCol_SliderGrab] = user.sliderGrab;
+	colors[ImGuiCol_SliderGrabActive] = user.sliderGrab;
 	colors[ImGuiCol_Button] = user.button;
+	colors[ImGuiCol_ButtonHovered] = user.button;
+	colors[ImGuiCol_ButtonActive] = user.button;
+	colors[ImGuiCol_Header] = user.header;
+	colors[ImGuiCol_HeaderHovered] = user.header;
+	colors[ImGuiCol_HeaderActive] = user.header;
 	colors[ImGuiCol_Separator] = user.separator;
+	colors[ImGuiCol_SeparatorHovered] = user.separator;
+	colors[ImGuiCol_SeparatorActive] = user.separator;
+	colors[ImGuiCol_ResizeGrip] = user.resizeGrip;
+	colors[ImGuiCol_ResizeGripHovered] = user.resizeGrip;
+	colors[ImGuiCol_ResizeGripActive] = user.resizeGrip;
+	colors[ImGuiCol_PlotLines] = user.plotLines;
+	colors[ImGuiCol_PlotLinesHovered] = user.plotLines;
+	colors[ImGuiCol_PlotHistogram] = user.plotHistogram;
+	colors[ImGuiCol_PlotHistogramHovered] = user.plotHistogram;
+	colors[ImGuiCol_TextSelectedBg] = user.textSelectedBg;
+	colors[ImGuiCol_DragDropTarget] = user.dragDropTarget;
 
-	style.FrameBorderSize = user.borderSize;
+	style.WindowPadding = user.windowPadding;
+	style.FramePadding = user.framePadding;
+	style.CellPadding = user.cellPadding;
+	style.ItemSpacing = user.itemSpacing;
+	style.ItemInnerSpacing = user.itemInnerSpacing;
+	style.TouchExtraPadding = user.touchExtraPadding;
+
+	style.Alpha = user.alpha;
+	style.DisabledAlpha = user.disabledAlpha;
+	style.WindowRounding = user.windowRounding;
+	style.WindowBorderSize = user.windowBorderSize;
+	style.ChildBorderSize = user.childBorderSize;
+	style.ChildRounding = user.childRounding;
+	style.FrameBorderSize = user.frameBorderSize;
+	style.FrameRounding = user.frameRounding;
+	style.TabBorderSize = user.tabBorderSize;
+	style.TabRounding = user.tabRounding;
+	style.IndentSpacing = user.indentSpacing;
+	style.ScrollbarRounding = user.scrollbarRounding;
+	style.ScrollbarSize = user.scrollbarSize;
+	style.GrabMinSize = user.grabMinSize;
+	style.GrabRounding = user.scrollbarRounding;
+	style.PopupBorderSize = user.popupBorderSize;
+	style.PopupRounding = user.popupRounding;
+	style.LogSliderDeadzone = user.logSliderDeadzone;
 }
 
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)

@@ -10,6 +10,7 @@ public:
 	void SetupStyle(Settings::Style user);
 	void LoadSettings(CSimpleIniA& a_ini);
 	void ProcessInputEvent(RE::InputEvent** a_event);
+	void RefreshStyle();
 
 	bool IsEnabled() { return enable; }
 	void SetEnabled(bool value) { enable = value; }
@@ -26,6 +27,7 @@ public:
 	ID3D11Device* GetDevice() const { return device; };
 	ID3D11DeviceContext* GetContext() const { return context; };
 
+	static inline bool is_settings_popped = false;
 	static constexpr inline uint32_t keybind = 210;
 	static inline std::atomic<bool> initialized = false;
 

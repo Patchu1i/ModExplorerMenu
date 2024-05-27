@@ -34,7 +34,7 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 
 #pragma warning(pop)
 
-#pragma warning(disable: 4996) // CRT Deprecation
+#pragma warning(disable: 4996)  // CRT Deprecation
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -96,6 +96,21 @@ namespace WinAPI = SKSE::WinAPI;
 namespace util
 {
 	using SKSE::stl::report_and_fail;
+}
+
+namespace ImGui
+{
+	static void HelpMarker(const char* desc)
+	{
+		ImGui::TextDisabled("(?)");
+		if (ImGui::BeginItemTooltip()) {
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			ImGui::TextUnformatted(desc);
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
+		ImGui::SameLine();
+	}
 }
 
 #include "Plugin.h"
