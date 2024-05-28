@@ -19,6 +19,8 @@ public:
 	static std::map<std::string, GraphicManager::Image> image_library;
 	static std::map<std::string, ImFont*> font_library;
 
+	static void DrawImage(Image& a_texture, ImVec2 a_center);
+
 	static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
 		int& out_height);
 

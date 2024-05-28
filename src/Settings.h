@@ -1,14 +1,20 @@
 #pragma once
 
+// Current process of loading settings::
+// Start by loading the user Config and getting the Theme string.
+// Look for the theme string in the themes directory for a matching ini.
+// (If it doesn't exist, load the default theme from def values in Style struct)
+// Load the theme ini and apply the values to the user Style struct.
+
 class Settings
 {
 public:
-	void LoadSettings(const wchar_t* a_path);
+	// void LoadStyleTheme(ImGuiStyle a_theme); - DEPRECATED
 
 	void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
-
-	void LoadStyleSettings(CSimpleIniA& a_ini);
-	void LoadStyleTheme(ImGuiStyle a_theme);
+	void LoadSettings(const wchar_t* a_path);
+	void LoadConfiguration(CSimpleIniA& a_ini);
+	void LoadThemeFromIni(CSimpleIniA& a_ini);
 
 	static inline Settings* GetSingleton()
 	{
@@ -19,8 +25,11 @@ public:
 	constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/";
 	constexpr inline static const wchar_t* ini_settings_fullpath = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
 
-	// https://github.com/powerof3/PhotoMode
-	// License: MIT
+	struct Config
+	{
+		std::string theme = "Default";
+	};
+
 	struct Style
 	{
 		ImVec4 text = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -106,13 +115,18 @@ public:
 		float logSliderDeadzone = 4;
 	};
 
-	Style def;
-	Style user;
+	struct Setting
+	{
+		Config config;
+		Style style;
+	};
 
-	void SaveStyleThemeToIni(const wchar_t* a_path, Style& user);
+	Setting def;  // TO-DO - Is this necessary with Default.ini?
+	Setting user;
 
-	// https://github.com/powerof3/PhotoMode
-	// License: MIT
+	void ExportThemeToIni(const wchar_t* a_path, Style& user);
+
+	// https://github.com/powerof3/PhotoMode | License: MIT
 	template <class T>
 	static std::string ToString(const T& a_style, bool a_hex)
 	{
@@ -123,18 +137,18 @@ public:
 			return std::format("{}{},{},{},{}{}", "{", std::uint8_t(255.0f * a_style.x), std::uint8_t(255.0f * a_style.y), std::uint8_t(255.0f * a_style.z), std::uint8_t(255.0f * a_style.w), "}");
 		} else if constexpr (std::is_same_v<ImVec2, T>) {
 			return std::format("{}{},{}{}", "{", a_style.x, a_style.y, "}");
+		} else if constexpr (std::is_same_v<std::string, T>) {
+			return a_style;
 		} else {
 			return std::format("{:.3f}", a_style);
 		}
 	}
 
-	// MIT License
-	// https://github.com/powerof3/PhotoMode
+	// https://github.com/powerof3/PhotoMode | License: MIT
 	template <class T>
 	static std::pair<T, bool> GetColor(std::string& a_str)
 	{
 		if constexpr (std::is_same_v<ImVec4, T>) {
-			logger::info("Color: {}", a_str.size());
 			static std::regex rgb_pattern("\\{([0-9]+),([0-9]+),([0-9]+),([0-9]+)\\}");
 			static std::regex hex_pattern("#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})");
 
@@ -147,8 +161,6 @@ public:
 				auto blue = std::stoi(rgb_matches[3]);
 				auto alpha = std::stoi(rgb_matches[4]);
 
-				logger::info("Color rgb: {}, {}, {}, {}", red, green, blue, alpha);
-
 				return { ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f), true };  //{ { red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f }, false };
 			} else if (std::regex_match(a_str, hex_matches, hex_pattern)) {
 				auto red = std::stoi(hex_matches[1], 0, 16);
@@ -156,7 +168,6 @@ public:
 				auto blue = std::stoi(hex_matches[3], 0, 16);
 				auto alpha = std::stoi(hex_matches[4], 0, 16);
 
-				logger::info("Color hex: {}, {}, {}, {}", red, green, blue, alpha);
 				return { ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f), true };
 			}
 		}
@@ -181,10 +192,59 @@ public:
 		return { ImVec2(), false };
 	}
 
+	// TO-DO - Remove hard-coded directory path.
+	static std::vector<std::string> GetListOfThemes()
+	{
+		std::vector<std::string> themes;
+
+		std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
+
+		for (const auto& entry : std::filesystem::directory_iterator(path_to_themes)) {
+			if (entry.path().filename().extension() != ".ini") {
+				continue;  // Pass invalid file types
+			}
+
+			auto index = entry.path().filename().stem().string();
+			themes.push_back(index);
+		}
+
+		return themes;
+	}
+
+	// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
+	// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
+	static std::pair<std::string, bool> SetThemeFromIni(std::string& a_str)
+	{
+		std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
+
+		for (const auto& entry : std::filesystem::directory_iterator(path_to_themes)) {
+			if (entry.path().filename().extension() != ".ini") {
+				continue;  // Pass invalid file types
+			}
+
+			auto index = entry.path().filename().stem().string();
+
+			if (index == a_str) {  // found ini
+				//Settings::GetSingleton()->LoadStyle(entry.path().c_str());
+
+				Settings::GetSingleton()->GetIni(entry.path().c_str(), [](CSimpleIniA& a_ini) {
+					Settings::GetSingleton()->LoadThemeFromIni(a_ini);
+				});
+				return { index, true };
+			}
+		}
+
+		logger::info("Theme not found: {}", a_str);
+		return { "", false };
+	}
+
+	// Horrendous de-serialization.
 	[[nodiscard]] static inline float GetFloat(std::string& a_str) { return std::stof(a_str); };
 	[[nodiscard]] static inline int GetInt(std::string& a_str) { return std::stoi(a_str); };
 	[[nodiscard]] static inline bool GetBool(std::string& a_str) { return a_str == "true"; };
-	[[nodiscard]] inline Style& GetStyle() { return user; };
+	[[nodiscard]] static inline std::string GetString(std::string& a_str) { return a_str; };  // lol
+	[[nodiscard]] inline Style& GetStyle() { return user.style; };
+	[[nodiscard]] inline Config& GetConfig() { return user.config; };
 
 private:
 };

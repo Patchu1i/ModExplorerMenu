@@ -18,9 +18,9 @@ struct Properties
 	{
 		screenSize = ImGui::GetMainViewport()->Size;
 		sidebar_w = screenSize.x * 0.10f;
-		sidebar_h = screenSize.y * 0.50f;
+		sidebar_h = screenSize.y * 0.65f;
 		panel_w = screenSize.x * 0.50f;
-		panel_h = screenSize.y * 0.50f;
+		panel_h = screenSize.y * 0.65f;
 	}
 };
 
@@ -73,20 +73,25 @@ void Frame::Draw()
 			break;
 		}
 
+		ImGui::Image(Frame::header_texture.texture, ImVec2(100, 100));
+
 		ImGui::End();
 	}
 
 	// Draw header texture above frames.
-	const float screen_size_x = window.panel_w + window.sidebar_w;
-	const float screen_size_y = 50.0f;
-	static constexpr ImGuiWindowFlags header_flag = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
-	ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
-	ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y - screen_size_y));
+	// const float screen_size_x = window.panel_w + window.sidebar_w;
+	// const float screen_size_y = 50.0f;
+	// static constexpr ImGuiWindowFlags header_flag = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
+	// ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
+	// ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y - screen_size_y));
 
-	if (ImGui::Begin("##AddItemMenuHeader", nullptr, header_flag)) {
-		ImGui::Image(header_texture, ImVec2(screen_size_x * 0.35f, screen_size_y * 0.80f));
-		ImGui::End();
-	}
+	// if (ImGui::Begin("##AddItemMenuHeader", nullptr, header_flag)) {
+	// 	ImGui::Image(header_texture, ImVec2(screen_size_x * 0.35f, screen_size_y * 0.80f));
+	// 	ImGui::End();
+	// }
+
+	GraphicManager::DrawImage(Frame::header_texture, ImVec2(window.screenSize.x * 0.5f, window.screenSize.y * 0.5f));
+	// Draw Logo Background
 }
 
 void Frame::Install()
@@ -97,7 +102,8 @@ void Frame::Install()
 	HomeWindow::Init();
 
 	// Setup textures
-	Frame::header_texture = GraphicManager::GetImage("mod-explorer-menu-header").texture;
+	//Frame::header_texture = GraphicManager::GetImage("bg-logo-skyrim").texture;
+	Frame::header_texture = GraphicManager::GetImage("bg-skyrim-540");
 
 	// Let Input know we're done. TO-DO: Probably not needed.
 	Frame::_init.store(true);

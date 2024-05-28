@@ -1,11 +1,5 @@
-
-#ifndef NANOSVG_IMPLEMENTATION
-#	define NANOSVG_IMPLEMENTATION
-#	define NANOSVG_ALL_COLOR_KEYWORDS
-#	include "nanosvg.h"
-#	define NANOSVGRAST_IMPLEMENTATION
-#	include "nanosvgrast.h"
-#endif
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "Graphic.h"
 #include "Menu.h"
@@ -25,17 +19,14 @@ bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceV
 		return false;
 	}
 
-	// Load from disk into a raw RGBA buffer
-	auto* svg = nsvgParseFromFile(filename, "px", 96.0f);
-	auto* rast = nsvgCreateRasterizer();
-
-	auto image_width = static_cast<int>(svg->width);
-	auto image_height = static_cast<int>(svg->height);
-
-	auto image_data = (unsigned char*)malloc(image_width * image_height * 4);
-	nsvgRasterize(rast, svg, 0, 0, 1, image_data, image_width, image_height, image_width * 4);
-	nsvgDelete(svg);
-	nsvgDeleteRasterizer(rast);
+	// Load from disk into a buffer
+	int image_width = 0;
+	int image_height = 0;
+	unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
+	if (image_data == NULL) {
+		logger::error("Failed to load image: {}", filename);
+		return false;
+	}
 
 	// Create texture
 	D3D11_TEXTURE2D_DESC desc;
@@ -58,25 +49,22 @@ bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceV
 	sub_resource.SysMemPitch = desc.Width * 4;
 	sub_resource.SysMemSlicePitch = 0;
 
-	//auto _device = menu->GetDevice();
 	device->CreateTexture2D(&desc, &sub_resource, &p_texture);
 
 	// Create texture view
 	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 	ZeroMemory(&srv_desc, sizeof srv_desc);
-	srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;            // old
-	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;  // old
-	srv_desc.Texture2D.MipLevels = desc.MipLevels;           // old
-	srv_desc.Texture2D.MostDetailedMip = 0;                  // old
-
+	srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srv_desc.Texture2D.MipLevels = desc.MipLevels;
+	srv_desc.Texture2D.MostDetailedMip = 0;
 
 	device->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
 	p_texture->Release();
 
-	free(image_data);
-
 	out_width = image_width;
 	out_height = image_height;
+	stbi_image_free(image_data);
 
 	return true;
 }
@@ -86,13 +74,13 @@ void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::st
 	logger::info("[Initialize]: Loading images from directory {}"sv, a_path);
 
 	if (std::filesystem::exists(a_path) == false) {
-		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because AddItemMenu cannot locate the path '") + a_path + "'. Check your installation.";
+		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
 		stl::report_and_fail(warning);
 		return;
 	}
 
 	for (const auto& entry : std::filesystem::directory_iterator(a_path)) {
-		if (entry.path().filename().extension() != ".svg") {
+		if (entry.path().filename().extension() != ".png") {
 			continue;
 		}
 
@@ -110,7 +98,7 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 	logger::info("[Initialize]: Loading fonts from directory: {}", a_path);
 
 	if (std::filesystem::exists(a_path) == false) {
-		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because AddItemMenu cannot locate the path '") + a_path + "'. Check your installation.";
+		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
 		stl::report_and_fail(warning);
 		return;
 	}
@@ -123,18 +111,46 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 		auto index = entry.path().filename().stem().string();
 
 		ImGuiIO& io = ImGui::GetIO();
-		GraphicManager::font_library[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
-		GraphicManager::font_library[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
-		GraphicManager::font_library[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+		out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
+		out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
+		out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+		//GraphicManager::font_library[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
+		//GraphicManager::font_library[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
+		//GraphicManager::font_library[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
 	}
 
 	logger::info("[Initialize]: {} fonts loaded."sv, GraphicManager::font_library.size());
 }
 
+void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
+{
+	auto scale = ImGui::GetIO().DisplaySize.y / 1080.0f;
+
+	auto width = a_image.width * scale;
+	auto height = a_image.height * scale;
+	auto texture = a_image.texture;
+
+	const ImVec2 pos[4] = {
+		ImVec2(a_center.x - width / 2, a_center.y - height / 2),
+		ImVec2(a_center.x + width / 2, a_center.y - height / 2),
+		ImVec2(a_center.x + width / 2, a_center.y + height / 2),
+		ImVec2(a_center.x - width / 2, a_center.y + height / 2)
+	};
+
+	const ImVec2 uv[4] = {
+		ImVec2(0.0f, 0.0f),
+		ImVec2(1.0f, 0.0f),
+		ImVec2(1.0f, 1.0f),
+		ImVec2(0.0f, 1.0f)
+	};
+
+	ImGui::GetBackgroundDrawList()->AddImageQuad(texture, pos[0], pos[1], pos[2], pos[3], uv[0], uv[1], uv[2], uv[3]);
+}
+
 void GraphicManager::Init()
 {
-	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/AddItemMenuNG/images"), GraphicManager::image_library);
-	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/AddItemMenuNG/fonts"), GraphicManager::font_library);
+	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
+	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts"), GraphicManager::font_library);
 
-	GraphicManager::initialized.store(true); // TO-DO Probably not needed.
+	GraphicManager::initialized.store(true);  // TO-DO Probably not needed.
 }

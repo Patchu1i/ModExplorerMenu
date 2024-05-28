@@ -49,11 +49,14 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 
 void Menu::RefreshStyle()
 {
-	auto& user = Settings::GetSingleton()->GetStyle();
-	SetupStyle(user);
+	auto& style = Settings::GetSingleton()->GetStyle();
+	auto& config = Settings::GetSingleton()->GetConfig();
+
+	Settings::SetThemeFromIni(config.theme);
+	SyncUserStyleToImGui(style);
 }
 
-void Menu::SetupStyle(Settings::Style user)
+void Menu::SyncUserStyleToImGui(Settings::Style user)
 {
 	auto& style = ImGui::GetStyle();
 	auto& colors = style.Colors;

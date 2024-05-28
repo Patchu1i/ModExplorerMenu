@@ -7,7 +7,7 @@ class Menu
 public:
 	void Draw();
 	void Init(IDXGISwapChain* swapchain, ID3D11Device* device, ID3D11DeviceContext* context);
-	void SetupStyle(Settings::Style user);
+	void SyncUserStyleToImGui(Settings::Style user);
 	void LoadSettings(CSimpleIniA& a_ini);
 	void ProcessInputEvent(RE::InputEvent** a_event);
 	void RefreshStyle();

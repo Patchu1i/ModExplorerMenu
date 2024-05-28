@@ -11,8 +11,7 @@ void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIni
 
 	if (const auto rc = ini.LoadFile(a_path)) {
 		if (rc < SI_OK) {
-			(void)ini.SaveFile(a_path);
-			//stl::report_and_fail("Failed to load ModExplorerMenu.ini file!"sv);
+			(void)ini.SaveFile(a_path);  // Could not locate, let's procreate.
 		}
 	}
 
@@ -21,19 +20,29 @@ void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIni
 	(void)ini.SaveFile(a_path);
 }
 
+// Execute ini value assignment where necessary.
 void Settings::LoadSettings(const wchar_t* a_path)
 {
 	logger::info("Settings Loaded");
 
 	GetIni(a_path, [](CSimpleIniA& a_ini) {
-		//auto menu = Menu::GetSingleton();
-		//menu->LoadSettings(a_ini);
-		//Settings::LoadStyleSettings(a_ini);
-		Settings::GetSingleton()->LoadStyleSettings(a_ini);
+		Settings::GetSingleton()->LoadConfiguration(a_ini);
 	});
 }
 
-bool ResetIni = true;
+// Load the users configuration ini file. (master)
+// Then load the theme configuration based on the users configuration.
+void Settings::LoadConfiguration(CSimpleIniA& a_ini)
+{
+	user.config.theme = a_ini.GetValue("Config", "Theme", user.config.theme.c_str());  //GET_VALUE<const char*>("Config", "Theme", user.config.theme, a_ini);
+	bool found = Settings::SetThemeFromIni(user.config.theme).second;
+
+	if (!found) {
+		stl::report_and_fail("Issue with loading configuration");
+	}
+}
+
+bool ResetIni = false;  // TO-DO Implement overwrite mode.
 
 template <class T>
 T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
@@ -52,6 +61,8 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 	} else if constexpr (std::is_same_v<T, ImVec2>) {
 		auto vec = Settings::GetVec2(value);
 		return (vec.second ? vec.first : a_default);
+	} else if constexpr (std::is_same_v<T, std::string>) {
+		return Settings::GetString(value);
 	} else if constexpr (std::is_same_v<T, bool>) {
 		return Settings::GetBool(value);
 	} else if constexpr (std::is_same_v<T, int>) {
@@ -64,84 +75,87 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 	}
 }
 
-// Used to load a specific theme into uservalues.
-void Settings::LoadStyleTheme(ImGuiStyle a_theme)
-{
-	user.text = a_theme.Colors[ImGuiCol_Text];
-	user.textDisabled = a_theme.Colors[ImGuiCol_TextDisabled];
-	user.windowBg = a_theme.Colors[ImGuiCol_WindowBg];
-	user.childBg = a_theme.Colors[ImGuiCol_ChildBg];
-	user.popupBg = a_theme.Colors[ImGuiCol_PopupBg];
-	user.border = a_theme.Colors[ImGuiCol_Border];
-	user.borderShadow = a_theme.Colors[ImGuiCol_BorderShadow];
-	user.frameBg = a_theme.Colors[ImGuiCol_FrameBg];
-	user.frameBgHovered = a_theme.Colors[ImGuiCol_FrameBgHovered];
-	user.frameBgActive = a_theme.Colors[ImGuiCol_FrameBgActive];
-	user.titleBg = a_theme.Colors[ImGuiCol_TitleBg];
-	user.titleBgActive = a_theme.Colors[ImGuiCol_TitleBgActive];
-	user.titleBgCollapsed = a_theme.Colors[ImGuiCol_TitleBgCollapsed];
-	user.menuBarBg = a_theme.Colors[ImGuiCol_MenuBarBg];
-	user.scrollbarBg = a_theme.Colors[ImGuiCol_ScrollbarBg];
-	user.scrollbarGrab = a_theme.Colors[ImGuiCol_ScrollbarGrab];
-	user.scrollbarGrabHovered = a_theme.Colors[ImGuiCol_ScrollbarGrabHovered];
-	user.scrollbarGrabActive = a_theme.Colors[ImGuiCol_ScrollbarGrabActive];
-	user.checkMark = a_theme.Colors[ImGuiCol_CheckMark];
-	user.sliderGrab = a_theme.Colors[ImGuiCol_SliderGrab];
-	user.sliderGrabActive = a_theme.Colors[ImGuiCol_SliderGrabActive];
-	user.button = a_theme.Colors[ImGuiCol_Button];
-	user.buttonHovered = a_theme.Colors[ImGuiCol_ButtonHovered];
-	user.buttonActive = a_theme.Colors[ImGuiCol_ButtonActive];
-	user.header = a_theme.Colors[ImGuiCol_Header];
-	user.headerHovered = a_theme.Colors[ImGuiCol_HeaderHovered];
-	user.headerActive = a_theme.Colors[ImGuiCol_HeaderActive];
-	user.separator = a_theme.Colors[ImGuiCol_Separator];
-	user.separatorHovered = a_theme.Colors[ImGuiCol_SeparatorHovered];
-	user.separatorActive = a_theme.Colors[ImGuiCol_SeparatorActive];
-	user.resizeGrip = a_theme.Colors[ImGuiCol_ResizeGrip];
-	user.resizeGripHovered = a_theme.Colors[ImGuiCol_ResizeGripHovered];
-	user.resizeGripActive = a_theme.Colors[ImGuiCol_ResizeGripActive];
-	user.tableHeaderBg = a_theme.Colors[ImGuiCol_TableHeaderBg];
-	user.tableBorderStrong = a_theme.Colors[ImGuiCol_TableBorderStrong];
-	user.tableBorderLight = a_theme.Colors[ImGuiCol_TableBorderLight];
-	user.tableRowBg = a_theme.Colors[ImGuiCol_TableRowBg];
-	user.plotLines = a_theme.Colors[ImGuiCol_PlotLines];
-	user.plotLinesHovered = a_theme.Colors[ImGuiCol_PlotLinesHovered];
-	user.plotHistogram = a_theme.Colors[ImGuiCol_PlotHistogram];
-	user.plotHistogramHovered = a_theme.Colors[ImGuiCol_PlotHistogramHovered];
-	user.textSelectedBg = a_theme.Colors[ImGuiCol_TextSelectedBg];
-	user.dragDropTarget = a_theme.Colors[ImGuiCol_DragDropTarget];
-	user.navHighlight = a_theme.Colors[ImGuiCol_NavHighlight];
-	user.navWindowingDimBg = a_theme.Colors[ImGuiCol_NavWindowingDimBg];
-	user.modalWindowDimBg = a_theme.Colors[ImGuiCol_ModalWindowDimBg];
+// DEPRECATED::
+// Previously used to load themes from ImGuiStyle themes. Now we load from .ini files.
+// void Settings::LoadStyleTheme(ImGuiStyle a_theme)
+// {
+// 	user.style.text = a_theme.Colors[ImGuiCol_Text];
+// 	user.style.textDisabled = a_theme.Colors[ImGuiCol_TextDisabled];
+// 	user.style.windowBg = a_theme.Colors[ImGuiCol_WindowBg];
+// 	user.style.childBg = a_theme.Colors[ImGuiCol_ChildBg];
+// 	user.style.popupBg = a_theme.Colors[ImGuiCol_PopupBg];
+// 	user.style.border = a_theme.Colors[ImGuiCol_Border];
+// 	user.style.borderShadow = a_theme.Colors[ImGuiCol_BorderShadow];
+// 	user.style.frameBg = a_theme.Colors[ImGuiCol_FrameBg];
+// 	user.style.frameBgHovered = a_theme.Colors[ImGuiCol_FrameBgHovered];
+// 	user.style.frameBgActive = a_theme.Colors[ImGuiCol_FrameBgActive];
+// 	user.style.titleBg = a_theme.Colors[ImGuiCol_TitleBg];
+// 	user.style.titleBgActive = a_theme.Colors[ImGuiCol_TitleBgActive];
+// 	user.style.titleBgCollapsed = a_theme.Colors[ImGuiCol_TitleBgCollapsed];
+// 	user.style.menuBarBg = a_theme.Colors[ImGuiCol_MenuBarBg];
+// 	user.style.scrollbarBg = a_theme.Colors[ImGuiCol_ScrollbarBg];
+// 	user.style.scrollbarGrab = a_theme.Colors[ImGuiCol_ScrollbarGrab];
+// 	user.style.scrollbarGrabHovered = a_theme.Colors[ImGuiCol_ScrollbarGrabHovered];
+// 	user.style.scrollbarGrabActive = a_theme.Colors[ImGuiCol_ScrollbarGrabActive];
+// 	user.style.checkMark = a_theme.Colors[ImGuiCol_CheckMark];
+// 	user.style.sliderGrab = a_theme.Colors[ImGuiCol_SliderGrab];
+// 	user.style.sliderGrabActive = a_theme.Colors[ImGuiCol_SliderGrabActive];
+// 	user.style.button = a_theme.Colors[ImGuiCol_Button];
+// 	user.style.buttonHovered = a_theme.Colors[ImGuiCol_ButtonHovered];
+// 	user.style.buttonActive = a_theme.Colors[ImGuiCol_ButtonActive];
+// 	user.style.header = a_theme.Colors[ImGuiCol_Header];
+// 	user.style.headerHovered = a_theme.Colors[ImGuiCol_HeaderHovered];
+// 	user.style.headerActive = a_theme.Colors[ImGuiCol_HeaderActive];
+// 	user.style.separator = a_theme.Colors[ImGuiCol_Separator];
+// 	user.style.separatorHovered = a_theme.Colors[ImGuiCol_SeparatorHovered];
+// 	user.style.separatorActive = a_theme.Colors[ImGuiCol_SeparatorActive];
+// 	user.style.resizeGrip = a_theme.Colors[ImGuiCol_ResizeGrip];
+// 	user.style.resizeGripHovered = a_theme.Colors[ImGuiCol_ResizeGripHovered];
+// 	user.style.resizeGripActive = a_theme.Colors[ImGuiCol_ResizeGripActive];
+// 	user.style.tableHeaderBg = a_theme.Colors[ImGuiCol_TableHeaderBg];
+// 	user.style.tableBorderStrong = a_theme.Colors[ImGuiCol_TableBorderStrong];
+// 	user.style.tableBorderLight = a_theme.Colors[ImGuiCol_TableBorderLight];
+// 	user.style.tableRowBg = a_theme.Colors[ImGuiCol_TableRowBg];
+// 	user.style.plotLines = a_theme.Colors[ImGuiCol_PlotLines];
+// 	user.style.plotLinesHovered = a_theme.Colors[ImGuiCol_PlotLinesHovered];
+// 	user.style.plotHistogram = a_theme.Colors[ImGuiCol_PlotHistogram];
+// 	user.style.plotHistogramHovered = a_theme.Colors[ImGuiCol_PlotHistogramHovered];
+// 	user.style.textSelectedBg = a_theme.Colors[ImGuiCol_TextSelectedBg];
+// 	user.style.dragDropTarget = a_theme.Colors[ImGuiCol_DragDropTarget];
+// 	user.style.navHighlight = a_theme.Colors[ImGuiCol_NavHighlight];
+// 	user.style.navWindowingDimBg = a_theme.Colors[ImGuiCol_NavWindowingDimBg];
+// 	user.style.modalWindowDimBg = a_theme.Colors[ImGuiCol_ModalWindowDimBg];
 
-	user.windowPadding = a_theme.WindowPadding;
-	user.framePadding = a_theme.FramePadding;
-	user.cellPadding = a_theme.CellPadding;
-	user.itemSpacing = a_theme.ItemSpacing;
-	user.itemInnerSpacing = a_theme.ItemInnerSpacing;
-	user.touchExtraPadding = a_theme.TouchExtraPadding;
+// 	user.style.windowPadding = a_theme.WindowPadding;
+// 	user.style.framePadding = a_theme.FramePadding;
+// 	user.style.cellPadding = a_theme.CellPadding;
+// 	user.style.itemSpacing = a_theme.ItemSpacing;
+// 	user.style.itemInnerSpacing = a_theme.ItemInnerSpacing;
+// 	user.style.touchExtraPadding = a_theme.TouchExtraPadding;
 
-	user.alpha = a_theme.Alpha;
-	user.disabledAlpha = a_theme.Alpha;
-	user.windowRounding = a_theme.WindowRounding;
-	user.windowBorderSize = a_theme.WindowBorderSize;
-	user.childBorderSize = a_theme.ChildBorderSize;
-	user.childRounding = a_theme.ChildRounding;
-	user.frameBorderSize = a_theme.FrameBorderSize;
-	user.frameRounding = a_theme.FrameRounding;
-	user.tabBorderSize = a_theme.TabBorderSize;
-	user.tabRounding = a_theme.TabRounding;
-	user.indentSpacing = a_theme.IndentSpacing;
-	user.scrollbarRounding = a_theme.ScrollbarRounding;
-	user.scrollbarSize = a_theme.ScrollbarSize;
-	user.grabMinSize = a_theme.GrabMinSize;
-	user.grabRounding = a_theme.GrabRounding;
-	user.popupBorderSize = a_theme.PopupBorderSize;
-	user.popupRounding = a_theme.PopupRounding;
-	user.logSliderDeadzone = a_theme.LogSliderDeadzone;
-}
+// 	user.style.alpha = a_theme.Alpha;
+// 	user.style.disabledAlpha = a_theme.Alpha;
+// 	user.style.windowRounding = a_theme.WindowRounding;
+// 	user.style.windowBorderSize = a_theme.WindowBorderSize;
+// 	user.style.childBorderSize = a_theme.ChildBorderSize;
+// 	user.style.childRounding = a_theme.ChildRounding;
+// 	user.style.frameBorderSize = a_theme.FrameBorderSize;
+// 	user.style.frameRounding = a_theme.FrameRounding;
+// 	user.style.tabBorderSize = a_theme.TabBorderSize;
+// 	user.style.tabRounding = a_theme.TabRounding;
+// 	user.style.indentSpacing = a_theme.IndentSpacing;
+// 	user.style.scrollbarRounding = a_theme.ScrollbarRounding;
+// 	user.style.scrollbarSize = a_theme.ScrollbarSize;
+// 	user.style.grabMinSize = a_theme.GrabMinSize;
+// 	user.style.grabRounding = a_theme.GrabRounding;
+// 	user.style.popupBorderSize = a_theme.PopupBorderSize;
+// 	user.style.popupRounding = a_theme.PopupRounding;
+// 	user.style.logSliderDeadzone = a_theme.LogSliderDeadzone;
+// }
 
-void Settings::SaveStyleThemeToIni(const wchar_t* a_path, Style& a_user)
+// Export theme and style values to a standalone ini file.
+// Decentralized from the main ini configuration to allow for easy sharing of themes.
+void Settings::ExportThemeToIni(const wchar_t* a_path, Style& a_user)
 {
 	GetIni(a_path, [&a_user](CSimpleIniA& a_ini) {
 		a_ini.SetValue("Style", "TextColor", Settings::ToString(a_user.text, false).c_str());
@@ -221,82 +235,79 @@ void Settings::SaveStyleThemeToIni(const wchar_t* a_path, Style& a_user)
 	logger::info("Settings Saved");
 };
 
-// Executed on initialization to load user settings from ini.
-// Not to be used during modification or saving.
-void Settings::LoadStyleSettings(CSimpleIniA& a_ini)
+// Call inside GetIni() to load the theme from the ini file into the user values.
+void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 {
-	user.text = GET_VALUE<ImVec4>("Style", "TextColor", user.text, a_ini);
-	user.textDisabled = GET_VALUE<ImVec4>("Style", "TextDisabledColor", user.textDisabled, a_ini);
-	user.windowBg = GET_VALUE<ImVec4>("Style", "WindowBGColor", user.windowBg, a_ini);
-	user.childBg = GET_VALUE<ImVec4>("Style", "ChildBGColor", user.childBg, a_ini);
-	user.popupBg = GET_VALUE<ImVec4>("Style", "PopupBGColor", user.popupBg, a_ini);
-	user.border = GET_VALUE<ImVec4>("Style", "BorderColor", user.border, a_ini);
-	user.borderShadow = GET_VALUE<ImVec4>("Style", "BorderShadowColor", user.borderShadow, a_ini);
-	user.frameBg = GET_VALUE<ImVec4>("Style", "FrameBGColor", user.frameBg, a_ini);
-	user.frameBgHovered = GET_VALUE<ImVec4>("Style", "FrameBGHoveredColor", user.frameBgHovered, a_ini);
-	user.frameBgActive = GET_VALUE<ImVec4>("Style", "FrameBGActiveColor", user.frameBgActive, a_ini);
-	user.titleBg = GET_VALUE<ImVec4>("Style", "TitleBGColor", user.titleBg, a_ini);
-	user.titleBgActive = GET_VALUE<ImVec4>("Style", "TitleBGActiveColor", user.titleBgActive, a_ini);
-	user.titleBgCollapsed = GET_VALUE<ImVec4>("Style", "TitleBGCollapsedColor", user.titleBgCollapsed, a_ini);
-	user.menuBarBg = GET_VALUE<ImVec4>("Style", "MenuBarColor", user.menuBarBg, a_ini);
-	user.scrollbarBg = GET_VALUE<ImVec4>("Style", "ScrollbarBGColor", user.scrollbarBg, a_ini);
-	user.scrollbarGrab = GET_VALUE<ImVec4>("Style", "ScrollbarGrabColor", user.scrollbarGrab, a_ini);
-	user.scrollbarGrabHovered = GET_VALUE<ImVec4>("Style", "ScrollbarGrabHoveredColor", user.scrollbarGrabHovered, a_ini);
-	user.scrollbarGrabActive = GET_VALUE<ImVec4>("Style", "ScrollbarGrabActiveColor", user.scrollbarGrabActive, a_ini);
-	user.checkMark = GET_VALUE<ImVec4>("Style", "CheckMarkColor", user.checkMark, a_ini);
-	user.sliderGrab = GET_VALUE<ImVec4>("Style", "SliderGrabColor", user.sliderGrab, a_ini);
-	user.sliderGrabActive = GET_VALUE<ImVec4>("Style", "SliderGrabActiveColor", user.sliderGrabActive, a_ini);
-	user.button = GET_VALUE<ImVec4>("Style", "ButtonColor", user.button, a_ini);
-	user.buttonHovered = GET_VALUE<ImVec4>("Style", "ButtonHoveredColor", user.buttonHovered, a_ini);
-	user.buttonActive = GET_VALUE<ImVec4>("Style", "ButtonActiveColor", user.buttonActive, a_ini);
-	user.header = GET_VALUE<ImVec4>("Style", "HeaderColor", user.header, a_ini);
-	user.headerHovered = GET_VALUE<ImVec4>("Style", "HeaderHoveredColor", user.headerHovered, a_ini);
-	user.headerActive = GET_VALUE<ImVec4>("Style", "HeaderActiveColor", user.headerActive, a_ini);
-	user.separator = GET_VALUE<ImVec4>("Style", "SeparatorColor", user.separator, a_ini);
-	user.separatorHovered = GET_VALUE<ImVec4>("Style", "SeparatorHoveredColor", user.separatorHovered, a_ini);
-	user.separatorActive = GET_VALUE<ImVec4>("Style", "SeparatorActiveColor", user.separatorActive, a_ini);
-	user.resizeGrip = GET_VALUE<ImVec4>("Style", "ResizeGripColor", user.resizeGrip, a_ini);
-	user.resizeGripHovered = GET_VALUE<ImVec4>("Style", "ResizeGripHoveredColor", user.resizeGripHovered, a_ini);
-	user.resizeGripActive = GET_VALUE<ImVec4>("Style", "ResizeGripActiveColor", user.resizeGripActive, a_ini);
-	user.tableHeaderBg = GET_VALUE<ImVec4>("Style", "TableHeaderBGColor", user.tableHeaderBg, a_ini);
-	user.tableBorderStrong = GET_VALUE<ImVec4>("Style", "TableBorderStrongColor", user.tableBorderStrong, a_ini);
-	user.tableBorderLight = GET_VALUE<ImVec4>("Style", "TableBorderLightColor", user.tableBorderLight, a_ini);
-	user.tableRowBg = GET_VALUE<ImVec4>("Style", "TableRowBGColor", user.tableRowBg, a_ini);
-	user.plotLines = GET_VALUE<ImVec4>("Style", "PlotLinesColor", user.plotLines, a_ini);
-	user.plotLinesHovered = GET_VALUE<ImVec4>("Style", "PlotLinesHoveredColor", user.plotLinesHovered, a_ini);
-	user.plotHistogram = GET_VALUE<ImVec4>("Style", "PlotHistogramColor", user.plotHistogram, a_ini);
-	user.plotHistogramHovered = GET_VALUE<ImVec4>("Style", "PlotHistogramHoveredColor", user.plotHistogramHovered, a_ini);
-	user.textSelectedBg = GET_VALUE<ImVec4>("Style", "TextSelectedBGColor", user.textSelectedBg, a_ini);
-	user.dragDropTarget = GET_VALUE<ImVec4>("Style", "DragDropTargetColor", user.dragDropTarget, a_ini);
-	user.navHighlight = GET_VALUE<ImVec4>("Style", "NavHighlightColor", user.navHighlight, a_ini);
-	user.navWindowingDimBg = GET_VALUE<ImVec4>("Style", "NavWindowingDimBGColor", user.navWindowingDimBg, a_ini);
-	user.modalWindowDimBg = GET_VALUE<ImVec4>("Style", "ModalWindowDimBGColor", user.modalWindowDimBg, a_ini);
+	user.style.text = GET_VALUE<ImVec4>("Style", "TextColor", user.style.text, a_ini);
+	user.style.textDisabled = GET_VALUE<ImVec4>("Style", "TextDisabledColor", user.style.textDisabled, a_ini);
+	user.style.windowBg = GET_VALUE<ImVec4>("Style", "WindowBGColor", user.style.windowBg, a_ini);
+	user.style.childBg = GET_VALUE<ImVec4>("Style", "ChildBGColor", user.style.childBg, a_ini);
+	user.style.popupBg = GET_VALUE<ImVec4>("Style", "PopupBGColor", user.style.popupBg, a_ini);
+	user.style.border = GET_VALUE<ImVec4>("Style", "BorderColor", user.style.border, a_ini);
+	user.style.borderShadow = GET_VALUE<ImVec4>("Style", "BorderShadowColor", user.style.borderShadow, a_ini);
+	user.style.frameBg = GET_VALUE<ImVec4>("Style", "FrameBGColor", user.style.frameBg, a_ini);
+	user.style.frameBgHovered = GET_VALUE<ImVec4>("Style", "FrameBGHoveredColor", user.style.frameBgHovered, a_ini);
+	user.style.frameBgActive = GET_VALUE<ImVec4>("Style", "FrameBGActiveColor", user.style.frameBgActive, a_ini);
+	user.style.titleBg = GET_VALUE<ImVec4>("Style", "TitleBGColor", user.style.titleBg, a_ini);
+	user.style.titleBgActive = GET_VALUE<ImVec4>("Style", "TitleBGActiveColor", user.style.titleBgActive, a_ini);
+	user.style.titleBgCollapsed = GET_VALUE<ImVec4>("Style", "TitleBGCollapsedColor", user.style.titleBgCollapsed, a_ini);
+	user.style.menuBarBg = GET_VALUE<ImVec4>("Style", "MenuBarColor", user.style.menuBarBg, a_ini);
+	user.style.scrollbarBg = GET_VALUE<ImVec4>("Style", "ScrollbarBGColor", user.style.scrollbarBg, a_ini);
+	user.style.scrollbarGrab = GET_VALUE<ImVec4>("Style", "ScrollbarGrabColor", user.style.scrollbarGrab, a_ini);
+	user.style.scrollbarGrabHovered = GET_VALUE<ImVec4>("Style", "ScrollbarGrabHoveredColor", user.style.scrollbarGrabHovered, a_ini);
+	user.style.scrollbarGrabActive = GET_VALUE<ImVec4>("Style", "ScrollbarGrabActiveColor", user.style.scrollbarGrabActive, a_ini);
+	user.style.checkMark = GET_VALUE<ImVec4>("Style", "CheckMarkColor", user.style.checkMark, a_ini);
+	user.style.sliderGrab = GET_VALUE<ImVec4>("Style", "SliderGrabColor", user.style.sliderGrab, a_ini);
+	user.style.sliderGrabActive = GET_VALUE<ImVec4>("Style", "SliderGrabActiveColor", user.style.sliderGrabActive, a_ini);
+	user.style.button = GET_VALUE<ImVec4>("Style", "ButtonColor", user.style.button, a_ini);
+	user.style.buttonHovered = GET_VALUE<ImVec4>("Style", "ButtonHoveredColor", user.style.buttonHovered, a_ini);
+	user.style.buttonActive = GET_VALUE<ImVec4>("Style", "ButtonActiveColor", user.style.buttonActive, a_ini);
+	user.style.header = GET_VALUE<ImVec4>("Style", "HeaderColor", user.style.header, a_ini);
+	user.style.headerHovered = GET_VALUE<ImVec4>("Style", "HeaderHoveredColor", user.style.headerHovered, a_ini);
+	user.style.headerActive = GET_VALUE<ImVec4>("Style", "HeaderActiveColor", user.style.headerActive, a_ini);
+	user.style.separator = GET_VALUE<ImVec4>("Style", "SeparatorColor", user.style.separator, a_ini);
+	user.style.separatorHovered = GET_VALUE<ImVec4>("Style", "SeparatorHoveredColor", user.style.separatorHovered, a_ini);
+	user.style.separatorActive = GET_VALUE<ImVec4>("Style", "SeparatorActiveColor", user.style.separatorActive, a_ini);
+	user.style.resizeGrip = GET_VALUE<ImVec4>("Style", "ResizeGripColor", user.style.resizeGrip, a_ini);
+	user.style.resizeGripHovered = GET_VALUE<ImVec4>("Style", "ResizeGripHoveredColor", user.style.resizeGripHovered, a_ini);
+	user.style.resizeGripActive = GET_VALUE<ImVec4>("Style", "ResizeGripActiveColor", user.style.resizeGripActive, a_ini);
+	user.style.tableHeaderBg = GET_VALUE<ImVec4>("Style", "TableHeaderBGColor", user.style.tableHeaderBg, a_ini);
+	user.style.tableBorderStrong = GET_VALUE<ImVec4>("Style", "TableBorderStrongColor", user.style.tableBorderStrong, a_ini);
+	user.style.tableBorderLight = GET_VALUE<ImVec4>("Style", "TableBorderLightColor", user.style.tableBorderLight, a_ini);
+	user.style.tableRowBg = GET_VALUE<ImVec4>("Style", "TableRowBGColor", user.style.tableRowBg, a_ini);
+	user.style.plotLines = GET_VALUE<ImVec4>("Style", "PlotLinesColor", user.style.plotLines, a_ini);
+	user.style.plotLinesHovered = GET_VALUE<ImVec4>("Style", "PlotLinesHoveredColor", user.style.plotLinesHovered, a_ini);
+	user.style.plotHistogram = GET_VALUE<ImVec4>("Style", "PlotHistogramColor", user.style.plotHistogram, a_ini);
+	user.style.plotHistogramHovered = GET_VALUE<ImVec4>("Style", "PlotHistogramHoveredColor", user.style.plotHistogramHovered, a_ini);
+	user.style.textSelectedBg = GET_VALUE<ImVec4>("Style", "TextSelectedBGColor", user.style.textSelectedBg, a_ini);
+	user.style.dragDropTarget = GET_VALUE<ImVec4>("Style", "DragDropTargetColor", user.style.dragDropTarget, a_ini);
+	user.style.navHighlight = GET_VALUE<ImVec4>("Style", "NavHighlightColor", user.style.navHighlight, a_ini);
+	user.style.navWindowingDimBg = GET_VALUE<ImVec4>("Style", "NavWindowingDimBGColor", user.style.navWindowingDimBg, a_ini);
+	user.style.modalWindowDimBg = GET_VALUE<ImVec4>("Style", "ModalWindowDimBGColor", user.style.modalWindowDimBg, a_ini);
 
-	user.windowPadding = GET_VALUE<ImVec2>("Style", "WindowPadding", user.windowPadding, a_ini);
-	user.framePadding = GET_VALUE<ImVec2>("Style", "FramePadding", user.framePadding, a_ini);
-	user.cellPadding = GET_VALUE<ImVec2>("Style", "CellPadding", user.cellPadding, a_ini);
-	user.itemSpacing = GET_VALUE<ImVec2>("Style", "ItemSpacing", user.itemSpacing, a_ini);
-	user.itemInnerSpacing = GET_VALUE<ImVec2>("Style", "ItemInnerSpacing", user.itemInnerSpacing, a_ini);
-	user.touchExtraPadding = GET_VALUE<ImVec2>("Style", "TouchExtraPadding", user.touchExtraPadding, a_ini);
+	user.style.windowPadding = GET_VALUE<ImVec2>("Style", "WindowPadding", user.style.windowPadding, a_ini);
+	user.style.framePadding = GET_VALUE<ImVec2>("Style", "FramePadding", user.style.framePadding, a_ini);
+	user.style.cellPadding = GET_VALUE<ImVec2>("Style", "CellPadding", user.style.cellPadding, a_ini);
+	user.style.itemSpacing = GET_VALUE<ImVec2>("Style", "ItemSpacing", user.style.itemSpacing, a_ini);
+	user.style.itemInnerSpacing = GET_VALUE<ImVec2>("Style", "ItemInnerSpacing", user.style.itemInnerSpacing, a_ini);
+	user.style.touchExtraPadding = GET_VALUE<ImVec2>("Style", "TouchExtraPadding", user.style.touchExtraPadding, a_ini);
 
-	user.alpha = GET_VALUE<float>("Style", "Alpha", user.alpha, a_ini);
-	user.disabledAlpha = GET_VALUE<float>("Style", "DisabledAlpha", user.disabledAlpha, a_ini);
-	user.windowRounding = GET_VALUE<float>("Style", "WindowRounding", user.windowRounding, a_ini);
-	user.windowBorderSize = GET_VALUE<float>("Style", "WindowBorderSize", user.windowBorderSize, a_ini);
-	user.childBorderSize = GET_VALUE<float>("Style", "ChildBorderSize", user.childBorderSize, a_ini);
-	user.childRounding = GET_VALUE<float>("Style", "ChildRounding", user.childRounding, a_ini);
-	user.frameBorderSize = GET_VALUE<float>("Style", "FrameBorderSize", user.frameBorderSize, a_ini);
-	user.frameRounding = GET_VALUE<float>("Style", "FrameRounding", user.frameRounding, a_ini);
-	user.tabBorderSize = GET_VALUE<float>("Style", "TabBorderSize", user.tabBorderSize, a_ini);
-	user.tabRounding = GET_VALUE<float>("Style", "TabRounding", user.tabRounding, a_ini);
-	user.indentSpacing = GET_VALUE<float>("Style", "IndentSpacing", user.indentSpacing, a_ini);
-	user.scrollbarRounding = GET_VALUE<float>("Style", "ScrollbarRounding", user.scrollbarRounding, a_ini);
-	user.scrollbarSize = GET_VALUE<float>("Style", "ScrollbarSize", user.scrollbarSize, a_ini);
-	user.grabMinSize = GET_VALUE<float>("Style", "GrabMinSize", user.grabMinSize, a_ini);
-	user.grabRounding = GET_VALUE<float>("Style", "GrabRounding", user.grabRounding, a_ini);
-	user.popupBorderSize = GET_VALUE<float>("Style", "PopupBorderSize", user.popupBorderSize, a_ini);
-	user.popupRounding = GET_VALUE<float>("Style", "PopupRounding", user.popupRounding, a_ini);
-	user.logSliderDeadzone = GET_VALUE<float>("Style", "LogSliderDeadzone", user.logSliderDeadzone, a_ini);
-
-	Menu::GetSingleton()->SetupStyle(user);
+	user.style.alpha = GET_VALUE<float>("Style", "Alpha", user.style.alpha, a_ini);
+	user.style.disabledAlpha = GET_VALUE<float>("Style", "DisabledAlpha", user.style.disabledAlpha, a_ini);
+	user.style.windowRounding = GET_VALUE<float>("Style", "WindowRounding", user.style.windowRounding, a_ini);
+	user.style.windowBorderSize = GET_VALUE<float>("Style", "WindowBorderSize", user.style.windowBorderSize, a_ini);
+	user.style.childBorderSize = GET_VALUE<float>("Style", "ChildBorderSize", user.style.childBorderSize, a_ini);
+	user.style.childRounding = GET_VALUE<float>("Style", "ChildRounding", user.style.childRounding, a_ini);
+	user.style.frameBorderSize = GET_VALUE<float>("Style", "FrameBorderSize", user.style.frameBorderSize, a_ini);
+	user.style.frameRounding = GET_VALUE<float>("Style", "FrameRounding", user.style.frameRounding, a_ini);
+	user.style.tabBorderSize = GET_VALUE<float>("Style", "TabBorderSize", user.style.tabBorderSize, a_ini);
+	user.style.tabRounding = GET_VALUE<float>("Style", "TabRounding", user.style.tabRounding, a_ini);
+	user.style.indentSpacing = GET_VALUE<float>("Style", "IndentSpacing", user.style.indentSpacing, a_ini);
+	user.style.scrollbarRounding = GET_VALUE<float>("Style", "ScrollbarRounding", user.style.scrollbarRounding, a_ini);
+	user.style.scrollbarSize = GET_VALUE<float>("Style", "ScrollbarSize", user.style.scrollbarSize, a_ini);
+	user.style.grabMinSize = GET_VALUE<float>("Style", "GrabMinSize", user.style.grabMinSize, a_ini);
+	user.style.grabRounding = GET_VALUE<float>("Style", "GrabRounding", user.style.grabRounding, a_ini);
+	user.style.popupBorderSize = GET_VALUE<float>("Style", "PopupBorderSize", user.style.popupBorderSize, a_ini);
+	user.style.popupRounding = GET_VALUE<float>("Style", "PopupRounding", user.style.popupRounding, a_ini);
+	user.style.logSliderDeadzone = GET_VALUE<float>("Style", "LogSliderDeadzone", user.style.logSliderDeadzone, a_ini);
 }

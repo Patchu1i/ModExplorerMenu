@@ -769,7 +769,7 @@ void AddItemWindow::Init()
 	header_font = GraphicManager::GetFont("Coolvetica-Medium");
 	_searchBy = AddItemWindow::SearchBy::FullName;
 
-	favorite_disabled_texture = GraphicManager::GetImage("favorite-disabled-new").texture;
-	favorite_enabled_texture = GraphicManager::GetImage("favorite-enabled-new").texture;
+	//favorite_disabled_texture = GraphicManager::GetImage("favorite-disabled-new").texture;
+	//favorite_enabled_texture = GraphicManager::GetImage("favorite-enabled-new").texture;
 	list_arrow = GraphicManager::GetImage("list-arrow");
 }
