@@ -13,7 +13,7 @@ public:
 
 	void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 	void LoadSettings(const wchar_t* a_path);
-	void LoadConfiguration(CSimpleIniA& a_ini);
+	void LoadConfiguration(CSimpleIniA& a_ini, bool use_default = false);
 	void LoadThemeFromIni(CSimpleIniA& a_ini);
 
 	static inline Settings* GetSingleton()
@@ -22,7 +22,7 @@ public:
 		return &singleton;
 	}
 
-	constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/";
+	constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/themes/";
 	constexpr inline static const wchar_t* ini_settings_fullpath = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
 
 	struct Config

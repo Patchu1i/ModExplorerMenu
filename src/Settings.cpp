@@ -20,28 +20,6 @@ void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIni
 	(void)ini.SaveFile(a_path);
 }
 
-// Execute ini value assignment where necessary.
-void Settings::LoadSettings(const wchar_t* a_path)
-{
-	logger::info("Settings Loaded");
-
-	GetIni(a_path, [](CSimpleIniA& a_ini) {
-		Settings::GetSingleton()->LoadConfiguration(a_ini);
-	});
-}
-
-// Load the users configuration ini file. (master)
-// Then load the theme configuration based on the users configuration.
-void Settings::LoadConfiguration(CSimpleIniA& a_ini)
-{
-	user.config.theme = a_ini.GetValue("Config", "Theme", user.config.theme.c_str());  //GET_VALUE<const char*>("Config", "Theme", user.config.theme, a_ini);
-	bool found = Settings::SetThemeFromIni(user.config.theme).second;
-
-	if (!found) {
-		stl::report_and_fail("Issue with loading configuration");
-	}
-}
-
 bool ResetIni = false;  // TO-DO Implement overwrite mode.
 
 template <class T>
@@ -72,6 +50,41 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 	} else {
 		stl::report_and_fail("Unhandled type passed to GET_VALUE in Menu.cpp!");
 		return a_default;
+	}
+}
+
+// Execute ini value assignment where necessary.
+void Settings::LoadSettings(const wchar_t* a_path)
+{
+	GetIni(a_path, [](CSimpleIniA& a_ini) {
+		Settings::GetSingleton()->LoadConfiguration(a_ini);
+	});
+}
+
+// Load the users configuration ini file. (master)
+// Implemented fallback for improper theme name. Maybe overkill(?)
+void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
+{
+	std::pair<std::string, bool> callback;
+
+	if (use_default) {
+		logger::info("(use_default=true) Loading default theme.");
+		user.config.theme = "Default";
+		a_ini.SetValue("Config", "Theme", user.config.theme.c_str());
+		callback = Settings::SetThemeFromIni(user.config.theme);
+	} else {
+		user.config.theme = GET_VALUE<std::string>("Config", "Theme", user.config.theme, a_ini);
+		logger::info("(use_default=false) Loading theme from ini: {}", user.config.theme);
+		callback = Settings::SetThemeFromIni(user.config.theme);
+	}
+
+	if (!callback.second) {
+		if (callback.first == "Default") {
+			stl::report_and_fail("Failed to load default theme!\n\nEnsure the theme is present in the themes directory.");
+		} else {
+			logger::info("Failed to load theme: {}. Defaulting to Default theme.", callback.first);
+			LoadConfiguration(a_ini, true);
+		}
 	}
 }
 

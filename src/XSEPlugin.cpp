@@ -53,7 +53,7 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:
 			MEMData::GetSingleton()->Run();
-			Settings::GetSingleton()->LoadSettings(L"Data/SKSE/Plugins/ModExplorerMenu.ini");
+			Settings::GetSingleton()->LoadSettings(Settings::ini_settings_fullpath);
 			Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:

@@ -3,6 +3,7 @@
 #include "Settings.h"
 #include <codecvt>
 
+// TO-DO - Maybe
 void AddColorPicker(const char* a_text, ImVec4& a_colRef)
 {
 	constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
@@ -58,15 +59,11 @@ void SettingsWindow::DrawThemeSelector()
 
 	if (ImGui::BeginCombo("##Settings::PresetDropdown", config.theme.c_str(), combo_flags)) {
 		std::vector<std::string> themes = Settings::GetListOfThemes();
-		std::string path = "Data/Interface/ModExplorerMenu/themes/";
+		std::string path = "Data/Interface/ModExplorerMenu/themes/";  // TO-DO - Remove hard-coded directory path.
 
 		for (const auto& theme : themes) {
 			if (ImGui::Selectable(theme.c_str())) {
-				logger::info("Changed style to: {} from {}", theme, config.theme);
-				//std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-				//std::wstring widePath = converter.from_bytes(path + theme);
 				config.theme = theme;
-				//Settings::GetSingleton()->LoadStyle(widePath.c_str());
 				changes.store(true);
 			}
 		}
