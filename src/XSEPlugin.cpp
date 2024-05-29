@@ -53,7 +53,7 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:
 			MEMData::GetSingleton()->Run();
-			Settings::GetSingleton()->LoadSettings(Settings::ini_settings_fullpath);
+			Settings::GetSingleton()->LoadSettings(Settings::ini_mem_path);
 			Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:

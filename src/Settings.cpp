@@ -1,7 +1,10 @@
 #include "Settings.h"
 #include "Menu.h"
 #include "SimpleIni.h"
+#include "lib/ini_comments.h"
 #include <format>
+
+using namespace IniHelper;
 
 void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func)
 {
@@ -25,13 +28,11 @@ bool ResetIni = false;  // TODO: Implement developer mode to overwrite presets.
 template <class T>
 T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
 {
-	std::string _default = Settings::ToString(a_default, false);
-	std::string value = a_ini.GetValue(section, key, _default.c_str());
-
-	// Generate entry using a_default if no entry exists.
-	if (value == _default || ResetIni) {
-		a_ini.SetValue(section, key, _default.c_str());
+	if (a_ini.GetValue(section, key) == nullptr) {
+		a_ini.SetValue(section, key, Settings::ToString(a_default, false).c_str());
 	}
+
+	std::string value = a_ini.GetValue(section, key);
 
 	// A plus de-serialization.
 	if constexpr (std::is_same_v<T, ImVec4>) {
@@ -58,34 +59,70 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 void Settings::LoadSettings(const wchar_t* a_path)
 {
 	GetIni(a_path, [](CSimpleIniA& a_ini) {
-		Settings::GetSingleton()->LoadConfiguration(a_ini);
+		Settings::GetSingleton()->LoadPreset(a_ini);
 	});
 }
 
-// Load the users configuration ini file. (master)
-// Implemented fallback for improper theme name. Maybe overkill(?)
-void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
+// Call on new ini file to generate comments and sections before inserting.
+void Settings::FormatThemeIni(CSimpleIniA& a_ini)
+{
+	a_ini.SetValue(rSections[Window], NULL, NULL, GetComment(iComment::ThemeConfigHeader));
+	a_ini.SetValue(rSections[Frame], NULL, NULL, GetComment(iComment::ThemeFrameHeader));
+	a_ini.SetValue(rSections[Child], NULL, NULL, GetComment(iComment::ThemeChildHeader));
+	a_ini.SetValue(rSections[Text], NULL, NULL, GetComment(iComment::ThemeTextHeader));
+	a_ini.SetValue(rSections[Table], NULL, NULL, GetComment(iComment::ThemeTableHeader));
+	a_ini.SetValue(rSections[Widgets], NULL, NULL, GetComment(iComment::ThemeWidgetsHeader));
+}
+
+// Call on new ini file to generate comments and sections before inserting.
+void Settings::FormatPresetIni(CSimpleIniA& a_ini)
+{
+	a_ini.SetValue(rSections[Main], NULL, NULL, GetComment(iComment::PresetMainHeader));
+	a_ini.SetValue(rSections[AddItem], NULL, NULL, GetComment(iComment::PresetAddItemHeader));
+	a_ini.SetValue(rSections[FormLookup], NULL, NULL, GetComment(iComment::PresetFormLookupHeader));
+	a_ini.SetValue(rSections[NPC], NULL, NULL, GetComment(iComment::PresetNPCHeader));
+	a_ini.SetValue(rSections[Teleport], NULL, NULL, GetComment(iComment::PresetTeleportHeader));
+}
+
+// Manually create a default preset file in-case end-user is a baddy.
+void Settings::CreateDefaultPreset()
+{
+	GetIni(L"Data/Interface/ModExplorerMenu/presets/Default.ini", [](CSimpleIniA& a_ini) {
+		FormatPresetIni(a_ini);
+		a_ini.SetValue(rSections[Main], "Preset", "Default");
+	});
+}
+
+// This is executed within the scope of ModExplorerMenu.ini
+// Loads the preset specified in master ini. Then loads theme from there.
+void Settings::LoadPreset(CSimpleIniA& a_ini, bool use_default_preset)
 {
 	std::pair<std::string, bool> callback;
 
-	if (use_default) {
-		logger::info("(use_default=true) Loading default theme.");
-		user.config.theme = "Default";
-		a_ini.SetValue("Config", "Theme", user.config.theme.c_str());
-		callback = Settings::SetThemeFromIni(user.config.theme);
+	// Preset
+	if (use_default_preset) {
+		user.config.preset = "Default";
+		a_ini.SetValue("Config", "Preset", user.config.preset.c_str());
+		callback = Settings::SetPresetFromIni(user.config.preset);
 	} else {
-		user.config.theme = GET_VALUE<std::string>("Config", "Theme", user.config.theme, a_ini);
-		logger::info("(use_default=false) Loading theme from ini: {}", user.config.theme);
-		callback = Settings::SetThemeFromIni(user.config.theme);
+		user.config.preset = GET_VALUE<std::string>("Config", "Preset", user.config.preset, a_ini);
+		callback = Settings::SetPresetFromIni(user.config.preset);
 	}
 
 	if (!callback.second) {
 		if (callback.first == "Default") {
-			stl::report_and_fail("Failed to load default theme!\n\nEnsure the theme is present in the themes directory.");
+			CreateDefaultPreset();
+			LoadPreset(a_ini, true);
+			return;
 		} else {
-			logger::info("Failed to load theme: {}. Defaulting to Default theme.", callback.first);
-			LoadConfiguration(a_ini, true);
+			LoadPreset(a_ini, true);
+			return;
 		}
+	} else {
+		std::wstring ini_preset_path_str = ini_preset_path + std::wstring(callback.first.begin(), callback.first.end()) + L".ini";
+		GetIni(ini_preset_path_str.c_str(), [](CSimpleIniA& a_ini) {
+			Settings::GetSingleton()->LoadPresetFromIni(a_ini);
+		});
 	}
 }
 
@@ -168,144 +205,160 @@ void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
 void Settings::ExportThemeToIni(const wchar_t* a_path, Style& a_user)
 {
 	GetIni(a_path, [&a_user](CSimpleIniA& a_ini) {
-		a_ini.SetValue("Style", "TextColor", Settings::ToString(a_user.text, false).c_str());
-		a_ini.SetValue("Style", "TextDisabledColor", Settings::ToString(a_user.textDisabled, false).c_str());
-		a_ini.SetValue("Style", "WindowBGColor", Settings::ToString(a_user.windowBg, false).c_str());
-		a_ini.SetValue("Style", "ChildBGColor", Settings::ToString(a_user.childBg, false).c_str());
-		a_ini.SetValue("Style", "PopupBGColor", Settings::ToString(a_user.popupBg, false).c_str());
-		a_ini.SetValue("Style", "BorderColor", Settings::ToString(a_user.border, false).c_str());
-		a_ini.SetValue("Style", "BorderShadowColor", Settings::ToString(a_user.borderShadow, false).c_str());
-		a_ini.SetValue("Style", "FrameBGColor", Settings::ToString(a_user.frameBg, false).c_str());
-		a_ini.SetValue("Style", "FrameBGHoveredColor", Settings::ToString(a_user.frameBgHovered, false).c_str());
-		a_ini.SetValue("Style", "FrameBGActiveColor", Settings::ToString(a_user.frameBgActive, false).c_str());
-		a_ini.SetValue("Style", "TitleBGColor", Settings::ToString(a_user.titleBg, false).c_str());
-		a_ini.SetValue("Style", "TitleBGActiveColor", Settings::ToString(a_user.titleBgActive, false).c_str());
-		a_ini.SetValue("Style", "TitleBGCollapsedColor", Settings::ToString(a_user.titleBgCollapsed, false).c_str());
-		a_ini.SetValue("Style", "MenuBarColor", Settings::ToString(a_user.menuBarBg, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarBGColor", Settings::ToString(a_user.scrollbarBg, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarGrabColor", Settings::ToString(a_user.scrollbarGrab, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarGrabHoveredColor", Settings::ToString(a_user.scrollbarGrabHovered, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarGrabActiveColor", Settings::ToString(a_user.scrollbarGrabActive, false).c_str());
-		a_ini.SetValue("Style", "CheckMarkColor", Settings::ToString(a_user.checkMark, false).c_str());
-		a_ini.SetValue("Style", "SliderGrabColor", Settings::ToString(a_user.sliderGrab, false).c_str());
-		a_ini.SetValue("Style", "SliderGrabActiveColor", Settings::ToString(a_user.sliderGrabActive, false).c_str());
-		a_ini.SetValue("Style", "ButtonColor", Settings::ToString(a_user.button, false).c_str());
-		a_ini.SetValue("Style", "ButtonHoveredColor", Settings::ToString(a_user.buttonHovered, false).c_str());
-		a_ini.SetValue("Style", "ButtonActiveColor", Settings::ToString(a_user.buttonActive, false).c_str());
-		a_ini.SetValue("Style", "HeaderColor", Settings::ToString(a_user.header, false).c_str());
-		a_ini.SetValue("Style", "HeaderHoveredColor", Settings::ToString(a_user.headerHovered, false).c_str());
-		a_ini.SetValue("Style", "HeaderActiveColor", Settings::ToString(a_user.headerActive, false).c_str());
-		a_ini.SetValue("Style", "SeparatorColor", Settings::ToString(a_user.separator, false).c_str());
-		a_ini.SetValue("Style", "SeparatorHoveredColor", Settings::ToString(a_user.separatorHovered, false).c_str());
-		a_ini.SetValue("Style", "SeparatorActiveColor", Settings::ToString(a_user.separatorActive, false).c_str());
-		a_ini.SetValue("Style", "ResizeGripColor", Settings::ToString(a_user.resizeGrip, false).c_str());
-		a_ini.SetValue("Style", "ResizeGripHoveredColor", Settings::ToString(a_user.resizeGripHovered, false).c_str());
-		a_ini.SetValue("Style", "ResizeGripActiveColor", Settings::ToString(a_user.resizeGripActive, false).c_str());
-		a_ini.SetValue("Style", "TableHeaderBGColor", Settings::ToString(a_user.tableHeaderBg, false).c_str());
-		a_ini.SetValue("Style", "TableBorderStrongColor", Settings::ToString(a_user.tableBorderStrong, false).c_str());
-		a_ini.SetValue("Style", "TableBorderLightColor", Settings::ToString(a_user.tableBorderLight, false).c_str());
-		a_ini.SetValue("Style", "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
-		a_ini.SetValue("Style", "TextSelectedBGColor", Settings::ToString(a_user.textSelectedBg, false).c_str());
-		a_ini.SetValue("Style", "NavHighlightColor", Settings::ToString(a_user.navHighlight, false).c_str());
-		a_ini.SetValue("Style", "NavWindowingDimBGColor", Settings::ToString(a_user.navWindowingDimBg, false).c_str());
-		a_ini.SetValue("Style", "ModalWindowDimBGColor", Settings::ToString(a_user.modalWindowDimBg, false).c_str());
+		FormatThemeIni(a_ini);
 
-		a_ini.SetValue("Style", "WindowPadding", Settings::ToString(a_user.windowPadding, false).c_str());
-		a_ini.SetValue("Style", "FramePadding", Settings::ToString(a_user.framePadding, false).c_str());
-		a_ini.SetValue("Style", "CellPadding", Settings::ToString(a_user.cellPadding, false).c_str());
-		a_ini.SetValue("Style", "ItemSpacing", Settings::ToString(a_user.itemSpacing, false).c_str());
-		a_ini.SetValue("Style", "ItemInnerSpacing", Settings::ToString(a_user.itemInnerSpacing, false).c_str());
+		a_ini.SetValue(rSections[Text], "TextColor", Settings::ToString(a_user.text, false).c_str());
+		a_ini.SetValue(rSections[Text], "TextDisabledColor", Settings::ToString(a_user.textDisabled, false).c_str());
+		a_ini.SetValue(rSections[Window], "WindowBGColor", Settings::ToString(a_user.windowBg, false).c_str());
+		a_ini.SetValue(rSections[Child], "ChildBGColor", Settings::ToString(a_user.childBg, false).c_str());
+		a_ini.SetValue(rSections[Child], "PopupBGColor", Settings::ToString(a_user.popupBg, false).c_str());
+		a_ini.SetValue(rSections[Window], "BorderColor", Settings::ToString(a_user.border, false).c_str());
+		a_ini.SetValue(rSections[Window], "BorderShadowColor", Settings::ToString(a_user.borderShadow, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FrameBGColor", Settings::ToString(a_user.frameBg, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FrameBGHoveredColor", Settings::ToString(a_user.frameBgHovered, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FrameBGActiveColor", Settings::ToString(a_user.frameBgActive, false).c_str());
+		a_ini.SetValue("ToRemove", "MenuBarColor", Settings::ToString(a_user.menuBarBg, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarBGColor", Settings::ToString(a_user.scrollbarBg, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarGrabColor", Settings::ToString(a_user.scrollbarGrab, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarGrabHoveredColor", Settings::ToString(a_user.scrollbarGrabHovered, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarGrabActiveColor", Settings::ToString(a_user.scrollbarGrabActive, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "CheckMarkColor", Settings::ToString(a_user.checkMark, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "SliderGrabColor", Settings::ToString(a_user.sliderGrab, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "SliderGrabActiveColor", Settings::ToString(a_user.sliderGrabActive, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ButtonColor", Settings::ToString(a_user.button, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ButtonHoveredColor", Settings::ToString(a_user.buttonHovered, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ButtonActiveColor", Settings::ToString(a_user.buttonActive, false).c_str());
+		a_ini.SetValue(rSections[Table], "HeaderColor", Settings::ToString(a_user.header, false).c_str());
+		a_ini.SetValue(rSections[Table], "HeaderHoveredColor", Settings::ToString(a_user.headerHovered, false).c_str());
+		a_ini.SetValue(rSections[Table], "HeaderActiveColor", Settings::ToString(a_user.headerActive, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "SeparatorColor", Settings::ToString(a_user.separator, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "SeparatorHoveredColor", Settings::ToString(a_user.separatorHovered, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "SeparatorActiveColor", Settings::ToString(a_user.separatorActive, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ResizeGripColor", Settings::ToString(a_user.resizeGrip, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ResizeGripHoveredColor", Settings::ToString(a_user.resizeGripHovered, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ResizeGripActiveColor", Settings::ToString(a_user.resizeGripActive, false).c_str());
+		a_ini.SetValue(rSections[Table], "TableHeaderBGColor", Settings::ToString(a_user.tableHeaderBg, false).c_str());
+		a_ini.SetValue(rSections[Table], "TableBorderStrongColor", Settings::ToString(a_user.tableBorderStrong, false).c_str());
+		a_ini.SetValue(rSections[Table], "TableBorderLightColor", Settings::ToString(a_user.tableBorderLight, false).c_str());
+		a_ini.SetValue(rSections[Table], "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
+		a_ini.SetValue(rSections[Text], "TextSelectedBGColor", Settings::ToString(a_user.textSelectedBg, false).c_str());
+		a_ini.SetValue("ToRemove", "NavHighlightColor", Settings::ToString(a_user.navHighlight, false).c_str());
+		a_ini.SetValue("ToRemove", "NavWindowingDimBGColor", Settings::ToString(a_user.navWindowingDimBg, false).c_str());
+		a_ini.SetValue("ToRemove", "ModalWindowDimBGColor", Settings::ToString(a_user.modalWindowDimBg, false).c_str());
 
-		a_ini.SetValue("Style", "Alpha", Settings::ToString(a_user.alpha, false).c_str());
-		a_ini.SetValue("Style", "DisabledAlpha", Settings::ToString(a_user.disabledAlpha, false).c_str());
-		a_ini.SetValue("Style", "WindowRounding", Settings::ToString(a_user.windowRounding, false).c_str());
-		a_ini.SetValue("Style", "WindowBorderSize", Settings::ToString(a_user.windowBorderSize, false).c_str());
-		a_ini.SetValue("Style", "ChildBorderSize", Settings::ToString(a_user.childBorderSize, false).c_str());
-		a_ini.SetValue("Style", "ChildRounding", Settings::ToString(a_user.childRounding, false).c_str());
-		a_ini.SetValue("Style", "FrameBorderSize", Settings::ToString(a_user.frameBorderSize, false).c_str());
-		a_ini.SetValue("Style", "FrameRounding", Settings::ToString(a_user.frameRounding, false).c_str());
-		a_ini.SetValue("Style", "TabBorderSize", Settings::ToString(a_user.tabBorderSize, false).c_str());
-		a_ini.SetValue("Style", "TabRounding", Settings::ToString(a_user.tabRounding, false).c_str());
-		a_ini.SetValue("Style", "IndentSpacing", Settings::ToString(a_user.indentSpacing, false).c_str());
-		a_ini.SetValue("Style", "ColumnMinSpacing", Settings::ToString(a_user.columnsMinSpacing, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarRounding", Settings::ToString(a_user.scrollbarRounding, false).c_str());
-		a_ini.SetValue("Style", "ScrollbarSize", Settings::ToString(a_user.scrollbarSize, false).c_str());
-		a_ini.SetValue("Style", "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
-		a_ini.SetValue("Style", "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
-		a_ini.SetValue("Style", "PopupBorderSize", Settings::ToString(a_user.popupBorderSize, false).c_str());
-		a_ini.SetValue("Style", "PopupRounding", Settings::ToString(a_user.popupRounding, false).c_str());
+		a_ini.SetValue(rSections[Window], "WindowPadding", Settings::ToString(a_user.windowPadding, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FramePadding", Settings::ToString(a_user.framePadding, false).c_str());
+		a_ini.SetValue(rSections[Table], "CellPadding", Settings::ToString(a_user.cellPadding, false).c_str());
+		a_ini.SetValue(rSections[Window], "ItemSpacing", Settings::ToString(a_user.itemSpacing, false).c_str());
+		a_ini.SetValue(rSections[Window], "ItemInnerSpacing", Settings::ToString(a_user.itemInnerSpacing, false).c_str());
+
+		a_ini.SetValue(rSections[Window], "Alpha", Settings::ToString(a_user.alpha, false).c_str());
+		a_ini.SetValue("ToRemove", "DisabledAlpha", Settings::ToString(a_user.disabledAlpha, false).c_str());
+		a_ini.SetValue(rSections[Window], "WindowRounding", Settings::ToString(a_user.windowRounding, false).c_str());
+		a_ini.SetValue(rSections[Window], "WindowBorderSize", Settings::ToString(a_user.windowBorderSize, false).c_str());
+		a_ini.SetValue(rSections[Child], "ChildBorderSize", Settings::ToString(a_user.childBorderSize, false).c_str());
+		a_ini.SetValue(rSections[Child], "ChildRounding", Settings::ToString(a_user.childRounding, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FrameBorderSize", Settings::ToString(a_user.frameBorderSize, false).c_str());
+		a_ini.SetValue(rSections[Frame], "FrameRounding", Settings::ToString(a_user.frameRounding, false).c_str());
+		a_ini.SetValue("ToRemove", "TabBorderSize", Settings::ToString(a_user.tabBorderSize, false).c_str());
+		a_ini.SetValue("ToRemove", "TabRounding", Settings::ToString(a_user.tabRounding, false).c_str());
+		a_ini.SetValue(rSections[Window], "IndentSpacing", Settings::ToString(a_user.indentSpacing, false).c_str());
+		a_ini.SetValue(rSections[Table], "ColumnMinSpacing", Settings::ToString(a_user.columnsMinSpacing, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarRounding", Settings::ToString(a_user.scrollbarRounding, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "ScrollbarSize", Settings::ToString(a_user.scrollbarSize, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
+		a_ini.SetValue(rSections[Widgets], "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
+		a_ini.SetValue(rSections[Child], "PopupBorderSize", Settings::ToString(a_user.popupBorderSize, false).c_str());
+		a_ini.SetValue(rSections[Child], "PopupRounding", Settings::ToString(a_user.popupRounding, false).c_str());
 	});
 
 	logger::info("Settings Saved");
 };
 
+// Call inside GetIni() to load the preset from the ini file into the user values.
+// Executed within the scope of the presets/ directory.
+void Settings::LoadPresetFromIni(CSimpleIniA& a_ini)
+{
+	std::pair<std::string, bool> callback;
+
+	user.config.theme = GET_VALUE<std::string>("Config", "Theme", user.config.theme, a_ini);
+	callback = Settings::SetThemeFromIni(user.config.theme);
+
+	if (!callback.second) {
+		if (callback.first == "Default") {
+			stl::report_and_error("Failed to load default theme!\n\nEnsure the theme is present in the themes directory.\n\n(ModExplorerMenu/Interface/ModExplorerMenu/presets/Default.ini)");
+		} else {
+			a_ini.SetValue("Config", "Theme", "Default");
+			LoadPresetFromIni(a_ini);
+		}
+	}
+}
+
 // Call inside GetIni() to load the theme from the ini file into the user values.
+// Executed within the scope of the themes/ directory.
 void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 {
-	user.style.text = GET_VALUE<ImVec4>("Style", "TextColor", user.style.text, a_ini);
-	user.style.textDisabled = GET_VALUE<ImVec4>("Style", "TextDisabledColor", user.style.textDisabled, a_ini);
-	user.style.windowBg = GET_VALUE<ImVec4>("Style", "WindowBGColor", user.style.windowBg, a_ini);
-	user.style.childBg = GET_VALUE<ImVec4>("Style", "ChildBGColor", user.style.childBg, a_ini);
-	user.style.popupBg = GET_VALUE<ImVec4>("Style", "PopupBGColor", user.style.popupBg, a_ini);
-	user.style.border = GET_VALUE<ImVec4>("Style", "BorderColor", user.style.border, a_ini);
-	user.style.borderShadow = GET_VALUE<ImVec4>("Style", "BorderShadowColor", user.style.borderShadow, a_ini);
-	user.style.frameBg = GET_VALUE<ImVec4>("Style", "FrameBGColor", user.style.frameBg, a_ini);
-	user.style.frameBgHovered = GET_VALUE<ImVec4>("Style", "FrameBGHoveredColor", user.style.frameBgHovered, a_ini);
-	user.style.frameBgActive = GET_VALUE<ImVec4>("Style", "FrameBGActiveColor", user.style.frameBgActive, a_ini);
-	user.style.titleBg = GET_VALUE<ImVec4>("Style", "TitleBGColor", user.style.titleBg, a_ini);
-	user.style.titleBgActive = GET_VALUE<ImVec4>("Style", "TitleBGActiveColor", user.style.titleBgActive, a_ini);
-	user.style.titleBgCollapsed = GET_VALUE<ImVec4>("Style", "TitleBGCollapsedColor", user.style.titleBgCollapsed, a_ini);
-	user.style.menuBarBg = GET_VALUE<ImVec4>("Style", "MenuBarColor", user.style.menuBarBg, a_ini);
-	user.style.scrollbarBg = GET_VALUE<ImVec4>("Style", "ScrollbarBGColor", user.style.scrollbarBg, a_ini);
-	user.style.scrollbarGrab = GET_VALUE<ImVec4>("Style", "ScrollbarGrabColor", user.style.scrollbarGrab, a_ini);
-	user.style.scrollbarGrabHovered = GET_VALUE<ImVec4>("Style", "ScrollbarGrabHoveredColor", user.style.scrollbarGrabHovered, a_ini);
-	user.style.scrollbarGrabActive = GET_VALUE<ImVec4>("Style", "ScrollbarGrabActiveColor", user.style.scrollbarGrabActive, a_ini);
-	user.style.checkMark = GET_VALUE<ImVec4>("Style", "CheckMarkColor", user.style.checkMark, a_ini);
-	user.style.sliderGrab = GET_VALUE<ImVec4>("Style", "SliderGrabColor", user.style.sliderGrab, a_ini);
-	user.style.sliderGrabActive = GET_VALUE<ImVec4>("Style", "SliderGrabActiveColor", user.style.sliderGrabActive, a_ini);
-	user.style.button = GET_VALUE<ImVec4>("Style", "ButtonColor", user.style.button, a_ini);
-	user.style.buttonHovered = GET_VALUE<ImVec4>("Style", "ButtonHoveredColor", user.style.buttonHovered, a_ini);
-	user.style.buttonActive = GET_VALUE<ImVec4>("Style", "ButtonActiveColor", user.style.buttonActive, a_ini);
-	user.style.header = GET_VALUE<ImVec4>("Style", "HeaderColor", user.style.header, a_ini);
-	user.style.headerHovered = GET_VALUE<ImVec4>("Style", "HeaderHoveredColor", user.style.headerHovered, a_ini);
-	user.style.headerActive = GET_VALUE<ImVec4>("Style", "HeaderActiveColor", user.style.headerActive, a_ini);
-	user.style.separator = GET_VALUE<ImVec4>("Style", "SeparatorColor", user.style.separator, a_ini);
-	user.style.separatorHovered = GET_VALUE<ImVec4>("Style", "SeparatorHoveredColor", user.style.separatorHovered, a_ini);
-	user.style.separatorActive = GET_VALUE<ImVec4>("Style", "SeparatorActiveColor", user.style.separatorActive, a_ini);
-	user.style.resizeGrip = GET_VALUE<ImVec4>("Style", "ResizeGripColor", user.style.resizeGrip, a_ini);
-	user.style.resizeGripHovered = GET_VALUE<ImVec4>("Style", "ResizeGripHoveredColor", user.style.resizeGripHovered, a_ini);
-	user.style.resizeGripActive = GET_VALUE<ImVec4>("Style", "ResizeGripActiveColor", user.style.resizeGripActive, a_ini);
-	user.style.tableHeaderBg = GET_VALUE<ImVec4>("Style", "TableHeaderBGColor", user.style.tableHeaderBg, a_ini);
-	user.style.tableBorderStrong = GET_VALUE<ImVec4>("Style", "TableBorderStrongColor", user.style.tableBorderStrong, a_ini);
-	user.style.tableBorderLight = GET_VALUE<ImVec4>("Style", "TableBorderLightColor", user.style.tableBorderLight, a_ini);
-	user.style.tableRowBg = GET_VALUE<ImVec4>("Style", "TableRowBGColor", user.style.tableRowBg, a_ini);
-	user.style.textSelectedBg = GET_VALUE<ImVec4>("Style", "TextSelectedBGColor", user.style.textSelectedBg, a_ini);
-	user.style.navHighlight = GET_VALUE<ImVec4>("Style", "NavHighlightColor", user.style.navHighlight, a_ini);
-	user.style.navWindowingDimBg = GET_VALUE<ImVec4>("Style", "NavWindowingDimBGColor", user.style.navWindowingDimBg, a_ini);
-	user.style.modalWindowDimBg = GET_VALUE<ImVec4>("Style", "ModalWindowDimBGColor", user.style.modalWindowDimBg, a_ini);
+	user.style.text = GET_VALUE<ImVec4>(rSections[Text], "TextColor", user.style.text, a_ini);
+	user.style.textDisabled = GET_VALUE<ImVec4>(rSections[Text], "TextDisabledColor", user.style.textDisabled, a_ini);
+	user.style.windowBg = GET_VALUE<ImVec4>(rSections[Window], "WindowBGColor", user.style.windowBg, a_ini);
+	user.style.childBg = GET_VALUE<ImVec4>(rSections[Child], "ChildBGColor", user.style.childBg, a_ini);
+	user.style.popupBg = GET_VALUE<ImVec4>(rSections[Child], "PopupBGColor", user.style.popupBg, a_ini);
+	user.style.border = GET_VALUE<ImVec4>(rSections[Window], "BorderColor", user.style.border, a_ini);
+	user.style.borderShadow = GET_VALUE<ImVec4>(rSections[Window], "BorderShadowColor", user.style.borderShadow, a_ini);
+	user.style.frameBg = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGColor", user.style.frameBg, a_ini);
+	user.style.frameBgHovered = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGHoveredColor", user.style.frameBgHovered, a_ini);
+	user.style.frameBgActive = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGActiveColor", user.style.frameBgActive, a_ini);
+	user.style.menuBarBg = GET_VALUE<ImVec4>("ToRemove", "MenuBarColor", user.style.menuBarBg, a_ini);
+	user.style.scrollbarBg = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarBGColor", user.style.scrollbarBg, a_ini);
+	user.style.scrollbarGrab = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabColor", user.style.scrollbarGrab, a_ini);
+	user.style.scrollbarGrabHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabHoveredColor", user.style.scrollbarGrabHovered, a_ini);
+	user.style.scrollbarGrabActive = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabActiveColor", user.style.scrollbarGrabActive, a_ini);
+	user.style.checkMark = GET_VALUE<ImVec4>(rSections[Widgets], "CheckMarkColor", user.style.checkMark, a_ini);
+	user.style.sliderGrab = GET_VALUE<ImVec4>(rSections[Widgets], "SliderGrabColor", user.style.sliderGrab, a_ini);
+	user.style.sliderGrabActive = GET_VALUE<ImVec4>(rSections[Widgets], "SliderGrabActiveColor", user.style.sliderGrabActive, a_ini);
+	user.style.button = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonColor", user.style.button, a_ini);
+	user.style.buttonHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonHoveredColor", user.style.buttonHovered, a_ini);
+	user.style.buttonActive = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonActiveColor", user.style.buttonActive, a_ini);
+	user.style.header = GET_VALUE<ImVec4>(rSections[Table], "HeaderColor", user.style.header, a_ini);
+	user.style.headerHovered = GET_VALUE<ImVec4>(rSections[Table], "HeaderHoveredColor", user.style.headerHovered, a_ini);
+	user.style.headerActive = GET_VALUE<ImVec4>(rSections[Table], "HeaderActiveColor", user.style.headerActive, a_ini);
+	user.style.separator = GET_VALUE<ImVec4>(rSections[Widgets], "SeparatorColor", user.style.separator, a_ini);
+	user.style.separatorHovered = GET_VALUE<ImVec4>(rSections[Widgets], "SeparatorHoveredColor", user.style.separatorHovered, a_ini);
+	user.style.separatorActive = GET_VALUE<ImVec4>(rSections[Widgets], "SeparatorActiveColor", user.style.separatorActive, a_ini);
+	user.style.resizeGrip = GET_VALUE<ImVec4>(rSections[Widgets], "ResizeGripColor", user.style.resizeGrip, a_ini);
+	user.style.resizeGripHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ResizeGripHoveredColor", user.style.resizeGripHovered, a_ini);
+	user.style.resizeGripActive = GET_VALUE<ImVec4>(rSections[Widgets], "ResizeGripActiveColor", user.style.resizeGripActive, a_ini);
+	user.style.tableHeaderBg = GET_VALUE<ImVec4>(rSections[Table], "TableHeaderBGColor", user.style.tableHeaderBg, a_ini);
+	user.style.tableBorderStrong = GET_VALUE<ImVec4>(rSections[Table], "TableBorderStrongColor", user.style.tableBorderStrong, a_ini);
+	user.style.tableBorderLight = GET_VALUE<ImVec4>(rSections[Table], "TableBorderLightColor", user.style.tableBorderLight, a_ini);
+	user.style.tableRowBg = GET_VALUE<ImVec4>(rSections[Table], "TableRowBGColor", user.style.tableRowBg, a_ini);
+	user.style.textSelectedBg = GET_VALUE<ImVec4>(rSections[Text], "TextSelectedBGColor", user.style.textSelectedBg, a_ini);
+	user.style.navHighlight = GET_VALUE<ImVec4>("ToRemove", "NavHighlightColor", user.style.navHighlight, a_ini);
+	user.style.navWindowingDimBg = GET_VALUE<ImVec4>("ToRemove", "NavWindowingDimBGColor", user.style.navWindowingDimBg, a_ini);
+	user.style.modalWindowDimBg = GET_VALUE<ImVec4>("ToRemove", "ModalWindowDimBGColor", user.style.modalWindowDimBg, a_ini);
 
-	user.style.windowPadding = GET_VALUE<ImVec2>("Style", "WindowPadding", user.style.windowPadding, a_ini);
-	user.style.framePadding = GET_VALUE<ImVec2>("Style", "FramePadding", user.style.framePadding, a_ini);
-	user.style.cellPadding = GET_VALUE<ImVec2>("Style", "CellPadding", user.style.cellPadding, a_ini);
-	user.style.itemSpacing = GET_VALUE<ImVec2>("Style", "ItemSpacing", user.style.itemSpacing, a_ini);
-	user.style.itemInnerSpacing = GET_VALUE<ImVec2>("Style", "ItemInnerSpacing", user.style.itemInnerSpacing, a_ini);
+	user.style.windowPadding = GET_VALUE<ImVec2>(rSections[Window], "WindowPadding", user.style.windowPadding, a_ini);
+	user.style.framePadding = GET_VALUE<ImVec2>(rSections[Frame], "FramePadding", user.style.framePadding, a_ini);
+	user.style.cellPadding = GET_VALUE<ImVec2>(rSections[Table], "CellPadding", user.style.cellPadding, a_ini);
+	user.style.itemSpacing = GET_VALUE<ImVec2>(rSections[Window], "ItemSpacing", user.style.itemSpacing, a_ini);
+	user.style.itemInnerSpacing = GET_VALUE<ImVec2>(rSections[Window], "ItemInnerSpacing", user.style.itemInnerSpacing, a_ini);
 
-	user.style.alpha = GET_VALUE<float>("Style", "Alpha", user.style.alpha, a_ini);
-	user.style.disabledAlpha = GET_VALUE<float>("Style", "DisabledAlpha", user.style.disabledAlpha, a_ini);
-	user.style.windowRounding = GET_VALUE<float>("Style", "WindowRounding", user.style.windowRounding, a_ini);
-	user.style.windowBorderSize = GET_VALUE<float>("Style", "WindowBorderSize", user.style.windowBorderSize, a_ini);
-	user.style.childBorderSize = GET_VALUE<float>("Style", "ChildBorderSize", user.style.childBorderSize, a_ini);
-	user.style.childRounding = GET_VALUE<float>("Style", "ChildRounding", user.style.childRounding, a_ini);
-	user.style.frameBorderSize = GET_VALUE<float>("Style", "FrameBorderSize", user.style.frameBorderSize, a_ini);
-	user.style.frameRounding = GET_VALUE<float>("Style", "FrameRounding", user.style.frameRounding, a_ini);
-	user.style.tabBorderSize = GET_VALUE<float>("Style", "TabBorderSize", user.style.tabBorderSize, a_ini);
-	user.style.tabRounding = GET_VALUE<float>("Style", "TabRounding", user.style.tabRounding, a_ini);
-	user.style.indentSpacing = GET_VALUE<float>("Style", "IndentSpacing", user.style.indentSpacing, a_ini);
-	user.style.columnsMinSpacing = GET_VALUE<float>("Style", "ColumnMinSpacing", user.style.columnsMinSpacing, a_ini);
-	user.style.scrollbarRounding = GET_VALUE<float>("Style", "ScrollbarRounding", user.style.scrollbarRounding, a_ini);
-	user.style.scrollbarSize = GET_VALUE<float>("Style", "ScrollbarSize", user.style.scrollbarSize, a_ini);
-	user.style.grabMinSize = GET_VALUE<float>("Style", "GrabMinSize", user.style.grabMinSize, a_ini);
-	user.style.grabRounding = GET_VALUE<float>("Style", "GrabRounding", user.style.grabRounding, a_ini);
-	user.style.popupBorderSize = GET_VALUE<float>("Style", "PopupBorderSize", user.style.popupBorderSize, a_ini);
-	user.style.popupRounding = GET_VALUE<float>("Style", "PopupRounding", user.style.popupRounding, a_ini);
+	user.style.alpha = GET_VALUE<float>(rSections[Window], "Alpha", user.style.alpha, a_ini);
+	user.style.disabledAlpha = GET_VALUE<float>("ToRemove", "DisabledAlpha", user.style.disabledAlpha, a_ini);
+	user.style.windowRounding = GET_VALUE<float>(rSections[Window], "WindowRounding", user.style.windowRounding, a_ini);
+	user.style.windowBorderSize = GET_VALUE<float>(rSections[Window], "WindowBorderSize", user.style.windowBorderSize, a_ini);
+	user.style.childBorderSize = GET_VALUE<float>(rSections[Child], "ChildBorderSize", user.style.childBorderSize, a_ini);
+	user.style.childRounding = GET_VALUE<float>(rSections[Child], "ChildRounding", user.style.childRounding, a_ini);
+	user.style.frameBorderSize = GET_VALUE<float>(rSections[Frame], "FrameBorderSize", user.style.frameBorderSize, a_ini);
+	user.style.frameRounding = GET_VALUE<float>(rSections[Frame], "FrameRounding", user.style.frameRounding, a_ini);
+	user.style.tabBorderSize = GET_VALUE<float>("ToRemove", "TabBorderSize", user.style.tabBorderSize, a_ini);
+	user.style.tabRounding = GET_VALUE<float>("ToRmove", "TabRounding", user.style.tabRounding, a_ini);
+	user.style.indentSpacing = GET_VALUE<float>(rSections[Window], "IndentSpacing", user.style.indentSpacing, a_ini);
+	user.style.columnsMinSpacing = GET_VALUE<float>(rSections[Table], "ColumnMinSpacing", user.style.columnsMinSpacing, a_ini);
+	user.style.scrollbarRounding = GET_VALUE<float>(rSections[Widgets], "ScrollbarRounding", user.style.scrollbarRounding, a_ini);
+	user.style.scrollbarSize = GET_VALUE<float>(rSections[Widgets], "ScrollbarSize", user.style.scrollbarSize, a_ini);
+	user.style.grabMinSize = GET_VALUE<float>(rSections[Widgets], "GrabMinSize", user.style.grabMinSize, a_ini);
+	user.style.grabRounding = GET_VALUE<float>(rSections[Widgets], "GrabRounding", user.style.grabRounding, a_ini);
+	user.style.popupBorderSize = GET_VALUE<float>(rSections[Child], "PopupBorderSize", user.style.popupBorderSize, a_ini);
+	user.style.popupRounding = GET_VALUE<float>(rSections[Child], "PopupRounding", user.style.popupRounding, a_ini);
 }

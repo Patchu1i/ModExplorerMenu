@@ -231,6 +231,25 @@ void SettingsWindow::Draw()
 {
 	ImGui::Text("Welcome to the Settings Window!");
 
+	// TODO: Stop calling GetSingleton() every time
+	//Settings::Style& style = Settings::GetSingleton()->GetStyle();
+	Settings::Config& config = Settings::GetSingleton()->GetConfig();
+
+	ImGui::Text("Currently using (preset):");
+	ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 20.0f);
+	if (ImGui::BeginCombo("##Settings::PresetDropdown", "Default", ImGuiComboFlags_HeightLarge)) {
+		std::vector<std::string> themes = Settings::GetListOfPresets();
+		std::string path = "Data/Interface/ModExplorerMenu/presets/";  // TODO: Remove hardcoded path
+
+		for (const auto& theme : themes) {
+			if (ImGui::Selectable(theme.c_str())) {
+				config.theme = theme;
+				changes.store(true);
+			}
+		}
+		ImGui::EndCombo();
+	}
+
 	//Settings::Style& user = Settings::GetSingleton()->GetStyle();
 
 	//ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal, (user->separatorThickness));

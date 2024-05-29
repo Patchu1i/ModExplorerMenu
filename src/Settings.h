@@ -13,10 +13,15 @@ public:
 
 	void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 	void LoadSettings(const wchar_t* a_path);
-	void LoadConfiguration(CSimpleIniA& a_ini, bool use_default = false);
+	void LoadPreset(CSimpleIniA& a_ini, bool use_default_preset = false);
 	void LoadThemeFromIni(CSimpleIniA& a_ini);
+	void LoadPresetFromIni(CSimpleIniA& a_ini);
 
 	void LoadStyleTheme(ImGuiStyle a_theme);
+
+	void CreateDefaultPreset();
+	static void FormatThemeIni(CSimpleIniA& a_ini);
+	static void FormatPresetIni(CSimpleIniA& a_ini);
 
 	static inline Settings* GetSingleton()
 	{
@@ -25,11 +30,45 @@ public:
 	}
 
 	constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/themes/";
-	constexpr inline static const wchar_t* ini_settings_fullpath = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
+	constexpr inline static const wchar_t* ini_preset_path = L"Data/Interface/ModExplorerMenu/presets/";
+	constexpr inline static const wchar_t* ini_mem_path = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
+
+	enum SECTION
+	{
+		Window,
+		Frame,
+		Child,
+		Text,
+		Table,
+		Widgets,
+		Main,
+		AddItem,
+		FormLookup,
+		NPC,
+		Teleport,
+		Autotest
+	};
+
+	static inline std::map<SECTION, const char*> rSections = {
+		{ Window, "Window" },
+		{ Frame, "Frame" },
+		{ Child, "Child" },
+		{ Text, "Text" },
+		{ Table, "Table" },
+		{ Widgets, "Widgets" },
+		{ Main, "Main" },
+		{ AddItem, "AddItem" },
+		{ FormLookup, "FormLookup" },
+		{ NPC, "NPC" },
+		{ Teleport, "Teleport" },
+		{ Autotest, "Autotest" }
+	};
 
 	struct Config
 	{
 		std::string theme = "Default";
+		std::string preset = "Default";
+		bool works = false;
 	};
 
 	ImGuiStyle test;
@@ -190,8 +229,15 @@ public:
 	static std::vector<std::string> GetListOfThemes()
 	{
 		std::vector<std::string> themes;
-
 		std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
+
+		// TODO: Implement scope wide error handling.
+		if (std::filesystem::exists(path_to_themes) == false) {
+			stl::report_and_fail(
+				"ModExplorerMenu.dll] FATAL ERROR:\n\n"
+				"Could not find themes directory (\"DATA/Interface/ModExplorerMenu/themes/\")\n\n"
+				"Make sure the ModExplorerMenu mod contains this directory respective to the data folder."sv);
+		}
 
 		for (const auto& entry : std::filesystem::directory_iterator(path_to_themes)) {
 			if (entry.path().filename().extension() != ".ini") {
@@ -205,31 +251,67 @@ public:
 		return themes;
 	}
 
+	static std::vector<std::string> GetListOfPresets()
+	{
+		std::vector<std::string> presets;
+		std::string path_to_presets = "Data/Interface/ModExplorerMenu/presets";
+
+		// TODO: Implement scope wide error handling.
+		if (std::filesystem::exists(path_to_presets) == false) {
+			stl::report_and_fail(
+				"ModExplorerMenu.dll] FATAL ERROR:\n\n"
+				"Could not find preset directory (\"DATA/Interface/ModExplorerMenu/presets/\")\n\n"
+				"Make sure the ModExplorerMenu mod contains this directory respective to the data folder."sv);
+		}
+
+		for (const auto& entry : std::filesystem::directory_iterator(path_to_presets)) {
+			if (entry.path().filename().extension() != ".ini") {
+				continue;  // Pass invalid file types
+			}
+			auto index = entry.path().filename().stem().string();
+			logger::info("Found preset: {}", index);
+			presets.push_back(index);
+		}
+
+		return presets;
+	}
+
+	static std::pair<std::string, bool> SetPresetFromIni(std::string& a_str)
+	{
+		std::vector<std::string> presets = GetListOfPresets();
+		std::string path_to_presets = "Data/Interface/ModExplorerMenu/presets";
+
+		for (const auto& entry : presets) {
+			if (entry == a_str) {
+				const wchar_t* full_path = (wchar_t*)(path_to_presets + "/" + a_str + ".ini").c_str();
+				Settings::GetSingleton()->GetIni(full_path, [](CSimpleIniA& a_ini) {
+					Settings::GetSingleton()->LoadPresetFromIni(a_ini);
+				});
+				return { entry, true };
+			}
+		}
+
+		return { a_str, false };
+	}
+
 	// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
 	// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
 	static std::pair<std::string, bool> SetThemeFromIni(std::string& a_str)
 	{
+		std::vector<std::string> themes = GetListOfThemes();
 		std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
 
-		for (const auto& entry : std::filesystem::directory_iterator(path_to_themes)) {
-			if (entry.path().filename().extension() != ".ini") {
-				continue;  // Pass invalid file types
-			}
-
-			auto index = entry.path().filename().stem().string();
-
-			if (index == a_str) {  // found ini
-				//Settings::GetSingleton()->LoadStyle(entry.path().c_str());
-
-				Settings::GetSingleton()->GetIni(entry.path().c_str(), [](CSimpleIniA& a_ini) {
+		for (const auto& entry : themes) {
+			if (entry == a_str) {
+				const wchar_t* full_path = (wchar_t*)(path_to_themes + "/" + a_str + ".ini").c_str();
+				Settings::GetSingleton()->GetIni(full_path, [](CSimpleIniA& a_ini) {
 					Settings::GetSingleton()->LoadThemeFromIni(a_ini);
 				});
-				return { index, true };
+				return { entry, true };
 			}
 		}
 
-		logger::info("Theme not found: {}", a_str);
-		return { "", false };
+		return { a_str, false };
 	}
 
 	// Horrendous de-serialization.
