@@ -451,7 +451,7 @@ void AddItemWindow::Draw_FormTable()
 	//ImGui::EndChild();
 }
 
-// To-Do: Rename this to something more descriptive
+// FIXME: Revisit this implementation
 // This is the callback for the search bar, it's a stub for now.
 int AddItemWindow::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 {
@@ -459,7 +459,7 @@ int AddItemWindow::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 	return item->TextEditCallback(data);
 }
 
-// To-Do: Rename this to something more descriptive
+// FIXME: Revisit this implementation
 // This is the callback for the search bar, it's a stub for now.
 int AddItemWindow::TextEditCallback(ImGuiInputTextCallbackData* data)
 {
@@ -746,7 +746,7 @@ void AddItemWindow::Draw()
 
 	ImGui::NewLine();
 
-	// To-do: Stop being a lazy POS.
+	// FIXME: This is a hack to get the results count to update.
 	auto results = std::string("Results (") + std::to_string(_activeList.size()) + std::string(")");
 	ImGui::SeparatorText(results.c_str());
 

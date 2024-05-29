@@ -16,6 +16,8 @@ public:
 	void LoadConfiguration(CSimpleIniA& a_ini, bool use_default = false);
 	void LoadThemeFromIni(CSimpleIniA& a_ini);
 
+	void LoadStyleTheme(ImGuiStyle a_theme);
+
 	static inline Settings* GetSingleton()
 	{
 		static Settings singleton;
@@ -30,89 +32,76 @@ public:
 		std::string theme = "Default";
 	};
 
+	ImGuiStyle test;
+
 	struct Style
 	{
-		ImVec4 text = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-		ImVec4 textDisabled = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-		ImVec4 windowBg = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
-		ImVec4 childBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		ImVec4 popupBg = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
-		ImVec4 border = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
-		ImVec4 borderShadow = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		ImVec4 frameBg = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
-		ImVec4 frameBgHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 frameBgActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 titleBg = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-		ImVec4 titleBgActive = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
-		ImVec4 titleBgCollapsed = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-		ImVec4 menuBarBg = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-		ImVec4 scrollbarBg = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-		ImVec4 scrollbarGrab = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-		ImVec4 scrollbarGrabHovered = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
-		ImVec4 scrollbarGrabActive = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
-		ImVec4 checkMark = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 sliderGrab = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
-		ImVec4 sliderGrabActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 button = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 buttonHovered = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-		ImVec4 buttonActive = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-		ImVec4 header = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
-		ImVec4 headerHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 headerActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 separator = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
-		ImVec4 separatorHovered = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
-		ImVec4 separatorActive = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
-		ImVec4 resizeGrip = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
-		ImVec4 resizeGripHovered = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-		ImVec4 resizeGripActive = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-		ImVec4 tableHeaderBg = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
-		ImVec4 tableBorderStrong = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-		ImVec4 tableBorderLight = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
-		ImVec4 tableRowBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		ImVec4 plotLines = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-		ImVec4 plotLinesHovered = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-		ImVec4 plotHistogram = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-		ImVec4 plotHistogramHovered = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-		ImVec4 textSelectedBg = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-		ImVec4 dragDropTarget = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-		ImVec4 navHighlight = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 navWindowingDimBg = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-		ImVec4 modalWindowDimBg = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+		ImVec4 text;
+		ImVec4 textDisabled;
+		ImVec4 windowBg;
+		ImVec4 childBg;
+		ImVec4 popupBg;
+		ImVec4 border;
+		ImVec4 borderShadow;
+		ImVec4 frameBg;
+		ImVec4 frameBgHovered;
+		ImVec4 frameBgActive;
+		ImVec4 titleBg;
+		ImVec4 titleBgActive;
+		ImVec4 titleBgCollapsed;
+		ImVec4 menuBarBg;
+		ImVec4 scrollbarBg;
+		ImVec4 scrollbarGrab;
+		ImVec4 scrollbarGrabHovered;
+		ImVec4 scrollbarGrabActive;
+		ImVec4 checkMark;
+		ImVec4 sliderGrab;
+		ImVec4 sliderGrabActive;
+		ImVec4 button;
+		ImVec4 buttonHovered;
+		ImVec4 buttonActive;
+		ImVec4 header;
+		ImVec4 headerHovered;
+		ImVec4 headerActive;
+		ImVec4 separator;
+		ImVec4 separatorHovered;
+		ImVec4 separatorActive;
+		ImVec4 resizeGrip;
+		ImVec4 resizeGripHovered;
+		ImVec4 resizeGripActive;
+		ImVec4 tableHeaderBg;
+		ImVec4 tableBorderStrong;
+		ImVec4 tableBorderLight;
+		ImVec4 tableRowBg;
+		ImVec4 textSelectedBg;
+		ImVec4 navHighlight;
+		ImVec4 navWindowingDimBg;
+		ImVec4 modalWindowDimBg;
 
-		ImVec2 windowPadding = ImVec2(8.00f, 8.00f);
-		ImVec2 framePadding = ImVec2(4.00f, 3.00f);
-		ImVec2 cellPadding = ImVec2(6.00f, 6.00f);
-		ImVec2 itemSpacing = ImVec2(6.00f, 6.00f);
-		ImVec2 itemInnerSpacing = ImVec2(6.00f, 6.00f);
-		ImVec2 touchExtraPadding = ImVec2(0.00f, 0.00f);
-		ImVec2 displayWindowPadding = ImVec2(19.00f, 19.00f);
-		ImVec2 displaySafeAreaPadding = ImVec2(3.00f, 3.00f);
+		ImVec2 windowPadding;
+		ImVec2 framePadding;
+		ImVec2 cellPadding;
+		ImVec2 itemSpacing;
+		ImVec2 itemInnerSpacing;
 
-		float alpha = 1.0f;
-		float disabledAlpha = 0.5f;
-		float windowRounding = 9;
-		float windowBorderSize = 1;
-		float childBorderSize = 1;
-		float childRounding = 0;
-		float frameBorderSize = 1;
-		float frameRounding = 3;
-		float tabBorderSize = 1;
-		float tabRounding = 4;
-		float indentSpacing = 21;
-		float columnsMinSpacing = 50;
-		float scrollbarRounding = 9;
-		float scrollbarSize = 14;
-		float grabMinSize = 10;
-		float grabRounding = 3;
-		float mouseCursorScale = 1;
-		float antiAliasedLines = 1;
-		float antiAliasedLinesUseTex = 1;
-		float antiAliasedFill = 1;
-		float curveTessellationTol = 1;
-		float circleSegmentMaxError = 1;
-		float popupBorderSize = 1;
-		float popupRounding = 3;
-		float logSliderDeadzone = 4;
+		float alpha;
+		float disabledAlpha;
+		float windowRounding;
+		float windowBorderSize;
+		float childBorderSize;
+		float childRounding;
+		float frameBorderSize;
+		float frameRounding;
+		float tabBorderSize;
+		float tabRounding;
+		float indentSpacing;
+		float columnsMinSpacing;
+		float scrollbarRounding;
+		float scrollbarSize;
+		float grabMinSize;
+		float grabRounding;
+		float popupBorderSize;
+		float popupRounding;
 	};
 
 	struct Setting
@@ -121,7 +110,7 @@ public:
 		Style style;
 	};
 
-	Setting def;  // TO-DO - Is this necessary with Default.ini?
+	Setting def;  // TODO: Is this necessary with ini configurations?
 	Setting user;
 
 	void ExportThemeToIni(const wchar_t* a_path, Style& user);
@@ -139,8 +128,13 @@ public:
 			return std::format("{}{},{}{}", "{", a_style.x, a_style.y, "}");
 		} else if constexpr (std::is_same_v<std::string, T>) {
 			return a_style;
-		} else {
+		} else if constexpr (std::is_same_v<float, T>) {
 			return std::format("{:.3f}", a_style);
+		} else if constexpr (std::is_same_v<bool, T>) {
+			return a_style ? "true" : "false";
+		} else {
+			stl::report_and_fail("Unsupported type for ToString");  // FIXME: static_assert?
+			return;
 		}
 	}
 
@@ -192,7 +186,7 @@ public:
 		return { ImVec2(), false };
 	}
 
-	// TO-DO - Remove hard-coded directory path.
+	// TODO: Remove hard-coded path
 	static std::vector<std::string> GetListOfThemes()
 	{
 		std::vector<std::string> themes;

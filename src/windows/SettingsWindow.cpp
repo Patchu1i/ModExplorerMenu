@@ -3,19 +3,19 @@
 #include "Settings.h"
 #include <codecvt>
 
-// TO-DO - Maybe
+// TODO: Move this to ImGui namespace?
 void AddColorPicker(const char* a_text, ImVec4& a_colRef)
 {
 	constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
 	auto id = "##ColorPicker" + std::string(a_text);
-	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal, 1.0f);
 	ImGui::Text(a_text);
-	ImGui::SameLine(ImGui::GetContentRegionAvail().x - 5.0f);
+	ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::ColorEdit4(id.c_str(), (float*)&a_colRef, flags)) {
 		SettingsWindow::changes.store(true);
 	}
 }
 
+// TODO: Move this to ImGui namespace?
 void AddSliderPicker(const char* a_text, float& a_valRef, float a_min, float a_max)
 {
 	auto id = "##SliderPicker" + std::string(a_text);
@@ -27,6 +27,7 @@ void AddSliderPicker(const char* a_text, float& a_valRef, float a_min, float a_m
 	}
 }
 
+// TODO: Move this to ImGui namespace?
 void AddCheckbox(const char* a_text, bool& a_boolRef)
 {
 	auto id = std::string(a_text) + "##Checkbox";
@@ -37,6 +38,7 @@ void AddCheckbox(const char* a_text, bool& a_boolRef)
 	}
 }
 
+// TODO: Move this to ImGui namespace?
 void SettingsWindow::DrawPopped()
 {
 	constexpr auto window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
@@ -59,7 +61,7 @@ void SettingsWindow::DrawThemeSelector()
 
 	if (ImGui::BeginCombo("##Settings::PresetDropdown", config.theme.c_str(), combo_flags)) {
 		std::vector<std::string> themes = Settings::GetListOfThemes();
-		std::string path = "Data/Interface/ModExplorerMenu/themes/";  // TO-DO - Remove hard-coded directory path.
+		std::string path = "Data/Interface/ModExplorerMenu/themes/";  // TODO: Remove hardcoded path
 
 		for (const auto& theme : themes) {
 			if (ImGui::Selectable(theme.c_str())) {
@@ -74,7 +76,7 @@ void SettingsWindow::DrawThemeSelector()
 
 	ImGui::HelpMarker("Resets the current theme/style configuration to defaults\nThis will not write changes to currently selected theme.\nThis will also not impact settings outside of this category.");
 	if (ImGui::Button("Reset to Default")) {
-		style = Settings::Style();  // TO-DO probably not working
+		style = Settings::Style();  // FIXME: Revisit this
 	}
 
 	ImGui::HelpMarker("Export your current theme configuration to a .ini file\n(Warning): This will overwrite any existing file with the same name!");
@@ -115,81 +117,113 @@ void SettingsWindow::DrawThemeSelector()
 
 	constexpr auto color_flags = ImGuiTreeNodeFlags_Framed;
 	if (ImGui::CollapsingHeader("Color Settings", color_flags)) {
-		AddColorPicker("Text Color", style.text);
-		AddColorPicker("Text Disabled Color", style.textDisabled);
+		ImGui::SeparatorText("Window");
+		ImGui::Indent();
 		AddColorPicker("Window Color", style.windowBg);
-		AddColorPicker("Child Window Color", style.childBg);
-		AddColorPicker("Popup BG Color", style.popupBg);
+		AddSliderPicker("Alpha", style.alpha, 0.1f, 1.0f);
 		AddColorPicker("Border Color", style.border);
 		AddColorPicker("Border Shadow Color", style.borderShadow);
-		AddColorPicker("Frame BG Color", style.frameBg);
-		AddColorPicker("Frame BG Hover Color", style.frameBgHovered);
-		AddColorPicker("Frame BG Active Color", style.frameBgActive);
-		AddColorPicker("Title BG Color", style.titleBg);
-		AddColorPicker("Title BG Collapsed Color", style.titleBgCollapsed);
-		AddColorPicker("Title BG Active Color", style.titleBgActive);
-		AddColorPicker("MenuBar BG Color", style.menuBarBg);
-		AddColorPicker("Scrollbar BG Color", style.scrollbarBg);
-		AddColorPicker("Scrollbar Grab Color", style.scrollbarGrab);
-		AddColorPicker("Scrollbar Grab Hovered Color", style.scrollbarGrabHovered);
-		AddColorPicker("Scrollbar Grab Active Color", style.scrollbarGrabActive);
-		AddColorPicker("Checkmark Color", style.checkMark);
-		AddColorPicker("Slider Grab Color", style.sliderGrab);
-		AddColorPicker("Slider Grab Active Color", style.sliderGrabActive);
-		AddColorPicker("Button Color", style.button);
-		AddColorPicker("Button Hovered Color", style.buttonHovered);
-		AddColorPicker("Button Active Color", style.buttonActive);
-		AddColorPicker("Header Color", style.header);
-		AddColorPicker("Header Hovered Color", style.headerHovered);
-		AddColorPicker("Header Active Color", style.headerActive);
-		AddColorPicker("Separator Color", style.separator);
-		AddColorPicker("Separator Hovered Color", style.separatorHovered);
-		AddColorPicker("Separator Active Color", style.separatorActive);
-		AddColorPicker("Resize Grip Color", style.resizeGrip);
-		AddColorPicker("Resize Grip Hovered Color", style.resizeGripHovered);
-		AddColorPicker("Resize Grip Active Color", style.resizeGripActive);
-		AddColorPicker("Table Header BG Color", style.tableHeaderBg);
-		AddColorPicker("Table Border Strong Color", style.tableBorderStrong);
-		AddColorPicker("Table Border Light Color", style.tableBorderLight);
-		AddColorPicker("Table Row BG Color", style.tableRowBg);
-		AddColorPicker("Text Selected BG Color", style.textSelectedBg);
-		AddColorPicker("Drag Drop Target Color", style.dragDropTarget);
-		AddColorPicker("Nav Highlight Color", style.navHighlight);
-		AddColorPicker("Nav Windowing Dim BG Color", style.navWindowingDimBg);
-		AddColorPicker("Modal Window Dim BG Color", style.modalWindowDimBg);
-	}
-
-	if (ImGui::CollapsingHeader("Style Settings", color_flags)) {
 		AddSliderPicker("Window Padding X", style.windowPadding.x, 0.01f, 20.0f);
 		AddSliderPicker("Window Padding Y", style.windowPadding.y, 0.01f, 20.0f);
-		AddSliderPicker("Frame Padding X", style.framePadding.x, 0.01f, 20.0f);
-		AddSliderPicker("Frame Padding Y", style.framePadding.y, 0.01f, 20.0f);
-		AddSliderPicker("Cell Padding X", style.cellPadding.x, 0.01f, 20.0f);
-		AddSliderPicker("Cell Padding Y", style.cellPadding.y, 0.01f, 20.0f);
+		AddSliderPicker("Window Rounding", style.windowRounding, 0.01f, 20.0f);
+		AddSliderPicker("Window Border Size", style.windowBorderSize, 0.01f, 20.0f);
 		AddSliderPicker("Item Spacing X", style.itemSpacing.x, 0.01f, 20.0f);
 		AddSliderPicker("Item Spacing Y", style.itemSpacing.y, 0.01f, 20.0f);
 		AddSliderPicker("Item Inner Spacing X", style.itemInnerSpacing.x, 0.01f, 20.0f);
 		AddSliderPicker("Item Inner Spacing Y", style.itemInnerSpacing.y, 0.01f, 20.0f);
-		AddSliderPicker("Touch Extra Padding X", style.touchExtraPadding.x, 0.01f, 20.0f);
-		AddSliderPicker("Touch Extra Padding Y", style.touchExtraPadding.y, 0.01f, 20.0f);
+		AddSliderPicker("Indent Spacing", style.indentSpacing, 0.01f, 20.0f);
+		ImGui::Unindent();
 
-		AddSliderPicker("Alpha", style.alpha, 0.1f, 1.0f);
-		AddSliderPicker("Disabled Alpha", style.disabledAlpha, 0.1f, 1.0f);
-		AddSliderPicker("Window Rounding", style.windowRounding, 0.01f, 20.0f);
-		AddSliderPicker("Window Border Size", style.windowBorderSize, 0.01f, 20.0f);
-		AddSliderPicker("Child Border Size", style.childBorderSize, 0.01f, 20.0f);
-		AddSliderPicker("Child Rounding", style.childRounding, 0.01f, 20.0f);
+		ImGui::NewLine();
+
+		ImGui::SeparatorText("Frame");
+		ImGui::Indent();
+		AddColorPicker("Frame BG Color", style.frameBg);
+		AddColorPicker("Frame BG Hover Color", style.frameBgHovered);
+		AddColorPicker("Frame BG Active Color", style.frameBgActive);
 		AddSliderPicker("Frame Rounding", style.frameRounding, 0.01f, 20.0f);
 		AddSliderPicker("Frame Border Size", style.frameBorderSize, 0.01f, 20.0f);
-		AddSliderPicker("Tab Rounding", style.tabRounding, 0.01f, 20.0f);
-		AddSliderPicker("Tab Border Size", style.tabBorderSize, 0.01f, 20.0f);
-		AddSliderPicker("Indent Spacing", style.indentSpacing, 0.01f, 20.0f);
-		AddSliderPicker("Scrollbar Rounding", style.scrollbarRounding, 0.01f, 20.0f);
-		AddSliderPicker("Scrollbar Size", style.scrollbarSize, 0.01f, 20.0f);
-		AddSliderPicker("Scrollbar Grabber Min Size", style.grabMinSize, 0.01f, 20.0f);
-		AddSliderPicker("Scrollbar Grabber Rounding", style.grabRounding, 0.01f, 20.0f);
+		AddSliderPicker("Frame Padding X", style.framePadding.x, 0.01f, 20.0f);
+		AddSliderPicker("Frame Padding Y", style.framePadding.y, 0.01f, 20.0f);
+		ImGui::Unindent();
+
+		ImGui::NewLine();
+
+		ImGui::SeparatorText("Child Window & Popup Window");
+		ImGui::Indent();
+		AddColorPicker("Child Window Color", style.childBg);
+		AddSliderPicker("Child Border Size", style.childBorderSize, 0.01f, 20.0f);
+		AddSliderPicker("Child Rounding", style.childRounding, 0.01f, 20.0f);
+		AddColorPicker("Popup BG Color", style.popupBg);
 		AddSliderPicker("Popup Border Size", style.popupBorderSize, 0.01f, 20.0f);
 		AddSliderPicker("Popup Rounding", style.popupRounding, 0.01f, 20.0f);
+		ImGui::Unindent();
+
+		ImGui::NewLine();
+
+		ImGui::SeparatorText("Text");
+		ImGui::Indent();
+		ImGui::Text("Font:");
+		AddColorPicker("Text Color", style.text);
+		AddColorPicker("Text Disabled Color", style.textDisabled);
+		AddColorPicker("Title BG Color", style.titleBg);
+		AddColorPicker("Title BG Collapsed Color", style.titleBgCollapsed);
+		AddColorPicker("Title BG Active Color", style.titleBgActive);
+		AddColorPicker("Text Selected BG Color", style.textSelectedBg);
+		ImGui::Unindent();
+
+		ImGui::NewLine();
+
+		ImGui::SeparatorText("Table & Columns");
+		ImGui::Indent();
+		AddColorPicker("Header Color", style.header);
+		AddColorPicker("Header Hovered Color", style.headerHovered);
+		AddColorPicker("Header Active Color", style.headerActive);
+		AddSliderPicker("Cell Padding X", style.cellPadding.x, 0.01f, 20.0f);
+		AddSliderPicker("Cell Padding Y", style.cellPadding.y, 0.01f, 20.0f);
+		AddSliderPicker("Columns Min Spacing", style.columnsMinSpacing, 0.01f, 20.0f);
+		AddColorPicker("Table Header BG Color", style.tableHeaderBg);
+		AddColorPicker("Table Border Strong Color", style.tableBorderStrong);
+		AddColorPicker("Table Border Light Color", style.tableBorderLight);
+		AddColorPicker("Table Row BG Color", style.tableRowBg);
+		ImGui::Unindent();
+
+		ImGui::NewLine();
+
+		ImGui::SeparatorText("Buttons & Widgets");
+		ImGui::Indent();
+		AddColorPicker("Checkmark Color", style.checkMark);
+		AddColorPicker("Button Color", style.button);
+		AddColorPicker("Button Hovered Color", style.buttonHovered);
+		AddColorPicker("Button Active Color", style.buttonActive);
+		AddColorPicker("Scrollbar BG Color", style.scrollbarBg);
+		AddColorPicker("Scrollbar Grab Color", style.scrollbarGrab);
+		AddColorPicker("Scrollbar Grab Hovered Color", style.scrollbarGrabHovered);
+		AddColorPicker("Scrollbar Grab Active Color", style.scrollbarGrabActive);
+		AddSliderPicker("Scrollbar Rounding", style.scrollbarRounding, 0.01f, 20.0f);
+		AddSliderPicker("Scrollbar Size", style.scrollbarSize, 0.01f, 20.0f);
+		AddSliderPicker("Grabber Min Size", style.grabMinSize, 0.01f, 20.0f);
+		AddSliderPicker("Grabber Rounding", style.grabRounding, 0.01f, 20.0f);
+		AddColorPicker("Slider Grab Color", style.sliderGrab);
+		AddColorPicker("Slider Grab Active Color", style.sliderGrabActive);
+		AddColorPicker("Separator Color", style.separator);
+		AddColorPicker("Separator Hovered Color", style.separatorHovered);
+		AddColorPicker("Separator Active Color", style.separatorActive);
+		ImGui::Unindent();
+
+		ImGui::SeparatorText("To Remove:");
+		ImGui::Indent();
+		AddSliderPicker("Disabled Alpha", style.disabledAlpha, 0.1f, 1.0f);     // unused?
+		AddColorPicker("MenuBar BG Color", style.menuBarBg);                    // unused?
+		AddColorPicker("Resize Grip Color", style.resizeGrip);                  // unused
+		AddColorPicker("Resize Grip Hovered Color", style.resizeGripHovered);   // unused
+		AddColorPicker("Resize Grip Active Color", style.resizeGripActive);     // unused
+		AddColorPicker("Nav Highlight Color", style.navHighlight);              // unused
+		AddColorPicker("Nav Windowing Dim BG Color", style.navWindowingDimBg);  // unused
+		AddColorPicker("Modal Window Dim BG Color", style.modalWindowDimBg);    // unused
+		AddSliderPicker("Tab Rounding", style.tabRounding, 0.01f, 20.0f);       // unused
+		AddSliderPicker("Tab Border Size", style.tabBorderSize, 0.01f, 20.0f);  // unused
+		ImGui::Unindent();
 	}
 }
 

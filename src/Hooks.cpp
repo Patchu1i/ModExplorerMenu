@@ -1,6 +1,5 @@
-#	include "Hooks.h"
-#	include <Menu.h>
-
+#include "Hooks.h"
+#include <Menu.h>
 
 decltype(&IDXGISwapChain::Present) ptr_IDXGISwapChain_Present;
 
@@ -52,7 +51,7 @@ HRESULT WINAPI hk_D3D11CreateDeviceAndSwapChain(
 }
 
 static void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events);
-static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;	// local
+static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;  // local
 
 void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events)
 {
@@ -103,7 +102,7 @@ namespace Hooks
 				auto& io = ImGui::GetIO();
 				io.ClearInputKeys();
 				io.ClearEventsQueue();
-				io.ClearInputCharacters();  // TO-DO Test
+				io.ClearInputCharacters();  // TODO: Test if this is necessary(?)
 			}
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);
 		}

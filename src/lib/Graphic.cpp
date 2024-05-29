@@ -152,5 +152,5 @@ void GraphicManager::Init()
 	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
 	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts"), GraphicManager::font_library);
 
-	GraphicManager::initialized.store(true);  // TO-DO Probably not needed.
+	GraphicManager::initialized.store(true);  // TODO: Probably not needed anymore.
 }

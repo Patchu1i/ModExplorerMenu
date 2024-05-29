@@ -6,7 +6,7 @@
 void Menu::Draw()
 {
 	if (!IsEnabled()) {
-		return;  // TO-DO Maybe call one level up?
+		return;  // TODO: Should this be called one level up?
 	}
 
 	ImGui_ImplDX11_NewFrame();
@@ -83,30 +83,31 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	colors[ImGuiCol_SliderGrab] = user.sliderGrab;
 	colors[ImGuiCol_SliderGrabActive] = user.sliderGrab;
 	colors[ImGuiCol_Button] = user.button;
-	colors[ImGuiCol_ButtonHovered] = user.button;
-	colors[ImGuiCol_ButtonActive] = user.button;
+	colors[ImGuiCol_ButtonHovered] = user.buttonHovered;
+	colors[ImGuiCol_ButtonActive] = user.buttonActive;
 	colors[ImGuiCol_Header] = user.header;
-	colors[ImGuiCol_HeaderHovered] = user.header;
-	colors[ImGuiCol_HeaderActive] = user.header;
+	colors[ImGuiCol_HeaderHovered] = user.headerHovered;
+	colors[ImGuiCol_HeaderActive] = user.headerActive;
 	colors[ImGuiCol_Separator] = user.separator;
-	colors[ImGuiCol_SeparatorHovered] = user.separator;
-	colors[ImGuiCol_SeparatorActive] = user.separator;
+	colors[ImGuiCol_SeparatorHovered] = user.separatorHovered;
+	colors[ImGuiCol_SeparatorActive] = user.separatorActive;
 	colors[ImGuiCol_ResizeGrip] = user.resizeGrip;
-	colors[ImGuiCol_ResizeGripHovered] = user.resizeGrip;
-	colors[ImGuiCol_ResizeGripActive] = user.resizeGrip;
-	colors[ImGuiCol_PlotLines] = user.plotLines;
-	colors[ImGuiCol_PlotLinesHovered] = user.plotLines;
-	colors[ImGuiCol_PlotHistogram] = user.plotHistogram;
-	colors[ImGuiCol_PlotHistogramHovered] = user.plotHistogram;
+	colors[ImGuiCol_ResizeGripHovered] = user.resizeGripHovered;
+	colors[ImGuiCol_ResizeGripActive] = user.resizeGripActive;
+	colors[ImGuiCol_TableHeaderBg] = user.tableHeaderBg;
+	colors[ImGuiCol_TableBorderStrong] = user.tableBorderStrong;
+	colors[ImGuiCol_TableBorderLight] = user.tableBorderLight;
+	colors[ImGuiCol_TableRowBg] = user.tableRowBg;
 	colors[ImGuiCol_TextSelectedBg] = user.textSelectedBg;
-	colors[ImGuiCol_DragDropTarget] = user.dragDropTarget;
+	colors[ImGuiCol_NavHighlight] = user.navHighlight;
+	colors[ImGuiCol_NavWindowingDimBg] = user.navWindowingDimBg;
+	colors[ImGuiCol_ModalWindowDimBg] = user.modalWindowDimBg;
 
 	style.WindowPadding = user.windowPadding;
 	style.FramePadding = user.framePadding;
 	style.CellPadding = user.cellPadding;
 	style.ItemSpacing = user.itemSpacing;
 	style.ItemInnerSpacing = user.itemInnerSpacing;
-	style.TouchExtraPadding = user.touchExtraPadding;
 
 	style.Alpha = user.alpha;
 	style.DisabledAlpha = user.disabledAlpha;
@@ -119,13 +120,13 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	style.TabBorderSize = user.tabBorderSize;
 	style.TabRounding = user.tabRounding;
 	style.IndentSpacing = user.indentSpacing;
+	style.ColumnsMinSpacing = user.columnsMinSpacing;
 	style.ScrollbarRounding = user.scrollbarRounding;
 	style.ScrollbarSize = user.scrollbarSize;
 	style.GrabMinSize = user.grabMinSize;
 	style.GrabRounding = user.scrollbarRounding;
 	style.PopupBorderSize = user.popupBorderSize;
 	style.PopupRounding = user.popupRounding;
-	style.LogSliderDeadzone = user.logSliderDeadzone;
 }
 
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)

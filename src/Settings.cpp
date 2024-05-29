@@ -20,7 +20,7 @@ void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIni
 	(void)ini.SaveFile(a_path);
 }
 
-bool ResetIni = false;  // TO-DO Implement overwrite mode.
+bool ResetIni = false;  // TODO: Implement developer mode to overwrite presets.
 
 template <class T>
 T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
@@ -28,11 +28,12 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 	std::string _default = Settings::ToString(a_default, false);
 	std::string value = a_ini.GetValue(section, key, _default.c_str());
 
-	// Generate defaults in ini if they don't exist.
+	// Generate entry using a_default if no entry exists.
 	if (value == _default || ResetIni) {
 		a_ini.SetValue(section, key, _default.c_str());
 	}
 
+	// A plus de-serialization.
 	if constexpr (std::is_same_v<T, ImVec4>) {
 		auto color = Settings::GetColor<T>(value);
 		return (color.second ? color.first : a_default);
@@ -129,12 +130,7 @@ void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
 // 	user.style.tableBorderStrong = a_theme.Colors[ImGuiCol_TableBorderStrong];
 // 	user.style.tableBorderLight = a_theme.Colors[ImGuiCol_TableBorderLight];
 // 	user.style.tableRowBg = a_theme.Colors[ImGuiCol_TableRowBg];
-// 	user.style.plotLines = a_theme.Colors[ImGuiCol_PlotLines];
-// 	user.style.plotLinesHovered = a_theme.Colors[ImGuiCol_PlotLinesHovered];
-// 	user.style.plotHistogram = a_theme.Colors[ImGuiCol_PlotHistogram];
-// 	user.style.plotHistogramHovered = a_theme.Colors[ImGuiCol_PlotHistogramHovered];
 // 	user.style.textSelectedBg = a_theme.Colors[ImGuiCol_TextSelectedBg];
-// 	user.style.dragDropTarget = a_theme.Colors[ImGuiCol_DragDropTarget];
 // 	user.style.navHighlight = a_theme.Colors[ImGuiCol_NavHighlight];
 // 	user.style.navWindowingDimBg = a_theme.Colors[ImGuiCol_NavWindowingDimBg];
 // 	user.style.modalWindowDimBg = a_theme.Colors[ImGuiCol_ModalWindowDimBg];
@@ -144,7 +140,6 @@ void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
 // 	user.style.cellPadding = a_theme.CellPadding;
 // 	user.style.itemSpacing = a_theme.ItemSpacing;
 // 	user.style.itemInnerSpacing = a_theme.ItemInnerSpacing;
-// 	user.style.touchExtraPadding = a_theme.TouchExtraPadding;
 
 // 	user.style.alpha = a_theme.Alpha;
 // 	user.style.disabledAlpha = a_theme.Alpha;
@@ -157,13 +152,15 @@ void Settings::LoadConfiguration(CSimpleIniA& a_ini, bool use_default)
 // 	user.style.tabBorderSize = a_theme.TabBorderSize;
 // 	user.style.tabRounding = a_theme.TabRounding;
 // 	user.style.indentSpacing = a_theme.IndentSpacing;
+// 	user.style.columnsMinSpacing = a_theme.ColumnsMinSpacing;
 // 	user.style.scrollbarRounding = a_theme.ScrollbarRounding;
 // 	user.style.scrollbarSize = a_theme.ScrollbarSize;
 // 	user.style.grabMinSize = a_theme.GrabMinSize;
 // 	user.style.grabRounding = a_theme.GrabRounding;
 // 	user.style.popupBorderSize = a_theme.PopupBorderSize;
 // 	user.style.popupRounding = a_theme.PopupRounding;
-// 	user.style.logSliderDeadzone = a_theme.LogSliderDeadzone;
+
+// 	Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 // }
 
 // Export theme and style values to a standalone ini file.
@@ -208,12 +205,7 @@ void Settings::ExportThemeToIni(const wchar_t* a_path, Style& a_user)
 		a_ini.SetValue("Style", "TableBorderStrongColor", Settings::ToString(a_user.tableBorderStrong, false).c_str());
 		a_ini.SetValue("Style", "TableBorderLightColor", Settings::ToString(a_user.tableBorderLight, false).c_str());
 		a_ini.SetValue("Style", "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
-		a_ini.SetValue("Style", "PlotLinesColor", Settings::ToString(a_user.plotLines, false).c_str());
-		a_ini.SetValue("Style", "PlotLinesHoveredColor", Settings::ToString(a_user.plotLinesHovered, false).c_str());
-		a_ini.SetValue("Style", "PlotHistogramColor", Settings::ToString(a_user.plotHistogram, false).c_str());
-		a_ini.SetValue("Style", "PlotHistogramHoveredColor", Settings::ToString(a_user.plotHistogramHovered, false).c_str());
 		a_ini.SetValue("Style", "TextSelectedBGColor", Settings::ToString(a_user.textSelectedBg, false).c_str());
-		a_ini.SetValue("Style", "DragDropTargetColor", Settings::ToString(a_user.dragDropTarget, false).c_str());
 		a_ini.SetValue("Style", "NavHighlightColor", Settings::ToString(a_user.navHighlight, false).c_str());
 		a_ini.SetValue("Style", "NavWindowingDimBGColor", Settings::ToString(a_user.navWindowingDimBg, false).c_str());
 		a_ini.SetValue("Style", "ModalWindowDimBGColor", Settings::ToString(a_user.modalWindowDimBg, false).c_str());
@@ -223,26 +215,25 @@ void Settings::ExportThemeToIni(const wchar_t* a_path, Style& a_user)
 		a_ini.SetValue("Style", "CellPadding", Settings::ToString(a_user.cellPadding, false).c_str());
 		a_ini.SetValue("Style", "ItemSpacing", Settings::ToString(a_user.itemSpacing, false).c_str());
 		a_ini.SetValue("Style", "ItemInnerSpacing", Settings::ToString(a_user.itemInnerSpacing, false).c_str());
-		a_ini.SetValue("Style", "TouchExtraPadding", Settings::ToString(a_user.touchExtraPadding, false).c_str());
 
-		a_ini.SetValue("Style", "Alpha", std::to_string(a_user.alpha).c_str());
-		a_ini.SetValue("Style", "DisabledAlpha", std::to_string(a_user.disabledAlpha).c_str());
-		a_ini.SetValue("Style", "WindowRounding", std::to_string(a_user.windowRounding).c_str());
-		a_ini.SetValue("Style", "WindowBorderSize", std::to_string(a_user.windowBorderSize).c_str());
-		a_ini.SetValue("Style", "ChildBorderSize", std::to_string(a_user.childBorderSize).c_str());
-		a_ini.SetValue("Style", "ChildRounding", std::to_string(a_user.childRounding).c_str());
-		a_ini.SetValue("Style", "FrameBorderSize", std::to_string(a_user.frameBorderSize).c_str());
-		a_ini.SetValue("Style", "FrameRounding", std::to_string(a_user.frameRounding).c_str());
-		a_ini.SetValue("Style", "TabBorderSize", std::to_string(a_user.tabBorderSize).c_str());
-		a_ini.SetValue("Style", "TabRounding", std::to_string(a_user.tabRounding).c_str());
-		a_ini.SetValue("Style", "IndentSpacing", std::to_string(a_user.indentSpacing).c_str());
-		a_ini.SetValue("Style", "ScrollbarRounding", std::to_string(a_user.scrollbarRounding).c_str());
-		a_ini.SetValue("Style", "ScrollbarSize", std::to_string(a_user.scrollbarSize).c_str());
-		a_ini.SetValue("Style", "GrabMinSize", std::to_string(a_user.grabMinSize).c_str());
-		a_ini.SetValue("Style", "GrabRounding", std::to_string(a_user.grabRounding).c_str());
-		a_ini.SetValue("Style", "PopupBorderSize", std::to_string(a_user.popupBorderSize).c_str());
-		a_ini.SetValue("Style", "PopupRounding", std::to_string(a_user.popupRounding).c_str());
-		a_ini.SetValue("Style", "LogSliderDeadzone", std::to_string(a_user.logSliderDeadzone).c_str());
+		a_ini.SetValue("Style", "Alpha", Settings::ToString(a_user.alpha, false).c_str());
+		a_ini.SetValue("Style", "DisabledAlpha", Settings::ToString(a_user.disabledAlpha, false).c_str());
+		a_ini.SetValue("Style", "WindowRounding", Settings::ToString(a_user.windowRounding, false).c_str());
+		a_ini.SetValue("Style", "WindowBorderSize", Settings::ToString(a_user.windowBorderSize, false).c_str());
+		a_ini.SetValue("Style", "ChildBorderSize", Settings::ToString(a_user.childBorderSize, false).c_str());
+		a_ini.SetValue("Style", "ChildRounding", Settings::ToString(a_user.childRounding, false).c_str());
+		a_ini.SetValue("Style", "FrameBorderSize", Settings::ToString(a_user.frameBorderSize, false).c_str());
+		a_ini.SetValue("Style", "FrameRounding", Settings::ToString(a_user.frameRounding, false).c_str());
+		a_ini.SetValue("Style", "TabBorderSize", Settings::ToString(a_user.tabBorderSize, false).c_str());
+		a_ini.SetValue("Style", "TabRounding", Settings::ToString(a_user.tabRounding, false).c_str());
+		a_ini.SetValue("Style", "IndentSpacing", Settings::ToString(a_user.indentSpacing, false).c_str());
+		a_ini.SetValue("Style", "ColumnMinSpacing", Settings::ToString(a_user.columnsMinSpacing, false).c_str());
+		a_ini.SetValue("Style", "ScrollbarRounding", Settings::ToString(a_user.scrollbarRounding, false).c_str());
+		a_ini.SetValue("Style", "ScrollbarSize", Settings::ToString(a_user.scrollbarSize, false).c_str());
+		a_ini.SetValue("Style", "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
+		a_ini.SetValue("Style", "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
+		a_ini.SetValue("Style", "PopupBorderSize", Settings::ToString(a_user.popupBorderSize, false).c_str());
+		a_ini.SetValue("Style", "PopupRounding", Settings::ToString(a_user.popupRounding, false).c_str());
 	});
 
 	logger::info("Settings Saved");
@@ -288,12 +279,7 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.tableBorderStrong = GET_VALUE<ImVec4>("Style", "TableBorderStrongColor", user.style.tableBorderStrong, a_ini);
 	user.style.tableBorderLight = GET_VALUE<ImVec4>("Style", "TableBorderLightColor", user.style.tableBorderLight, a_ini);
 	user.style.tableRowBg = GET_VALUE<ImVec4>("Style", "TableRowBGColor", user.style.tableRowBg, a_ini);
-	user.style.plotLines = GET_VALUE<ImVec4>("Style", "PlotLinesColor", user.style.plotLines, a_ini);
-	user.style.plotLinesHovered = GET_VALUE<ImVec4>("Style", "PlotLinesHoveredColor", user.style.plotLinesHovered, a_ini);
-	user.style.plotHistogram = GET_VALUE<ImVec4>("Style", "PlotHistogramColor", user.style.plotHistogram, a_ini);
-	user.style.plotHistogramHovered = GET_VALUE<ImVec4>("Style", "PlotHistogramHoveredColor", user.style.plotHistogramHovered, a_ini);
 	user.style.textSelectedBg = GET_VALUE<ImVec4>("Style", "TextSelectedBGColor", user.style.textSelectedBg, a_ini);
-	user.style.dragDropTarget = GET_VALUE<ImVec4>("Style", "DragDropTargetColor", user.style.dragDropTarget, a_ini);
 	user.style.navHighlight = GET_VALUE<ImVec4>("Style", "NavHighlightColor", user.style.navHighlight, a_ini);
 	user.style.navWindowingDimBg = GET_VALUE<ImVec4>("Style", "NavWindowingDimBGColor", user.style.navWindowingDimBg, a_ini);
 	user.style.modalWindowDimBg = GET_VALUE<ImVec4>("Style", "ModalWindowDimBGColor", user.style.modalWindowDimBg, a_ini);
@@ -303,7 +289,6 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.cellPadding = GET_VALUE<ImVec2>("Style", "CellPadding", user.style.cellPadding, a_ini);
 	user.style.itemSpacing = GET_VALUE<ImVec2>("Style", "ItemSpacing", user.style.itemSpacing, a_ini);
 	user.style.itemInnerSpacing = GET_VALUE<ImVec2>("Style", "ItemInnerSpacing", user.style.itemInnerSpacing, a_ini);
-	user.style.touchExtraPadding = GET_VALUE<ImVec2>("Style", "TouchExtraPadding", user.style.touchExtraPadding, a_ini);
 
 	user.style.alpha = GET_VALUE<float>("Style", "Alpha", user.style.alpha, a_ini);
 	user.style.disabledAlpha = GET_VALUE<float>("Style", "DisabledAlpha", user.style.disabledAlpha, a_ini);
@@ -316,11 +301,11 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.tabBorderSize = GET_VALUE<float>("Style", "TabBorderSize", user.style.tabBorderSize, a_ini);
 	user.style.tabRounding = GET_VALUE<float>("Style", "TabRounding", user.style.tabRounding, a_ini);
 	user.style.indentSpacing = GET_VALUE<float>("Style", "IndentSpacing", user.style.indentSpacing, a_ini);
+	user.style.columnsMinSpacing = GET_VALUE<float>("Style", "ColumnMinSpacing", user.style.columnsMinSpacing, a_ini);
 	user.style.scrollbarRounding = GET_VALUE<float>("Style", "ScrollbarRounding", user.style.scrollbarRounding, a_ini);
 	user.style.scrollbarSize = GET_VALUE<float>("Style", "ScrollbarSize", user.style.scrollbarSize, a_ini);
 	user.style.grabMinSize = GET_VALUE<float>("Style", "GrabMinSize", user.style.grabMinSize, a_ini);
 	user.style.grabRounding = GET_VALUE<float>("Style", "GrabRounding", user.style.grabRounding, a_ini);
 	user.style.popupBorderSize = GET_VALUE<float>("Style", "PopupBorderSize", user.style.popupBorderSize, a_ini);
 	user.style.popupRounding = GET_VALUE<float>("Style", "PopupRounding", user.style.popupRounding, a_ini);
-	user.style.logSliderDeadzone = GET_VALUE<float>("Style", "LogSliderDeadzone", user.style.logSliderDeadzone, a_ini);
 }

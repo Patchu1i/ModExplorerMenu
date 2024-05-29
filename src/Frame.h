@@ -18,6 +18,7 @@ public:
 		Home,
 		AddItem,
 		Lookup,
+		NPC,
 		Teleport,
 		Settings
 	};
