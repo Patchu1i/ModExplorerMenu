@@ -1,4 +1,5 @@
 #include "Frame.h"
+#include "Settings.h"
 #include "lib/Graphic.h"
 #include "windows/AddItemWindow.h"
 #include "windows/HomeWindow.h"
@@ -28,6 +29,8 @@ void Frame::Draw()
 {
 	Properties window;
 
+	auto& style = Settings::GetSingleton()->GetStyle();
+
 	// Doing this here to prevent edge cases of Skyrim window resizing.
 	const float center_x = window.screenSize.x * 0.5f;
 	const float center_y = (window.screenSize.y * 0.5f) - (window.panel_h * 0.5f);
@@ -39,6 +42,7 @@ void Frame::Draw()
 	ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
 	ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
 
+	ImGui::PushFont(style.sidebarFont);
 	if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag)) {
 		if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
 			_activeWindow = ActiveWindow::Home;
@@ -66,12 +70,14 @@ void Frame::Draw()
 
 		ImGui::End();
 	}
+	ImGui::PopFont();
 
 	// Draw Panel Frame conditionally
 	static constexpr ImGuiWindowFlags panel_flag = sidebar_flag;
 	ImGui::SetNextWindowSize(ImVec2(window.panel_w, window.panel_h));
 	ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
+	ImGui::PushFont(style.textFont);
 	if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag)) {
 		switch (_activeWindow) {
 		case ActiveWindow::Home:
@@ -95,6 +101,7 @@ void Frame::Draw()
 
 		ImGui::End();
 	}
+	ImGui::PopFont();
 
 	GraphicManager::DrawImage(Frame::header_texture, ImVec2(window.screenSize.x * 0.5f, window.screenSize.y * 0.5f));
 }
@@ -106,9 +113,20 @@ void Frame::Install()
 	AddItemWindow::Init();
 	HomeWindow::Init();
 
+	RefreshStyle();
+
 	// Setup textures
 	Frame::header_texture = GraphicManager::GetImage("bg-skyrim-540");
 
 	// FIXME: This shouldn't be needed anymore
 	Frame::_init.store(true);
+}
+
+void Frame::RefreshStyle()
+{
+	// AddItemWindow::RefreshStyle();
+	//HomeWindow::RefreshStyle();
+	//SettingsWindow::RefreshStyle();
+
+	// auto& style = Settings::GetSingleton()->GetStyle();
 }

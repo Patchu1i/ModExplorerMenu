@@ -50,10 +50,12 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 void Menu::RefreshStyle()
 {
 	auto& style = Settings::GetSingleton()->GetStyle();
-	auto& config = Settings::GetSingleton()->GetConfig();
+	//auto& config = Settings::GetSingleton()->GetConfig();
 
-	Settings::SetThemeFromIni(config.theme);
+	//Settings::SetThemeFromIni(config.theme);
 	SyncUserStyleToImGui(style);
+
+	Frame::RefreshStyle();
 }
 
 void Menu::SyncUserStyleToImGui(Settings::Style user)
@@ -71,9 +73,6 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	colors[ImGuiCol_FrameBg] = user.frameBg;
 	colors[ImGuiCol_FrameBgHovered] = user.frameBgHovered;
 	colors[ImGuiCol_FrameBgActive] = user.frameBgHovered;
-	colors[ImGuiCol_TitleBg] = user.titleBg;
-	colors[ImGuiCol_TitleBgActive] = user.titleBg;
-	colors[ImGuiCol_TitleBgCollapsed] = user.titleBg;
 	colors[ImGuiCol_MenuBarBg] = user.menuBarBg;
 	colors[ImGuiCol_ScrollbarBg] = user.scrollbarBg;
 	colors[ImGuiCol_ScrollbarGrab] = user.scrollbarGrab;
@@ -99,9 +98,6 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	colors[ImGuiCol_TableBorderLight] = user.tableBorderLight;
 	colors[ImGuiCol_TableRowBg] = user.tableRowBg;
 	colors[ImGuiCol_TextSelectedBg] = user.textSelectedBg;
-	colors[ImGuiCol_NavHighlight] = user.navHighlight;
-	colors[ImGuiCol_NavWindowingDimBg] = user.navWindowingDimBg;
-	colors[ImGuiCol_ModalWindowDimBg] = user.modalWindowDimBg;
 
 	style.WindowPadding = user.windowPadding;
 	style.FramePadding = user.framePadding;
@@ -110,15 +106,12 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	style.ItemInnerSpacing = user.itemInnerSpacing;
 
 	style.Alpha = user.alpha;
-	style.DisabledAlpha = user.disabledAlpha;
 	style.WindowRounding = user.windowRounding;
 	style.WindowBorderSize = user.windowBorderSize;
 	style.ChildBorderSize = user.childBorderSize;
 	style.ChildRounding = user.childRounding;
 	style.FrameBorderSize = user.frameBorderSize;
 	style.FrameRounding = user.frameRounding;
-	style.TabBorderSize = user.tabBorderSize;
-	style.TabRounding = user.tabRounding;
 	style.IndentSpacing = user.indentSpacing;
 	style.ColumnsMinSpacing = user.columnsMinSpacing;
 	style.ScrollbarRounding = user.scrollbarRounding;

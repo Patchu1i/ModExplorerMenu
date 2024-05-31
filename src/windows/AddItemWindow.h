@@ -11,6 +11,7 @@ class AddItemWindow : public WindowBaseClass
 public:
 	static void Draw();
 	static void Init();
+	static void RefreshStyle();
 
 	enum ItemType
 	{
@@ -81,9 +82,11 @@ public:
 
 	static inline ID3D11ShaderResourceView* favorite_enabled_texture;
 	static inline ID3D11ShaderResourceView* favorite_disabled_texture;
-	static inline GraphicManager::Image list_arrow;
-	static inline ImFont* list_font;
+	//static inline GraphicManager::Image list_arrow;
+
+	static inline ImFont* text_font;
 	static inline ImFont* header_font;
+	static inline ImFont* button_font;
 
 	static inline SearchBy _searchBy;
 	static inline char _searchBuffer[256] = "";

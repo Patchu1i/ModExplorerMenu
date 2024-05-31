@@ -1,16 +1,7 @@
 #include "AddItemWindow.h"
-
-#include "lib/Graphic.h"
-
 #include "Console.h"
-
-// Feature Ideas:
-
-// - Add to Favorites
-// - Add to Inventory
-// - Search by mod added forms
-// - Add '?' help icons
-// - Sort by favorited
+#include "Settings.h"
+#include "lib/Graphic.h"
 
 using _GetFormEditorID = const char* (*)(std::uint32_t);
 
@@ -231,9 +222,7 @@ static inline const float center_text_x(const char* text)
 // Draw the table of items
 void AddItemWindow::Draw_FormTable()
 {
-	//const auto child_flags = ImGuiChildFlags_None;
-	//const auto window_flags = 0;
-	//ImGui::BeginChild("##AddItemWindowListChild", ImVec2(ImGui::GetContentRegionAvail()), child_flags, window_flags);
+	auto& style = Settings::GetSingleton()->GetStyle();
 
 	//ImGuiTableFlags_SizingStretchProp
 	const auto table_flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
@@ -256,7 +245,7 @@ void AddItemWindow::Draw_FormTable()
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 16.0f, ColumnID_EditorID);
 		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_GoldValue);
 
-		ImGui::PushFont(header_font);
+		ImGui::PushFont(style.headerFont);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		for (int column = 0; column < column_count; column++) {
 			ImGui::TableSetColumnIndex(column);
@@ -322,7 +311,6 @@ void AddItemWindow::Draw_FormTable()
 			ImGui::PopStyleVar(1);
 
 			const ImGuiSelectableFlags select_flags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
-			ImGui::PushFont(list_font);
 			ImGui::TableNextColumn();
 			ImGui::SetCursorPosX(center_text_x(ref.typeName));
 			ImGui::Selectable(ref.typeName, &ref.selected, select_flags);
@@ -404,7 +392,6 @@ void AddItemWindow::Draw_FormTable()
 					ImGui::Text("type: %s", type);
 					ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
 					ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
-
 					ImGui::EndTooltip();
 				}
 
@@ -419,8 +406,6 @@ void AddItemWindow::Draw_FormTable()
 				//ImGui::Text("test: %s", test);
 				// ImGui::EndTooltip();
 			}
-
-			ImGui::PopFont();
 
 			//if (ImGui::BeginPopupContextItem())
 			//{
@@ -574,6 +559,8 @@ void AddItemWindow::Draw_InputSearch()
 // TODO: Implement more here.
 void AddItemWindow::Draw_Actions()
 {
+	auto& style = Settings::GetSingleton()->GetStyle();
+
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
@@ -587,10 +574,12 @@ void AddItemWindow::Draw_Actions()
 
 	const auto table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 	if (ImGui::BeginTable("ActionBarSelection", 1, table_flags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
+		ImGui::PushFont(style.headerFont);
 		ImGui::TableSetupColumn("Item(s)", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
+		ImGui::PopFont();
 
 		const auto select_flags = ImGuiSelectableFlags_SpanAllColumns;
 		for (auto& item : _activeList) {
@@ -605,14 +594,17 @@ void AddItemWindow::Draw_Actions()
 		ImGui::EndTable();
 	}
 
+	ImGui::PushFont(style.buttonFont);
 	if (ImGui::Button("Clear Selection", ImVec2(button_width, 20.0f))) {
 		for (auto& item : _activeList) {
 			item->selected = false;
 		}
 	}
+	ImGui::PopFont();  // Button font
 
 	ImGui::SeparatorText("Quick Actions:");
 
+	ImGui::PushFont(style.buttonFont);
 	if (ImGui::Button("Add selected to Inventory", ImVec2(button_width, button_height))) {
 		for (auto& item : _activeList) {
 			if (item->selected) {
@@ -644,6 +636,7 @@ void AddItemWindow::Draw_Actions()
 			item->selected = true;
 		}
 	}
+	ImGui::PopFont();  // Button Font
 
 	ImGui::PopStyleVar(3);
 
@@ -674,9 +667,9 @@ void AddItemWindow::Draw_AdvancedOptions()
 		ImGui::SeparatorText("Select a mod to search:");
 		auto combo_text = _currentMod ? _currentMod->GetFilename().data() : "Filter by mods";
 
-		float width = static_cast<float>(list_arrow.width);
-		float height = static_cast<float>(list_arrow.height);
-		ImGui::ImageButton("##FilterByModHelp", list_arrow.texture, ImVec2(width / 3, height / 3));
+		//float width = static_cast<float>(list_arrow.width);
+		//float height = static_cast<float>(list_arrow.height);
+		//ImGui::ImageButton("##FilterByModHelp", list_arrow.texture, ImVec2(width / 3, height / 3));
 
 		ImGui::SameLine();
 
@@ -765,11 +758,25 @@ void AddItemWindow::Init()
 {
 	AddItemWindow::Cache();
 
-	list_font = GraphicManager::GetFont("Gravity-Book-Small");
-	header_font = GraphicManager::GetFont("Coolvetica-Medium");
-	_searchBy = AddItemWindow::SearchBy::FullName;
+	//list_font = GraphicManager::GetFont("Gravity-Book-Small");
+	//header_font = GraphicManager::GetFont("Coolvetica-Medium");
+	//_searchBy = AddItemWindow::SearchBy::FullName;
 
 	//favorite_disabled_texture = GraphicManager::GetImage("favorite-disabled-new").texture;
 	//favorite_enabled_texture = GraphicManager::GetImage("favorite-enabled-new").texture;
-	list_arrow = GraphicManager::GetImage("list-arrow");
+	// list_arrow = GraphicManager::GetImage("list-arrow");
+}
+
+void AddItemWindow::RefreshStyle()
+{
+	//auto& style = Settings::GetSingleton()->GetStyle();
+
+	//logger::info("AddItem Refresh Style");
+	//header_font = GraphicManager::GetFont(style.headerFont.c_str());
+	//text_font = GraphicManager::GetFont(style.textFont.c_str());
+	//button_font = GraphicManager::GetFont(style.buttonFont.c_str());
+
+	//logger::info("Header Font {}", style.headerFont.c_str());
+	//logger::info("Text Font {}", style.textFont.c_str());
+	//logger::info("Button Font {}", style.buttonFont.c_str());
 }

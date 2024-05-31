@@ -4,6 +4,7 @@ namespace IniHelper
 {
 	enum class iComment
 	{
+		MasterPresetHeader,
 		PresetMainHeader,
 		PresetAddItemHeader,
 		PresetFormLookupHeader,
@@ -18,6 +19,14 @@ namespace IniHelper
 	};
 
 	std::map<iComment, const char*> comment_map = {
+		{ iComment::MasterPresetHeader,
+			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n"
+			"# # Master Configuration\n"
+			"#\n"
+			"# This file is used to store variables across sesssions\n"
+			"# You should not have to change anything in here. Most of it is handled in-game.\n"
+			"#\n"
+			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n" },
 		{ iComment::PresetMainHeader,
 			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n"
 			"# # Preset configuration\n"

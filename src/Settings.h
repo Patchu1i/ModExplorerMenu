@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/Graphic.h"
+
 // Current process of loading settings::
 // Start by loading the user Config and getting the Theme string.
 // Look for the theme string in the themes directory for a matching ini.
@@ -13,15 +15,14 @@ public:
 
 	void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 	void LoadSettings(const wchar_t* a_path);
-	void LoadPreset(CSimpleIniA& a_ini, bool use_default_preset = false);
+	void LoadMasterIni(CSimpleIniA& a_ini);
 	void LoadThemeFromIni(CSimpleIniA& a_ini);
-	void LoadPresetFromIni(CSimpleIniA& a_ini);
 
 	void LoadStyleTheme(ImGuiStyle a_theme);
 
-	void CreateDefaultPreset();
+	void CreateDefaultMaster();
+	static void FormatMasterIni(CSimpleIniA& a_ini);
 	static void FormatThemeIni(CSimpleIniA& a_ini);
-	static void FormatPresetIni(CSimpleIniA& a_ini);
 
 	static inline Settings* GetSingleton()
 	{
@@ -30,7 +31,6 @@ public:
 	}
 
 	constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/themes/";
-	constexpr inline static const wchar_t* ini_preset_path = L"Data/Interface/ModExplorerMenu/presets/";
 	constexpr inline static const wchar_t* ini_mem_path = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
 
 	enum SECTION
@@ -46,7 +46,9 @@ public:
 		FormLookup,
 		NPC,
 		Teleport,
-		Autotest
+		Autotest,
+		Fonts,
+		Images
 	};
 
 	static inline std::map<SECTION, const char*> rSections = {
@@ -61,86 +63,86 @@ public:
 		{ FormLookup, "FormLookup" },
 		{ NPC, "NPC" },
 		{ Teleport, "Teleport" },
-		{ Autotest, "Autotest" }
+		{ Autotest, "Autotest" },
+		{ Fonts, "Fonts" },
+		{ Images, "Images & Icons" }
 	};
 
 	struct Config
 	{
 		std::string theme = "Default";
-		std::string preset = "Default";
-		bool works = false;
 	};
 
 	ImGuiStyle test;
 
 	struct Style
 	{
-		ImVec4 text;
-		ImVec4 textDisabled;
-		ImVec4 windowBg;
-		ImVec4 childBg;
-		ImVec4 popupBg;
-		ImVec4 border;
-		ImVec4 borderShadow;
-		ImVec4 frameBg;
-		ImVec4 frameBgHovered;
-		ImVec4 frameBgActive;
-		ImVec4 titleBg;
-		ImVec4 titleBgActive;
-		ImVec4 titleBgCollapsed;
-		ImVec4 menuBarBg;
-		ImVec4 scrollbarBg;
-		ImVec4 scrollbarGrab;
-		ImVec4 scrollbarGrabHovered;
-		ImVec4 scrollbarGrabActive;
-		ImVec4 checkMark;
-		ImVec4 sliderGrab;
-		ImVec4 sliderGrabActive;
-		ImVec4 button;
-		ImVec4 buttonHovered;
-		ImVec4 buttonActive;
-		ImVec4 header;
-		ImVec4 headerHovered;
-		ImVec4 headerActive;
-		ImVec4 separator;
-		ImVec4 separatorHovered;
-		ImVec4 separatorActive;
-		ImVec4 resizeGrip;
-		ImVec4 resizeGripHovered;
-		ImVec4 resizeGripActive;
-		ImVec4 tableHeaderBg;
-		ImVec4 tableBorderStrong;
-		ImVec4 tableBorderLight;
-		ImVec4 tableRowBg;
-		ImVec4 textSelectedBg;
-		ImVec4 navHighlight;
-		ImVec4 navWindowingDimBg;
-		ImVec4 modalWindowDimBg;
+		ImVec4 text = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+		ImVec4 textDisabled = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+		ImVec4 windowBg = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+		ImVec4 childBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		ImVec4 popupBg = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+		ImVec4 border = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
+		ImVec4 borderShadow = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		ImVec4 frameBg = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
+		ImVec4 frameBgHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 frameBgActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 menuBarBg = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+		ImVec4 scrollbarBg = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+		ImVec4 scrollbarGrab = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+		ImVec4 scrollbarGrabHovered = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+		ImVec4 scrollbarGrabActive = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+		ImVec4 checkMark = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 sliderGrab = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+		ImVec4 sliderGrabActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 button = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 buttonHovered = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+		ImVec4 buttonActive = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+		ImVec4 header = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
+		ImVec4 headerHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 headerActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+		ImVec4 separator = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
+		ImVec4 separatorHovered = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+		ImVec4 separatorActive = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+		ImVec4 resizeGrip = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
+		ImVec4 resizeGripHovered = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+		ImVec4 resizeGripActive = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+		ImVec4 tableHeaderBg = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+		ImVec4 tableBorderStrong = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+		ImVec4 tableBorderLight = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
+		ImVec4 tableRowBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		ImVec4 textSelectedBg = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 
-		ImVec2 windowPadding;
-		ImVec2 framePadding;
-		ImVec2 cellPadding;
-		ImVec2 itemSpacing;
-		ImVec2 itemInnerSpacing;
+		ImVec2 windowPadding = ImVec2(8.00f, 8.00f);
+		ImVec2 framePadding = ImVec2(4.00f, 3.00f);
+		ImVec2 cellPadding = ImVec2(6.00f, 6.00f);
+		ImVec2 itemSpacing = ImVec2(6.00f, 6.00f);
+		ImVec2 itemInnerSpacing = ImVec2(6.00f, 6.00f);
 
-		float alpha;
-		float disabledAlpha;
-		float windowRounding;
-		float windowBorderSize;
-		float childBorderSize;
-		float childRounding;
-		float frameBorderSize;
-		float frameRounding;
-		float tabBorderSize;
-		float tabRounding;
-		float indentSpacing;
-		float columnsMinSpacing;
-		float scrollbarRounding;
-		float scrollbarSize;
-		float grabMinSize;
-		float grabRounding;
-		float popupBorderSize;
-		float popupRounding;
+		float alpha = 1.0f;
+		float windowRounding = 9;
+		float windowBorderSize = 1;
+		float childBorderSize = 1;
+		float childRounding = 0;
+		float frameBorderSize = 1;
+		float frameRounding = 3;
+		float indentSpacing = 21;
+		float columnsMinSpacing = 50;
+		float scrollbarRounding = 9;
+		float scrollbarSize = 14;
+		float grabMinSize = 10;
+		float grabRounding = 3;
+		float popupBorderSize = 1;
+		float popupRounding = 3;
+
+		ImFont* textFont;
+		ImFont* headerFont;
+		ImFont* sidebarFont;
+		ImFont* buttonFont;
+
+		GraphicManager::Image splashImage;
+		GraphicManager::Image favoriteIconEnabled;
+		GraphicManager::Image favoriteIconDisabled;
 	};
 
 	struct Setting
@@ -149,10 +151,11 @@ public:
 		Style style;
 	};
 
-	Setting def;  // TODO: Is this necessary with ini configurations?
+	Setting def;
 	Setting user;
 
-	void ExportThemeToIni(const wchar_t* a_path, Style& user);
+	void ExportThemeToIni(const wchar_t* a_path, Style user);
+	void InstantiateDefaultTheme(Style& a_out);
 
 	// https://github.com/powerof3/PhotoMode | License: MIT
 	template <class T>
@@ -167,6 +170,10 @@ public:
 			return std::format("{}{},{}{}", "{", a_style.x, a_style.y, "}");
 		} else if constexpr (std::is_same_v<std::string, T>) {
 			return a_style;
+		} else if constexpr (std::is_same_v<ImFont*, T>) {
+			return GraphicManager::GetFontName(a_style);
+		} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
+			return GraphicManager::GetImageName(a_style);
 		} else if constexpr (std::is_same_v<float, T>) {
 			return std::format("{:.3f}", a_style);
 		} else if constexpr (std::is_same_v<bool, T>) {
@@ -176,6 +183,18 @@ public:
 			return;
 		}
 	}
+
+	// Returns ImFont* from a string key in GraphicManager::font_library[key]
+	// static ImFont* GetFont(std::string& a_str)
+	// {
+	// 	return GraphicManager::font_library.find(a_str)->second;
+	// }
+
+	// // Returns ImTextureID from a string key in GraphicManager::image_library[key]
+	// static GraphicManager::Image GetImage(std::string& a_str)
+	// {
+	// 	return GraphicManager::image_library.find(a_str)->second;
+	// }
 
 	// https://github.com/powerof3/PhotoMode | License: MIT
 	template <class T>
@@ -206,12 +225,13 @@ public:
 		}
 
 		logger::critical("Failed to parse color from .ini file! Ensure you're using the correct format!");
+		logger::critical("ImVec4 input: {}", a_str);
 		return { T(), false };
 	}
 
 	static std::pair<ImVec2, bool> GetVec2(std::string& a_str)
 	{
-		static std::regex pattern("\\{([0-9]+),([0-9]+)\\}");
+		static std::regex pattern("\\{([0-9]*\\.?[0-9]+),([0-9]*\\.?[0-9]+)\\}");
 		std::smatch matches;
 
 		if (std::regex_match(a_str, matches, pattern)) {
@@ -222,7 +242,18 @@ public:
 		}
 
 		logger::critical("Failed to parse ImVec2 from .ini file! Ensure you're using the correct format!");
+		logger::critical("ImVec2 input: {}", a_str);
 		return { ImVec2(), false };
+	}
+
+	static std::map<std::string, ImFont*> GetListOfFonts()
+	{
+		return GraphicManager::font_library;
+	}
+
+	static std::map<std::string, GraphicManager::Image> GetListOfImages()
+	{
+		return GraphicManager::image_library;
 	}
 
 	// TODO: Remove hard-coded path
@@ -251,65 +282,27 @@ public:
 		return themes;
 	}
 
-	static std::vector<std::string> GetListOfPresets()
-	{
-		std::vector<std::string> presets;
-		std::string path_to_presets = "Data/Interface/ModExplorerMenu/presets";
-
-		// TODO: Implement scope wide error handling.
-		if (std::filesystem::exists(path_to_presets) == false) {
-			stl::report_and_fail(
-				"ModExplorerMenu.dll] FATAL ERROR:\n\n"
-				"Could not find preset directory (\"DATA/Interface/ModExplorerMenu/presets/\")\n\n"
-				"Make sure the ModExplorerMenu mod contains this directory respective to the data folder."sv);
-		}
-
-		for (const auto& entry : std::filesystem::directory_iterator(path_to_presets)) {
-			if (entry.path().filename().extension() != ".ini") {
-				continue;  // Pass invalid file types
-			}
-			auto index = entry.path().filename().stem().string();
-			logger::info("Found preset: {}", index);
-			presets.push_back(index);
-		}
-
-		return presets;
-	}
-
-	static std::pair<std::string, bool> SetPresetFromIni(std::string& a_str)
-	{
-		std::vector<std::string> presets = GetListOfPresets();
-		std::string path_to_presets = "Data/Interface/ModExplorerMenu/presets";
-
-		for (const auto& entry : presets) {
-			if (entry == a_str) {
-				const wchar_t* full_path = (wchar_t*)(path_to_presets + "/" + a_str + ".ini").c_str();
-				Settings::GetSingleton()->GetIni(full_path, [](CSimpleIniA& a_ini) {
-					Settings::GetSingleton()->LoadPresetFromIni(a_ini);
-				});
-				return { entry, true };
-			}
-		}
-
-		return { a_str, false };
-	}
-
 	// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
 	// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
 	static std::pair<std::string, bool> SetThemeFromIni(std::string& a_str)
 	{
 		std::vector<std::string> themes = GetListOfThemes();
-		std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
+		std::wstring path(ini_theme_path);
+		std::wstring full_path = path + std::wstring(a_str.begin(), a_str.end()) + L".ini";
 
 		for (const auto& entry : themes) {
 			if (entry == a_str) {
-				const wchar_t* full_path = (wchar_t*)(path_to_themes + "/" + a_str + ".ini").c_str();
-				Settings::GetSingleton()->GetIni(full_path, [](CSimpleIniA& a_ini) {
+				Settings::GetSingleton()->GetIni(full_path.c_str(), [](CSimpleIniA& a_ini) {
 					Settings::GetSingleton()->LoadThemeFromIni(a_ini);
 				});
-				return { entry, true };
+				return { a_str, true };
 			}
 		}
+
+		// If we did not find it, create a new ini with defaults and retry.
+		// Mainly a fail-safe if the user edits the master config and breaks the theme.
+		Settings::GetSingleton()->ExportThemeToIni(full_path.c_str(), Settings::GetSingleton()->def.style);
+		SetThemeFromIni(a_str);
 
 		return { a_str, false };
 	}

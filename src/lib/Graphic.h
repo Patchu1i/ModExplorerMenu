@@ -16,8 +16,8 @@ public:
 		int32_t height = 0;
 	};
 
-	static std::map<std::string, GraphicManager::Image> image_library;
-	static std::map<std::string, ImFont*> font_library;
+	static inline std::map<std::string, GraphicManager::Image> image_library;
+	static inline std::map<std::string, ImFont*> font_library;
 
 	static void DrawImage(Image& a_texture, ImVec2 a_center);
 
@@ -32,13 +32,50 @@ public:
 
 	static inline std::atomic_bool initialized = false;
 
-	[[nodiscard]] static ImFont* GetFont(const char* a_size)
+	[[nodiscard]] static ImFont* GetFont(std::string a_font)
 	{
-		return font_library[std::string(a_size)];
+		auto found = font_library.find(a_font);
+		if (found != font_library.end()) {
+			return found->second;
+		}
+
+		logger::warn("Font Reference not found: {}", a_font);
+		return ImGui::GetFont();
 	}
 
-	[[nodiscard]] static Image GetImage(const char* a_name)
+	[[nodiscard]] static std::string GetFontName(ImFont* a_font)
 	{
-		return image_library[std::string(a_name)];
+		// Note to self: return font_library[key] adds key value if not valid.
+		for (const auto& [key, value] : font_library) {
+			if (value == a_font) {
+				return key;
+			}
+		}
+
+		return "Default";
+	}
+
+	[[nodiscard]] static Image GetImage(std::string a_name)
+	{
+		auto found = image_library.find(a_name);
+		if (found != image_library.end()) {
+			return found->second;
+		}
+
+		logger::warn("Image Reference not found: {}", a_name);
+		return Image();
+	}
+
+	[[nodiscard]] static std::string GetImageName(Image a_image)
+	{
+		// Note to self: return image_library[key] adds key value if not valid.
+		for (const auto& [key, value] : image_library) {
+			if (value.texture == a_image.texture) {
+				return key;
+			}
+		}
+
+		logger::warn("Image name not found");
+		return "None";
 	}
 };

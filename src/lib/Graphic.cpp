@@ -4,8 +4,8 @@
 #include "Graphic.h"
 #include "Menu.h"
 
-std::map<std::string, GraphicManager::Image> GraphicManager::image_library;
-std::map<std::string, ImFont*> GraphicManager::font_library;
+//std::map<std::string, GraphicManager::Image> GraphicManager::image_library;
+//std::map<std::string, ImFont*> GraphicManager::font_library;
 
 bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
 	int& out_height)
@@ -85,6 +85,7 @@ void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::st
 		}
 
 		auto index = entry.path().filename().stem().string();  // Get the filename without extension
+		logger::info("[Initialize]: Loading image: {}", index.c_str());
 
 		GraphicManager::GetD3D11Texture(entry.path().string().c_str(), &out_struct[index.c_str()].texture,
 			out_struct[index.c_str()].width, out_struct[index.c_str()].height);
@@ -104,7 +105,7 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 	}
 
 	for (const auto& entry : std::filesystem::directory_iterator(a_path)) {
-		if (entry.path().filename().extension() != ".tff" && entry.path().filename().extension() != ".otf") {
+		if (entry.path().filename().extension() != ".ttf" && entry.path().filename().extension() != ".otf") {
 			continue;  // Pass invalid file types
 		}
 
@@ -114,9 +115,6 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 		out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
 		out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
 		out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
-		//GraphicManager::font_library[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
-		//GraphicManager::font_library[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
-		//GraphicManager::font_library[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
 	}
 
 	logger::info("[Initialize]: {} fonts loaded."sv, GraphicManager::font_library.size());
@@ -149,8 +147,15 @@ void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
 
 void GraphicManager::Init()
 {
+	image_library["None"] = Image();
+	font_library["Default"] = ImGui::GetIO().Fonts->AddFontDefault();
+
 	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
-	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts"), GraphicManager::font_library);
+	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library);
+
+	for (auto font : GraphicManager::font_library) {
+		logger::info("[Initialize]: Font loaded: {}", font.first);
+	}
 
 	GraphicManager::initialized.store(true);  // TODO: Probably not needed anymore.
 }
