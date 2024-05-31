@@ -19,11 +19,11 @@ void Menu::Draw()
 		ImGui::GetIO().MouseDrawCursor = false;
 	}
 
-	Frame::Draw();
+	Frame::Draw(is_settings_popped);
 
-	if (is_settings_popped) {
-		SettingsWindow::DrawPopped();
-	}
+	// if (is_settings_popped) {
+	// 	SettingsWindow::DrawPopped();
+	// }
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -73,7 +73,6 @@ void Menu::SyncUserStyleToImGui(Settings::Style user)
 	colors[ImGuiCol_FrameBg] = user.frameBg;
 	colors[ImGuiCol_FrameBgHovered] = user.frameBgHovered;
 	colors[ImGuiCol_FrameBgActive] = user.frameBgHovered;
-	colors[ImGuiCol_MenuBarBg] = user.menuBarBg;
 	colors[ImGuiCol_ScrollbarBg] = user.scrollbarBg;
 	colors[ImGuiCol_ScrollbarGrab] = user.scrollbarGrab;
 	colors[ImGuiCol_ScrollbarGrabHovered] = user.scrollbarGrab;

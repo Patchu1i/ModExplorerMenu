@@ -25,11 +25,15 @@ struct Properties
 	}
 };
 
-void Frame::Draw()
+void Frame::Draw(bool is_settings_popped)
 {
 	Properties window;
 
 	auto& style = Settings::GetSingleton()->GetStyle();
+
+	if (is_settings_popped) {
+		SettingsWindow::DrawPopped();
+	}
 
 	// Doing this here to prevent edge cases of Skyrim window resizing.
 	const float center_x = window.screenSize.x * 0.5f;
@@ -39,11 +43,12 @@ void Frame::Draw()
 
 	// Draw Sidebar Frame
 	static constexpr ImGuiWindowFlags sidebar_flag = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
+	auto noFocus = is_settings_popped ? ImGuiWindowFlags_NoBringToFrontOnFocus : 0;
 	ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
 	ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
 
 	ImGui::PushFont(style.sidebarFont);
-	if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag)) {
+	if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
 		if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
 			_activeWindow = ActiveWindow::Home;
 		}
@@ -78,7 +83,7 @@ void Frame::Draw()
 	ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
 	ImGui::PushFont(style.textFont);
-	if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag)) {
+	if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus)) {
 		switch (_activeWindow) {
 		case ActiveWindow::Home:
 			HomeWindow::Draw();
@@ -103,7 +108,7 @@ void Frame::Draw()
 	}
 	ImGui::PopFont();
 
-	GraphicManager::DrawImage(Frame::header_texture, ImVec2(window.screenSize.x * 0.5f, window.screenSize.y * 0.5f));
+	GraphicManager::DrawImage(style.splashImage, ImVec2(window.screenSize.x * 0.5f, window.screenSize.y * 0.5f));
 }
 
 void Frame::Install()

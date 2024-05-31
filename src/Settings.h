@@ -87,7 +87,6 @@ public:
 		ImVec4 frameBg = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
 		ImVec4 frameBgHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 		ImVec4 frameBgActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-		ImVec4 menuBarBg = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
 		ImVec4 scrollbarBg = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
 		ImVec4 scrollbarGrab = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
 		ImVec4 scrollbarGrabHovered = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);

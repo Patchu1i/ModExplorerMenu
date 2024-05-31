@@ -129,7 +129,6 @@ void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
 	a_out.frameBg = style.Colors[ImGuiCol_FrameBg];
 	a_out.frameBgHovered = style.Colors[ImGuiCol_FrameBgHovered];
 	a_out.frameBgActive = style.Colors[ImGuiCol_FrameBgActive];
-	a_out.menuBarBg = style.Colors[ImGuiCol_MenuBarBg];
 	a_out.scrollbarBg = style.Colors[ImGuiCol_ScrollbarBg];
 	a_out.scrollbarGrab = style.Colors[ImGuiCol_ScrollbarGrab];
 	a_out.scrollbarGrabHovered = style.Colors[ImGuiCol_ScrollbarGrabHovered];
@@ -205,7 +204,6 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.frameBg = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGColor", def.style.frameBg, a_ini);
 	user.style.frameBgHovered = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGHoveredColor", def.style.frameBgHovered, a_ini);
 	user.style.frameBgActive = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGActiveColor", def.style.frameBgActive, a_ini);
-	user.style.menuBarBg = GET_VALUE<ImVec4>("ToRemove", "MenuBarColor", def.style.menuBarBg, a_ini);
 	user.style.scrollbarBg = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarBGColor", def.style.scrollbarBg, a_ini);
 	user.style.scrollbarGrab = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabColor", def.style.scrollbarGrab, a_ini);
 	user.style.scrollbarGrabHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabHoveredColor", def.style.scrollbarGrabHovered, a_ini);
@@ -280,7 +278,6 @@ void Settings::ExportThemeToIni(const wchar_t* a_path, Style a_user)
 		a_ini.SetValue(rSections[Frame], "FrameBGColor", Settings::ToString(a_user.frameBg, false).c_str());
 		a_ini.SetValue(rSections[Frame], "FrameBGHoveredColor", Settings::ToString(a_user.frameBgHovered, false).c_str());
 		a_ini.SetValue(rSections[Frame], "FrameBGActiveColor", Settings::ToString(a_user.frameBgActive, false).c_str());
-		a_ini.SetValue("ToRemove", "MenuBarColor", Settings::ToString(a_user.menuBarBg, false).c_str());
 		a_ini.SetValue(rSections[Widgets], "ScrollbarBGColor", Settings::ToString(a_user.scrollbarBg, false).c_str());
 		a_ini.SetValue(rSections[Widgets], "ScrollbarGrabColor", Settings::ToString(a_user.scrollbarGrab, false).c_str());
 		a_ini.SetValue(rSections[Widgets], "ScrollbarGrabHoveredColor", Settings::ToString(a_user.scrollbarGrabHovered, false).c_str());

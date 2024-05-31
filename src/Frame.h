@@ -6,7 +6,7 @@
 class Frame
 {
 public:
-	static void Draw();
+	static void Draw(bool is_settings_popped = false);
 	static void Install();
 	static void RefreshStyle();
 
