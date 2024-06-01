@@ -84,13 +84,66 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 
 		_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, non_playable });
 
-		// Add mod file to list.
-		// if (!_modList.contains(mod)) {
-		// 	_modList.insert(mod);
-		// 	// .first->GetFilename().data()
-		// }
+		//Add mod file to list.
+		if (!_modList.contains(mod)) {
+			_modList.insert(mod);
+			// .first->GetFilename().data()
+		}
 
 		// write a logger::info() here to detail the size of _cache in memory and the amount of items added
+	}
+}
+
+// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
+// Absolute unit of code here. Super grateful for the author.
+void MEMData::CacheCells(RE::TESFile* a_file, std::map<std::string, CachedCell>& a_cellMap)
+{
+	if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
+		logger::warn(FMT_STRING("failed to open file: {:s}"sv), a_file->fileName);
+		return;
+	}
+
+	do {
+		if (a_file->currentform.form == 'LLEC') {
+			char edid[512]{ '\0' };
+			bool gotEDID{ false };
+
+			std::uint16_t data{ 0 };
+			bool gotDATA{ false };
+
+			std::uint32_t cidx{ 0 };
+			cidx += a_file->compileIndex << 24;
+			cidx += a_file->smallFileCompileIndex << 12;
+
+			do {
+				switch (a_file->GetCurrentSubRecordType()) {
+				case 'DIDE':
+					gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
+					if (gotEDID && gotDATA && ((data & 1) == 0)) {
+						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
+						a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+						continue;
+					}
+					break;
+
+				case 'ATAD':
+					gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
+					if (gotEDID && gotDATA && ((data & 1) == 0)) {
+						a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
+						continue;
+					}
+					break;
+
+				default:
+					break;
+				}
+			} while (a_file->SeekNextSubrecord());
+		}
+	} while (a_file->SeekNextForm(true));
+
+	if (!a_file->CloseTES(false)) {
+		logger::warn(FMT_STRING("failed to close file: {:s}"sv), a_file->fileName);
 	}
 }
 
@@ -119,7 +172,46 @@ void MEMData::Run()
 	WorldspaceCells cells;
 
 	for (const auto& cell : cells.table) {
-		const auto& [plugin, space, place, name, id] = cell;
-		//logger::info("Cell: {}, {}, {}, {}, {}", plugin, space, place, name, id);
+		const auto& [_plugin, space, place, name, editorid] = cell;
+		std::string plugin = _plugin + ".esm";
+		const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
+
+		_cellCache.emplace(editorid, CachedCell(plugin, space, place, name, editorid, mod));
 	}
+
+	// Overwrite _cellCache with Baka changes
+	for (const auto& file : _modList) {
+		CacheCells(file, _cellCache);
+	}
+
+	// for (const auto& file : _modList) {
+	// 	CacheCells(file, _testMap);
+	// }
+
+	// for (const auto& cell : _testMap) {
+	// 	const auto& [editorid, pair] = cell;
+	// 	const auto& [cidx, fileName] = pair;
+
+	// 	auto _cellPair = std::make_pair(editorid, cidx);
+	// 	std::string _fileName = std::string(fileName);
+
+	// 	auto& spaceMap = pluginMap.emplace(_fileName, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>())->second;
+	// 	auto& zoneMap = spaceMap.emplace("Unkown", std::multimap<std::string, std::pair<std::string, uint32_t>>())->second;
+	// 	zoneMap.emplace("Unkown", _cellPair);
+	// }
+
+	// for (const auto& pluginPair : pluginMap) {
+	// 	const auto& [plugin, spaceMap] = pluginPair;
+
+	// 	for (const auto& spacePair : spaceMap) {
+	// 		const auto& [space, zoneMap] = spacePair;
+
+	// 		for (const auto& zonePair : zoneMap) {
+	// 			const auto& [zone, cellPair] = zonePair;
+	// 			const auto& [cell, cidx] = cellPair;
+
+	// 			logger::info("Plugin: {}, Space: {}, Zone: {}, Cell: {}", plugin, space, zone, cell);
+	// 		}
+	// 	}
+	// }
 }

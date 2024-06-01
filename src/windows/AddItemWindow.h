@@ -1,17 +1,15 @@
 #pragma once
 
-#include "WindowBaseClass.h"
 #include "lib/Graphic.h"
 #include <unordered_set>
 
 // #include "Console.h"
 
-class AddItemWindow : public WindowBaseClass
+class AddItemWindow
 {
 public:
 	static void Draw();
 	static void Init();
-	static void RefreshStyle();
 
 	enum ItemType
 	{
@@ -61,13 +59,6 @@ public:
 		EditorID
 	};
 
-	AddItemWindow()
-	{
-		Name = "Add Item Menu";
-		Type = WindowType::window_additem;
-		Open = false;
-	}
-
 	static std::vector<AddItemWindow::ListItemType> _cachedList;
 	static std::vector<AddItemWindow::ListItemType*> _activeList;
 	static std::unordered_set<RE::TESFile*> _modList;
@@ -80,9 +71,8 @@ public:
 	static inline RE::TESFile* _currentMod;
 	static const ImGuiTableSortSpecs* s_current_sort_specs;
 
-	static inline ID3D11ShaderResourceView* favorite_enabled_texture;
-	static inline ID3D11ShaderResourceView* favorite_disabled_texture;
-	//static inline GraphicManager::Image list_arrow;
+	// static inline ID3D11ShaderResourceView* favorite_enabled_texture;
+	// static inline ID3D11ShaderResourceView* favorite_disabled_texture;
 
 	static inline ImFont* text_font;
 	static inline ImFont* header_font;
@@ -117,7 +107,6 @@ public:
 	static void ApplyFilters();
 
 	static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs, std::vector<AddItemWindow::ListItemType*>* list, int a_size);
-	//static int CompareWithSortSpecs(const void *lhs, const void *rhs)
 
 	// Cache related calls.
 	template <class T>

@@ -139,7 +139,10 @@ void AddItemWindow::Cache()
 // Draws a Copy to Clipboard button on Context popup.
 void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const char* editor)
 {
+	auto& style = Settings::GetSingleton()->GetStyle();
+
 	ImVec2 buttonSize = ImVec2(ImGui::GetContentRegionAvail().x, 30.0f);
+	ImGui::PushFont(style.buttonFont);
 	if (ImGui::Button("Copy Form ID to Clipboard", buttonSize)) {
 		ImGui::LogToClipboard();
 		ImGui::LogText(form);
@@ -160,6 +163,7 @@ void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const c
 		ImGui::LogFinish();
 		ImGui::CloseCurrentPopup();
 	}
+	ImGui::PopFont();
 }
 
 // args are AddItemWindow::ListItemType *a, AddItemWindow::ListItemType *b
@@ -294,17 +298,24 @@ void AddItemWindow::Draw_FormTable()
 			ImGui::TableNextRow(row_flags);
 			ImGui::TableNextColumn();
 
+			// FIXME: Why is this here?
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 
 			auto& ref = *a_item;
-			ImTextureID favorite_state = ref.favorite ? favorite_enabled_texture : favorite_disabled_texture;
+			ImTextureID favorite_state = ref.favorite ? style.favoriteIconEnabled.texture : style.favoriteIconDisabled.texture;
 			float col = ref.favorite ? 1.0f : 0.5f;
 
-			if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-				ref.favorite = !ref.favorite;
+			if (favorite_state != nullptr) {
+				if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+					ref.favorite = !ref.favorite;
+				}
+			} else {
+				if (ImGui::Checkbox("##FavoriteCheckbox", &ref.favorite)) {
+					// do nothing
+				}
 			}
 
 			ImGui::PopStyleColor(3);
@@ -569,7 +580,7 @@ void AddItemWindow::Draw_Actions()
 	ImGui::BeginChild("##AddItemWindowMenuActions", ImVec2(ImGui::GetContentRegionAvail()), _flags);
 	ImGui::SeparatorText("Selection:");
 
-	const float button_height = 30.0f;
+	const float button_height = ImGui::GetFontSize() * 1.5f;
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
 	const auto table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
@@ -595,17 +606,20 @@ void AddItemWindow::Draw_Actions()
 	}
 
 	ImGui::PushFont(style.buttonFont);
-	if (ImGui::Button("Clear Selection", ImVec2(button_width, 20.0f))) {
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, style.button.w));
+	if (ImGui::Button("Clear Selection", ImVec2(button_width, button_height))) {
 		for (auto& item : _activeList) {
 			item->selected = false;
 		}
 	}
+	ImGui::PopStyleColor(1);
 	ImGui::PopFont();  // Button font
 
-	ImGui::SeparatorText("Quick Actions:");
+	ImGui::SeparatorText("Selection:");
 
 	ImGui::PushFont(style.buttonFont);
-	if (ImGui::Button("Add selected to Inventory", ImVec2(button_width, button_height))) {
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, style.button.w));
+	if (ImGui::Button("Add to Inventory", ImVec2(button_width, button_height))) {
 		for (auto& item : _activeList) {
 			if (item->selected) {
 				ConsoleCommand::AddItem(item->formid);
@@ -615,13 +629,14 @@ void AddItemWindow::Draw_Actions()
 		}
 	}
 
-	if (ImGui::Button("Add selected to Favorites", ImVec2(button_width, button_height))) {
+	if (ImGui::Button("Add to Favorites", ImVec2(button_width, button_height))) {
 		for (auto& item : _activeList) {
 			if (item->selected) {
-				item->favorite = true;
+				item->favorite = !item->favorite;
 			}
 		}
 	}
+	ImGui::PopStyleColor(1);
 
 	if (ImGui::Button("Select All Favorites", ImVec2(button_width, button_height))) {
 		for (auto& item : _activeList) {
@@ -671,7 +686,7 @@ void AddItemWindow::Draw_AdvancedOptions()
 		//float height = static_cast<float>(list_arrow.height);
 		//ImGui::ImageButton("##FilterByModHelp", list_arrow.texture, ImVec2(width / 3, height / 3));
 
-		ImGui::SameLine();
+		ImGui::NewLine();
 
 		if (ImGui::BeginCombo("##FilterByMod", combo_text)) {
 			for (auto& mod : _modList) {
@@ -757,26 +772,4 @@ void AddItemWindow::Draw()
 void AddItemWindow::Init()
 {
 	AddItemWindow::Cache();
-
-	//list_font = GraphicManager::GetFont("Gravity-Book-Small");
-	//header_font = GraphicManager::GetFont("Coolvetica-Medium");
-	//_searchBy = AddItemWindow::SearchBy::FullName;
-
-	//favorite_disabled_texture = GraphicManager::GetImage("favorite-disabled-new").texture;
-	//favorite_enabled_texture = GraphicManager::GetImage("favorite-enabled-new").texture;
-	// list_arrow = GraphicManager::GetImage("list-arrow");
-}
-
-void AddItemWindow::RefreshStyle()
-{
-	//auto& style = Settings::GetSingleton()->GetStyle();
-
-	//logger::info("AddItem Refresh Style");
-	//header_font = GraphicManager::GetFont(style.headerFont.c_str());
-	//text_font = GraphicManager::GetFont(style.textFont.c_str());
-	//button_font = GraphicManager::GetFont(style.buttonFont.c_str());
-
-	//logger::info("Header Font {}", style.headerFont.c_str());
-	//logger::info("Text Font {}", style.textFont.c_str());
-	//logger::info("Button Font {}", style.buttonFont.c_str());
 }

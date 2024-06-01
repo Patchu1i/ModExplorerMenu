@@ -4,6 +4,7 @@
 #include "windows/AddItemWindow.h"
 #include "windows/HomeWindow.h"
 #include "windows/SettingsWindow.h"
+#include "windows/TeleportWindow.h"
 
 Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
 
@@ -49,27 +50,27 @@ void Frame::Draw(bool is_settings_popped)
 
 	ImGui::PushFont(style.sidebarFont);
 	if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
-		if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::Home;
 		}
 
-		if (ImGui::Button("Add Item", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("Add Item", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::AddItem;
 		}
 
-		if (ImGui::Button("NPC", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("NPC", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::NPC;
 		}
 
-		if (ImGui::Button("Lookup", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("Lookup", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::Lookup;
 		}
 
-		if (ImGui::Button("Teleport", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("Teleport", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::Teleport;
 		}
 
-		if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+		if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::Settings;
 		}
 
@@ -96,13 +97,12 @@ void Frame::Draw(bool is_settings_popped)
 		case ActiveWindow::Lookup:
 			break;
 		case ActiveWindow::Teleport:
+			TeleportWindow::Draw(style);
 			break;
 		case ActiveWindow::Settings:
 			SettingsWindow::Draw();
 			break;
 		}
-
-		ImGui::Image(Frame::header_texture.texture, ImVec2(100, 100));
 
 		ImGui::End();
 	}
@@ -119,9 +119,6 @@ void Frame::Install()
 	HomeWindow::Init();
 
 	RefreshStyle();
-
-	// Setup textures
-	Frame::header_texture = GraphicManager::GetImage("bg-skyrim-540");
 
 	// FIXME: This shouldn't be needed anymore
 	Frame::_init.store(true);

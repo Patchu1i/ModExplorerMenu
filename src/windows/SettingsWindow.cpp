@@ -162,6 +162,11 @@ void SettingsWindow::DrawThemeSelector()
 	Settings::Config& config = Settings::GetSingleton()->GetConfig();
 	constexpr auto color_flags = ImGuiTreeNodeFlags_Framed;
 
+	if (changes.load()) {
+		Menu::GetSingleton()->RefreshStyle();
+		changes.store(false);
+	}
+
 	if (ImGui::CollapsingHeader("Theme Preset", color_flags | ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::SeparatorText("Select a theme from a list of presets:");
 
@@ -380,11 +385,6 @@ void SettingsWindow::Draw()
 		}
 	}
 	ImGui::EndChild();
-
-	if (changes.load()) {
-		Menu::GetSingleton()->RefreshStyle();
-		changes.store(false);
-	}
 }
 
 void SettingsWindow::Init()
