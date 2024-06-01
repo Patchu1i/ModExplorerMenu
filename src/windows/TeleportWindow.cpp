@@ -16,9 +16,11 @@ static inline const float center_text_x(const char* text)
 	       ImGui::CalcTextSize(text).x / 2;
 };
 
-void TeleportWindow::ShowTable(Settings::Style a_style)
+void TeleportWindow::ShowTable(Settings::Style& a_style)
 {
 	//auto& cellMap = MEMData::GetCellMap();
+
+	auto& config = Settings::GetSingleton()->GetConfig();
 
 	//ImGuiTableFlags_SizingStretchProp
 	const auto table_flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
@@ -34,10 +36,10 @@ void TeleportWindow::ShowTable(Settings::Style a_style)
 
 	if (ImGui::BeginTable("##TeleportTable", column_count, table_flags | sizing, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
-		ImGui::TableSetupColumn("##Favorite", ImGuiTableColumnFlags_WidthFixed, 16.0f, ColumnID_Favorite);
-		ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_None, 25.0f, ColumnID_ESM);
+		ImGui::TableSetupColumn("##Favorite", ImGuiTableColumnFlags_WidthFixed, 25.0f, ColumnID_Favorite);
+		ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Plugin);
 		ImGui::TableSetupColumn("Worldspace", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Space);
-		ImGui::TableSetupColumn("Zone", ImGuiTableColumnFlags_None, 65.0f, ColumnID_Zone);
+		ImGui::TableSetupColumn("Zone", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Zone);
 		ImGui::TableSetupColumn("Full Name", ImGuiTableColumnFlags_None, 75.0f, ColumnID_FullName);
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 75.0f, ColumnID_EditorID);
 
@@ -51,18 +53,37 @@ void TeleportWindow::ShowTable(Settings::Style a_style)
 
 			ImGui::TableHeader(column_name);
 
-			ImGui::TableSetColumnEnabled(column, column_toggle[column]);
+			//ImGui::TableSetColumnEnabled(column, column_toggle[column]);
 			ImGui::PopID();
 		}
 		ImGui::PopFont();
 
+		ImGui::TableSetColumnEnabled(ColumnID_Favorite, config.teleShowFavoriteColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Plugin, config.teleShowPluginColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Space, config.teleShowSpaceColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Zone, config.teleShowZoneColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_FullName, config.teleShowFullNameColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_EditorID, config.teleShowEditorIDColumn);
+
+		if (dirty) {
+			ImGui::TableGetSortSpecs()->SpecsDirty = true;
+		}
+
+		if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
+			if (sort_specs->SpecsDirty) {
+				SortColumnsWithSpecs(sort_specs);
+				sort_specs->SpecsDirty = false;
+				dirty = false;
+			}
+		}
+
 		int count = 0;
-		for (auto& data : cellMap) {
+		for (auto& cell : cellMap) {
 			count++;
 
-			auto& [editorid, _cell] = data;  // cellMap[editorid
+			//auto& [editorid, _cell] = data;  // cellMap[editorid
 			//auto& editorid = data.first;
-			auto& cell = *_cell;
+			//auto& cell = *_cell;
 
 			if (count > 1000) {
 				break;
@@ -74,35 +95,86 @@ void TeleportWindow::ShowTable(Settings::Style a_style)
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 
-			ImTextureID favorite_state = cell.favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
-			float col = cell.favorite ? 1.0f : 0.5f;
+			ImTextureID favorite_state = cell->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
+			float col = cell->favorite ? 1.0f : 0.5f;
 
 			if (favorite_state != nullptr) {
 				if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-					cell.favorite = !cell.favorite;
+					cell->favorite = !cell->favorite;
 				}
 			} else {
-				if (ImGui::Checkbox((std::string("##CheckboxTest") + table_id).c_str(), &cell.favorite)) {
+				if (ImGui::Checkbox((std::string("##CheckboxTest") + table_id).c_str(), &cell->favorite)) {
 					// do nothing
 				}
 			}
 
 			ImGui::TableNextColumn();
 
-			ImGui::Text(cell.plugin.c_str());
+			ImGui::Text(cell->plugin.c_str());
 			ImGui::TableNextColumn();
-			ImGui::Text(cell.space.c_str());
+			ImGui::Text(cell->space.c_str());
 			ImGui::TableNextColumn();
-			ImGui::Text(cell.zone.c_str());
+			ImGui::Text(cell->zone.c_str());
 			ImGui::TableNextColumn();
-			ImGui::Text(cell.fullName.c_str());
+			ImGui::Text(cell->fullName.c_str());
 			ImGui::TableNextColumn();
-			ImGui::Text(cell.editorid.c_str());
+			ImGui::Text(cell->editorid.c_str());
 			ImGui::PopID();
 		}
 
 		ImGui::EndTable();
 	}
+}
+
+bool TeleportWindow::SortColumn(const MEMData::CachedCell* v1, const MEMData::CachedCell* v2)
+{
+	const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
+	const ImGuiID ID = sort_specs->Specs->ColumnUserID;
+
+	int delta = 0;
+
+	switch (ID) {
+	// Delta must be +1 or -1 to indicate move. Otherwise comparitor is invalid.
+	case ColumnID_Favorite:  // bool
+		delta = (v1->favorite < v2->favorite) ? -1 : (v1->favorite > v2->favorite) ? 1 :
+		                                                                             0;
+		break;
+	case ColumnID_Plugin:  // const char *
+		delta = strcmp(v1->plugin.c_str(), v2->plugin.c_str());
+		break;
+	case ColumnID_Space:  // std::string
+		delta = strcmp(v1->space.c_str(), v2->space.c_str());
+		break;
+	case ColumnID_Zone:  // const char *
+		delta = strcmp(v1->zone.c_str(), v2->zone.c_str());
+		break;
+	case ColumnID_FullName:  // std::string
+		delta = strcmp(v1->fullName.c_str(), v2->fullName.c_str());
+		break;
+	case ColumnID_EditorID:  // std::int32_t
+		delta = strcmp(v1->editorid.c_str(), v2->editorid.c_str());
+		break;
+	default:
+		break;
+	}
+
+	if (delta > 0) {
+		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? true : false;
+	}
+	if (delta < 0) {
+		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? false : true;
+	}
+	// Fallback to prevent assertion.
+	return false;
+}
+
+void TeleportWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
+{
+	s_current_sort_specs = sort_specs;
+	if (cellMap.size() > 1) {
+		std::sort(cellMap.begin(), cellMap.end(), SortColumn);
+	}
+	s_current_sort_specs = NULL;
 }
 
 void TeleportWindow::ApplyFilters()
@@ -114,10 +186,10 @@ void TeleportWindow::ApplyFilters()
 	static char compare[256];  // Declare a char array to store the value of compare
 	bool skip = false;
 
-	for (auto& data : cached_cell_map) {
-		auto& [editorid, cell] = data;  // cellMap[editorid
+	for (auto& cell : cached_cell_map) {
+		//auto& [editorid, cell] = data;  // cellMap[editorid
 		switch (searchKey) {
-		case ColumnID_ESM:
+		case ColumnID_Plugin:
 			strcpy(compare, cell.plugin.c_str());  // Copy the value of item.name to compare
 			break;
 		case ColumnID_Space:
@@ -161,7 +233,7 @@ void TeleportWindow::ApplyFilters()
 				score++;
 
 			if (score > 0) {
-				cellMap.emplace(editorid, &cell);
+				cellMap.push_back(&cell);
 			}
 
 			continue;
@@ -181,10 +253,11 @@ void TeleportWindow::ApplyFilters()
 			//if (_filters.count(item.formType) > 0) {
 			//	_activeList.push_back(&item);
 			//}
-			cellMap.emplace(editorid, &cell);
+			cellMap.push_back(&cell);
 		}
 	}
 
+	dirty = true;
 	// Resort the list after applying filters
 	//_dirtyFilter = true;
 
@@ -192,7 +265,7 @@ void TeleportWindow::ApplyFilters()
 	//logger::info("activeList mem: {}", sizeof(_activeList));
 }
 
-void TeleportWindow::ShowInputSearch(Settings::Style a_style)
+void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
 {
 	ImGui::PushID("##InputSearchTeleportWindowUniqueID");
 	(void)a_style;
@@ -206,7 +279,7 @@ void TeleportWindow::ShowInputSearch(Settings::Style a_style)
 		{ ColumnID_None, "None" },
 		{ ColumnID_FullName, "Name" },
 		{ ColumnID_EditorID, "Editor ID" },
-		{ ColumnID_ESM, "Plugin Name" },
+		{ ColumnID_Plugin, "Plugin Name" },
 		{ ColumnID_Space, "Space" },
 		{ ColumnID_Zone, "Zone" },
 		{ ColumnID_Favorite, "Favorite" },
@@ -245,7 +318,7 @@ void TeleportWindow::ShowInputSearch(Settings::Style a_style)
 	}
 }
 
-void TeleportWindow::ShowOptions(Settings::Style a_style)
+void TeleportWindow::ShowOptions(Settings::Style& a_style)
 {
 	(void)a_style;
 
@@ -262,8 +335,6 @@ void TeleportWindow::ShowOptions(Settings::Style a_style)
 
 	ImGui::SeparatorText("Select a mod to search:");
 	auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mods";
-
-	ImGui::NewLine();
 
 	if (ImGui::BeginCombo("##FilterByMod", combo_text)) {
 		if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
@@ -285,7 +356,7 @@ void TeleportWindow::ShowOptions(Settings::Style a_style)
 	}
 }
 
-void TeleportWindow::Draw(Settings::Style a_style)
+void TeleportWindow::Draw(Settings::Style& a_style)
 {
 	// const auto _flags = ImGuiOldColumnFlags_NoResize;
 	// ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
@@ -311,6 +382,10 @@ void TeleportWindow::Draw(Settings::Style a_style)
 	ImGui::SeparatorText(results.c_str());
 
 	ShowTable(a_style);
+
+	if (cellMap.size() > 1000) {
+		ImGui::SeparatorText("Results limited to 1000 entries.");
+	}
 
 	// // Start of Right Column
 	// ImGui::NextColumn();

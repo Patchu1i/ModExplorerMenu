@@ -59,8 +59,9 @@ private:
 	};
 
 	static inline std::vector<CachedObject> _cache;
-	static inline std::map<std::string, CachedCell> _cellCache;  // EditorID, CachedCell
+	static inline std::vector<CachedCell> _cellCache;
 	static inline std::unordered_set<RE::TESFile*> _modList;
+	// static inline std::map<std::string, CachedCell> _cellCache;  // EditorID, CachedCell
 	//inline static std::map<std::pair<std::uint32_t, const std::string>, std::string_view> _cellMap;
 
 	//inline static std::map<const std::string, std::pair<std::uint32_t, std::string_view>> _testMap;
@@ -71,7 +72,7 @@ private:
 
 	//inline static std::multimap<std::string, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>> pluginMap;
 
-	void CacheCells(RE::TESFile* a_file, std::map<std::string, CachedCell>& a_map);
+	void CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_map);
 
 	template <class T>
 	static void CacheItems(RE::TESDataHandler* a_data);
@@ -83,7 +84,7 @@ public:
 		return &singleton;
 	}
 
-	static inline std::map<std::string, CachedCell>& GetCellMap()
+	static inline std::vector<CachedCell>& GetCellMap()
 	{
 		return _cellCache;
 	}

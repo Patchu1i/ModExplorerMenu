@@ -60,7 +60,7 @@ void AddDualSlider(const char* a_text, float& a_valRef_a, float& a_valRef_b, flo
 void AddCheckbox(const char* a_text, bool& a_boolRef)
 {
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-	auto id = std::string(a_text) + "##Checkbox";
+	auto id = "##Checkbox" + std::string(a_text);
 	auto width = ImGui::GetFontSize();
 	ImGui::Text(a_text);
 	ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
@@ -366,6 +366,18 @@ void SettingsWindow::DrawThemeSelector()
 	ImGui::NewLine();
 }
 
+void SettingsWindow::DrawTeleportSettings()
+{
+	auto& config = Settings::GetSingleton()->GetConfig();
+
+	AddCheckbox("Toggle Favorite Column", config.teleShowFavoriteColumn);
+	AddCheckbox("Toggle Plugin Column", config.teleShowPluginColumn);
+	AddCheckbox("Toggle Space Column", config.teleShowSpaceColumn);
+	AddCheckbox("Toggle Zone Column", config.teleShowZoneColumn);
+	AddCheckbox("Toggle Full Name Column", config.teleShowFullNameColumn);
+	AddCheckbox("Toggle Editor ID Column", config.teleShowEditorIDColumn);
+}
+
 void SettingsWindow::Draw()
 {
 	ImGui::Text("Welcome to the Settings Window!");
@@ -381,7 +393,13 @@ void SettingsWindow::Draw()
 		if (ImGui::CollapsingHeader("AddItem Configuration", ImGuiTreeNodeFlags_Framed)) {
 			ImGui::Indent();
 			ImGui::Text("AddItem Configuration");
+			ImGui::Unindent();
+		}
+
+		if (ImGui::CollapsingHeader("Teleport Configuration", ImGuiTreeNodeFlags_Framed)) {
 			ImGui::Indent();
+			DrawTeleportSettings();
+			ImGui::Unindent();
 		}
 	}
 	ImGui::EndChild();

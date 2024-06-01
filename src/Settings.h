@@ -71,6 +71,17 @@ public:
 	struct Config
 	{
 		std::string theme = "Default";
+
+		// Table
+		float maxTableRows = 5000.0f;
+
+		// Teleport
+		bool teleShowFavoriteColumn = true;
+		bool teleShowPluginColumn = true;
+		bool teleShowSpaceColumn = true;
+		bool teleShowZoneColumn = true;
+		bool teleShowFullNameColumn = true;
+		bool teleShowEditorIDColumn = true;
 	};
 
 	ImGuiStyle test;

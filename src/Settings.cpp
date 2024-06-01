@@ -114,6 +114,15 @@ void Settings::LoadSettings(const wchar_t* a_path)
 void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 {
 	user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
+
+	user.config.maxTableRows = GET_VALUE<float>(rSections[AddItem], "MaxTableRows", 5000.0f, a_ini);
+
+	user.config.teleShowFavoriteColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFavoriteColumn", true, a_ini);
+	user.config.teleShowPluginColumn = GET_VALUE<bool>(rSections[Teleport], "ShowPluginColumn", true, a_ini);
+	user.config.teleShowSpaceColumn = GET_VALUE<bool>(rSections[Teleport], "ShowSpaceColumn", true, a_ini);
+	user.config.teleShowZoneColumn = GET_VALUE<bool>(rSections[Teleport], "ShowZoneColumn", true, a_ini);
+	user.config.teleShowFullNameColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFullNameColumn", true, a_ini);
+	user.config.teleShowEditorIDColumn = GET_VALUE<bool>(rSections[Teleport], "ShowEditorIDColumn", true, a_ini);
 }
 
 void Settings::InstantiateDefaultTheme(Settings::Style& a_out)

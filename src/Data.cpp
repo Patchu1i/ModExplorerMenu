@@ -96,7 +96,7 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 
 // https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 // Absolute unit of code here. Super grateful for the author.
-void MEMData::CacheCells(RE::TESFile* a_file, std::map<std::string, CachedCell>& a_cellMap)
+void MEMData::CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_cellMap)
 {
 	if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
 		logger::warn(FMT_STRING("failed to open file: {:s}"sv), a_file->fileName);
@@ -121,7 +121,8 @@ void MEMData::CacheCells(RE::TESFile* a_file, std::map<std::string, CachedCell>&
 					gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
 					if (gotEDID && gotDATA && ((data & 1) == 0)) {
 						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
-						a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+						//a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+						a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						continue;
 					}
 					break;
@@ -129,8 +130,9 @@ void MEMData::CacheCells(RE::TESFile* a_file, std::map<std::string, CachedCell>&
 				case 'ATAD':
 					gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
 					if (gotEDID && gotDATA && ((data & 1) == 0)) {
-						a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+						//a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
+						a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						continue;
 					}
 					break;
@@ -176,7 +178,7 @@ void MEMData::Run()
 		std::string plugin = _plugin + ".esm";
 		const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
 
-		_cellCache.emplace(editorid, CachedCell(plugin, space, place, name, editorid, mod));
+		_cellCache.push_back(CachedCell(plugin, space, place, name, editorid, mod));
 	}
 
 	// Overwrite _cellCache with Baka changes
