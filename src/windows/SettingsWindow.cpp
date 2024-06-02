@@ -365,9 +365,11 @@ void SettingsWindow::DrawAddItemSettings()
 {
 	auto& config = Settings::GetSingleton()->GetConfig();
 
-	AddSliderPicker("Max Table Rows", config.maxTableRows, 10.0f, 10000.0f,
-		"(Warning): Settings this too high will impact performance\n\n"
-		"This will not impact filter or search results, only the number of rows displayed");
+	AddCheckbox("Toggle Favorite Column", config.aimShowFavoriteColumn);
+	AddCheckbox("Toggle Type Column", config.aimShowTypeColumn);
+	AddCheckbox("Toggle FormID Column", config.aimShowFormIDColumn);
+	AddCheckbox("Toggle Name Column", config.aimShowNameColumn);
+	AddCheckbox("Toggle Editor ID Column", config.aimShowEditorIDColumn);
 }
 
 void SettingsWindow::DrawTeleportSettings()

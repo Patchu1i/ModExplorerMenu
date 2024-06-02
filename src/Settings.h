@@ -71,18 +71,24 @@ public:
 
 	struct Config
 	{
+		// Main
 		std::string theme = "Default";
 
-		// Table
-		float maxTableRows = 5000.0f;
+		// Additem
+		bool aimShowFavoriteColumn;
+		bool aimShowTypeColumn;
+		bool aimShowFormIDColumn;
+		bool aimShowNameColumn;
+		bool aimShowEditorIDColumn;
+		bool aimShowGoldValueColumn;
 
 		// Teleport
-		bool teleShowFavoriteColumn = true;
-		bool teleShowPluginColumn = true;
-		bool teleShowSpaceColumn = true;
-		bool teleShowZoneColumn = true;
-		bool teleShowFullNameColumn = true;
-		bool teleShowEditorIDColumn = true;
+		bool teleShowFavoriteColumn;
+		bool teleShowPluginColumn;
+		bool teleShowSpaceColumn;
+		bool teleShowZoneColumn;
+		bool teleShowFullNameColumn;
+		bool teleShowEditorIDColumn;
 	};
 
 	ImGuiStyle test;

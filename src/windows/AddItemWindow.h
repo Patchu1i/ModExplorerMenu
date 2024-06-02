@@ -11,6 +11,10 @@ class AddItemWindow
 {
 public:
 	static void Draw(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowOptions(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowItemCard(MEMData::CachedItem* item);
 	static void Init();
 
 	enum FilterType
@@ -69,9 +73,7 @@ public:
 
 	// ImGui related calls.
 	static void Draw_InputSearch();
-	static void Draw_FormTable(Settings::Style& a_style, Settings::Config& a_config);
 	static void Draw_Actions(Settings::Style& a_style, Settings::Config& a_config);
-	static void Draw_AdvancedOptions();
 	static void Context_CopyOnly(const char* form, const char* name, const char* editor);
 	static void ApplyFilters();
 };

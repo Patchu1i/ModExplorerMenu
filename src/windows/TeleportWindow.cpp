@@ -81,10 +81,6 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 		for (auto& cell : cellMap) {
 			count++;
 
-			if (count > config.maxTableRows) {
-				break;
-			}
-
 			auto table_id = std::string("##TeleportTable::Table-") + std::to_string(count);
 
 			ImGui::PushID(table_id.c_str());
@@ -116,10 +112,6 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 			ImGui::TableNextColumn();
 			ImGui::Text(cell->editorid.c_str());
 			ImGui::PopID();
-		}
-
-		if (count > config.maxTableRows) {
-			ImGui::SeparatorText("Too many results, please refine your search. (Configurable in Settings)");
 		}
 
 		ImGui::EndTable();
@@ -332,7 +324,7 @@ void TeleportWindow::ShowOptions(Settings::Style& a_style)
 
 void TeleportWindow::Draw(Settings::Style& a_style)
 {
-	auto& config = Settings::GetSingleton()->GetConfig();
+	//auto& config = Settings::GetSingleton()->GetConfig();
 	// const auto _flags = ImGuiOldColumnFlags_NoResize;
 	// ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
 
@@ -356,10 +348,6 @@ void TeleportWindow::Draw(Settings::Style& a_style)
 	ImGui::SeparatorText(results.c_str());
 
 	ShowTable(a_style);
-
-	if (cellMap.size() > config.maxTableRows) {
-		ImGui::SeparatorText(("Results limited to " + std::to_string(config.maxTableRows) + " entries.").c_str());
-	}
 
 	// // Start of Right Column
 	// ImGui::NextColumn();

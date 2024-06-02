@@ -114,7 +114,14 @@ void Settings::SaveSettings()
 		FormatMasterIni(a_ini);
 
 		a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
-		a_ini.SetValue(rSections[AddItem], "MaxTableRows", std::to_string(Settings::GetSingleton()->user.config.maxTableRows).c_str());
+
+		a_ini.SetValue(rSections[AddItem], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFavoriteColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowTypeColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowTypeColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowFormIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFormIDColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowNameColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowNameColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowEditorIDColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowGoldValueColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowGoldValueColumn).c_str());
+
 		a_ini.SetValue(rSections[Teleport], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFavoriteColumn).c_str());
 		a_ini.SetValue(rSections[Teleport], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowPluginColumn).c_str());
 		a_ini.SetValue(rSections[Teleport], "ShowSpaceColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowSpaceColumn).c_str());
@@ -131,7 +138,12 @@ void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 {
 	user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
 
-	user.config.maxTableRows = GET_VALUE<float>(rSections[AddItem], "MaxTableRows", 5000, a_ini);
+	user.config.aimShowFavoriteColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFavoriteColumn", true, a_ini);
+	user.config.aimShowTypeColumn = GET_VALUE<bool>(rSections[AddItem], "ShowTypeColumn", true, a_ini);
+	user.config.aimShowFormIDColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFormIDColumn", false, a_ini);
+	user.config.aimShowNameColumn = GET_VALUE<bool>(rSections[AddItem], "ShowNameColumn", true, a_ini);
+	user.config.aimShowEditorIDColumn = GET_VALUE<bool>(rSections[AddItem], "ShowEditorIDColumn", true, a_ini);
+	user.config.aimShowGoldValueColumn = GET_VALUE<bool>(rSections[AddItem], "ShowGoldValueColumn", false, a_ini);
 
 	user.config.teleShowFavoriteColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFavoriteColumn", true, a_ini);
 	user.config.teleShowPluginColumn = GET_VALUE<bool>(rSections[Teleport], "ShowPluginColumn", true, a_ini);

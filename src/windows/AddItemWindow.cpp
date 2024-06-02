@@ -2,6 +2,58 @@
 #include "Console.h"
 #include "Settings.h"
 #include "lib/Graphic.h"
+#include "lib/Util.h"
+
+// Main Draw function for AddItem, called by Frame::Draw()
+void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
+{
+	const auto _flags = ImGuiOldColumnFlags_NoResize;
+	ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
+
+	const float width = ImGui::GetWindowWidth();
+	ImGui::SetColumnWidth(0, width * 0.75f);
+
+	// Left Column
+	Draw_InputSearch();
+	ImGui::NewLine();
+
+	bool _change = false;
+
+	// Filter checkboxes up top.
+	for (auto& item : AddItemWindow::filterMap) {
+		auto first = std::get<0>(item);
+		auto third = std::get<2>(item);
+
+		ImGui::SameLine();
+		if (ImGui::Checkbox(third.c_str(), first)) {
+			_change = true;
+		}
+	}
+
+	if (_change) {
+		itemFilters.clear();
+
+		for (auto& item : filterMap) {
+			auto first = *std::get<0>(item);
+			auto second = std::get<1>(item);
+
+			if (first) {
+				itemFilters.insert(second);
+			}
+		}
+
+		ApplyFilters();
+		dirty = true;
+	}
+
+	ImGui::NewLine();
+	ShowOptions(a_style, a_config);
+	ImGui::NewLine();
+	ShowFormTable(a_style, a_config);
+	ImGui::NextColumn();
+	ShowActions(a_style, a_config);
+	ImGui::EndColumns();
+}
 
 // Draws a Copy to Clipboard button on Context popup.
 void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const char* editor)
@@ -88,11 +140,152 @@ static inline const float center_text_x(const char* text)
 	       ImGui::CalcTextSize(text).x / 2;
 };
 
-// Draw the table of items
-void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a_config)
+void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 {
-	auto minMaxCount = std::min((int)a_config.maxTableRows, static_cast<int>(itemList.size()));
-	auto results = std::string("Results (") + std::to_string(minMaxCount) + std::string(")");
+	ImGui::BeginTooltip();
+
+	ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
+	float popWidth = barSize.x * 3;
+
+	auto ProgressColor = [](double value, float max_value) -> ImVec4 {
+		float ratio = (float)value / max_value;
+		float r = 1.0f - ratio;
+		float g = ratio;
+		return ImVec4(r, g, 0.0f, 1.0f);
+	};
+
+	auto InlineBar = [popWidth, barSize, ProgressColor](const char* label, float value, float max_value) {
+		ImGui::Text(label);
+		ImGui::SameLine();
+		ImGui::InvisibleButton("##AddItemWindow::InlineBar", barSize);
+		ImGui::SameLine(popWidth - barSize.x);
+		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ProgressColor(value, max_value));
+		float curr = static_cast<float>(value);
+		char buffer[256];
+		sprintf(buffer, "%.2f", value);
+		ImGui::ProgressBar(curr / max_value, barSize, buffer);
+
+		ImGui::PopStyleColor(1);
+	};
+
+	auto InlineInt = [popWidth, barSize](const char* label, int value) {
+		ImGui::Text(label);
+		ImGui::SameLine(popWidth - ImGui::CalcTextSize(std::to_string(value).c_str()).x);
+		ImGui::Text("%d", value);
+	};
+
+	auto InlineText = [popWidth](const char* label, const char* text) {
+		ImGui::Text(label);
+		ImGui::SameLine(popWidth - ImGui::CalcTextSize(text).x);
+		ImGui::Text(text);
+	};
+
+	if (item == nullptr) {
+		ImGui::EndTooltip();
+		return;
+	}
+
+	// Header
+	ImGui::SetCursorPosX(center_text_x(item->name));
+	ImGui::Text(item->name);
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+	if (item->formType == RE::FormType::Armor) {
+		auto* armor = item->form->As<RE::TESObjectARMO>();
+
+		if (armor == nullptr) {
+			ImGui::EndTooltip();
+			return;
+		}
+
+		auto armorType = Utils::GetArmorType(armor);
+		auto armorRating = armor->GetArmorRating();
+		auto equipSlot = Utils::GetArmorSlot(armor);
+		//auto armorValue = armor->value;
+		auto weight = armor->GetWeight();
+		//auto enchantments = armor->formEnchanting->effects;
+
+		InlineBar("Armor Rating:", (float)armorRating, 100.0f);
+		//InlineBar("Armor Value:", (float)armorValue, 100.0f);
+		InlineText("Armor Type:", armorType);
+		InlineText("Equip Slot:", equipSlot);
+		InlineInt("Weight:", (int)weight);
+
+		//auto enchantmentCharge = armor->GetEnchantmentCharge();
+		//auto enchantmentCost = armor->GetEnchantmentCost();
+		//auto enchantmentType = armor->GetEnchantmentType();
+		//auto enchantmentAmount = armor->GetEnchantmentAmount();
+		//auto enchantmentDuration = armor->GetEnchantmentDuration();
+		//auto enchantmentArea = armor->GetEnchantmentArea();
+		//auto enchantmentActorValue = armor->GetEnchantmentActorValue();
+		//auto enchantmentSkill = armor->GetEnchantmentSkill();
+		//auto enchantmentMagicEffect = armor->GetEnchantmentMagicEffect();
+		//auto enchantmentCondition = armor->GetEnchantmentCondition
+	}
+
+	if (item->formType == RE::FormType::Weapon) {
+		const char* weaponTypes[] = {
+			"Hand to Hand",
+			"One Hand Sword",
+			"One Hand Dagger",
+			"One Hand Axe",
+			"One Hand Mace",
+			"Two Hand Sword",
+			"Two Hand Axe",
+			"Bow",
+			"Staff",
+			"Crossbow"
+		};
+
+		auto* weapon = item->form->As<RE::TESObjectWEAP>();
+
+		if (weapon == nullptr) {
+			ImGui::EndTooltip();
+			return;
+		}
+
+		//auto desc = weapon->GetDescription();
+		//auto critChance = weapon->GetCrit;
+		//uint16_t _dmg = weapon->attackDamage;  // seems like base damage
+		//auto _newdmg = weapon->GetAttackDamage();
+
+		//--
+		double damage = Utils::CalcBaseDamage(weapon);
+		float max_damage = Utils::CalcMaxDamage(damage, 50);
+		double reach = weapon->weaponData.reach;                                            // + and - 1 by a little.
+		float speed = weapon->weaponData.speed;                                             // 0 - 2?
+		uint16_t damage_other = weapon->GetCritDamage();                                    // 1-100x multiplier?
+		SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = weapon->weaponData.skill;  // see below
+		float stagger = weapon->weaponData.staggerValue;                                    // 0 - 2 with 1 being median
+		auto type = weaponTypes[static_cast<int>(weapon->GetWeaponType())];
+
+		//bool is_bound = weapon->IsBound();
+		//bool non_playable = weapon->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+
+		InlineBar("Base Damage:", (float)damage, max_damage);
+		InlineBar("Reach:", (float)reach, 1.5f);
+		InlineBar("Speed:", (float)speed, 2.0f);
+		InlineBar("stagger:", stagger, 2.0f);
+		InlineInt("Critical Damage:", damage_other);
+		InlineText("skill:", std::to_string(skill.get()).c_str());
+		InlineText("Type:", type);
+		//ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
+		//ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
+	}
+
+	// Always show:
+	InlineInt("Gold Value:", item->goldValue);
+
+	ImGui::EndTooltip();
+
+	// float maxRange = weapon->weaponData.maxRange;                                       // bow only
+	// float minRange = weapon->weaponData.minRange;                                       // bow only
+}
+
+// Draw the table of items
+void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
+{
+	auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
 	ImGui::SeparatorText(results.c_str());
 
 	// TODO: Add RowBG as theme option
@@ -114,14 +307,13 @@ void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a
 		return;
 	}
 
-	auto table_height_offset = itemList.size() >= a_config.maxTableRows ? -15.0f : 0.0f;
-	const auto table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y + table_height_offset);
-	if (ImGui::BeginTable("AddItemWindowTable", column_count, table_flags | sizing, table_size)) {
+	const auto table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+	if (ImGui::BeginTable("AddItemWindow::Table", column_count, table_flags | sizing, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
 		ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed, 16.0f, ColumnID_Favorite);
 		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_Type);
 		ImGui::TableSetupColumn("Form ID", ImGuiTableColumnFlags_WidthFixed, 100.0f, ColumnID_FormID);
-		ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_DefaultSort, 16.0f, ColumnID_Name);
+		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort, 16.0f, ColumnID_Name);
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 16.0f, ColumnID_EditorID);
 		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_GoldValue);
 
@@ -138,10 +330,17 @@ void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a
 
 			ImGui::TableHeader(column_name);
 
-			ImGui::TableSetColumnEnabled(column, column_toggle[column]);
+			//ImGui::TableSetColumnEnabled(column, column_toggle[column]);
 			ImGui::PopID();
 		}
 		ImGui::PopFont();
+
+		ImGui::TableSetColumnEnabled(ColumnID_Favorite, a_config.aimShowFavoriteColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Type, a_config.aimShowTypeColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_FormID, a_config.aimShowFormIDColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Name, a_config.aimShowNameColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_EditorID, a_config.aimShowEditorIDColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_GoldValue, a_config.aimShowGoldValueColumn);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
 
@@ -168,7 +367,7 @@ void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a
 
 				count++;
 
-				auto table_id = std::string("##AddItemMenu::Table-") + std::to_string(count);
+				auto table_id = std::string("##AddItemMenu::TableIndex-") + std::to_string(count);
 
 				ImGuiTableRowFlags row_flags = ImGuiTableRowFlags_None;
 
@@ -186,11 +385,11 @@ void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a
 				float col = item->favorite ? 1.0f : 0.5f;
 
 				if (favorite_state != nullptr) {
-					if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+					if (ImGui::ImageButton("##AddItemWindow::FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 						item->favorite = !item->favorite;
 					}
 				} else {
-					ImGui::Checkbox("##FavoriteCheckbox", &item->favorite);
+					ImGui::Checkbox("##AddItemWindow::FavoriteCheckbox", &item->favorite);
 				}
 
 				ImGui::PopStyleColor(3);
@@ -211,72 +410,10 @@ void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a
 				ImGui::SetCursorPosX(center_text_x(std::to_string(item->goldValue).c_str()));
 				ImGui::Selectable(std::to_string(item->goldValue).c_str(), &item->selected, select_flags);
 
-				if (item->formType == RE::FormType::Weapon) {
-					auto curRow = ImGui::TableGetHoveredRow();
+				auto curRow = ImGui::TableGetHoveredRow();
 
-					if (curRow == ImGui::TableGetRowIndex()) {
-						//enum WEAPON_TYPE : std::uint32_t
-						//{
-						//    kHandToHandMelee = 0,
-						//    kOneHandSword = 1,
-						//    kOneHandDagger = 2,
-						//    kOneHandAxe = 3,
-						//    kOneHandMace = 4,
-						//    kTwoHandSword = 5,
-						//    kTwoHandAxe = 6,
-						//    kBow = 7,
-						//    kStaff = 8,
-						//    kCrossbow = 9,
-
-						//    kTotal = 10
-						//};
-
-						std::vector<const char*> weaponTypes = {
-							"Hand to Hand",
-							"One Hand Sword",
-							"One Hand Dagger",
-							"One Hand Axe",
-							"One Hand Mace",
-							"Two Hand Sword",
-							"Two Hand Axe",
-							"Bow",
-							"Staff",
-							"Crossbow"
-						};
-
-						//auto desc = item->form->As<RE::TESObjectWEAP>()->GetDescription();
-						//auto critChance = item->form->As<RE::TESObjectWEAP>()->GetCrit;
-						uint16_t damage = item->form->As<RE::TESObjectWEAP>()->attackDamage;                                             // seems like base damage
-						uint16_t damage_other = item->form->As<RE::TESObjectWEAP>()->criticalData.damage;                                // 1-100x multiplier?
-						auto maxRange = item->form->As<RE::TESObjectWEAP>()->weaponData.maxRange;                                        // bow only
-						auto minRange = item->form->As<RE::TESObjectWEAP>()->weaponData.minRange;                                        // bow only
-						auto reach = item->form->As<RE::TESObjectWEAP>()->weaponData.reach;                                              // + and - 1 by a little.
-						auto speed = item->form->As<RE::TESObjectWEAP>()->weaponData.speed;                                              // 0 - 2?
-						SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = item->form->As<RE::TESObjectWEAP>()->weaponData.skill;  // see below
-						auto stagger = item->form->As<RE::TESObjectWEAP>()->weaponData.staggerValue;                                     // 0 - 2 with 1 being median
-						auto crit = item->form->As<RE::TESObjectWEAP>()->GetCritDamage();
-						auto type = weaponTypes[static_cast<int>(item->form->As<RE::TESObjectWEAP>()->GetWeaponType())];
-
-						auto is_bound = item->form->As<RE::TESObjectWEAP>()->IsBound();
-						auto non_playable = item->form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
-
-						auto skill_value = skill.get();  // ActorValue enum ng.commonlib.dev/_actor_values_8h_source.html
-
-						ImGui::BeginTooltip();
-						ImGui::Text("attackDamage: %d", damage);
-						ImGui::Text("criticalData.damage: %d", damage_other);
-						ImGui::Text("maxRange: %f", maxRange);
-						ImGui::Text("minRange: %f", minRange);
-						ImGui::Text("reach: %f", reach);
-						ImGui::Text("speed: %f", speed);
-						ImGui::Text("stagger: %f", stagger);
-						ImGui::Text("skill: %d", skill_value);
-						ImGui::Text("crit: %d", crit);
-						ImGui::Text("type: %s", type);
-						ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
-						ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
-						ImGui::EndTooltip();
-					}
+				if (curRow == ImGui::TableGetRowIndex()) {
+					ShowItemCard(item);
 				}
 
 				//if (ImGui::BeginPopupContextItem())
@@ -383,7 +520,7 @@ void AddItemWindow::ApplyFilters()
 // Draw search bar for filtering items.
 void AddItemWindow::Draw_InputSearch()
 {
-	ImGui::Text("Type in search terms to filter your results:");
+	ImGui::Text("Refine your search:");
 	// Testing without ImGuiInputTextFlags_EnterReturnsTrue for live updates
 	ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
 
@@ -394,7 +531,7 @@ void AddItemWindow::Draw_InputSearch()
 		{ ColumnID_FormID, "Form ID" }
 	};
 
-	if (ImGui::InputTextWithHint("##InputField", "Enter text to filter results by...", inputBuffer,
+	if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
 			IM_ARRAYSIZE(inputBuffer),
 			input_text_flags)) {
 		ApplyFilters();
@@ -406,7 +543,7 @@ void AddItemWindow::Draw_InputSearch()
 
 	auto searchByValue = search_map.at(searchKey);
 	auto combo_flags = ImGuiComboFlags_WidthFitPreview;
-	if (ImGui::BeginCombo("##FilterSearchBy", searchByValue, combo_flags)) {
+	if (ImGui::BeginCombo("##AddItemWindow::InputFilter", searchByValue, combo_flags)) {
 		for (auto& item : search_map) {
 			auto searchBy = item.first;
 			auto _searchByValue = item.second;
@@ -427,23 +564,22 @@ void AddItemWindow::Draw_InputSearch()
 }
 
 // TODO: Implement more here.
-void AddItemWindow::Draw_Actions(Settings::Style& a_style, Settings::Config& a_config)
+void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 {
 	(void)a_config;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
 
 	auto _flags = ImGuiChildFlags_AlwaysUseWindowPadding;
-	ImGui::BeginChild("##AddItemWindowMenuActions", ImVec2(ImGui::GetContentRegionAvail()), _flags);
+	ImGui::BeginChild("##AddItemWindow::Actions", ImVec2(ImGui::GetContentRegionAvail()), _flags);
 	ImGui::SeparatorText("Selection:");
 
 	const float button_height = ImGui::GetFontSize() * 1.5f;
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
 	const auto table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-	if (ImGui::BeginTable("ActionBarSelection", 1, table_flags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
+	if (ImGui::BeginTable("##AddItemWindow::ActionBarSelection", 1, table_flags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
 		ImGui::PushFont(a_style.headerFont);
 		ImGui::TableSetupColumn("Item(s)", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
@@ -511,7 +647,7 @@ void AddItemWindow::Draw_Actions(Settings::Style& a_style, Settings::Config& a_c
 	}
 	ImGui::PopFont();  // Button Font
 
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(2);
 
 	ImGui::EndChild();
 }
@@ -522,110 +658,32 @@ static inline void inline_checkbox(const char* label, bool* v)
 	ImGui::SameLine();
 }
 
-void AddItemWindow::Draw_AdvancedOptions()
+void AddItemWindow::ShowOptions(Settings::Style& a_style, Settings::Config& a_config)
 {
-	const auto header_flags = ImGuiTreeNodeFlags_SpanAvailWidth;
-	if (ImGui::CollapsingHeader("Advanced Options", header_flags)) {
-		ImGui::SeparatorText("Enable/Disable Columns:");
+	(void)a_style;
+	(void)a_config;
 
-		inline_checkbox("Show Favorite", &column_toggle[ColumnID_Favorite]);
-		inline_checkbox("Show Type", &column_toggle[ColumnID_Type]);
-		inline_checkbox("Show Form ID", &column_toggle[ColumnID_FormID]);
-		inline_checkbox("Show Name", &column_toggle[ColumnID_Name]);
-		inline_checkbox("Show Editor ID", &column_toggle[ColumnID_EditorID]);
-		inline_checkbox("Show Gold Value", &column_toggle[ColumnID_GoldValue]);
-
-		ImGui::NewLine();
-
-		ImGui::SeparatorText("Select a mod to search:");
-		auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mods";
-
-		//float width = static_cast<float>(list_arrow.width);
-		//float height = static_cast<float>(list_arrow.height);
-		//ImGui::ImageButton("##FilterByModHelp", list_arrow.texture, ImVec2(width / 3, height / 3));
-
-		ImGui::NewLine();
-
-		if (ImGui::BeginCombo("##FilterByMod", combo_text)) {
-			if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
-				selectedMod = nullptr;
+	ImGui::SeparatorText("Select a mod:");
+	auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mod..";
+	if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", combo_text)) {
+		if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
+			selectedMod = nullptr;
+			ApplyFilters();
+			ImGui::SetItemDefaultFocus();
+		}
+		for (auto& mod : MEMData::GetModList()) {
+			const char* modName = mod->GetFilename().data();
+			bool is_selected = false;
+			if (ImGui::Selectable(modName, is_selected)) {
+				selectedMod = mod;
 				ApplyFilters();
+			}
+			if (is_selected)
 				ImGui::SetItemDefaultFocus();
-			}
-			for (auto& mod : MEMData::GetModList()) {
-				const char* modName = mod->GetFilename().data();
-				bool is_selected = false;
-				if (ImGui::Selectable(modName, is_selected)) {
-					selectedMod = mod;
-					ApplyFilters();
-				}
-				if (is_selected)
-					ImGui::SetItemDefaultFocus();
-			}
-			ImGui::EndCombo();
 		}
+		ImGui::EndCombo();
 	}
 }
-
-// Main Draw function for AddItem, called by Frame::Draw()
-void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
-{
-	const auto _flags = ImGuiOldColumnFlags_NoResize;
-	ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
-
-	const float width = ImGui::GetWindowWidth();
-	ImGui::SetColumnWidth(0, width * 0.75f);
-
-	// Left Column
-	Draw_InputSearch();
-	ImGui::NewLine();
-
-	bool _change = false;
-
-	for (auto& item : AddItemWindow::filterMap) {
-		//auto [first, second, third] = item.;
-		auto first = std::get<0>(item);
-		//auto second = std::get<1>(item);
-		auto third = std::get<2>(item);
-
-		ImGui::SameLine();
-		if (ImGui::Checkbox(third.c_str(), first)) {
-			_change = true;
-		}
-	}
-
-	if (_change) {
-		itemFilters.clear();
-
-		for (auto& item : filterMap) {
-			auto first = *std::get<0>(item);
-			auto second = std::get<1>(item);
-
-			if (first) {
-				itemFilters.insert(second);
-			}
-		}
-
-		ApplyFilters();
-		dirty = true;
-	}
-
-	ImGui::NewLine();
-
-	Draw_AdvancedOptions();
-
-	ImGui::NewLine();
-
-	Draw_FormTable(a_style, a_config);
-
-	// Start of Right Column
-	ImGui::NextColumn();
-
-	Draw_Actions(a_style, a_config);
-
-	ImGui::EndColumns();
-}
-
 // Cache items on initialization
 void AddItemWindow::Init()
 {
