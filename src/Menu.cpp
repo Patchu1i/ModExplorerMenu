@@ -423,6 +423,10 @@ void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 
 	for (auto event = *a_event; event; event = event->next) {
 		if (event->eventType == RE::INPUT_EVENT_TYPE::kChar) {
+			if (!Menu::IsEnabled()) {
+				continue;
+			}
+
 			io.AddInputCharacter(static_cast<CharEvent*>(event)->keyCode);
 		} else if (event->eventType == RE::INPUT_EVENT_TYPE::kButton) {
 			const auto button = static_cast<RE::ButtonEvent*>(event);
@@ -536,6 +540,10 @@ void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 
 			switch (button->device.get()) {
 			case RE::INPUT_DEVICE::kMouse:
+				if (!Menu::IsEnabled()) {
+					continue;
+				}
+
 				if (scan_code > 7)  // middle scroll
 					io.AddMouseWheelEvent(0, button->Value() * (scan_code == 8 ? 1 : -1));
 				else {
@@ -545,7 +553,10 @@ void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 				}
 				break;
 			case RE::INPUT_DEVICE::kKeyboard:
-				io.AddKeyEvent(ImGui_ImplWin32_VirtualKeyToImGuiKey(key), button->IsPressed());
+				if (Menu::IsEnabled()) {
+					io.AddKeyEvent(ImGui_ImplWin32_VirtualKeyToImGuiKey(key), button->IsPressed());
+				}
+
 				if (button->GetIDCode() == Menu::keybind) {
 					if (button->IsDown() && Menu::initialized.load()) {
 						Menu::Toggle();
