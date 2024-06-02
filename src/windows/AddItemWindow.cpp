@@ -85,6 +85,7 @@ void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const c
 	ImGui::PopFont();
 }
 
+// TODO: Optimize this a little more. Starting to slow down. also see ApplyFilters()
 bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::CachedItem* v2)
 {
 	const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
@@ -113,6 +114,66 @@ bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::Cac
 	case ColumnID_GoldValue:  // std::int32_t
 		delta = (v1->goldValue < v2->goldValue) ? -1 : (v1->goldValue > v2->goldValue) ? 1 :
 		                                                                                 0;
+	case ColumnID_BaseDamage:
+		if (v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Weapon) {
+			auto* weapon1 = v1->form->As<RE::TESObjectWEAP>();
+			auto* weapon2 = v2->form->As<RE::TESObjectWEAP>();
+			auto baseDamage1 = Utils::CalcBaseDamage(weapon1);
+			auto baseDamage2 = Utils::CalcBaseDamage(weapon2);
+			delta = (baseDamage1 < baseDamage2) ? -1 : (baseDamage1 > baseDamage2) ? 1 :
+			                                                                         0;
+		} else if (v1->formType == RE::FormType::Weapon) {
+			delta = 1;  // force above
+		} else if (v2->formType == RE::FormType::Weapon) {
+			delta = -1;  // force below
+		}
+		break;
+	case ColumnID_Speed:
+		if (v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Weapon) {
+			auto* weapon1 = v1->form->As<RE::TESObjectWEAP>();
+			auto* weapon2 = v2->form->As<RE::TESObjectWEAP>();
+			auto speed1 = weapon1->weaponData.speed;
+			auto speed2 = weapon2->weaponData.speed;
+			delta = (speed1 < speed2) ? -1 : (speed1 > speed2) ? 1 :
+			                                                     0;
+		} else if (v1->formType == RE::FormType::Weapon) {
+			delta = 1;  // force above
+		} else if (v2->formType == RE::FormType::Weapon) {
+			delta = -1;  // force below
+		}
+		break;
+	case ColumnID_CritDamage:
+		if (v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Weapon) {
+			auto* weapon1 = v1->form->As<RE::TESObjectWEAP>();
+			auto* weapon2 = v2->form->As<RE::TESObjectWEAP>();
+			auto critDamage1 = weapon1->GetCritDamage();
+			auto critDamage2 = weapon2->GetCritDamage();
+			delta = (critDamage1 < critDamage2) ? -1 : (critDamage1 > critDamage2) ? 1 :
+			                                                                         0;
+		} else if (v1->formType == RE::FormType::Weapon) {
+			delta = 1;  // force above
+		} else if (v2->formType == RE::FormType::Weapon) {
+			delta = -1;  // force below
+		}
+		break;
+	case ColumnID_Skill:
+		if ((v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Weapon) ||
+			(v1->formType == RE::FormType::Armor && v2->formType == RE::FormType::Armor) ||
+			(v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Armor) ||
+			(v1->formType == RE::FormType::Armor && v2->formType == RE::FormType::Weapon)) {
+			auto item1 = v1->form->GetObjectTypeName();
+			auto item2 = v2->form->GetObjectTypeName();
+			delta = strcmp(item1, item2);
+		} else if (v1->formType == RE::FormType::Weapon || v1->formType == RE::FormType::Armor) {
+			delta = 1;  // force above
+		} else if (v2->formType == RE::FormType::Weapon || v2->formType == RE::FormType::Armor) {
+			delta = -1;  // force below
+		}
+		break;
+	case ColumnID_Weight:
+		delta = (v1->form->GetWeight() < v2->form->GetWeight()) ? -1 : (v1->form->GetWeight() > v2->form->GetWeight()) ? 1 :
+		                                                                                                                 0;
+		break;
 	default:
 		break;
 	}
@@ -156,16 +217,18 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 
 	auto InlineBar = [popWidth, barSize, ProgressColor](const char* label, float value, float max_value) {
 		ImGui::Text(label);
-		ImGui::SameLine();
-		ImGui::InvisibleButton("##AddItemWindow::InlineBar", barSize);
+		//ImGui::SameLine();
+		//ImGui::InvisibleButton("##AddItemWindow::InlineBar", barSize);
 		ImGui::SameLine(popWidth - barSize.x);
 		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ProgressColor(value, max_value));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);  // tight fit
 		float curr = static_cast<float>(value);
 		char buffer[256];
 		sprintf(buffer, "%.2f", value);
 		ImGui::ProgressBar(curr / max_value, barSize, buffer);
 
 		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(1);
 	};
 
 	auto InlineInt = [popWidth, barSize](const char* label, int value) {
@@ -201,26 +264,12 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 		auto armorType = Utils::GetArmorType(armor);
 		auto armorRating = armor->GetArmorRating();
 		auto equipSlot = Utils::GetArmorSlot(armor);
-		//auto armorValue = armor->value;
 		auto weight = armor->GetWeight();
-		//auto enchantments = armor->formEnchanting->effects;
 
 		InlineBar("Armor Rating:", (float)armorRating, 100.0f);
-		//InlineBar("Armor Value:", (float)armorValue, 100.0f);
 		InlineText("Armor Type:", armorType);
 		InlineText("Equip Slot:", equipSlot);
 		InlineInt("Weight:", (int)weight);
-
-		//auto enchantmentCharge = armor->GetEnchantmentCharge();
-		//auto enchantmentCost = armor->GetEnchantmentCost();
-		//auto enchantmentType = armor->GetEnchantmentType();
-		//auto enchantmentAmount = armor->GetEnchantmentAmount();
-		//auto enchantmentDuration = armor->GetEnchantmentDuration();
-		//auto enchantmentArea = armor->GetEnchantmentArea();
-		//auto enchantmentActorValue = armor->GetEnchantmentActorValue();
-		//auto enchantmentSkill = armor->GetEnchantmentSkill();
-		//auto enchantmentMagicEffect = armor->GetEnchantmentMagicEffect();
-		//auto enchantmentCondition = armor->GetEnchantmentCondition
 	}
 
 	if (item->formType == RE::FormType::Weapon) {
@@ -244,42 +293,60 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 			return;
 		}
 
-		//auto desc = weapon->GetDescription();
-		//auto critChance = weapon->GetCrit;
-		//uint16_t _dmg = weapon->attackDamage;  // seems like base damage
-		//auto _newdmg = weapon->GetAttackDamage();
-
-		//--
-		double damage = Utils::CalcBaseDamage(weapon);
-		float max_damage = Utils::CalcMaxDamage(damage, 50);
-		double reach = weapon->weaponData.reach;                                            // + and - 1 by a little.
-		float speed = weapon->weaponData.speed;                                             // 0 - 2?
-		uint16_t damage_other = weapon->GetCritDamage();                                    // 1-100x multiplier?
-		SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = weapon->weaponData.skill;  // see below
-		float stagger = weapon->weaponData.staggerValue;                                    // 0 - 2 with 1 being median
+		auto damage = Utils::CalcBaseDamage(weapon);
+		auto max_damage = Utils::CalcMaxDamage(damage, 50);
+		auto speed = weapon->weaponData.speed;      // 0 - 2?
+		auto critDamage = weapon->GetCritDamage();  // 1-100x multiplier?
+		auto skill = weapon->weaponData.skill;      // see below
 		auto type = weaponTypes[static_cast<int>(weapon->GetWeaponType())];
+		auto weight = weapon->GetWeight();
+		auto dps = damage * speed;
 
-		//bool is_bound = weapon->IsBound();
-		//bool non_playable = weapon->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+		if (weapon->IsStaff()) {
+			InlineText("Base Damage:", "N/A");
+		} else if (weapon->IsBow() || weapon->IsCrossbow()) {
+			// auto maxRange = weapon->weaponData.maxRange; // Doesn't seem to matter.
+			// auto minRange = weapon->weaponData.minRange; // Always 2000, 500.
+			InlineBar("Base Damage:", (float)damage, max_damage);
+			InlineBar("Draw Speed:", (float)speed, 1.5f);
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			InlineInt("DPS:", (int)dps);
+			InlineInt("Critical Damage:", critDamage);
+			InlineText("Skill:", std::to_string(skill.get()).c_str());
+		} else {
+			double reach = weapon->weaponData.reach;          // + and - 1 by a little.
+			float stagger = weapon->weaponData.staggerValue;  // 0 - 2 with 1 being median
+			InlineBar("Base Damage:", (float)damage, max_damage);
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			InlineInt("DPS:", (int)dps);
+			InlineBar("Reach:", (float)reach, 1.5f);
+			InlineBar("Speed:", (float)speed, 1.5f);
+			InlineBar("stagger:", stagger, 2.0f);
+			InlineInt("Critical Damage:", critDamage);
+			InlineText("Skill:", std::to_string(skill.get()).c_str());
+		}
 
-		InlineBar("Base Damage:", (float)damage, max_damage);
-		InlineBar("Reach:", (float)reach, 1.5f);
-		InlineBar("Speed:", (float)speed, 2.0f);
-		InlineBar("stagger:", stagger, 2.0f);
-		InlineInt("Critical Damage:", damage_other);
-		InlineText("skill:", std::to_string(skill.get()).c_str());
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		InlineInt("Weight:", (int)weight);
 		InlineText("Type:", type);
-		//ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
-		//ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
 	}
 
 	// Always show:
 	InlineInt("Gold Value:", item->goldValue);
 
-	ImGui::EndTooltip();
+	if (item->form != nullptr && item->form->As<RE::TESDescription>() != nullptr) {
+		const auto desc = item->form->As<RE::TESDescription>();
+		if (desc) {
+			RE::BSString buf;
+			desc->GetDescription(buf, nullptr);
+			if (!buf.empty()) {
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				ImGui::TextWrapped(buf.c_str());
+			}
+		}
+	}
 
-	// float maxRange = weapon->weaponData.maxRange;                                       // bow only
-	// float minRange = weapon->weaponData.minRange;                                       // bow only
+	ImGui::EndTooltip();
 }
 
 // Draw the table of items
@@ -296,13 +363,13 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 
 	const auto sizing = ImGuiTableFlags_SizingStretchProp;
 
-	int columns_disabled = 0;
-	for (auto enabled : column_toggle) {
-		if (!enabled) {
-			columns_disabled++;
-		}
-	}
-	if (columns_disabled == column_count) {
+	// It's unfortunate I have to do this with custom column visibility:
+	bool noColumns = !a_config.aimShowFavoriteColumn && !a_config.aimShowTypeColumn && !a_config.aimShowFormIDColumn &&
+	                 !a_config.aimShowNameColumn && !a_config.aimShowEditorIDColumn && !a_config.aimShowGoldValueColumn &&
+	                 !a_config.aimShowBaseDamageColumn && !a_config.aimShowSpeedColumn && !a_config.aimShowCritDamageColumn &&
+	                 !a_config.aimShowSkillColumn && !a_config.aimShowWeightColumn && !a_config.aimShowDPSColumn;
+
+	if (noColumns) {
 		ImGui::Text("No columns are enabled. Please enable at least one column.");
 		return;
 	}
@@ -316,6 +383,12 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort, 16.0f, ColumnID_Name);
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 16.0f, ColumnID_EditorID);
 		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_GoldValue);
+		ImGui::TableSetupColumn("Base Damage", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_BaseDamage);
+		ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Speed);
+		ImGui::TableSetupColumn("Crit Damage", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_CritDamage);
+		ImGui::TableSetupColumn("Skill", ImGuiTableColumnFlags_None, 20.0f, ColumnID_Skill);
+		ImGui::TableSetupColumn("Weight", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Weight);
+		ImGui::TableSetupColumn("DPS", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_DPS);
 
 		ImGui::PushFont(a_style.headerFont);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
@@ -341,6 +414,12 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetColumnEnabled(ColumnID_Name, a_config.aimShowNameColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_EditorID, a_config.aimShowEditorIDColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_GoldValue, a_config.aimShowGoldValueColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_BaseDamage, a_config.aimShowBaseDamageColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Speed, a_config.aimShowSpeedColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_CritDamage, a_config.aimShowCritDamageColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Skill, a_config.aimShowSkillColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_Weight, a_config.aimShowWeightColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_DPS, a_config.aimShowDPSColumn);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
 
@@ -409,11 +488,55 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				ImGui::TableNextColumn();
 				ImGui::SetCursorPosX(center_text_x(std::to_string(item->goldValue).c_str()));
 				ImGui::Selectable(std::to_string(item->goldValue).c_str(), &item->selected, select_flags);
+				ImGui::TableNextColumn();
+				if (item->formType == RE::FormType::Weapon) {
+					auto* weapon = item->form->As<RE::TESObjectWEAP>();
+					auto baseDamage = Utils::CalcBaseDamage(weapon);
+					char buffer[256];
+					sprintf(buffer, "%.2f", baseDamage);
+					ImGui::Selectable(buffer, &item->selected, select_flags);
+				}
+				ImGui::TableNextColumn();
+				if (item->formType == RE::FormType::Weapon) {
+					auto* weapon = item->form->As<RE::TESObjectWEAP>();
+					auto speed = weapon->weaponData.speed;
+					char buffer[256];
+					sprintf(buffer, "%.2f", speed);
+					ImGui::Selectable(buffer, &item->selected, select_flags);
+				}
+				ImGui::TableNextColumn();
+				if (item->formType == RE::FormType::Weapon) {
+					auto* weapon = item->form->As<RE::TESObjectWEAP>();
+					auto critDamage = weapon->GetCritDamage();
+					ImGui::Selectable(std::to_string(critDamage).c_str(), &item->selected, select_flags);
+				}
+				ImGui::TableNextColumn();
+				auto skill = item->form->GetObjectTypeName();
+				ImGui::Selectable(skill, &item->selected, select_flags);
+
+				ImGui::TableNextColumn();
+				auto weight = item->form->GetWeight();
+				char wBuffer[256];
+				sprintf(wBuffer, "%.2f", weight);
+				ImGui::Selectable(wBuffer, &item->selected, select_flags);
+
+				ImGui::TableNextColumn();
+				if (item->formType == RE::FormType::Weapon) {
+					auto* weapon = item->form->As<RE::TESObjectWEAP>();
+					auto baseDamage = Utils::CalcBaseDamage(weapon);
+					auto speed = weapon->weaponData.speed;
+					auto dps = baseDamage * speed;
+					char dpsBuffer[256];
+					sprintf(dpsBuffer, "%.2f", dps);
+					ImGui::Selectable(dpsBuffer, &item->selected, select_flags);
+				}
 
 				auto curRow = ImGui::TableGetHoveredRow();
 
 				if (curRow == ImGui::TableGetRowIndex()) {
+					ImGui::PushFont(a_style.tooltipFont);
 					ShowItemCard(item);
+					ImGui::PopFont();
 				}
 
 				//if (ImGui::BeginPopupContextItem())
@@ -537,8 +660,6 @@ void AddItemWindow::Draw_InputSearch()
 		ApplyFilters();
 	}
 
-	// Might need to pop id here?
-
 	ImGui::SameLine();
 
 	auto searchByValue = search_map.at(searchKey);
@@ -590,7 +711,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		const auto select_flags = ImGuiSelectableFlags_SpanAllColumns;
 		for (auto& item : itemList) {
 			if (item->selected) {
-				if (ImGui::Selectable(item->editorid.c_str(), false, select_flags)) {
+				if (ImGui::Selectable(item->name, false, select_flags)) {
 					item->selected = false;
 				};
 				ImGui::SetItemTooltip("Click to remove.");
@@ -684,8 +805,8 @@ void AddItemWindow::ShowOptions(Settings::Style& a_style, Settings::Config& a_co
 		ImGui::EndCombo();
 	}
 }
-// Cache items on initialization
+
 void AddItemWindow::Init()
 {
-	//AddItemWindow::Cache();
+	// do stuff
 }

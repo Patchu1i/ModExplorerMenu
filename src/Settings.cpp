@@ -121,6 +121,12 @@ void Settings::SaveSettings()
 		a_ini.SetValue(rSections[AddItem], "ShowNameColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowNameColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowEditorIDColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowGoldValueColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowGoldValueColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowBaseDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowBaseDamageColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowSpeedColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSpeedColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowCritDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowCritDamageColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowSkillColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSkillColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowWeightColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowWeightColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowDPSColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowDPSColumn).c_str());
 
 		a_ini.SetValue(rSections[Teleport], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFavoriteColumn).c_str());
 		a_ini.SetValue(rSections[Teleport], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowPluginColumn).c_str());
@@ -144,6 +150,12 @@ void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	user.config.aimShowNameColumn = GET_VALUE<bool>(rSections[AddItem], "ShowNameColumn", true, a_ini);
 	user.config.aimShowEditorIDColumn = GET_VALUE<bool>(rSections[AddItem], "ShowEditorIDColumn", true, a_ini);
 	user.config.aimShowGoldValueColumn = GET_VALUE<bool>(rSections[AddItem], "ShowGoldValueColumn", false, a_ini);
+	user.config.aimShowBaseDamageColumn = GET_VALUE<bool>(rSections[AddItem], "ShowBaseDamageColumn", false, a_ini);
+	user.config.aimShowSpeedColumn = GET_VALUE<bool>(rSections[AddItem], "ShowSpeedColumn", false, a_ini);
+	user.config.aimShowCritDamageColumn = GET_VALUE<bool>(rSections[AddItem], "ShowCritDamageColumn", false, a_ini);
+	user.config.aimShowSkillColumn = GET_VALUE<bool>(rSections[AddItem], "ShowSkillColumn", false, a_ini);
+	user.config.aimShowWeightColumn = GET_VALUE<bool>(rSections[AddItem], "ShowWeightColumn", false, a_ini);
+	user.config.aimShowDPSColumn = GET_VALUE<bool>(rSections[AddItem], "ShowDPSColumn", false, a_ini);
 
 	user.config.teleShowFavoriteColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFavoriteColumn", true, a_ini);
 	user.config.teleShowPluginColumn = GET_VALUE<bool>(rSections[Teleport], "ShowPluginColumn", true, a_ini);
@@ -217,6 +229,7 @@ void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
 	a_out.buttonFont;
 	a_out.headerFont;
 	a_out.sidebarFont;
+	a_out.tooltipFont;
 
 	a_out.splashImage;
 	a_out.favoriteIconEnabled;
@@ -230,7 +243,6 @@ void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
 // Executed within the scope of the themes/ directory.
 void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 {
-	logger::info("LoadThemeFromini starts");
 	user.style.text = GET_VALUE<ImVec4>(rSections[Text], "TextColor", def.style.text, a_ini);
 	user.style.textDisabled = GET_VALUE<ImVec4>(rSections[Text], "TextDisabledColor", def.style.textDisabled, a_ini);
 	user.style.windowBg = GET_VALUE<ImVec4>(rSections[Window], "WindowBGColor", def.style.windowBg, a_ini);
@@ -292,6 +304,7 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.headerFont = GET_VALUE<ImFont*>(rSections[Fonts], "HeaderFont", def.style.headerFont, a_ini);
 	user.style.buttonFont = GET_VALUE<ImFont*>(rSections[Fonts], "ButtonFont", def.style.buttonFont, a_ini);
 	user.style.sidebarFont = GET_VALUE<ImFont*>(rSections[Fonts], "SidebarFont", def.style.sidebarFont, a_ini);
+	user.style.tooltipFont = GET_VALUE<ImFont*>(rSections[Fonts], "TooltipFont", def.style.tooltipFont, a_ini);
 
 	user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
 	user.style.favoriteIconEnabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconEnabled", def.style.favoriteIconEnabled, a_ini);

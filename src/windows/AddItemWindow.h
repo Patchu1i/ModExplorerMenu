@@ -37,10 +37,20 @@ public:
 		ColumnID_Name,
 		ColumnID_EditorID,
 		ColumnID_GoldValue,
-		ColumnID_None,
+		ColumnID_BaseDamage,
+		ColumnID_Speed,
+		ColumnID_CritDamage,
+		ColumnID_Skill,
+		ColumnID_Weight,
+		ColumnID_DPS,
+		ColumnID_None
 	};
 
-	static inline std::array<bool, 6> column_toggle = { true, true, false, true, true, false };
+	// This probably doesn't need to be initialized here.
+	static constexpr int column_count = 12;
+	static inline std::array<bool, 12> column_toggle = {
+		true, true, false, true, true, false, false, false, false, false, false, false
+	};
 
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 	static inline ColumnID searchKey = ColumnID::ColumnID_Name;  // _searchBy
@@ -48,7 +58,6 @@ public:
 	static inline RE::TESFile* selectedMod = nullptr;            // _currentMod
 	static inline bool dirty = true;
 
-	static constexpr int column_count = 6;
 	static inline std::vector<MEMData::CachedItem*> itemList;  // _activeList
 
 	static inline bool b_Alchemy = false;

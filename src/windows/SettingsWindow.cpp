@@ -317,6 +317,7 @@ void SettingsWindow::DrawThemeSelector()
 		AddFontDropdown("Column Header Font:", &style.headerFont);
 		AddFontDropdown("Button Font:", &style.buttonFont);
 		AddFontDropdown("Sidebar Button Font:", &style.sidebarFont);
+		AddFontDropdown("Tooltip Font:", &style.tooltipFont);
 		ImGui::Unindent();
 	}
 
@@ -370,6 +371,13 @@ void SettingsWindow::DrawAddItemSettings()
 	AddCheckbox("Toggle FormID Column", config.aimShowFormIDColumn);
 	AddCheckbox("Toggle Name Column", config.aimShowNameColumn);
 	AddCheckbox("Toggle Editor ID Column", config.aimShowEditorIDColumn);
+	AddCheckbox("Toggle Gold Value Column", config.aimShowGoldValueColumn);
+	AddCheckbox("Toggle Base Damage Column", config.aimShowBaseDamageColumn);
+	AddCheckbox("Toggle Speed Column", config.aimShowSpeedColumn);
+	AddCheckbox("Toggle Crit Damage Column", config.aimShowCritDamageColumn);
+	AddCheckbox("Toggle Skill Column", config.aimShowSkillColumn);
+	AddCheckbox("Toggle Weight Column", config.aimShowWeightColumn);
+	AddCheckbox("Toggle DPS Column", config.aimShowDPSColumn);
 }
 
 void SettingsWindow::DrawTeleportSettings()

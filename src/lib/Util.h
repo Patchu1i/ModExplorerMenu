@@ -13,14 +13,15 @@ namespace Utils
 	// Round[ (base damage + smithing increase) * (1 + skill/200) * (1 + perk effects) * (1 + item effects) * (1 + potion effect) * (1 + Seeker of Might bonus) ]
 	inline static double CalcBaseDamage(RE::TESObjectWEAP* a_weapon)
 	{
-		if (a_weapon->attackDamage == 0) {
-			return 0;
-		}
-
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		auto weaponSkill = a_weapon->weaponData.skill.get();
-		auto skill = player->AsActorValueOwner()->GetActorValue(weaponSkill);
 		auto baseDamage = a_weapon->GetAttackDamage();
+
+		if (weaponSkill == RE::ActorValue::kNone) {
+			return baseDamage;
+		}
+
+		auto skill = player->AsActorValueOwner()->GetActorValue(weaponSkill);
 
 		return std::round((baseDamage + 0) * (1.0 + skill / 200.0));
 	};
