@@ -81,10 +81,6 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 		for (auto& cell : cellMap) {
 			count++;
 
-			//auto& [editorid, _cell] = data;  // cellMap[editorid
-			//auto& editorid = data.first;
-			//auto& cell = *_cell;
-
 			if (count > config.maxTableRows) {
 				break;
 			}
@@ -120,6 +116,10 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 			ImGui::TableNextColumn();
 			ImGui::Text(cell->editorid.c_str());
 			ImGui::PopID();
+		}
+
+		if (count > config.maxTableRows) {
+			ImGui::SeparatorText("Too many results, please refine your search. (Configurable in Settings)");
 		}
 
 		ImGui::EndTable();
@@ -164,8 +164,8 @@ bool TeleportWindow::SortColumn(const MEMData::CachedCell* v1, const MEMData::Ca
 	if (delta < 0) {
 		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? false : true;
 	}
-	// Fallback to prevent assertion.
-	return false;
+
+	return false;  // prevent assertion (?)
 }
 
 void TeleportWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)

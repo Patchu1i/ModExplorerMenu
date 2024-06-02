@@ -6,6 +6,7 @@ public:
 	static void Draw();
 	static void DrawThemeSelector();
 	static void DrawTeleportSettings();
+	static void DrawAddItemSettings();
 	static void DrawPopped();
 	static void Init();
 

@@ -108,6 +108,22 @@ void Settings::LoadSettings(const wchar_t* a_path)
 	Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 }
 
+void Settings::SaveSettings()
+{
+	GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
+		FormatMasterIni(a_ini);
+
+		a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
+		a_ini.SetValue(rSections[AddItem], "MaxTableRows", std::to_string(Settings::GetSingleton()->user.config.maxTableRows).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFavoriteColumn).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowPluginColumn).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowSpaceColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowSpaceColumn).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowZoneColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowZoneColumn).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowFullNameColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFullNameColumn).c_str());
+		a_ini.SetValue(rSections[Teleport], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowEditorIDColumn).c_str());
+	});
+}
+
 // This is executed within the scope of ModExplorerMenu.ini
 // Loads the preset specified in master ini. Then loads theme from there.
 // Executed within the scope of the ModExplorerMenu.ini file.

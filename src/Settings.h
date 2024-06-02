@@ -15,6 +15,7 @@ public:
 
 	void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 	void LoadSettings(const wchar_t* a_path);
+	void SaveSettings();
 	void LoadMasterIni(CSimpleIniA& a_ini);
 	void LoadThemeFromIni(CSimpleIniA& a_ini);
 

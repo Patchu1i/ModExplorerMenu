@@ -31,6 +31,7 @@ void Frame::Draw(bool is_settings_popped)
 	Properties window;
 
 	auto& style = Settings::GetSingleton()->GetStyle();
+	auto& config = Settings::GetSingleton()->GetConfig();
 
 	if (is_settings_popped) {
 		SettingsWindow::DrawPopped();
@@ -90,7 +91,7 @@ void Frame::Draw(bool is_settings_popped)
 			HomeWindow::Draw();
 			break;
 		case ActiveWindow::AddItem:
-			AddItemWindow::Draw();
+			AddItemWindow::Draw(style, config);
 			break;
 		case ActiveWindow::NPC:
 			break;

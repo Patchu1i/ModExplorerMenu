@@ -26,11 +26,16 @@ void AddColorPicker(const char* a_text, ImVec4& a_colRef)
 	ImGui::PopItemWidth();
 }
 
-void AddSliderPicker(const char* a_text, float& a_valRef, float a_min, float a_max)
+void AddSliderPicker(const char* a_text, float& a_valRef, float a_min, float a_max, const char* help = nullptr)
 {
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	auto id = "##SliderPicker" + std::string(a_text);
 	auto width = 200.0f;
+
+	if (help != nullptr) {
+		ImGui::HelpMarker(help);
+	}
+
 	ImGui::Text(a_text);
 	ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 	ImGui::SetNextItemWidth(width);
@@ -133,6 +138,7 @@ void SaveThemeToFile(std::string a_path, Settings::Style& a_style)
 	const wchar_t* new_path = full_path.c_str();
 
 	Settings::GetSingleton()->ExportThemeToIni(new_path, a_style);
+	Settings::GetSingleton()->SaveSettings();
 }
 
 //
@@ -238,17 +244,6 @@ void SettingsWindow::DrawThemeSelector()
 		ImGui::HelpMarker("Export your current theme configuration to a .ini file\n(Warning): This will overwrite any existing file with the same name!");
 		if (ImGui::Button("Export to File", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
 			ImGui::OpenPopup("save_to_file");
-		}
-
-		if (SettingsWindow::file_changes.load()) {
-			float alpha = ImGuiAnim::pulse(3.0f, 0.7f, 1.0f);
-			ImGui::HelpMarker("Save changes made to the current theme configuration\nThis will overwrite the current theme ini with the new settings.");
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
-			if (ImGui::Button("Save Changes", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
-				SaveThemeToFile(config.theme, style);
-				SettingsWindow::file_changes.store(false);
-			}
-			ImGui::PopStyleColor(1);
 		}
 
 		if (ImGui::BeginPopup("save_to_file")) {
@@ -366,6 +361,15 @@ void SettingsWindow::DrawThemeSelector()
 	ImGui::NewLine();
 }
 
+void SettingsWindow::DrawAddItemSettings()
+{
+	auto& config = Settings::GetSingleton()->GetConfig();
+
+	AddSliderPicker("Max Table Rows", config.maxTableRows, 10.0f, 10000.0f,
+		"(Warning): Settings this too high will impact performance\n\n"
+		"This will not impact filter or search results, only the number of rows displayed");
+}
+
 void SettingsWindow::DrawTeleportSettings()
 {
 	auto& config = Settings::GetSingleton()->GetConfig();
@@ -392,7 +396,7 @@ void SettingsWindow::Draw()
 
 		if (ImGui::CollapsingHeader("AddItem Configuration", ImGuiTreeNodeFlags_Framed)) {
 			ImGui::Indent();
-			ImGui::Text("AddItem Configuration");
+			DrawAddItemSettings();
 			ImGui::Unindent();
 		}
 
@@ -403,6 +407,20 @@ void SettingsWindow::Draw()
 		}
 	}
 	ImGui::EndChild();
+
+	auto& config = Settings::GetSingleton()->GetConfig();
+	auto& style = Settings::GetSingleton()->GetStyle();
+
+	if (SettingsWindow::file_changes.load()) {
+		float alpha = ImGuiAnim::pulse(3.0f, 0.7f, 1.0f);
+		ImGui::HelpMarker("Save changes made to the current theme configuration\nThis will overwrite the current theme ini with the new settings.");
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
+		if (ImGui::Button("Save Changes", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
+			SaveThemeToFile(config.theme, style);
+			SettingsWindow::file_changes.store(false);
+		}
+		ImGui::PopStyleColor(1);
+	}
 }
 
 void SettingsWindow::Init()

@@ -65,15 +65,12 @@ bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::Cac
 		break;
 	}
 
-	// TODO: Write functionality for None filter
-
 	if (delta > 0)
 		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? true : false;
 	if (delta < 0)
 		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? false : true;
 
-	// Fallback to prevent assertion.
-	return false;
+	return false;  // prevent assertion (?)
 }
 
 // Sorts the columns of referenced list by sort_specs
@@ -92,10 +89,13 @@ static inline const float center_text_x(const char* text)
 };
 
 // Draw the table of items
-void AddItemWindow::Draw_FormTable()
+void AddItemWindow::Draw_FormTable(Settings::Style& a_style, Settings::Config& a_config)
 {
-	auto& style = Settings::GetSingleton()->GetStyle();
+	auto minMaxCount = std::min((int)a_config.maxTableRows, static_cast<int>(itemList.size()));
+	auto results = std::string("Results (") + std::to_string(minMaxCount) + std::string(")");
+	ImGui::SeparatorText(results.c_str());
 
+	// TODO: Add RowBG as theme option
 	const auto table_flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
 	                         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
 	                         ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
@@ -103,8 +103,19 @@ void AddItemWindow::Draw_FormTable()
 
 	const auto sizing = ImGuiTableFlags_SizingStretchProp;
 
-	const auto table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+	int columns_disabled = 0;
+	for (auto enabled : column_toggle) {
+		if (!enabled) {
+			columns_disabled++;
+		}
+	}
+	if (columns_disabled == column_count) {
+		ImGui::Text("No columns are enabled. Please enable at least one column.");
+		return;
+	}
 
+	auto table_height_offset = itemList.size() >= a_config.maxTableRows ? -15.0f : 0.0f;
+	const auto table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y + table_height_offset);
 	if (ImGui::BeginTable("AddItemWindowTable", column_count, table_flags | sizing, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
 		ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed, 16.0f, ColumnID_Favorite);
@@ -114,7 +125,7 @@ void AddItemWindow::Draw_FormTable()
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 16.0f, ColumnID_EditorID);
 		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_GoldValue);
 
-		ImGui::PushFont(style.headerFont);
+		ImGui::PushFont(a_style.headerFont);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		for (int column = 0; column < column_count; column++) {
 			ImGui::TableSetColumnIndex(column);
@@ -134,150 +145,151 @@ void AddItemWindow::Draw_FormTable()
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
 
-		if (dirty)
+		if (dirty) {
 			ImGui::TableGetSortSpecs()->SpecsDirty = true;
+		}
 
 		// Sort our data if sort specs have been changed!
-		if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
+		if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 			if (sort_specs->SpecsDirty) {
 				SortColumnsWithSpecs(sort_specs);
 				sort_specs->SpecsDirty = false;
 				dirty = false;
 			}
+		}
+
+		ImGuiListClipper clipper;
 
 		int count = 0;
-		for (auto& item : itemList) {
-			count++;
+		clipper.Begin(static_cast<int>(itemList.size()), ImGui::GetTextLineHeightWithSpacing());
+		while (clipper.Step()) {
+			for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
+				auto& item = itemList[row];
 
-			if (count > 1000)
-				break;
+				count++;
 
-			auto table_id = std::string("##AddItemMenu::Table-") + std::to_string(count);
+				auto table_id = std::string("##AddItemMenu::Table-") + std::to_string(count);
 
-			ImGuiTableRowFlags row_flags = ImGuiTableRowFlags_None;
+				ImGuiTableRowFlags row_flags = ImGuiTableRowFlags_None;
 
-			ImGui::PushID(table_id.c_str());
-			ImGui::TableNextRow(row_flags);
-			ImGui::TableNextColumn();
+				ImGui::PushID(table_id.c_str());
+				ImGui::TableNextRow(row_flags);
+				ImGui::TableNextColumn();
 
-			// FIXME: Why is this here?
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+				// Overwrite color to hide ugly imgui backdrop on image.
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 
-			ImTextureID favorite_state = item->favorite ? style.favoriteIconEnabled.texture : style.favoriteIconDisabled.texture;
-			float col = item->favorite ? 1.0f : 0.5f;
+				ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
+				float col = item->favorite ? 1.0f : 0.5f;
 
-			if (favorite_state != nullptr) {
-				if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-					item->favorite = !item->favorite;
+				if (favorite_state != nullptr) {
+					if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+						item->favorite = !item->favorite;
+					}
+				} else {
+					ImGui::Checkbox("##FavoriteCheckbox", &item->favorite);
 				}
-			} else {
-				ImGui::Checkbox("##FavoriteCheckbox", &item->favorite);
-			}
 
-			ImGui::PopStyleColor(3);
-			ImGui::PopStyleVar(1);
+				ImGui::PopStyleColor(3);
+				ImGui::PopStyleVar(1);
 
-			const ImGuiSelectableFlags select_flags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
-			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(item->typeName.c_str()));  // TODO: Why does this want const char*?
-			ImGui::Selectable(item->typeName.c_str(), &item->selected, select_flags);
-			ImGui::TableNextColumn();
-			ImGui::Selectable(item->formid.c_str(), &item->selected, select_flags);
-			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(item->name));
-			ImGui::Selectable(item->name, &item->selected, select_flags);
-			ImGui::TableNextColumn();
-			ImGui::TextWrapped(item->editorid.c_str());
-			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(std::to_string(item->goldValue).c_str()));
-			ImGui::Selectable(std::to_string(item->goldValue).c_str(), &item->selected, select_flags);
+				const ImGuiSelectableFlags select_flags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
+				ImGui::TableNextColumn();
+				ImGui::SetCursorPosX(center_text_x(item->typeName.c_str()));
+				ImGui::Selectable(item->typeName.c_str(), &item->selected, select_flags);
+				ImGui::TableNextColumn();
+				ImGui::Selectable(item->formid.c_str(), &item->selected, select_flags);
+				ImGui::TableNextColumn();
+				ImGui::SetCursorPosX(center_text_x(item->name));
+				ImGui::Selectable(item->name, &item->selected, select_flags);
+				ImGui::TableNextColumn();
+				ImGui::TextWrapped(item->editorid.c_str());
+				ImGui::TableNextColumn();
+				ImGui::SetCursorPosX(center_text_x(std::to_string(item->goldValue).c_str()));
+				ImGui::Selectable(std::to_string(item->goldValue).c_str(), &item->selected, select_flags);
 
-			if (item->formType == RE::FormType::Weapon) {
-				auto curRow = ImGui::TableGetHoveredRow();
+				if (item->formType == RE::FormType::Weapon) {
+					auto curRow = ImGui::TableGetHoveredRow();
 
-				if (curRow == ImGui::TableGetRowIndex()) {
-					//enum WEAPON_TYPE : std::uint32_t
-					//{
-					//    kHandToHandMelee = 0,
-					//    kOneHandSword = 1,
-					//    kOneHandDagger = 2,
-					//    kOneHandAxe = 3,
-					//    kOneHandMace = 4,
-					//    kTwoHandSword = 5,
-					//    kTwoHandAxe = 6,
-					//    kBow = 7,
-					//    kStaff = 8,
-					//    kCrossbow = 9,
+					if (curRow == ImGui::TableGetRowIndex()) {
+						//enum WEAPON_TYPE : std::uint32_t
+						//{
+						//    kHandToHandMelee = 0,
+						//    kOneHandSword = 1,
+						//    kOneHandDagger = 2,
+						//    kOneHandAxe = 3,
+						//    kOneHandMace = 4,
+						//    kTwoHandSword = 5,
+						//    kTwoHandAxe = 6,
+						//    kBow = 7,
+						//    kStaff = 8,
+						//    kCrossbow = 9,
 
-					//    kTotal = 10
-					//};
+						//    kTotal = 10
+						//};
 
-					std::vector<const char*> weaponTypes = {
-						"Hand to Hand",
-						"One Hand Sword",
-						"One Hand Dagger",
-						"One Hand Axe",
-						"One Hand Mace",
-						"Two Hand Sword",
-						"Two Hand Axe",
-						"Bow",
-						"Staff",
-						"Crossbow"
-					};
+						std::vector<const char*> weaponTypes = {
+							"Hand to Hand",
+							"One Hand Sword",
+							"One Hand Dagger",
+							"One Hand Axe",
+							"One Hand Mace",
+							"Two Hand Sword",
+							"Two Hand Axe",
+							"Bow",
+							"Staff",
+							"Crossbow"
+						};
 
-					//auto desc = item->form->As<RE::TESObjectWEAP>()->GetDescription();
-					//auto critChance = item->form->As<RE::TESObjectWEAP>()->GetCrit;
-					uint16_t damage = item->form->As<RE::TESObjectWEAP>()->attackDamage;                                             // seems like base damage
-					uint16_t damage_other = item->form->As<RE::TESObjectWEAP>()->criticalData.damage;                                // 1-100x multiplier?
-					auto maxRange = item->form->As<RE::TESObjectWEAP>()->weaponData.maxRange;                                        // bow only
-					auto minRange = item->form->As<RE::TESObjectWEAP>()->weaponData.minRange;                                        // bow only
-					auto reach = item->form->As<RE::TESObjectWEAP>()->weaponData.reach;                                              // + and - 1 by a little.
-					auto speed = item->form->As<RE::TESObjectWEAP>()->weaponData.speed;                                              // 0 - 2?
-					SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = item->form->As<RE::TESObjectWEAP>()->weaponData.skill;  // see below
-					auto stagger = item->form->As<RE::TESObjectWEAP>()->weaponData.staggerValue;                                     // 0 - 2 with 1 being median
-					auto crit = item->form->As<RE::TESObjectWEAP>()->GetCritDamage();
-					auto type = weaponTypes[static_cast<int>(item->form->As<RE::TESObjectWEAP>()->GetWeaponType())];
+						//auto desc = item->form->As<RE::TESObjectWEAP>()->GetDescription();
+						//auto critChance = item->form->As<RE::TESObjectWEAP>()->GetCrit;
+						uint16_t damage = item->form->As<RE::TESObjectWEAP>()->attackDamage;                                             // seems like base damage
+						uint16_t damage_other = item->form->As<RE::TESObjectWEAP>()->criticalData.damage;                                // 1-100x multiplier?
+						auto maxRange = item->form->As<RE::TESObjectWEAP>()->weaponData.maxRange;                                        // bow only
+						auto minRange = item->form->As<RE::TESObjectWEAP>()->weaponData.minRange;                                        // bow only
+						auto reach = item->form->As<RE::TESObjectWEAP>()->weaponData.reach;                                              // + and - 1 by a little.
+						auto speed = item->form->As<RE::TESObjectWEAP>()->weaponData.speed;                                              // 0 - 2?
+						SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = item->form->As<RE::TESObjectWEAP>()->weaponData.skill;  // see below
+						auto stagger = item->form->As<RE::TESObjectWEAP>()->weaponData.staggerValue;                                     // 0 - 2 with 1 being median
+						auto crit = item->form->As<RE::TESObjectWEAP>()->GetCritDamage();
+						auto type = weaponTypes[static_cast<int>(item->form->As<RE::TESObjectWEAP>()->GetWeaponType())];
 
-					auto is_bound = item->form->As<RE::TESObjectWEAP>()->IsBound();
-					auto non_playable = item->form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+						auto is_bound = item->form->As<RE::TESObjectWEAP>()->IsBound();
+						auto non_playable = item->form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
 
-					auto skill_value = skill.get();  // ActorValue enum ng.commonlib.dev/_actor_values_8h_source.html
+						auto skill_value = skill.get();  // ActorValue enum ng.commonlib.dev/_actor_values_8h_source.html
 
-					ImGui::BeginTooltip();
-					ImGui::Text("attackDamage: %d", damage);
-					ImGui::Text("criticalData.damage: %d", damage_other);
-					ImGui::Text("maxRange: %f", maxRange);
-					ImGui::Text("minRange: %f", minRange);
-					ImGui::Text("reach: %f", reach);
-					ImGui::Text("speed: %f", speed);
-					ImGui::Text("stagger: %f", stagger);
-					ImGui::Text("skill: %d", skill_value);
-					ImGui::Text("crit: %d", crit);
-					ImGui::Text("type: %s", type);
-					ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
-					ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
-					ImGui::EndTooltip();
+						ImGui::BeginTooltip();
+						ImGui::Text("attackDamage: %d", damage);
+						ImGui::Text("criticalData.damage: %d", damage_other);
+						ImGui::Text("maxRange: %f", maxRange);
+						ImGui::Text("minRange: %f", minRange);
+						ImGui::Text("reach: %f", reach);
+						ImGui::Text("speed: %f", speed);
+						ImGui::Text("stagger: %f", stagger);
+						ImGui::Text("skill: %d", skill_value);
+						ImGui::Text("crit: %d", crit);
+						ImGui::Text("type: %s", type);
+						ImGui::Text("non_playable: %s", (non_playable) ? "true" : "false");
+						ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
+						ImGui::EndTooltip();
+					}
 				}
+
+				//if (ImGui::BeginPopupContextItem())
+				//{
+				//    Context_CopyOnly(ref.formid.c_str(), ref.name, ref.editorid.c_str());
+				//    ImGui::EndPopup();
+				//}
+
+				ImGui::PopID();
 			}
-
-			//if (ImGui::BeginPopupContextItem())
-			//{
-			//    Context_CopyOnly(ref.formid.c_str(), ref.name, ref.editorid.c_str());
-			//    ImGui::EndPopup();
-			//}
-
-			ImGui::PopID();
 		}
 
 		ImGui::PopStyleVar(1);
-
-		// TODO: Implement settings variable for count
-		if (count > 1000) {
-			ImGui::SeparatorText("Too many results, please refine your search. (1000+ items)");
-		}
 
 		ImGui::EndTable();
 	}
@@ -289,8 +301,11 @@ void AddItemWindow::ApplyFilters()
 
 	auto& cached_item_list = MEMData::GetItemList();
 
-	// FIXME: Does this need to be static?
-	static char compare[256];
+	char compare[256];
+	char input[256];
+
+	strcpy(input, inputBuffer);
+
 	bool skip = false;
 
 	// TODO: Implement additional columns
@@ -313,20 +328,40 @@ void AddItemWindow::ApplyFilters()
 			break;
 		}
 
-		if (selectedMod != nullptr && item.mod != selectedMod)  // skip non-active mods
+		if (selectedMod != nullptr && item.mod != selectedMod)  // inactive mods
 			continue;
 
-		auto lower_input = strlwr(inputBuffer);
+		if (itemFilters.count(item.formType) <= 0)  // non-selected filter
+			continue;
+
+		if (item.nonPlayable)  // non-useable
+			continue;
+
+		if (strcmp(item.name, "") == 0)  // skip empty names
+			continue;
+
 		auto lower_compare = strlwr(compare);
 
 		if (skip) {
 			int score = 0;
 
-			if (strstr(strlwr((char*)item.name), lower_input) != nullptr)
+			char _name[256];
+			char _editorid[256];
+			char _formid[256];
+
+			strcpy(_name, item.name);
+			strcpy(_editorid, item.editorid.c_str());
+			strcpy(_formid, item.formid.c_str());
+
+			strlwr(_name);
+			strlwr(_editorid);
+			strlwr(_formid);
+
+			if (strstr(_name, input) != nullptr)
 				score++;
-			if (strstr(strlwr((char*)item.editorid.c_str()), lower_input) != nullptr)
+			if (strstr(_editorid, input) != nullptr)
 				score++;
-			if (strstr(strlwr((char*)item.formid.c_str()), lower_input) != nullptr)
+			if (strstr(_formid, input) != nullptr)
 				score++;
 
 			if (score > 0) {
@@ -336,17 +371,8 @@ void AddItemWindow::ApplyFilters()
 			continue;
 		}
 
-		if (strstr(lower_compare, lower_input) != nullptr) {
-			if (item.nonPlayable)  // skip non-usable
-				continue;
-
-			if (strcmp(item.name, "") == 0)  // skip empty names
-				continue;
-
-			// Only append if the item is in the filter list.
-			if (itemFilters.count(item.formType) > 0) {
-				itemList.push_back(&item);
-			}
+		if (strstr(lower_compare, input) != nullptr) {
+			itemList.push_back(&item);
 		}
 	}
 
@@ -401,9 +427,9 @@ void AddItemWindow::Draw_InputSearch()
 }
 
 // TODO: Implement more here.
-void AddItemWindow::Draw_Actions()
+void AddItemWindow::Draw_Actions(Settings::Style& a_style, Settings::Config& a_config)
 {
-	auto& style = Settings::GetSingleton()->GetStyle();
+	(void)a_config;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
@@ -418,7 +444,7 @@ void AddItemWindow::Draw_Actions()
 
 	const auto table_flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 	if (ImGui::BeginTable("ActionBarSelection", 1, table_flags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
-		ImGui::PushFont(style.headerFont);
+		ImGui::PushFont(a_style.headerFont);
 		ImGui::TableSetupColumn("Item(s)", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 		ImGui::TableNextRow();
@@ -437,8 +463,8 @@ void AddItemWindow::Draw_Actions()
 		ImGui::EndTable();
 	}
 
-	ImGui::PushFont(style.buttonFont);
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, style.button.w));
+	ImGui::PushFont(a_style.buttonFont);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, a_style.button.w));
 	if (ImGui::Button("Clear Selection", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
 			item->selected = false;
@@ -449,8 +475,8 @@ void AddItemWindow::Draw_Actions()
 
 	ImGui::SeparatorText("Selection:");
 
-	ImGui::PushFont(style.buttonFont);
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, style.button.w));
+	ImGui::PushFont(a_style.buttonFont);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, a_style.button.w));
 	if (ImGui::Button("Add to Inventory", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
 			if (item->selected) {
@@ -542,7 +568,7 @@ void AddItemWindow::Draw_AdvancedOptions()
 }
 
 // Main Draw function for AddItem, called by Frame::Draw()
-void AddItemWindow::Draw()
+void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 {
 	const auto _flags = ImGuiOldColumnFlags_NoResize;
 	ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
@@ -590,16 +616,12 @@ void AddItemWindow::Draw()
 
 	ImGui::NewLine();
 
-	// FIXME: This is a hack to get the results count to update.
-	auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
-	ImGui::SeparatorText(results.c_str());
-
-	Draw_FormTable();
+	Draw_FormTable(a_style, a_config);
 
 	// Start of Right Column
 	ImGui::NextColumn();
 
-	Draw_Actions();
+	Draw_Actions(a_style, a_config);
 
 	ImGui::EndColumns();
 }
