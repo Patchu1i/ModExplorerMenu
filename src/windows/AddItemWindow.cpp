@@ -3,139 +3,6 @@
 #include "Settings.h"
 #include "lib/Graphic.h"
 
-using _GetFormEditorID = const char* (*)(std::uint32_t);
-
-// Empty until we fill them during initialization.
-std::vector<AddItemWindow::ListItemType> AddItemWindow::_cachedList;
-std::vector<AddItemWindow::ListItemType*> AddItemWindow::_activeList;
-std::unordered_set<AddItemWindow::ItemType> AddItemWindow::_filters;
-std::unordered_set<RE::TESFile*> AddItemWindow::_modList;
-
-const ImGuiTableSortSpecs* AddItemWindow::s_current_sort_specs;
-
-// For ImGui Checkbox state tracking
-bool AddItemWindow::_Alchemy = false;
-bool AddItemWindow::_Ingredient = false;
-bool AddItemWindow::_Ammo = false;
-bool AddItemWindow::_Key = false;
-bool AddItemWindow::_Misc = false;
-bool AddItemWindow::_Armor = false;
-bool AddItemWindow::_Book = false;
-bool AddItemWindow::_Weapon = false;
-
-std::vector<std::tuple<bool*, AddItemWindow::ItemType, std::string>> AddItemWindow::_filterMap = {
-	{ &_Alchemy, AddItemWindow::Alchemy, "ALCH" }, { &_Ingredient, AddItemWindow::Ingredient, "INGR" },
-	{ &_Ammo, AddItemWindow::Ammo, "AMMO" }, { &_Key, AddItemWindow::Key, "KEYS" },
-	{ &_Misc, AddItemWindow::Misc, "MISC" }, { &_Armor, AddItemWindow::Armor, "ARMO" },
-	{ &_Book, AddItemWindow::Book, "BOOK" }, { &_Weapon, AddItemWindow::Weapon, "WEAP" }
-};
-
-// Sourced from dTry @ https://github.com/D7ry
-std::string AddItemWindow::getFormEditorID(const RE::TESForm* a_form)
-{
-	switch (a_form->GetFormType()) {
-	case RE::FormType::Keyword:
-	case RE::FormType::LocationRefType:
-	case RE::FormType::Action:
-	case RE::FormType::MenuIcon:
-	case RE::FormType::Global:
-	case RE::FormType::HeadPart:
-	case RE::FormType::Race:
-	case RE::FormType::Sound:
-	case RE::FormType::Script:
-	case RE::FormType::Navigation:
-	case RE::FormType::Cell:
-	case RE::FormType::WorldSpace:
-	case RE::FormType::Land:
-	case RE::FormType::NavMesh:
-	case RE::FormType::Dialogue:
-	case RE::FormType::Quest:
-	case RE::FormType::Idle:
-	case RE::FormType::AnimatedObject:
-	case RE::FormType::ImageAdapter:
-	case RE::FormType::VoiceType:
-	case RE::FormType::Ragdoll:
-	case RE::FormType::DefaultObject:
-	case RE::FormType::MusicType:
-	case RE::FormType::StoryManagerBranchNode:
-	case RE::FormType::StoryManagerQuestNode:
-	case RE::FormType::StoryManagerEventNode:
-	case RE::FormType::SoundRecord:
-		return a_form->GetFormEditorID();
-	default:
-		{
-			static auto tweaks = GetModuleHandleA("po3_Tweaks");
-			static auto func = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
-			if (func) {
-				return func(a_form->formID);
-			}
-			return {};
-		}
-	}
-}
-
-// Called to cache items individually by type into _cachedList
-template <class T>
-void AddItemWindow::CacheItems(RE::TESDataHandler* a_data, const AddItemWindow::ItemType a_formType)
-{
-	for (auto form : a_data->GetFormArray<T>()) {
-		const char* name = form->GetFullName();
-		const char* typeName = "None";
-
-		// Associate typeName from formType table.
-		for (auto& item : _filterMap) {
-			if (std::get<1>(item) == a_formType) {
-				typeName = std::get<2>(item).c_str();
-			}
-		}
-
-		RE::FormID _formid = form->GetFormID();
-		std::string formid = fmt::format("{:08x}", _formid);
-		//std::string formid_short = fmt::format("{:x}", _formid);
-		//std::string formid = fmt::format("{} ({})", formid_long, formid_short);
-		std::string editorid = getFormEditorID(form);
-		std::int32_t goldValue = form->GetGoldValue();
-		RE::TESFile* mod = form->GetFile();
-
-		bool non_playable = false;
-
-		if (a_formType == AddItemWindow::Weapon) {
-			non_playable = form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
-		}
-
-		_cachedList.push_back({ name, formid, form, editorid, a_formType, typeName, goldValue, mod, non_playable });
-
-		// Add mod file to list.
-		if (!_modList.contains(mod)) {
-			_modList.insert(mod);
-			// .first->GetFilename().data()
-		}
-	}
-}
-
-// Called to cache specified item types into _cachedList
-void AddItemWindow::Cache()
-{
-	logger::info("Cache Called");
-	_cachedList.clear();
-
-	RE::TESDataHandler* data = RE::TESDataHandler::GetSingleton();
-
-	if (!data)
-		return;
-
-	CacheItems<RE::IngredientItem>(data, Ingredient);
-	CacheItems<RE::AlchemyItem>(data, Alchemy);
-	CacheItems<RE::TESAmmo>(data, Ammo);
-	CacheItems<RE::TESKey>(data, Key);
-	CacheItems<RE::TESObjectMISC>(data, Misc);
-	CacheItems<RE::TESObjectARMO>(data, Armor);
-	CacheItems<RE::TESObjectBOOK>(data, Book);
-	CacheItems<RE::TESObjectWEAP>(data, Weapon);
-
-	logger::info("Cached {} items", _cachedList.size());
-}
-
 // Draws a Copy to Clipboard button on Context popup.
 void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const char* editor)
 {
@@ -166,38 +33,39 @@ void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const c
 	ImGui::PopFont();
 }
 
-// args are AddItemWindow::ListItemType *a, AddItemWindow::ListItemType *b
-bool sortcol(const AddItemWindow::ListItemType* v1, const AddItemWindow::ListItemType* v2)
+bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::CachedItem* v2)
 {
-	const ImGuiTableSortSpecs* sort_specs = AddItemWindow::s_current_sort_specs;
+	const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
 	const ImGuiID ID = sort_specs->Specs->ColumnUserID;
 
 	int delta = 0;
 
 	switch (ID) {
 	// Delta must be +1 or -1 to indicate move. Otherwise comparitor is invalid.
-	case AddItemWindow::ColumnID_Favorite:  // bool
+	case ColumnID_Favorite:  // bool
 		delta = (v1->favorite < v2->favorite) ? -1 : (v1->favorite > v2->favorite) ? 1 :
 		                                                                             0;
 		break;
-	case AddItemWindow::ColumnID_Type:  // const char *
-		delta = strcmp(v1->typeName, v2->typeName);
+	case ColumnID_Type:  // const char *
+		delta = strcmp(v1->typeName.c_str(), v2->typeName.c_str());
 		break;
-	case AddItemWindow::ColumnID_FormID:  // std::string
+	case ColumnID_FormID:  // std::string
 		delta = strcmp(v1->formid.c_str(), v2->formid.c_str());
 		break;
-	case AddItemWindow::ColumnID_Name:  // const char *
+	case ColumnID_Name:  // const char *
 		delta = strcmp(v1->name, v2->name);
 		break;
-	case AddItemWindow::ColumnID_EditorID:  // std::string
+	case ColumnID_EditorID:  // std::string
 		delta = strcmp(v1->editorid.c_str(), v2->editorid.c_str());
 		break;
-	case AddItemWindow::ColumnID_GoldValue:  // std::int32_t
+	case ColumnID_GoldValue:  // std::int32_t
 		delta = (v1->goldValue < v2->goldValue) ? -1 : (v1->goldValue > v2->goldValue) ? 1 :
 		                                                                                 0;
 	default:
 		break;
 	}
+
+	// TODO: Write functionality for None filter
 
 	if (delta > 0)
 		return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? true : false;
@@ -209,11 +77,11 @@ bool sortcol(const AddItemWindow::ListItemType* v1, const AddItemWindow::ListIte
 }
 
 // Sorts the columns of referenced list by sort_specs
-void AddItemWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs, std::vector<AddItemWindow::ListItemType*>* list, const int a_size)
+void AddItemWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
 {
 	s_current_sort_specs = sort_specs;
-	if (a_size > 1)
-		std::sort(list->begin(), list->end(), sortcol);
+	if (itemList.size() > 1)
+		std::sort(itemList.begin(), itemList.end(), SortColumn);
 	s_current_sort_specs = NULL;
 }
 
@@ -228,15 +96,12 @@ void AddItemWindow::Draw_FormTable()
 {
 	auto& style = Settings::GetSingleton()->GetStyle();
 
-	//ImGuiTableFlags_SizingStretchProp
 	const auto table_flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
 	                         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
 	                         ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
 	                         ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
 
-	//const auto sizing = (_activeList.empty() ? ImGuiTableFlags_SizingFixedFit : ImGuiTableFlags_SizingStretchProp);
 	const auto sizing = ImGuiTableFlags_SizingStretchProp;
-	//const auto column_flags = (_activeList.empty() ? ImGuiTableColumnFlags_WidthFixed : ImGuiTableColumnFlags_WidthStretch);
 
 	const auto table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
 
@@ -269,26 +134,23 @@ void AddItemWindow::Draw_FormTable()
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
 
-		if (_dirtyFilter)
+		if (dirty)
 			ImGui::TableGetSortSpecs()->SpecsDirty = true;
 
 		// Sort our data if sort specs have been changed!
 		if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
 			if (sort_specs->SpecsDirty) {
-				SortColumnsWithSpecs(sort_specs, &_activeList, static_cast<int>(_activeList.size()));
+				SortColumnsWithSpecs(sort_specs);
 				sort_specs->SpecsDirty = false;
-				_dirtyFilter = false;
+				dirty = false;
 			}
 
 		int count = 0;
-		for (auto* a_item : _activeList) {
+		for (auto& item : itemList) {
 			count++;
 
 			if (count > 1000)
 				break;
-
-			if (!a_item)
-				continue;
 
 			auto table_id = std::string("##AddItemMenu::Table-") + std::to_string(count);
 
@@ -304,18 +166,15 @@ void AddItemWindow::Draw_FormTable()
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 
-			auto& ref = *a_item;
-			ImTextureID favorite_state = ref.favorite ? style.favoriteIconEnabled.texture : style.favoriteIconDisabled.texture;
-			float col = ref.favorite ? 1.0f : 0.5f;
+			ImTextureID favorite_state = item->favorite ? style.favoriteIconEnabled.texture : style.favoriteIconDisabled.texture;
+			float col = item->favorite ? 1.0f : 0.5f;
 
 			if (favorite_state != nullptr) {
 				if (ImGui::ImageButton("##FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-					ref.favorite = !ref.favorite;
+					item->favorite = !item->favorite;
 				}
 			} else {
-				if (ImGui::Checkbox("##FavoriteCheckbox", &ref.favorite)) {
-					// do nothing
-				}
+				ImGui::Checkbox("##FavoriteCheckbox", &item->favorite);
 			}
 
 			ImGui::PopStyleColor(3);
@@ -323,23 +182,20 @@ void AddItemWindow::Draw_FormTable()
 
 			const ImGuiSelectableFlags select_flags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
 			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(ref.typeName));
-			ImGui::Selectable(ref.typeName, &ref.selected, select_flags);
+			ImGui::SetCursorPosX(center_text_x(item->typeName.c_str()));  // TODO: Why does this want const char*?
+			ImGui::Selectable(item->typeName.c_str(), &item->selected, select_flags);
 			ImGui::TableNextColumn();
-			ImGui::Selectable(ref.formid.c_str(), &ref.selected, select_flags);
+			ImGui::Selectable(item->formid.c_str(), &item->selected, select_flags);
 			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(ref.name));
-			ImGui::Selectable(ref.name, &ref.selected, select_flags);
+			ImGui::SetCursorPosX(center_text_x(item->name));
+			ImGui::Selectable(item->name, &item->selected, select_flags);
 			ImGui::TableNextColumn();
-			//ImGui::SetCursorPosX(center_text_x(ref.editorid.c_str()));
-			//ImGui::Selectable(ref.editorid.c_str(), &ref.selected, select_flags);
-			ImGui::TextWrapped(ref.editorid.c_str());
+			ImGui::TextWrapped(item->editorid.c_str());
 			ImGui::TableNextColumn();
-			ImGui::SetCursorPosX(center_text_x(std::to_string(ref.goldValue).c_str()));
-			ImGui::Selectable(std::to_string(ref.goldValue).c_str(), &ref.selected, select_flags);
+			ImGui::SetCursorPosX(center_text_x(std::to_string(item->goldValue).c_str()));
+			ImGui::Selectable(std::to_string(item->goldValue).c_str(), &item->selected, select_flags);
 
-			if (ref.formType == AddItemWindow::ItemType::Weapon) {
-				//auto curCol = ImGui::TableGetHoveredColumn();
+			if (item->formType == RE::FormType::Weapon) {
 				auto curRow = ImGui::TableGetHoveredRow();
 
 				if (curRow == ImGui::TableGetRowIndex()) {
@@ -372,21 +228,21 @@ void AddItemWindow::Draw_FormTable()
 						"Crossbow"
 					};
 
-					uint16_t damage = ref.form->As<RE::TESObjectWEAP>()->attackDamage;               // seems like base damage
-					uint16_t damage_other = ref.form->As<RE::TESObjectWEAP>()->criticalData.damage;  // 1-100x multiplier?
-					auto maxRange = ref.form->As<RE::TESObjectWEAP>()->weaponData.maxRange;          // bow only
-					auto minRange = ref.form->As<RE::TESObjectWEAP>()->weaponData.minRange;          // bow only
-					//auto desc = ref.form->As<RE::TESObjectWEAP>()->GetDescription();
-					auto reach = ref.form->As<RE::TESObjectWEAP>()->weaponData.reach;                                              // + and - 1 by a little.
-					auto speed = ref.form->As<RE::TESObjectWEAP>()->weaponData.speed;                                              // 0 - 2?
-					SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = ref.form->As<RE::TESObjectWEAP>()->weaponData.skill;  // see below
-					auto stagger = ref.form->As<RE::TESObjectWEAP>()->weaponData.staggerValue;                                     // 0 - 2 with 1 being median
-					auto crit = ref.form->As<RE::TESObjectWEAP>()->GetCritDamage();
-					//auto critChance = ref.form->As<RE::TESObjectWEAP>()->GetCrit;
-					auto type = weaponTypes[static_cast<int>(ref.form->As<RE::TESObjectWEAP>()->GetWeaponType())];
+					//auto desc = item->form->As<RE::TESObjectWEAP>()->GetDescription();
+					//auto critChance = item->form->As<RE::TESObjectWEAP>()->GetCrit;
+					uint16_t damage = item->form->As<RE::TESObjectWEAP>()->attackDamage;                                             // seems like base damage
+					uint16_t damage_other = item->form->As<RE::TESObjectWEAP>()->criticalData.damage;                                // 1-100x multiplier?
+					auto maxRange = item->form->As<RE::TESObjectWEAP>()->weaponData.maxRange;                                        // bow only
+					auto minRange = item->form->As<RE::TESObjectWEAP>()->weaponData.minRange;                                        // bow only
+					auto reach = item->form->As<RE::TESObjectWEAP>()->weaponData.reach;                                              // + and - 1 by a little.
+					auto speed = item->form->As<RE::TESObjectWEAP>()->weaponData.speed;                                              // 0 - 2?
+					SKSE::stl::enumeration<RE::ActorValue, uint32_t> skill = item->form->As<RE::TESObjectWEAP>()->weaponData.skill;  // see below
+					auto stagger = item->form->As<RE::TESObjectWEAP>()->weaponData.staggerValue;                                     // 0 - 2 with 1 being median
+					auto crit = item->form->As<RE::TESObjectWEAP>()->GetCritDamage();
+					auto type = weaponTypes[static_cast<int>(item->form->As<RE::TESObjectWEAP>()->GetWeaponType())];
 
-					auto is_bound = ref.form->As<RE::TESObjectWEAP>()->IsBound();
-					auto non_playable = ref.form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+					auto is_bound = item->form->As<RE::TESObjectWEAP>()->IsBound();
+					auto non_playable = item->form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
 
 					auto skill_value = skill.get();  // ActorValue enum ng.commonlib.dev/_actor_values_8h_source.html
 
@@ -405,17 +261,6 @@ void AddItemWindow::Draw_FormTable()
 					ImGui::Text("is_bound: %s", (is_bound) ? "true" : "false");
 					ImGui::EndTooltip();
 				}
-
-				// uint16_t damage = ref.form->As<RE::TESObjectWEAP>()->attackDamage;
-				//auto flags = ref.form->As<RE::TESObjectWEAP>()->data->flags;
-				//RE::BGSEquipSlot* slot = ref.form->As<RE::TESObjectWEAP>()->equipSlot;
-				//auto test = ref.form->As<RE::TESObjectWEAP>()->descriptionText;
-				// ImGui::BeginItemTooltip();
-				// ImGui::Text("Damage: %d", static_cast<int>(damage));
-				//ImGui::Text("Flags: %s", flags);
-				//ImGui::Text("Slot: %s", slot->flags.get());
-				//ImGui::Text("test: %s", test);
-				// ImGui::EndTooltip();
 			}
 
 			//if (ImGui::BeginPopupContextItem())
@@ -425,86 +270,73 @@ void AddItemWindow::Draw_FormTable()
 			//}
 
 			ImGui::PopID();
-
-			// These needs to be outside Push/Pop ID otherwise expression != 0 assertion;
-			//auto input_id = std::string("##AddItemMenu::InputText-") + std::to_string(count);
-			//auto height = ImGui::GetTextLineHeight();
-			//auto width = ImGui::GetColumnWidth() / 4;
-			////ImGui::Dummy(ImVec2(width, height));
-			//ImGui::SetCursorPosY(ImGui::GetCursorPosY() - height/2);
-			//ImGui::InputInt(input_id.c_str(), &ref.quantity, 0);
 		}
 
 		ImGui::PopStyleVar(1);
 
+		// TODO: Implement settings variable for count
 		if (count > 1000) {
 			ImGui::SeparatorText("Too many results, please refine your search. (1000+ items)");
 		}
 
 		ImGui::EndTable();
 	}
-
-	//ImGui::EndChild();
-}
-
-// FIXME: Revisit this implementation
-// This is the callback for the search bar, it's a stub for now.
-int AddItemWindow::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
-{
-	AddItemWindow* item = reinterpret_cast<AddItemWindow*>(data->UserData);
-	return item->TextEditCallback(data);
-}
-
-// FIXME: Revisit this implementation
-// This is the callback for the search bar, it's a stub for now.
-int AddItemWindow::TextEditCallback(ImGuiInputTextCallbackData* data)
-{
-	if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion) {
-		data->InsertChars(data->CursorPos, "..");
-	} else if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory) {
-		SKSE::log::info("CallbackHistory");
-		if (data->EventKey == ImGuiKey_UpArrow) {
-			data->DeleteChars(0, data->BufTextLen);
-			data->InsertChars(0, "Pressed Up");  // TODO: Cache search stack
-			data->SelectAll();
-		} else if (data->EventKey == ImGuiKey_DownArrow) {
-			data->DeleteChars(0, data->BufTextLen);
-			data->InsertChars(0, "Pressed Down");  // TODO: Cache search stack
-			data->SelectAll();
-		}
-	}
-	return 0;
 }
 
 void AddItemWindow::ApplyFilters()
 {
-	_activeList.clear();
+	itemList.clear();
 
-	static char compare[256];  // Declare a char array to store the value of compare
+	auto& cached_item_list = MEMData::GetItemList();
 
-	for (auto& item : _cachedList) {
-		switch (_searchBy) {
-		case FullName:
+	// FIXME: Does this need to be static?
+	static char compare[256];
+	bool skip = false;
+
+	// TODO: Implement additional columns
+	for (auto& item : cached_item_list) {
+		switch (searchKey) {
+		case ColumnID_Name:
 			strcpy(compare, item.name);  // Copy the value of item.name to compare
 			break;
-		case FormID:
+		case ColumnID_FormID:
 			strcpy(compare, item.formid.c_str());  // Copy the value of item.formid to compare
 			break;
-		case EditorID:
+		case ColumnID_EditorID:
 			strcpy(compare, item.editorid.c_str());  // Copy the value of item.editorid to compare
+			break;
+		case ColumnID_None:
+			skip = true;
 			break;
 		default:
 			strcpy(compare, item.name);  // Copy the value of item.name to compare
 			break;
 		}
 
-		auto lower_input = strlwr(_searchBuffer);
+		if (selectedMod != nullptr && item.mod != selectedMod)  // skip non-active mods
+			continue;
+
+		auto lower_input = strlwr(inputBuffer);
 		auto lower_compare = strlwr(compare);
 
-		if (strstr(lower_compare, lower_input) != nullptr) {
-			if (_currentMod != nullptr && item.mod != _currentMod)  // skip non-active mods
-				continue;
+		if (skip) {
+			int score = 0;
 
+			if (strstr(strlwr((char*)item.name), lower_input) != nullptr)
+				score++;
+			if (strstr(strlwr((char*)item.editorid.c_str()), lower_input) != nullptr)
+				score++;
+			if (strstr(strlwr((char*)item.formid.c_str()), lower_input) != nullptr)
+				score++;
+
+			if (score > 0) {
+				itemList.push_back(&item);
+			}
+
+			continue;
+		}
+
+		if (strstr(lower_compare, lower_input) != nullptr) {
 			if (item.nonPlayable)  // skip non-usable
 				continue;
 
@@ -512,55 +344,56 @@ void AddItemWindow::ApplyFilters()
 				continue;
 
 			// Only append if the item is in the filter list.
-			if (_filters.count(item.formType) > 0) {
-				_activeList.push_back(&item);
+			if (itemFilters.count(item.formType) > 0) {
+				itemList.push_back(&item);
 			}
 		}
 	}
 
 	// Resort the list after applying filters
-	_dirtyFilter = true;
-
-	logger::info("activeList size: {}", _activeList.size());
-	logger::info("activeList mem: {}", sizeof(_activeList));
+	dirty = true;
 }
 
 // Draw search bar for filtering items.
 void AddItemWindow::Draw_InputSearch()
 {
-	static char str0[32] = "";
 	ImGui::Text("Type in search terms to filter your results:");
 	// Testing without ImGuiInputTextFlags_EnterReturnsTrue for live updates
-	ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll |
-	                                       ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
+	ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
 
-	std::map<SearchBy, const char*> searchByMap = {
-		{ FullName, "Name" },
-		{ EditorID, "Editor ID" },
-		{ FormID, "Form ID" }
+	std::map<ColumnID, const char*> search_map = {
+		{ ColumnID_None, "None" },
+		{ ColumnID_Name, "Name" },
+		{ ColumnID_EditorID, "Editor ID" },
+		{ ColumnID_FormID, "Form ID" }
 	};
 
-	if (ImGui::InputTextWithHint("##InputField", "Enter text to filter results by...", _searchBuffer,
-			IM_ARRAYSIZE(_searchBuffer),
-			input_text_flags, &TextEditCallbackStub, (void*)0))
+	if (ImGui::InputTextWithHint("##InputField", "Enter text to filter results by...", inputBuffer,
+			IM_ARRAYSIZE(inputBuffer),
+			input_text_flags)) {
 		ApplyFilters();
+	}
+
+	// Might need to pop id here?
 
 	ImGui::SameLine();
-	// With the following line:
-	auto searchByValue = searchByMap.at(_searchBy);
+
+	auto searchByValue = search_map.at(searchKey);
 	auto combo_flags = ImGuiComboFlags_WidthFitPreview;
 	if (ImGui::BeginCombo("##FilterSearchBy", searchByValue, combo_flags)) {
-		for (auto& item : searchByMap) {
+		for (auto& item : search_map) {
 			auto searchBy = item.first;
 			auto _searchByValue = item.second;
-			bool is_selected = (_searchBy == searchBy);
+			bool is_selected = (searchKey == searchBy);
+
 			if (ImGui::Selectable(_searchByValue, is_selected)) {
-				_searchBy = searchBy;
+				searchKey = searchBy;
 				ApplyFilters();
 			}
 
-			if (is_selected)
+			if (is_selected) {
 				ImGui::SetItemDefaultFocus();
+			}
 		}
 
 		ImGui::EndCombo();
@@ -593,9 +426,8 @@ void AddItemWindow::Draw_Actions()
 		ImGui::PopFont();
 
 		const auto select_flags = ImGuiSelectableFlags_SpanAllColumns;
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			if (item->selected) {
-				//ImGui::SetCursorPosX(center_text_x(item->editorid.c_str()));
 				if (ImGui::Selectable(item->editorid.c_str(), false, select_flags)) {
 					item->selected = false;
 				};
@@ -608,7 +440,7 @@ void AddItemWindow::Draw_Actions()
 	ImGui::PushFont(style.buttonFont);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, style.button.w));
 	if (ImGui::Button("Clear Selection", ImVec2(button_width, button_height))) {
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			item->selected = false;
 		}
 	}
@@ -620,7 +452,7 @@ void AddItemWindow::Draw_Actions()
 	ImGui::PushFont(style.buttonFont);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, style.button.w));
 	if (ImGui::Button("Add to Inventory", ImVec2(button_width, button_height))) {
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			if (item->selected) {
 				ConsoleCommand::AddItem(item->formid);
 				item->selected = false;
@@ -630,7 +462,7 @@ void AddItemWindow::Draw_Actions()
 	}
 
 	if (ImGui::Button("Add to Favorites", ImVec2(button_width, button_height))) {
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			if (item->selected) {
 				item->favorite = !item->favorite;
 			}
@@ -639,7 +471,7 @@ void AddItemWindow::Draw_Actions()
 	ImGui::PopStyleColor(1);
 
 	if (ImGui::Button("Select All Favorites", ImVec2(button_width, button_height))) {
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			if (item->favorite) {
 				item->selected = true;
 			}
@@ -647,7 +479,7 @@ void AddItemWindow::Draw_Actions()
 	}
 
 	if (ImGui::Button("Select All", ImVec2(button_width, button_height))) {
-		for (auto& item : _activeList) {
+		for (auto& item : itemList) {
 			item->selected = true;
 		}
 	}
@@ -680,7 +512,7 @@ void AddItemWindow::Draw_AdvancedOptions()
 		ImGui::NewLine();
 
 		ImGui::SeparatorText("Select a mod to search:");
-		auto combo_text = _currentMod ? _currentMod->GetFilename().data() : "Filter by mods";
+		auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mods";
 
 		//float width = static_cast<float>(list_arrow.width);
 		//float height = static_cast<float>(list_arrow.height);
@@ -689,11 +521,16 @@ void AddItemWindow::Draw_AdvancedOptions()
 		ImGui::NewLine();
 
 		if (ImGui::BeginCombo("##FilterByMod", combo_text)) {
-			for (auto& mod : _modList) {
+			if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
+				selectedMod = nullptr;
+				ApplyFilters();
+				ImGui::SetItemDefaultFocus();
+			}
+			for (auto& mod : MEMData::GetModList()) {
 				const char* modName = mod->GetFilename().data();
 				bool is_selected = false;
 				if (ImGui::Selectable(modName, is_selected)) {
-					_currentMod = mod;
+					selectedMod = mod;
 					ApplyFilters();
 				}
 				if (is_selected)
@@ -719,7 +556,7 @@ void AddItemWindow::Draw()
 
 	bool _change = false;
 
-	for (auto& item : AddItemWindow::_filterMap) {
+	for (auto& item : AddItemWindow::filterMap) {
 		//auto [first, second, third] = item.;
 		auto first = std::get<0>(item);
 		//auto second = std::get<1>(item);
@@ -732,20 +569,19 @@ void AddItemWindow::Draw()
 	}
 
 	if (_change) {
-		_filters.clear();
+		itemFilters.clear();
 
-		for (auto& item : _filterMap) {
+		for (auto& item : filterMap) {
 			auto first = *std::get<0>(item);
 			auto second = std::get<1>(item);
 
 			if (first) {
-				_filters.insert(second);
+				itemFilters.insert(second);
 			}
 		}
 
-		//FilterList(_filters);
 		ApplyFilters();
-		_dirtyFilter = true;
+		dirty = true;
 	}
 
 	ImGui::NewLine();
@@ -755,7 +591,7 @@ void AddItemWindow::Draw()
 	ImGui::NewLine();
 
 	// FIXME: This is a hack to get the results count to update.
-	auto results = std::string("Results (") + std::to_string(_activeList.size()) + std::string(")");
+	auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
 	ImGui::SeparatorText(results.c_str());
 
 	Draw_FormTable();
@@ -771,5 +607,5 @@ void AddItemWindow::Draw()
 // Cache items on initialization
 void AddItemWindow::Init()
 {
-	AddItemWindow::Cache();
+	//AddItemWindow::Cache();
 }

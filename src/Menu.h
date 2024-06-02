@@ -14,7 +14,7 @@ public:
 
 	bool IsEnabled() { return enable; }
 	void SetEnabled(bool value) { enable = value; }
-	void Toggle() { enable = !enable; }
+	constexpr void Toggle() { enable = !enable; }
 
 	static inline Menu* GetSingleton()
 	{

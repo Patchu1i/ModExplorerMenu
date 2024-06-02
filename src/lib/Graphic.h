@@ -20,17 +20,13 @@ public:
 	static inline std::map<std::string, ImFont*> font_library;
 
 	static void DrawImage(Image& a_texture, ImVec2 a_center);
-
-	static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
-		int& out_height);
-
 	static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
-
 	static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, ImFont*>& out_struct);
 
 	static void Init();
 
-	static inline std::atomic_bool initialized = false;
+	[[nodiscard]] static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
+		int& out_height);
 
 	[[nodiscard]] static ImFont* GetFont(std::string a_font)
 	{
@@ -62,7 +58,6 @@ public:
 			return found->second;
 		}
 
-		logger::warn("Image Reference not found: {}", a_name);
 		return Image();
 	}
 
@@ -75,7 +70,6 @@ public:
 			}
 		}
 
-		logger::warn("Image name not found");
 		return "None";
 	}
 };

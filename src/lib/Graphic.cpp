@@ -4,9 +4,6 @@
 #include "Graphic.h"
 #include "Menu.h"
 
-//std::map<std::string, GraphicManager::Image> GraphicManager::image_library;
-//std::map<std::string, ImFont*> GraphicManager::font_library;
-
 bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
 	int& out_height)
 {
@@ -71,8 +68,6 @@ bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceV
 
 void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct)
 {
-	logger::info("[Initialize]: Loading images from directory {}"sv, a_path);
-
 	if (std::filesystem::exists(a_path) == false) {
 		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
 		stl::report_and_fail(warning);
@@ -85,19 +80,18 @@ void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::st
 		}
 
 		auto index = entry.path().filename().stem().string();  // Get the filename without extension
-		logger::info("[Initialize]: Loading image: {}", index.c_str());
 
-		GraphicManager::GetD3D11Texture(entry.path().string().c_str(), &out_struct[index.c_str()].texture,
+		bool success = GraphicManager::GetD3D11Texture(entry.path().string().c_str(), &out_struct[index.c_str()].texture,
 			out_struct[index.c_str()].width, out_struct[index.c_str()].height);
-	}
 
-	logger::info("[Initialize]: {} images loaded."sv, out_struct.size());
+		if (!success) {
+			logger::error("Failed to load image: {}", entry.path().string());
+		}
+	}
 }
 
 void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, ImFont*>& out_struct)
 {
-	logger::info("[Initialize]: Loading fonts from directory: {}", a_path);
-
 	if (std::filesystem::exists(a_path) == false) {
 		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
 		stl::report_and_fail(warning);
@@ -116,8 +110,6 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 		out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
 		out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
 	}
-
-	logger::info("[Initialize]: {} fonts loaded."sv, GraphicManager::font_library.size());
 }
 
 void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
@@ -153,9 +145,6 @@ void GraphicManager::Init()
 	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
 	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library);
 
-	for (auto font : GraphicManager::font_library) {
-		logger::info("[Initialize]: Font loaded: {}", font.first);
-	}
-
-	GraphicManager::initialized.store(true);  // TODO: Probably not needed anymore.
+	// Otherwise assets won't be loaded in time.
+	Menu::initialized.store(true);
 }

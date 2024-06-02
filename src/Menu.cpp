@@ -41,7 +41,7 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 	ImGui_ImplWin32_Init(desc.OutputWindow);
 	ImGui_ImplDX11_Init(a_device, a_context);
 
-	initialized.store(true);
+	//initialized.store(true);
 
 	this->device = a_device;
 	this->context = a_context;
@@ -547,7 +547,7 @@ void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 			case RE::INPUT_DEVICE::kKeyboard:
 				io.AddKeyEvent(ImGui_ImplWin32_VirtualKeyToImGuiKey(key), button->IsPressed());
 				if (button->GetIDCode() == Menu::keybind) {
-					if (button->IsDown()) {
+					if (button->IsDown() && Menu::initialized.load()) {
 						Menu::Toggle();
 					}
 				} else if (button->GetIDCode() == uint32_t(41)) {  // console escape.

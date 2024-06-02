@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Data.h"
 #include "lib/Graphic.h"
 #include <unordered_set>
 
@@ -11,7 +12,7 @@ public:
 	static void Draw();
 	static void Init();
 
-	enum ItemType
+	enum FilterType
 	{
 		Alchemy,
 		Ingredient,
@@ -23,25 +24,6 @@ public:
 		Weapon
 	};
 
-	// If types are changed here
-	// Update the _filterMap in AddItemWindow.cpp
-	// Update the sort function in AddItemWindow.cpp
-	struct ListItemType
-	{
-		const char* name;
-		std::string formid;
-		RE::TESForm* form;
-		std::string editorid;
-		AddItemWindow::ItemType formType;
-		const char* typeName;
-		std::int32_t goldValue;
-		RE::TESFile* mod;
-		bool nonPlayable;
-		bool favorite;
-		int quantity;
-		bool selected;
-	};
-
 	enum ColumnID
 	{
 		ColumnID_Favorite,
@@ -49,52 +31,40 @@ public:
 		ColumnID_FormID,
 		ColumnID_Name,
 		ColumnID_EditorID,
-		ColumnID_GoldValue
+		ColumnID_GoldValue,
+		ColumnID_None,
 	};
 
-	enum SearchBy
-	{
-		FullName,
-		FormID,
-		EditorID
-	};
-
-	static std::vector<AddItemWindow::ListItemType> _cachedList;
-	static std::vector<AddItemWindow::ListItemType*> _activeList;
-	static std::unordered_set<RE::TESFile*> _modList;
-	static std::unordered_set<AddItemWindow::ItemType> _filters;
-
-	static const int column_count = 6;
-	static inline ImGuiTableColumnFlags column_flags_out[column_count] = { 0, 0, 0 };
 	static inline std::array<bool, 6> column_toggle = { true, true, false, true, true, false };
 
-	static inline RE::TESFile* _currentMod;
-	static const ImGuiTableSortSpecs* s_current_sort_specs;
+	static inline const ImGuiTableSortSpecs* s_current_sort_specs;
+	static inline ColumnID searchKey = ColumnID::ColumnID_Name;  // _searchBy
+	static inline char inputBuffer[256] = "";                    // searchBuffer
+	static inline RE::TESFile* selectedMod = nullptr;            // _currentMod
+	static inline bool dirty = true;
 
-	// static inline ID3D11ShaderResourceView* favorite_enabled_texture;
-	// static inline ID3D11ShaderResourceView* favorite_disabled_texture;
+	static constexpr int column_count = 6;
+	static inline std::vector<MEMData::CachedItem*> itemList;  // _activeList
 
-	static inline ImFont* text_font;
-	static inline ImFont* header_font;
-	static inline ImFont* button_font;
+	static inline bool b_Alchemy = false;
+	static inline bool b_Ingredient = false;
+	static inline bool b_Ammo = false;
+	static inline bool b_Key = false;
+	static inline bool b_Misc = false;
+	static inline bool b_Armor = false;
+	static inline bool b_Book = false;
+	static inline bool b_Weapon = false;
 
-	static inline SearchBy _searchBy;
-	static inline char _searchBuffer[256] = "";
+	static inline std::unordered_set<RE::FormType> itemFilters;  // _filters
+	static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
+		{ &b_Alchemy, RE::FormType::AlchemyItem, "ALCH" }, { &b_Ingredient, RE::FormType::Ingredient, "INGR" },
+		{ &b_Ammo, RE::FormType::Ammo, "AMMO" }, { &b_Key, RE::FormType::KeyMaster, "KEYS" },
+		{ &b_Misc, RE::FormType::Misc, "MISC" }, { &b_Armor, RE::FormType::Armor, "ARMO" },
+		{ &b_Book, RE::FormType::Book, "BOOK" }, { &b_Weapon, RE::FormType::Weapon, "WEAP" }
+	};
 
-	static inline bool _dirtyFilter = false;
-
-	// For ImGui Checkbox state tracking
-	static bool _Alchemy;
-	static bool _Ingredient;
-	static bool _Ammo;
-	static bool _Key;
-	static bool _Misc;
-	static bool _Armor;
-	static bool _Book;
-	static bool _Weapon;
-
-	// Write a list of elements, where each element is a bool pointer, an ItemType, and a string.
-	static std::vector<std::tuple<bool*, AddItemWindow::ItemType, std::string>> _filterMap;
+	static bool SortColumn(const MEMData::CachedItem* v1, const MEMData::CachedItem* v2);
+	static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
 
 	// ImGui related calls.
 	static void Draw_InputSearch();
@@ -102,26 +72,5 @@ public:
 	static void Draw_Actions();
 	static void Draw_AdvancedOptions();
 	static void Context_CopyOnly(const char* form, const char* name, const char* editor);
-	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data);
-	static int TextEditCallback(ImGuiInputTextCallbackData* data);
 	static void ApplyFilters();
-
-	static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs, std::vector<AddItemWindow::ListItemType*>* list, int a_size);
-
-	// Cache related calls.
-	template <class T>
-	static void CacheItems(RE::TESDataHandler* a_data, const AddItemWindow::ItemType a_formType);
-	static std::string getFormEditorID(const RE::TESForm* a_form);
-
-	static void Cache();
-
-	// Not in use anymore
-	//// Generate a cache of all relevant items in the game.
-	//static std::vector<ListItemType> cachedList;
-
-	//// Store active lists as pointers to generated cache.
-	//static std::vector<ListItemType *> activeList;
-
-	//// List of filters to apply to cache.
-	//static std::unordered_set<ItemType> filters;
 };

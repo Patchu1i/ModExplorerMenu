@@ -9,7 +9,7 @@ using MEMMap = std::multimap<std::string, std::multimap<std::string, std::multim
 class MEMData
 {
 public:
-	struct CachedObject  // Removed ItemType (formType), should source from RE::FormType::
+	struct CachedItem  // Removed ItemType (formType), should source from RE::FormType::
 	{
 		const char* name;
 		std::string formid;
@@ -58,7 +58,7 @@ private:
 		"ccQDRSSE001-SurvivalMode.esl",
 	};
 
-	static inline std::vector<CachedObject> _cache;
+	static inline std::vector<CachedItem> _cache;
 	static inline std::vector<CachedCell> _cellCache;
 	static inline std::unordered_set<RE::TESFile*> _modList;
 	// static inline std::map<std::string, CachedCell> _cellCache;  // EditorID, CachedCell
@@ -87,6 +87,11 @@ public:
 	static inline std::vector<CachedCell>& GetCellMap()
 	{
 		return _cellCache;
+	}
+
+	static inline std::vector<CachedItem>& GetItemList()
+	{
+		return _cache;
 	}
 
 	void Run();

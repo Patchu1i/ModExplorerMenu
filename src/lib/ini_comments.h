@@ -85,7 +85,7 @@ namespace IniHelper
 
 	};
 
-	const char* GetComment(iComment a_type)
+	[[nodiscard]] const char* GetComment(iComment a_type)
 	{
 		return comment_map[a_type];
 	}

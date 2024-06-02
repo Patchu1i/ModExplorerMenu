@@ -36,12 +36,12 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 
 	if (ImGui::BeginTable("##TeleportTable", column_count, table_flags | sizing, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
-		ImGui::TableSetupColumn("##Favorite", ImGuiTableColumnFlags_WidthFixed, 25.0f, ColumnID_Favorite);
-		ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Plugin);
-		ImGui::TableSetupColumn("Worldspace", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Space);
-		ImGui::TableSetupColumn("Zone", ImGuiTableColumnFlags_None, 25.0f, ColumnID_Zone);
-		ImGui::TableSetupColumn("Full Name", ImGuiTableColumnFlags_None, 75.0f, ColumnID_FullName);
-		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 75.0f, ColumnID_EditorID);
+		ImGui::TableSetupColumn("##Favorite", ImGuiTableColumnFlags_WidthFixed, 18.0f, ColumnID_Favorite);
+		ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_WidthStretch, 75.0f, ColumnID_Plugin);
+		ImGui::TableSetupColumn("Worldspace", ImGuiTableColumnFlags_WidthStretch, 25.0f, ColumnID_Space);
+		ImGui::TableSetupColumn("Zone", ImGuiTableColumnFlags_WidthStretch, 35.0f, ColumnID_Zone);
+		ImGui::TableSetupColumn("Full Name", ImGuiTableColumnFlags_WidthStretch, 75.0f, ColumnID_FullName);
+		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_WidthStretch, 75.0f, ColumnID_EditorID);
 
 		ImGui::PushFont(a_style.headerFont);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
@@ -85,7 +85,7 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 			//auto& editorid = data.first;
 			//auto& cell = *_cell;
 
-			if (count > 1000) {
+			if (count > config.maxTableRows) {
 				break;
 			}
 
@@ -187,7 +187,6 @@ void TeleportWindow::ApplyFilters()
 	bool skip = false;
 
 	for (auto& cell : cached_cell_map) {
-		//auto& [editorid, cell] = data;  // cellMap[editorid
 		switch (searchKey) {
 		case ColumnID_Plugin:
 			strcpy(compare, cell.plugin.c_str());  // Copy the value of item.name to compare
@@ -243,26 +242,11 @@ void TeleportWindow::ApplyFilters()
 			if (selectedMod != nullptr && cell.mod != selectedMod)  // skip non-active mods
 				continue;
 
-			//if (item.nonPlayable)  // skip non-usable
-			//	continue;
-
-			//if (strcmp(item.name, "") == 0)  // skip empty names
-			//	continue;
-
-			// Only append if the item is in the filter list.
-			//if (_filters.count(item.formType) > 0) {
-			//	_activeList.push_back(&item);
-			//}
 			cellMap.push_back(&cell);
 		}
 	}
 
 	dirty = true;
-	// Resort the list after applying filters
-	//_dirtyFilter = true;
-
-	//logger::info("activeList size: {}", _activeList.size());
-	//logger::info("activeList mem: {}", sizeof(_activeList));
 }
 
 void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
@@ -271,7 +255,6 @@ void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
 	(void)a_style;
 
 	static char str0[32] = "";
-	ImGui::Text("Type in search terms to filter your results:");
 	// Testing without ImGuiInputTextFlags_EnterReturnsTrue for live updates
 	ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EscapeClearsAll;
 
@@ -285,6 +268,7 @@ void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
 		{ ColumnID_Favorite, "Favorite" },
 	};
 
+	ImGui::SeparatorText("Search:");
 	if (ImGui::InputTextWithHint("##InputFieldTeleportWindow", "Enter text to filter results by...", inputBuffer,
 			IM_ARRAYSIZE(inputBuffer),
 			input_text_flags)) {
@@ -310,8 +294,9 @@ void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
 				ApplyFilters();
 			}
 
-			if (is_selected)
+			if (is_selected) {
 				ImGui::SetItemDefaultFocus();
+			}
 		}
 
 		ImGui::EndCombo();
@@ -321,17 +306,6 @@ void TeleportWindow::ShowInputSearch(Settings::Style& a_style)
 void TeleportWindow::ShowOptions(Settings::Style& a_style)
 {
 	(void)a_style;
-
-	// ImGui::SeparatorText("Enable/Disable Columns:");
-
-	// ImGui::Checkbox("Show Favorite", &column_toggle[ColumnID_Favorite]);
-	// ImGui::Checkbox("Show ESM", &column_toggle[ColumnID_ESM]);
-	// ImGui::Checkbox("Show Space", &column_toggle[ColumnID_Space]);
-	// ImGui::Checkbox("Show Zone", &column_toggle[ColumnID_Zone]);
-	// ImGui::Checkbox("Show Fullname", &column_toggle[ColumnID_FullName]);
-	// ImGui::Checkbox("Show EditorID", &column_toggle[ColumnID_EditorID]);
-
-	// ImGui::NewLine();
 
 	ImGui::SeparatorText("Select a mod to search:");
 	auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mods";
@@ -358,6 +332,7 @@ void TeleportWindow::ShowOptions(Settings::Style& a_style)
 
 void TeleportWindow::Draw(Settings::Style& a_style)
 {
+	auto& config = Settings::GetSingleton()->GetConfig();
 	// const auto _flags = ImGuiOldColumnFlags_NoResize;
 	// ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
 
@@ -368,7 +343,6 @@ void TeleportWindow::Draw(Settings::Style& a_style)
 	// Draw_InputSearch();
 	ShowInputSearch(a_style);
 
-	ImGui::NewLine();
 	// ImGui::NewLine();
 
 	// Draw_AdvancedOptions();
@@ -383,8 +357,8 @@ void TeleportWindow::Draw(Settings::Style& a_style)
 
 	ShowTable(a_style);
 
-	if (cellMap.size() > 1000) {
-		ImGui::SeparatorText("Results limited to 1000 entries.");
+	if (cellMap.size() > config.maxTableRows) {
+		ImGui::SeparatorText(("Results limited to " + std::to_string(config.maxTableRows) + " entries.").c_str());
 	}
 
 	// // Start of Right Column

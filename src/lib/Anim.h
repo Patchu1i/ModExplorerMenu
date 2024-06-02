@@ -5,9 +5,6 @@
 class ImGuiAnim
 {
 public:
-	static void Init();
-	static void Update();
-
 	static inline float pulse(float speed, float min = 0.0f, float max = 1.0f)
 	{
 		return min + ((max - min) / 2) + ((max - min) / 2) * (float)sin(speed * ImGui::GetTime());

@@ -115,7 +115,7 @@ void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 {
 	user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
 
-	user.config.maxTableRows = GET_VALUE<float>(rSections[AddItem], "MaxTableRows", 5000.0f, a_ini);
+	user.config.maxTableRows = GET_VALUE<float>(rSections[AddItem], "MaxTableRows", 5000, a_ini);
 
 	user.config.teleShowFavoriteColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFavoriteColumn", true, a_ini);
 	user.config.teleShowPluginColumn = GET_VALUE<bool>(rSections[Teleport], "ShowPluginColumn", true, a_ini);
