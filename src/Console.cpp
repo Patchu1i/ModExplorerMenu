@@ -1,5 +1,5 @@
-#	include "Console.h"
-#	include "Menu.h"
+#include "Console.h"
+#include "Menu.h"
 
 // Define ConsoleCommand t_Execute callback function.
 bool ConsoleCommand::Run(const RE::SCRIPT_PARAMETER*, RE::SCRIPT_FUNCTION::ScriptData* a_scriptData,
@@ -81,9 +81,9 @@ inline void ConsoleCommand::SendConsoleCommand(std::string_view cmd)
 	}
 }
 
-void ConsoleCommand::AddItem(std::string formid)
+void ConsoleCommand::AddItem(std::string a_formid, int a_count)
 {
-	std::string cmd = "player.additem " + formid + " 1";
+	std::string cmd = "player.additem " + a_formid + " " + std::to_string(a_count);
 	SendConsoleCommand(cmd);
 }
 

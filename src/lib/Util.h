@@ -2,8 +2,24 @@
 
 #include "PCH.h"
 
+namespace ImGui
+{
+	inline static void InlineCheckbox(const char* label, bool* v)
+	{
+		ImGui::Checkbox(label, v);
+		ImGui::SameLine();
+	}
+
+	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
+	{
+		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
+		       ImGui::CalcTextSize(text).x / 2;
+	};
+}
+
 namespace Utils
 {
+
 	inline static void RemoveHTMLTags(std::string& a_string)
 	{
 		while (a_string.find("<") != std::string::npos) {
@@ -25,13 +41,13 @@ namespace Utils
 		}
 	};
 
-	inline static float CalcMaxDamage(double a_damage, float a_max)
+	inline static float CalcMaxDamage(float a_damage, float a_max)
 	{
-		return (float)a_damage + a_max;
+		return a_damage + a_max;
 	};
 
 	// Round[ (base damage + smithing increase) * (1 + skill/200) * (1 + perk effects) * (1 + item effects) * (1 + potion effect) * (1 + Seeker of Might bonus) ]
-	inline static double CalcBaseDamage(RE::TESObjectWEAP* a_weapon)
+	inline static float CalcBaseDamage(RE::TESObjectWEAP* a_weapon)
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		auto weaponSkill = a_weapon->weaponData.skill.get();
@@ -43,7 +59,7 @@ namespace Utils
 
 		auto skill = player->AsActorValueOwner()->GetActorValue(weaponSkill);
 
-		return std::round((baseDamage + 0) * (1.0 + skill / 200.0));
+		return (float)std::round((baseDamage + 0) * (1.0 + skill / 200.0));
 	};
 
 	inline static const char* GetArmorType(RE::TESObjectARMO* a_armor)

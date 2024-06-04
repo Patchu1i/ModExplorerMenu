@@ -24,6 +24,7 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 		std::string editorid = GetEditorID(_formid);
 		RE::FormType formType = form->GetFormType();
 		std::string typeName = static_cast<std::string>(RE::FormTypeToString(formType));
+		float weight = form->GetWeight();
 
 		std::int32_t goldValue = 0;
 		bool non_playable = false;
@@ -51,7 +52,7 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 
 		RE::TESFile* mod = form->GetFile();
 
-		_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, non_playable });
+		_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, weight, non_playable });
 
 		//Add mod file to list.
 		if (!_modList.contains(mod)) {

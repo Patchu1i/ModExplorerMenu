@@ -19,6 +19,7 @@ public:
 		std::string typeName;
 		std::int32_t goldValue;
 		RE::TESFile* mod;
+		float weight;
 		bool nonPlayable;
 		bool favorite;
 		int quantity;
