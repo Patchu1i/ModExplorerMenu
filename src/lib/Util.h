@@ -4,6 +4,26 @@
 
 namespace Utils
 {
+	inline static void RemoveHTMLTags(std::string& a_string)
+	{
+		while (a_string.find("<") != std::string::npos) {
+			auto startpos = a_string.find("<");
+			auto endpos = a_string.find(">") + 1;
+
+			if (endpos != std::string::npos) {
+				a_string.erase(startpos, endpos - startpos);
+			}
+		}
+
+		while (a_string.find("[") != std::string::npos) {
+			auto startpos = a_string.find("[");
+			auto endpos = a_string.find("]") + 1;
+
+			if (endpos != std::string::npos) {
+				a_string.erase(startpos, endpos - startpos);
+			}
+		}
+	};
 
 	inline static float CalcMaxDamage(double a_damage, float a_max)
 	{

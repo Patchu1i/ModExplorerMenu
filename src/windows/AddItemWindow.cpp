@@ -53,36 +53,77 @@ void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	ImGui::NextColumn();
 	ShowActions(a_style, a_config);
 	ImGui::EndColumns();
+
+	if (openBook != nullptr) {
+		ShowBookPreview();
+	}
+}
+
+void AddItemWindow::ShowBookPreview()
+{
+	auto& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
+
+	constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
+	if (ImGui::Begin("##ReadBookFromAIM", nullptr, flags)) {
+		const auto desc = openBook->form->As<RE::TESDescription>();
+		RE::BSString buf;
+		desc->GetDescription(buf, nullptr);
+		std::string bufStr = std::string(buf);
+		Utils::RemoveHTMLTags(bufStr);
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize(openBook->name).x * 0.5f);
+		ImGui::Text(openBook->name);
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::TextWrapped(bufStr.c_str());
+	}
+
+	if (ImGui::IsMouseClicked(0)) {
+		if (!ImGui::IsWindowHovered()) {
+			openBook = nullptr;
+		}
+	}
+
+	ImGui::End();
 }
 
 // Draws a Copy to Clipboard button on Context popup.
-void AddItemWindow::Context_CopyOnly(const char* form, const char* name, const char* editor)
+void AddItemWindow::Context_CopyOnly(MEMData::CachedItem& a_item)
 {
-	auto& style = Settings::GetSingleton()->GetStyle();
+	//auto& style = Settings::GetSingleton()->GetStyle();
+	const auto flags = ImGuiSelectableFlags_DontClosePopups;
 
-	ImVec2 buttonSize = ImVec2(ImGui::GetContentRegionAvail().x, 30.0f);
-	ImGui::PushFont(style.buttonFont);
-	if (ImGui::Button("Copy Form ID to Clipboard", buttonSize)) {
+	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+
+	if (ImGui::Selectable("Copy Form ID", false, flags)) {
 		ImGui::LogToClipboard();
-		ImGui::LogText(form);
+		ImGui::LogText(a_item.formid.c_str());
 		ImGui::LogFinish();
 		ImGui::CloseCurrentPopup();
 	}
 
-	if (ImGui::Button("Copy Name to Clipboard", buttonSize)) {
+	if (ImGui::Selectable("Copy Name", false, flags)) {
 		ImGui::LogToClipboard();
-		ImGui::LogText(name);
+		ImGui::LogText(a_item.name);
 		ImGui::LogFinish();
 		ImGui::CloseCurrentPopup();
 	}
 
-	if (ImGui::Button("Copy Editor ID to Clipboard", buttonSize)) {
+	if (ImGui::Selectable("Copy Editor ID", false, flags)) {
 		ImGui::LogToClipboard();
-		ImGui::LogText(editor);
+		ImGui::LogText(a_item.editorid.c_str());
 		ImGui::LogFinish();
 		ImGui::CloseCurrentPopup();
 	}
-	ImGui::PopFont();
+
+	if (a_item.formType == RE::FormType::Book) {
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		if (ImGui::Selectable("Read Me!")) {
+			openBook = &a_item;
+		}
+	}
+
+	ImGui::PopStyleVar(1);
 }
 
 // TODO: Optimize this a little more. Starting to slow down. also see ApplyFilters()
@@ -200,6 +241,35 @@ static inline const float center_text_x(const char* text)
 	return ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 2 -
 	       ImGui::CalcTextSize(text).x / 2;
 };
+
+std::string GetItemDescription(RE::TESForm* form)
+{
+	std::string s_descFramework = "";
+	if (g_DescriptionFrameworkInterface != nullptr) {
+		std::string desc = g_DescriptionFrameworkInterface->GetDescription(form);
+		if (!desc.empty()) {
+			Utils::RemoveHTMLTags(desc);
+			s_descFramework = std::string(desc) + "\n";
+		}
+	}
+
+	std::string s_tesDescription = "";
+	if (form->As<RE::TESDescription>() != nullptr) {
+		const auto desc = form->As<RE::TESDescription>();
+		if (desc) {
+			RE::BSString buf;
+			desc->GetDescription(buf, nullptr);
+
+			if (form->formType == RE::FormType::Book) {
+				s_tesDescription = "[Right Click -> Read Me!]";
+			} else if (!buf.empty()) {
+				s_tesDescription = std::string(buf) + "\n";
+			}
+		}
+	}
+
+	return s_descFramework + s_tesDescription;
+}
 
 void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 {
@@ -334,26 +404,11 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 	// Always show:
 	InlineInt("Gold Value:", item->goldValue);
 
-	if (g_DescriptionFrameworkInterface != nullptr) {
-		auto description = g_DescriptionFrameworkInterface->GetDescription(item->form);
-		if (description != nullptr) {
-			ImGui::Text(std::to_string(g_DescriptionFrameworkInterface->GetBuildNumber()).c_str());
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-			ImGui::TextWrapped(description);
-		}
+	auto desc = GetItemDescription(item->form);
+	if (!desc.empty()) {
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::TextWrapped(desc.c_str());
 	}
-
-	// if (item->form != nullptr && item->form->As<RE::TESDescription>() != nullptr) {
-	// 	const auto desc = item->form->As<RE::TESDescription>();
-	// 	if (desc) {
-	// 		RE::BSString buf;
-	// 		desc->GetDescription(buf, nullptr);
-	// 		if (!buf.empty()) {
-	// 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-	// 			ImGui::TextWrapped(buf.c_str());
-	// 		}
-	// 	}
-	// }
 
 	ImGui::EndTooltip();
 }
@@ -548,11 +603,14 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 					ImGui::PopFont();
 				}
 
-				//if (ImGui::BeginPopupContextItem())
-				//{
-				//    Context_CopyOnly(ref.formid.c_str(), ref.name, ref.editorid.c_str());
-				//    ImGui::EndPopup();
-				//}
+				if (ImGui::IsItemClicked(1)) {
+					ImGui::OpenPopup("TestItemPopupMenu");
+				}
+
+				if (ImGui::BeginPopup("TestItemPopupMenu")) {
+					Context_CopyOnly(*item);
+					ImGui::EndPopup();
+				}
 
 				ImGui::PopID();
 			}
@@ -817,7 +875,5 @@ void AddItemWindow::ShowOptions(Settings::Style& a_style, Settings::Config& a_co
 
 void AddItemWindow::Init()
 {
-	// do stuff
-
 	g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 }

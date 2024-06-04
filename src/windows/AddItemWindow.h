@@ -16,6 +16,7 @@ public:
 	static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedItem* item);
+	static void ShowBookPreview();
 	static void Init();
 
 	static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
@@ -55,6 +56,8 @@ public:
 		true, true, false, true, true, false, false, false, false, false, false, false
 	};
 
+	static inline MEMData::CachedItem* openBook = nullptr;
+
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 	static inline ColumnID searchKey = ColumnID::ColumnID_Name;  // _searchBy
 	static inline char inputBuffer[256] = "";                    // searchBuffer
@@ -86,6 +89,6 @@ public:
 	// ImGui related calls.
 	static void Draw_InputSearch();
 	static void Draw_Actions(Settings::Style& a_style, Settings::Config& a_config);
-	static void Context_CopyOnly(const char* form, const char* name, const char* editor);
+	static void Context_CopyOnly(MEMData::CachedItem& a_item);
 	static void ApplyFilters();
 };
