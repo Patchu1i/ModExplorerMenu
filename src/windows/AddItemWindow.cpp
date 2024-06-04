@@ -334,17 +334,26 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 	// Always show:
 	InlineInt("Gold Value:", item->goldValue);
 
-	if (item->form != nullptr && item->form->As<RE::TESDescription>() != nullptr) {
-		const auto desc = item->form->As<RE::TESDescription>();
-		if (desc) {
-			RE::BSString buf;
-			desc->GetDescription(buf, nullptr);
-			if (!buf.empty()) {
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				ImGui::TextWrapped(buf.c_str());
-			}
+	if (g_DescriptionFrameworkInterface != nullptr) {
+		auto description = g_DescriptionFrameworkInterface->GetDescription(item->form);
+		if (description != nullptr) {
+			ImGui::Text(std::to_string(g_DescriptionFrameworkInterface->GetBuildNumber()).c_str());
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			ImGui::TextWrapped(description);
 		}
 	}
+
+	// if (item->form != nullptr && item->form->As<RE::TESDescription>() != nullptr) {
+	// 	const auto desc = item->form->As<RE::TESDescription>();
+	// 	if (desc) {
+	// 		RE::BSString buf;
+	// 		desc->GetDescription(buf, nullptr);
+	// 		if (!buf.empty()) {
+	// 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+	// 			ImGui::TextWrapped(buf.c_str());
+	// 		}
+	// 	}
+	// }
 
 	ImGui::EndTooltip();
 }
@@ -809,4 +818,6 @@ void AddItemWindow::ShowOptions(Settings::Style& a_style, Settings::Config& a_co
 void AddItemWindow::Init()
 {
 	// do stuff
+
+	g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 }

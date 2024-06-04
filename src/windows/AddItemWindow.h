@@ -2,6 +2,7 @@
 
 #include "Data.h"
 #include "Settings.h"
+#include "lib/DescriptionFrameworkAPI.h"
 #include "lib/Graphic.h"
 #include <unordered_set>
 
@@ -16,6 +17,8 @@ public:
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedItem* item);
 	static void Init();
+
+	static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
 
 	enum FilterType
 	{

@@ -57,6 +57,7 @@ namespace
 			Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
+			logger::info("kPostLoad");
 			break;
 		case SKSE::MessagingInterface::kPostPostLoad:
 			Hooks::Install();
