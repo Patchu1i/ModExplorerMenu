@@ -121,6 +121,9 @@ void MEMData::CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_cellMap
 
 void MEMData::Run()
 {
+	_cache.clear();
+	_cellCache.clear();
+
 	RE::TESDataHandler* dataHandler = RE::TESDataHandler::GetSingleton();
 
 	if (!dataHandler) {

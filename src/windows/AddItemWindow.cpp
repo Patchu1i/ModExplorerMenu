@@ -57,6 +57,14 @@ void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	if (openBook != nullptr) {
 		ShowBookPreview();
 	}
+
+	if (b_ShowPlot) {
+		ShowPlotGraph();
+	}
+
+	if (b_ShowHistogram) {
+		ShowHistogramGraph();
+	}
 }
 
 void AddItemWindow::ShowBookPreview()
@@ -78,10 +86,86 @@ void AddItemWindow::ShowBookPreview()
 		ImGui::TextWrapped(bufStr.c_str());
 	}
 
+	ImGui::End();
+}
+
+void AddItemWindow::ShowHistogramGraph()
+{
+	if (histogramData.empty()) {
+		histogramData.clear();
+		logger::info("Adding data to histogram");
+		for (const auto& item : itemList) {
+			const auto armorRating = Utils::CalcBaseArmorRating(item->form->As<RE::TESObjectARMO>());
+			if (armorRating > 30.0f) {
+				continue;
+			}
+			histogramData.push_back(armorRating);
+			histogramBinCount++;
+		}
+
+		std::sort(histogramData.begin(), histogramData.end());
+	}
+
+	// Create the graph
+	auto& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
+	constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
+	ImGui::Begin("Show Histogram Data", nullptr, flags);
+	ImGui::PlotHistogram("Histogram", histogramData.data(), histogramBinCount, 0, nullptr, 0.0f, 100.0f, ImGui::GetWindowSize());
+	ImGui::End();
+
 	// Close if we click outside.
 	if (ImGui::IsMouseClicked(0)) {
 		if (!ImGui::IsWindowHovered()) {
-			openBook = nullptr;
+			b_ShowHistogram = false;
+		}
+	}
+}
+
+void AddItemWindow::ShowPlotGraph()
+{
+	if (plotA.empty() || plotB.empty()) {
+		plotA.clear();
+		plotB.clear();
+
+		for (const auto& item : itemList) {
+			plotA.push_back(item->weight);
+			plotB.push_back((float)(item->form->GetGoldValue()));
+		}
+	}
+
+	// Then, find the maximum values for scaling
+	float maxWeight = *std::max_element(plotA.begin(), plotA.end());
+	float maxGoldValue = *std::max_element(plotB.begin(), plotB.end());
+
+	// Create the graph
+	auto& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
+	constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
+	if (ImGui::Begin("Weight vs Gold Value", nullptr, flags)) {
+		for (size_t i = 0; i < itemList.size(); ++i) {
+			// Scale the values to fit in the graph
+			float x = plotA[i] / maxWeight;
+			float y = plotB[i] / maxGoldValue;
+
+			// Convert the scaled values to screen coordinates
+			ImVec2 pos = ImGui::GetCursorScreenPos();
+			float graphWidth = ImGui::GetWindowWidth();
+			float graphHeight = ImGui::GetWindowHeight();
+			x = pos.x + x * graphWidth;
+			y = pos.y + (1.0f - y) * graphHeight;  // Flip y axis
+
+			// Draw a small circle at the data point
+			ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(x, y), 3.0f, IM_COL32(255, 0, 0, 255));
+		}
+	}
+
+	// Close if we click outside.
+	if (ImGui::IsMouseClicked(0)) {
+		if (!ImGui::IsWindowHovered()) {
+			b_ShowPlot = false;
 		}
 	}
 
@@ -125,7 +209,6 @@ void AddItemWindow::ShowItemListContextMenu(MEMData::CachedItem& a_item)
 	ImGui::PopStyleVar(1);
 }
 
-// TODO: Optimize this a little more. Starting to slow down. also see ApplyFilters()
 bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::CachedItem* v2)
 {
 	const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
@@ -344,14 +427,22 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 			}
 
 			const auto armorType = Utils::GetArmorType(armor);
-			const float armorRating = armor->GetArmorRating();
+			const float armorRating = Utils::CalcBaseArmorRating(armor);
+			const float armorRatingMax = Utils::CalcMaxArmorRating(armorRating, 50);
 			const auto equipSlot = Utils::GetArmorSlot(armor);
-			const int weight = (int)armor->GetWeight();
+			const int weight = (int)(item->weight);
 
-			InlineBar("Armor Rating:", armorRating, 100.0f);
+			if (armorRating == 0) {
+				InlineText("Armor Rating:", "None");
+			} else {
+				InlineBar("Armor Rating:", armorRating, armorRatingMax);
+			}
+
 			InlineText("Armor Type:", armorType);
 			InlineText("Equip Slot:", equipSlot);
-			InlineInt("Weight:", (int)weight);
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			InlineInt("Weight:", weight);
 		}
 
 		if (formType == RE::FormType::Weapon) {
@@ -378,7 +469,7 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 			const float damage = Utils::CalcBaseDamage(weapon);
 			const float max_damage = Utils::CalcMaxDamage(damage, 50);
 			const float speed = weapon->weaponData.speed;
-			const int weight = (int)(weapon->GetWeight());
+			const int weight = (int)(item->weight);
 			const int dps = (int)(damage * speed);
 			const uint16_t critDamage = weapon->GetCritDamage();
 			const RE::ActorValue skill = weapon->weaponData.skill.get();
@@ -842,6 +933,19 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		ImGui::HelpMarker(
 			"Amount of items to add when clicking on an item.");
 		ImGui::InputInt("##AddItemWindow::AddItemPosition", &clickToAddCount);
+	}
+
+	if (ImGui::Button("Show Plot", ImVec2(button_width, button_height))) {
+		b_ShowPlot = true;
+	}
+
+	if (ImGui::Button("Show Histogram", ImVec2(button_width, button_height))) {
+		b_ShowHistogram = true;
+	}
+
+	if (ImGui::Button("Regenerate", ImVec2(button_width, button_height))) {
+		MEMData::GetSingleton()->Run();
+		ApplyFilters();
 	}
 
 	ImGui::EndChild();

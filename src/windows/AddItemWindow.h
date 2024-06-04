@@ -17,6 +17,8 @@ public:
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedItem* item);
+	static void ShowPlotGraph();
+	static void ShowHistogramGraph();
 	static void ShowItemListContextMenu(MEMData::CachedItem& a_item);
 	static void ShowBookPreview();
 	static void ApplyFilters();
@@ -57,6 +59,16 @@ public:
 	// Actions
 	static inline bool b_ClickToAdd = false;
 	static inline int clickToAddCount = 1;
+
+	// Histogram
+	static inline int histogramBinCount = 0;
+	static inline bool b_ShowHistogram = false;
+	static inline std::vector<float> histogramData;
+
+	// plots
+	static inline bool b_ShowPlot = false;
+	static inline std::vector<float> plotA;
+	static inline std::vector<float> plotB;
 
 	// Search Input Field.
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;

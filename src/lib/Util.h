@@ -41,6 +41,33 @@ namespace Utils
 		}
 	};
 
+	static inline std::map<const char*, RE::ActorValue> armorSkillMap = {
+		{ "Light Armor", RE::ActorValue::kLightArmor },
+		{ "Heavy Armor", RE::ActorValue::kHeavyArmor },
+		{ "Clothing", RE::ActorValue::kNone }
+	};
+
+	inline static float CalcMaxArmorRating(float a_rating, float a_max)
+	{
+		return a_rating + a_max;
+	};
+
+	// CEILING[ (base armor rating + item quality) × (1 + 0.4 × (skill + skill effect)/100) ] × (1 + unison perk† ) × (1 + Matching Set) × (1 + armor perk‡)
+	inline static float CalcBaseArmorRating(RE::TESObjectARMO* a_armor)
+	{
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		auto armorSkill = a_armor->GetObjectTypeName();
+		auto baseRating = a_armor->GetArmorRating();
+
+		if (armorSkillMap[armorSkill] == RE::ActorValue::kNone) {
+			return 0;
+		}
+
+		auto skill = player->AsActorValueOwner()->GetActorValue(armorSkillMap[armorSkill]);
+
+		return (float)std::ceil((baseRating + 0) * (1.0 + 0.4 * (skill + 0) / 100.0));
+	}
+
 	inline static float CalcMaxDamage(float a_damage, float a_max)
 	{
 		return a_damage + a_max;
