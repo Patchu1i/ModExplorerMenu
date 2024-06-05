@@ -100,7 +100,7 @@ void AddImageDropdown(const char* a_text, GraphicManager::Image* a_imageRef)
 	ImGui::PopItemWidth();
 }
 
-void AddFontDropdown(const char* a_text, ImFont** a_fontRef)
+void AddFontDropdown(const char* a_text, GraphicManager::Font* a_fontRef)
 {
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	auto id = "##FontDropdown" + std::string(a_text);
@@ -332,6 +332,7 @@ void SettingsWindow::DrawThemeSelector()
 		AddColorPicker("Table Border Strong Color", style.tableBorderStrong);
 		AddColorPicker("Table Border Light Color", style.tableBorderLight);
 		AddColorPicker("Table Row BG Color", style.tableRowBg);
+		AddCheckbox("Table Row Alternating BG", style.showTableRowBG);
 		AddImageDropdown("Favorite Icon (Enabled)", &style.favoriteIconEnabled);
 		AddImageDropdown("Favorite Icon (Disabled)", &style.favoriteIconDisabled);
 		ImGui::Unindent();
@@ -356,6 +357,8 @@ void SettingsWindow::DrawThemeSelector()
 		AddColorPicker("Separator Color", style.separator);
 		AddColorPicker("Separator Hovered Color", style.separatorHovered);
 		AddColorPicker("Separator Active Color", style.separatorActive);
+		AddImageDropdown("Favorite Icon (Enabled)", &style.favoriteIconEnabled);
+		AddImageDropdown("Favorite Icon (Disabled)", &style.favoriteIconDisabled);
 		ImGui::Unindent();
 	}
 

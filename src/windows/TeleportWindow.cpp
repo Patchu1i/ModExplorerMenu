@@ -43,7 +43,7 @@ void TeleportWindow::ShowTable(Settings::Style& a_style)
 		ImGui::TableSetupColumn("Full Name", ImGuiTableColumnFlags_WidthStretch, 75.0f, ColumnID_FullName);
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_WidthStretch, 75.0f, ColumnID_EditorID);
 
-		ImGui::PushFont(a_style.headerFont);
+		ImGui::PushFont(a_style.headerFont.large);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		for (int column = 0; column < column_count; column++) {
 			ImGui::TableSetColumnIndex(column);

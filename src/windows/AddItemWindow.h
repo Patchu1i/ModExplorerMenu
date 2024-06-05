@@ -105,7 +105,7 @@ public:
 
 private:
 	// TODO: Add RowBG as theme option
-	static inline constexpr auto AddItemTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
+	static inline constexpr auto AddItemTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Sortable |
 	                                                 ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
 	                                                 ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
 	                                                 ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingStretchProp;

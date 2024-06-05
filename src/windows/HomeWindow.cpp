@@ -4,19 +4,19 @@
 
 void HomeWindow::Draw()
 {
-    auto _fontSmall = GraphicManager::GetFont("Coolvetica-Small");
-    auto _fontBig = GraphicManager::GetFont("Coolvetica-Large");
+	auto _fontSmall = GraphicManager::GetFont("Coolvetica");
+	auto _fontBig = GraphicManager::GetFont("Coolvetica");
 
-    ImGui::PushFont(_fontBig);
+	ImGui::PushFont(_fontBig.large);
 	ImGui::Text("Welcome to the Home Window!");
-    ImGui::PopFont();
+	ImGui::PopFont();
 
-    ImGui::PushFont(_fontSmall);
-    ImGui::Text("Small Font");
-    ImGui::PopFont();
+	ImGui::PushFont(_fontSmall.tiny);
+	ImGui::Text("Small Font");
+	ImGui::PopFont();
 }
 
 void HomeWindow::Init()
 {
-    // Open = true;
+	// Open = true;
 }

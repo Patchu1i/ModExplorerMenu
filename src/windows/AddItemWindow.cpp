@@ -86,6 +86,13 @@ void AddItemWindow::ShowBookPreview()
 		ImGui::TextWrapped(bufStr.c_str());
 	}
 
+	// Close if we click outside.
+	if (ImGui::IsMouseClicked(0, true)) {
+		if (!ImGui::IsWindowHovered()) {
+			openBook = nullptr;
+		}
+	}
+
 	ImGui::End();
 }
 
@@ -116,7 +123,7 @@ void AddItemWindow::ShowHistogramGraph()
 	ImGui::End();
 
 	// Close if we click outside.
-	if (ImGui::IsMouseClicked(0)) {
+	if (ImGui::IsMouseClicked(0, true)) {
 		if (!ImGui::IsWindowHovered()) {
 			b_ShowHistogram = false;
 		}
@@ -162,11 +169,9 @@ void AddItemWindow::ShowPlotGraph()
 		}
 	}
 
-	// Close if we click outside.
+	// Close if we click
 	if (ImGui::IsMouseClicked(0)) {
-		if (!ImGui::IsWindowHovered()) {
-			b_ShowPlot = false;
-		}
+		b_ShowPlot = false;
 	}
 
 	ImGui::End();
@@ -537,8 +542,10 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		return;
 	}
 
+	auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
+
 	ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-	if (ImGui::BeginTable("##AddItemWindow::Table", column_count, AddItemTableFlags, table_size)) {
+	if (ImGui::BeginTable("##AddItemWindow::Table", column_count, AddItemTableFlags | rowBG, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
 		ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed, 16.0f, ColumnID_Favorite);
 		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_Type);
@@ -553,7 +560,7 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetupColumn("Weight", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Weight);
 		ImGui::TableSetupColumn("DPS", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_DPS);
 
-		ImGui::PushFont(a_style.headerFont);
+		ImGui::PushFont(a_style.headerFont.large);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		for (int column = 0; column < column_count; column++) {
 			ImGui::TableSetColumnIndex(column);
@@ -616,6 +623,7 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
 				ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
 				float col = item->favorite ? 1.0f : 0.5f;
@@ -629,7 +637,7 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				}
 
 				ImGui::PopStyleColor(3);
-				ImGui::PopStyleVar(1);
+				ImGui::PopStyleVar(2);
 
 				bool _itemSelected = false;
 
@@ -694,12 +702,12 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				auto curRow = ImGui::TableGetHoveredRow();
 
 				if (curRow == ImGui::TableGetRowIndex()) {
-					ImGui::PushFont(a_style.tooltipFont);
+					ImGui::PushFont(a_style.tooltipFont.tiny);
 					ShowItemCard(item);
 					ImGui::PopFont();
 				}
 
-				if (ImGui::IsItemClicked(1)) {
+				if (ImGui::IsMouseClicked(1, true)) {
 					ImGui::OpenPopup("TestItemPopupMenu");
 				}
 
@@ -854,7 +862,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
 	if (ImGui::BeginTable("##AddItemWindow::ActionBarSelection", 1, ActionBarFlags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
-		ImGui::PushFont(a_style.headerFont);
+		ImGui::PushFont(a_style.headerFont.large);
 		ImGui::TableSetupColumn("Item(s)", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 		ImGui::TableNextRow();
@@ -872,7 +880,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		ImGui::EndTable();
 	}
 
-	ImGui::PushFont(a_style.buttonFont);
+	ImGui::PushFont(a_style.buttonFont.medium);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, a_style.button.w));
 	if (ImGui::Button("Clear Selection", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
@@ -884,7 +892,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 
 	ImGui::SeparatorText("Selection:");
 
-	ImGui::PushFont(a_style.buttonFont);
+	ImGui::PushFont(a_style.buttonFont.medium);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, a_style.button.w));
 	if (ImGui::Button("Add to Inventory", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
@@ -909,6 +917,8 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		for (auto& item : itemList) {
 			if (item->favorite) {
 				item->selected = true;
+			} else {
+				item->selected = false;
 			}
 		}
 	}
@@ -918,9 +928,6 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 			item->selected = true;
 		}
 	}
-
-	ImGui::PopFont();  // Button Font
-	ImGui::PopStyleVar(2);
 
 	ImGui::HelpMarker(
 		"Enabling this will allow you to quickly add items to your inventory by left clicking.\n\n"
@@ -947,6 +954,9 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		MEMData::GetSingleton()->Run();
 		ApplyFilters();
 	}
+
+	ImGui::PopFont();  // Button Font
+	ImGui::PopStyleVar(2);
 
 	ImGui::EndChild();
 }
