@@ -51,7 +51,8 @@ namespace
 	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	{
 		switch (a_msg->type) {
-		case SKSE::MessagingInterface::kDataLoaded:
+		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
+			logger::info("Data Loaded");
 			MEMData::GetSingleton()->Run();
 			Settings::GetSingleton()->LoadSettings(Settings::ini_mem_path);
 			Frame::Install();
@@ -60,9 +61,11 @@ namespace
 			logger::info("kPostLoad");
 			break;
 		case SKSE::MessagingInterface::kPostPostLoad:
+			logger::info("postpostload");
 			Hooks::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
+			logger::info("postloadgame");
 			break;
 		}
 	}

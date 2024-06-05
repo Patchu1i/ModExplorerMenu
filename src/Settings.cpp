@@ -48,7 +48,7 @@ T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_in
 		return Settings::GetInt(value);
 	} else if constexpr (std::is_same_v<T, float>) {
 		return Settings::GetFloat(value);
-	} else if constexpr (std::is_same_v<T, ImFont*>) {
+	} else if constexpr (std::is_same_v<T, GraphicManager::Font>) {
 		return GraphicManager::GetFont(value);
 	} else if constexpr (std::is_same_v<T, GraphicManager::Image>) {
 		return GraphicManager::GetImage(value);
@@ -225,6 +225,8 @@ void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
 	a_out.popupBorderSize = style.PopupBorderSize;
 	a_out.popupRounding = style.PopupRounding;
 
+	a_out.showTableRowBG = true;
+
 	a_out.textFont;
 	a_out.buttonFont;
 	a_out.headerFont;
@@ -300,11 +302,13 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 	user.style.popupBorderSize = GET_VALUE<float>(rSections[Child], "PopupBorderSize", def.style.popupBorderSize, a_ini);
 	user.style.popupRounding = GET_VALUE<float>(rSections[Child], "PopupRounding", def.style.popupRounding, a_ini);
 
-	user.style.textFont = GET_VALUE<ImFont*>(rSections[Fonts], "TextFont", def.style.textFont, a_ini);
-	user.style.headerFont = GET_VALUE<ImFont*>(rSections[Fonts], "HeaderFont", def.style.headerFont, a_ini);
-	user.style.buttonFont = GET_VALUE<ImFont*>(rSections[Fonts], "ButtonFont", def.style.buttonFont, a_ini);
-	user.style.sidebarFont = GET_VALUE<ImFont*>(rSections[Fonts], "SidebarFont", def.style.sidebarFont, a_ini);
-	user.style.tooltipFont = GET_VALUE<ImFont*>(rSections[Fonts], "TooltipFont", def.style.tooltipFont, a_ini);
+	user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
+
+	user.style.textFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TextFont", def.style.textFont, a_ini);
+	user.style.headerFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "HeaderFont", def.style.headerFont, a_ini);
+	user.style.buttonFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "ButtonFont", def.style.buttonFont, a_ini);
+	user.style.sidebarFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "SidebarFont", def.style.sidebarFont, a_ini);
+	user.style.tooltipFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TooltipFont", def.style.tooltipFont, a_ini);
 
 	user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
 	user.style.favoriteIconEnabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconEnabled", def.style.favoriteIconEnabled, a_ini);
@@ -374,6 +378,8 @@ void Settings::ExportThemeToIni(const wchar_t* a_path, Style a_user)
 		a_ini.SetValue(rSections[Widgets], "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
 		a_ini.SetValue(rSections[Child], "PopupBorderSize", Settings::ToString(a_user.popupBorderSize, false).c_str());
 		a_ini.SetValue(rSections[Child], "PopupRounding", Settings::ToString(a_user.popupRounding, false).c_str());
+
+		a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 
 		a_ini.SetValue(rSections[Fonts], "TextFont", Settings::ToString(a_user.textFont, false).c_str());
 		a_ini.SetValue(rSections[Fonts], "HeaderFont", Settings::ToString(a_user.headerFont, false).c_str());

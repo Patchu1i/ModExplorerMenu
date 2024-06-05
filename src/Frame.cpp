@@ -49,7 +49,7 @@ void Frame::Draw(bool is_settings_popped)
 	ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
 	ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
 
-	ImGui::PushFont(style.sidebarFont);
+	ImGui::PushFont(style.sidebarFont.large);
 	if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
 		if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 			_activeWindow = ActiveWindow::Home;
@@ -84,7 +84,7 @@ void Frame::Draw(bool is_settings_popped)
 	ImGui::SetNextWindowSize(ImVec2(window.panel_w, window.panel_h));
 	ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
-	ImGui::PushFont(style.textFont);
+	ImGui::PushFont(style.textFont.medium);
 	if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus)) {
 		switch (_activeWindow) {
 		case ActiveWindow::Home:

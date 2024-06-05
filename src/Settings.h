@@ -158,11 +158,13 @@ public:
 		float popupBorderSize = 1;
 		float popupRounding = 3;
 
-		ImFont* textFont;
-		ImFont* headerFont;
-		ImFont* sidebarFont;
-		ImFont* buttonFont;
-		ImFont* tooltipFont;
+		bool showTableRowBG = true;
+
+		GraphicManager::Font textFont;
+		GraphicManager::Font headerFont;
+		GraphicManager::Font sidebarFont;
+		GraphicManager::Font buttonFont;
+		GraphicManager::Font tooltipFont;
 
 		GraphicManager::Image splashImage;
 		GraphicManager::Image favoriteIconEnabled;
@@ -194,7 +196,7 @@ public:
 			return std::format("{}{},{}{}", "{", a_style.x, a_style.y, "}");
 		} else if constexpr (std::is_same_v<std::string, T>) {
 			return a_style;
-		} else if constexpr (std::is_same_v<ImFont*, T>) {
+		} else if constexpr (std::is_same_v<GraphicManager::Font, T>) {
 			return GraphicManager::GetFontName(a_style);
 		} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
 			return GraphicManager::GetImageName(a_style);
@@ -270,7 +272,7 @@ public:
 		return { ImVec2(), false };
 	}
 
-	static std::map<std::string, ImFont*> GetListOfFonts()
+	static std::map<std::string, GraphicManager::Font> GetListOfFonts()
 	{
 		return GraphicManager::font_library;
 	}

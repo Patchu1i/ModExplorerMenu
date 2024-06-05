@@ -90,7 +90,7 @@ void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::st
 	}
 }
 
-void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, ImFont*>& out_struct)
+void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct)
 {
 	if (std::filesystem::exists(a_path) == false) {
 		auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
@@ -106,9 +106,12 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 		auto index = entry.path().filename().stem().string();
 
 		ImGuiIO& io = ImGui::GetIO();
-		out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
-		out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
-		out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+		// out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
+		// out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
+		// out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+		out_struct[index].tiny = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 18.0f);
+		out_struct[index].medium = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
+		out_struct[index].large = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
 	}
 }
 
@@ -140,7 +143,9 @@ void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
 void GraphicManager::Init()
 {
 	image_library["None"] = Image();
-	font_library["Default"] = ImGui::GetIO().Fonts->AddFontDefault();
+	font_library["Default"].tiny = ImGui::GetIO().Fonts->AddFontDefault();
+	font_library["Default"].medium = font_library["Default"].tiny;
+	font_library["Default"].large = font_library["Default"].medium;
 
 	GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
 	GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library);
