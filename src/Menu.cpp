@@ -34,6 +34,7 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 
 	DXGI_SWAP_CHAIN_DESC desc;
 	a_swapchain->GetDesc(&desc);
@@ -45,6 +46,14 @@ void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11Devic
 
 	this->device = a_device;
 	this->context = a_context;
+}
+
+Menu::~Menu()
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImPlot::DestroyContext();
+	ImGui::DestroyContext();
 }
 
 void Menu::RefreshStyle()

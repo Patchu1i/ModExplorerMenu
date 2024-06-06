@@ -87,6 +87,12 @@ void ConsoleCommand::AddItem(std::string a_formid, int a_count)
 	SendConsoleCommand(cmd);
 }
 
+void ConsoleCommand::PlaceAtMe(std::string a_formid, int a_count)
+{
+	std::string cmd = "player.placeatme " + a_formid + " " + std::to_string(a_count);
+	SendConsoleCommand(cmd);
+}
+
 // Register ConsoleCommand SCRIPT_FUNCTION.
 void ConsoleCommand::Register()
 {

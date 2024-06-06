@@ -18,6 +18,7 @@ public:
 
 	struct Font
 	{
+		ImFont* nano = nullptr;
 		ImFont* tiny = nullptr;
 		ImFont* medium = nullptr;
 		ImFont* large = nullptr;
@@ -25,6 +26,7 @@ public:
 
 	enum FontSize
 	{
+		Nano,
 		Tiny,
 		Medium,
 		Large

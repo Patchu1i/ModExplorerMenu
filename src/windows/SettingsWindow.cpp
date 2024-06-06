@@ -313,11 +313,7 @@ void SettingsWindow::DrawThemeSelector()
 		AddColorPicker("Text Color:", style.text);
 		AddColorPicker("Text Disabled Color:", style.textDisabled);
 		AddColorPicker("Text Selected BG Color:", style.textSelectedBg);
-		AddFontDropdown("Regular Text Font", &style.textFont);
-		AddFontDropdown("Column Header Font:", &style.headerFont);
-		AddFontDropdown("Button Font:", &style.buttonFont);
-		AddFontDropdown("Sidebar Button Font:", &style.sidebarFont);
-		AddFontDropdown("Tooltip Font:", &style.tooltipFont);
+		AddFontDropdown("Font", &style.font);
 		ImGui::Unindent();
 	}
 

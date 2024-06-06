@@ -20,7 +20,8 @@
         "dx11-binding",
         "win32-binding"
       ]
-    }
+    },
+    "implot"
   ],
   "builtin-baseline": "83972272512ce4ede5fc3b2ba98f6468b179f192"
 }

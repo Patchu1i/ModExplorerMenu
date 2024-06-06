@@ -22,6 +22,8 @@ public:
 		return &singleton;
 	}
 
+	~Menu();
+
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
 	ID3D11Device* GetDevice() const { return device; };

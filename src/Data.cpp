@@ -139,6 +139,7 @@ void MEMData::Run()
 	CacheItems<RE::TESAmmo>(dataHandler);
 	CacheItems<RE::AlchemyItem>(dataHandler);
 	CacheItems<RE::IngredientItem>(dataHandler);
+	CacheItems<RE::TESKey>(dataHandler);
 
 	// NPC -- TODO: Implement
 	CacheItems<RE::TESNPC>(dataHandler);

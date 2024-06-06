@@ -12,7 +12,8 @@ class AddItemWindow
 {
 public:
 	static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-	static void ShowOptions(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowModSelection(Settings::Style& a_style, Settings::Config& a_config);
+	static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
@@ -59,6 +60,10 @@ public:
 	// Actions
 	static inline bool b_ClickToAdd = false;
 	static inline int clickToAddCount = 1;
+	static inline bool b_ClickToPlace = false;
+	static inline int clickToPlaceCount = 1;
+	static inline bool b_StickySelect = true;
+	static inline bool b_ClickToFavorite = false;
 
 	// Histogram
 	static inline int histogramBinCount = 0;
@@ -108,7 +113,8 @@ private:
 	static inline constexpr auto AddItemTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Sortable |
 	                                                 ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
 	                                                 ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
-	                                                 ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingStretchProp;
+	                                                 ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY |
+	                                                 ImGuiTableFlags_SizingStretchProp;
 	static inline constexpr auto InputSearchFlags = ImGuiInputTextFlags_EscapeClearsAll;
 
 	static inline constexpr auto ActionBarFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;

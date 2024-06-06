@@ -227,11 +227,7 @@ void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
 
 	a_out.showTableRowBG = true;
 
-	a_out.textFont;
-	a_out.buttonFont;
-	a_out.headerFont;
-	a_out.sidebarFont;
-	a_out.tooltipFont;
+	a_out.font;
 
 	a_out.splashImage;
 	a_out.favoriteIconEnabled;
@@ -304,11 +300,7 @@ void Settings::LoadThemeFromIni(CSimpleIniA& a_ini)
 
 	user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
-	user.style.textFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TextFont", def.style.textFont, a_ini);
-	user.style.headerFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "HeaderFont", def.style.headerFont, a_ini);
-	user.style.buttonFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "ButtonFont", def.style.buttonFont, a_ini);
-	user.style.sidebarFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "SidebarFont", def.style.sidebarFont, a_ini);
-	user.style.tooltipFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TooltipFont", def.style.tooltipFont, a_ini);
+	user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TextFont", def.style.font, a_ini);
 
 	user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
 	user.style.favoriteIconEnabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconEnabled", def.style.favoriteIconEnabled, a_ini);
@@ -381,10 +373,7 @@ void Settings::ExportThemeToIni(const wchar_t* a_path, Style a_user)
 
 		a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 
-		a_ini.SetValue(rSections[Fonts], "TextFont", Settings::ToString(a_user.textFont, false).c_str());
-		a_ini.SetValue(rSections[Fonts], "HeaderFont", Settings::ToString(a_user.headerFont, false).c_str());
-		a_ini.SetValue(rSections[Fonts], "ButtonFont", Settings::ToString(a_user.buttonFont, false).c_str());
-		a_ini.SetValue(rSections[Fonts], "SidebarFont", Settings::ToString(a_user.sidebarFont, false).c_str());
+		a_ini.SetValue(rSections[Fonts], "Font", Settings::ToString(a_user.font, false).c_str());
 
 		a_ini.SetValue(rSections[Images], "SplashImage", Settings::ToString(a_user.splashImage, false).c_str());
 		a_ini.SetValue(rSections[Images], "FavoriteIconEnabled", Settings::ToString(a_user.favoriteIconEnabled, false).c_str());

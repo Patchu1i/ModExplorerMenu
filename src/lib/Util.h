@@ -15,6 +15,16 @@ namespace ImGui
 		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
 		       ImGui::CalcTextSize(text).x / 2;
 	};
+
+	inline static void SetDelayedTooltip(const char* text, float delay = 1.0f)
+	{
+		if (ImGui::IsItemHovered() && GImGui->HoveredIdTimer > delay) {
+			if (ImGui::BeginTooltip()) {
+				ImGui::Text(text);
+				ImGui::EndTooltip();
+			}
+		}
+	}
 }
 
 namespace Utils

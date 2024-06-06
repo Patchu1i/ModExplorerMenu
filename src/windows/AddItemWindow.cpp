@@ -15,40 +15,8 @@ void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 
 	// Left Column
 	ShowSearch(a_style, a_config);
-	ImGui::NewLine();
-
-	bool _change = false;
-
-	// Filter checkboxes up top.
-	for (auto& item : AddItemWindow::filterMap) {
-		auto first = std::get<0>(item);
-		const auto third = std::get<2>(item);
-
-		ImGui::SameLine();
-		if (ImGui::Checkbox(third.c_str(), first)) {
-			_change = true;
-		}
-	}
-
-	if (_change) {
-		itemFilters.clear();
-
-		for (auto& item : filterMap) {
-			auto first = *std::get<0>(item);
-			const auto second = std::get<1>(item);
-
-			if (first) {
-				itemFilters.insert(second);
-			}
-		}
-
-		ApplyFilters();
-		dirty = true;
-	}
-
-	ImGui::NewLine();
-	ShowOptions(a_style, a_config);
-	ImGui::NewLine();
+	ShowModSelection(a_style, a_config);
+	ShowAdvancedOptions(a_style, a_config);
 	ShowFormTable(a_style, a_config);
 	ImGui::NextColumn();
 	ShowActions(a_style, a_config);
@@ -96,40 +64,147 @@ void AddItemWindow::ShowBookPreview()
 	ImGui::End();
 }
 
+// BETA feature, so it's ugly.
 void AddItemWindow::ShowHistogramGraph()
 {
-	if (histogramData.empty()) {
-		histogramData.clear();
-		logger::info("Adding data to histogram");
-		for (const auto& item : itemList) {
-			const auto armorRating = Utils::CalcBaseArmorRating(item->form->As<RE::TESObjectARMO>());
-			if (armorRating > 30.0f) {
-				continue;
-			}
-			histogramData.push_back(armorRating);
-			histogramBinCount++;
-		}
-
-		std::sort(histogramData.begin(), histogramData.end());
-	}
-
-	// Create the graph
 	auto& io = ImGui::GetIO();
 	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
-	constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
-	ImGui::Begin("Show Histogram Data", nullptr, flags);
-	ImGui::PlotHistogram("Histogram", histogramData.data(), histogramBinCount, 0, nullptr, 0.0f, 100.0f, ImGui::GetWindowSize());
-	ImGui::End();
+	constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_Modal;
+	if (ImGui::Begin("Show Histogram Data", nullptr, flags)) {
+		ImGui::TextWrapped(
+			"This feature is in beta, and it may not work as expected. "
+			"Please report any issues or suggestions to the Mod page as feedback. "
+			"Considering it's status, using this feature may result in a CTD. "
+			"Use at your own risk, and please don't post about crashes in the comments. "
+			"Finally: You have to reselect data after picking a new mod file!");
 
-	// Close if we click outside.
-	if (ImGui::IsMouseClicked(0, true)) {
-		if (!ImGui::IsWindowHovered()) {
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		auto modText = selectedMod ? selectedMod->GetFilename().data() : "Filter by mod..";
+		if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", modText)) {
+			if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
+				selectedMod = nullptr;
+				ApplyFilters();
+				ImGui::SetItemDefaultFocus();
+			}
+			for (auto& mod : MEMData::GetModList()) {
+				const char* modName = mod->GetFilename().data();
+				bool is_selected = false;
+				if (ImGui::Selectable(modName, is_selected)) {
+					selectedMod = mod;
+					ApplyFilters();
+				}
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		auto dataText = histogramData.empty() ? "Select Data" : "Change Data";
+		if (ImGui::BeginCombo("##HistogramDataSelection", dataText)) {
+			if (ImGui::Selectable("Armor Rating")) {
+				histogramData.clear();
+				histogramBinCount = 0;
+				for (const auto& item : itemList) {
+					if (item->formType != RE::FormType::Armor) {
+						histogramData.push_back(0.0f);
+						continue;
+					}
+
+					const auto armorRating = Utils::CalcBaseArmorRating(item->form->As<RE::TESObjectARMO>());
+
+					histogramData.push_back(armorRating);
+					histogramBinCount++;
+				}
+				//std::sort(histogramData.begin(), histogramData.end());
+			}
+			if (ImGui::Selectable("Gold Value")) {
+				histogramData.clear();
+				histogramBinCount = 0;
+				for (const auto& item : itemList) {
+					histogramData.push_back((float)(item->form->GetGoldValue()));
+					histogramBinCount++;
+				}
+				//std::sort(histogramData.begin(), histogramData.end());
+			}
+			if (ImGui::Selectable("Weight")) {
+				histogramData.clear();
+				histogramBinCount = 0;
+				for (const auto& item : itemList) {
+					histogramData.push_back(item->weight);
+					histogramBinCount++;
+				}
+				//std::sort(histogramData.begin(), histogramData.end());
+			}
+			if (ImGui::Selectable("Base Damage")) {
+				histogramData.clear();
+				histogramBinCount = 0;
+				for (const auto& item : itemList) {
+					if (item->formType != RE::FormType::Weapon) {
+						histogramData.push_back(0.0f);
+						continue;
+					}
+
+					const auto baseDamage = Utils::CalcBaseDamage(item->form->As<RE::TESObjectWEAP>());
+
+					histogramData.push_back(baseDamage);
+					histogramBinCount++;
+				}
+				//std::sort(histogramData.begin(), histogramData.end());
+			}
+
+			// More to come...
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		if (histogramData.empty()) {
+			ImGui::Text("No data to display.");
+
+			if (ImGui::Button("Close", ImVec2(ImGui::GetContentRegionMax().x, 15.0f))) {
+				b_ShowHistogram = false;
+			}
+
+			ImGui::End();
+			return;
+		}
+
+		//auto max = *std::max_element(histogramData.begin(), histogramData.end());
+		//auto min = *std::min_element(histogramData.begin(), histogramData.end());
+		//ImGui::PlotHistogram("Histogram", histogramData.data(), histogramBinCount, 0, nullptr, min, max, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 20.0f));
+		if (ImPlot::BeginPlot("Histogram", nullptr, nullptr, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 20.0f))) {
+			ImPlot::SetupAxes("Item", "Value", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+			//ImPlot::PlotBarGroups(ilabels, histogramData.data(), histogramBinCount, 1, 10.0);
+			ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 0.0, histogramBinCount);
+			ImPlot::PlotBars("Histogram", histogramData.data(), histogramBinCount, 1, 10.0);
+
+			int select = (int)(std::floor(ImPlot::GetPlotMousePos().x));
+			if (select < itemList.size()) {
+				auto item = itemList.at(select);
+
+				if (ImPlot::IsPlotHovered() && item != nullptr) {
+					ShowItemCard(item);
+				}
+			} else {
+				logger::info("Select: {}", select);
+			}
+			ImPlot::EndPlot();
+		}
+
+		// Close if we click outside.
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+		if (ImGui::Button("Close", ImVec2(ImGui::GetContentRegionMax().x, 15.0f))) {
 			b_ShowHistogram = false;
 		}
+		ImGui::PopStyleColor(1);
 	}
+	ImGui::End();
 }
 
+// DEPRECATED: Should consider using ImPlot library.
 void AddItemWindow::ShowPlotGraph()
 {
 	if (plotA.empty() || plotB.empty()) {
@@ -371,6 +446,7 @@ std::string GetItemDescription(RE::TESForm* form)
 }
 
 // FIXME: Width get's messed up on ultra long titles.
+// TODO: Add more details to other items.
 void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 {
 	//ImGui::SetNextWindowSize(ImVec2(10, 10));
@@ -544,23 +620,25 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 
 	auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
+	ImGuiContext& g = *ImGui::GetCurrentContext();
+
 	ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
 	if (ImGui::BeginTable("##AddItemWindow::Table", column_count, AddItemTableFlags | rowBG, table_size)) {
 		ImGui::TableSetupScrollFreeze(1, 1);
-		ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed, 16.0f, ColumnID_Favorite);
-		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_Type);
-		ImGui::TableSetupColumn("Form ID", ImGuiTableColumnFlags_WidthFixed, 100.0f, ColumnID_FormID);
-		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort, 16.0f, ColumnID_Name);
-		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_None, 16.0f, ColumnID_EditorID);
-		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 65.0f, ColumnID_GoldValue);
-		ImGui::TableSetupColumn("Base Damage", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_BaseDamage);
+		ImGui::TableSetupColumn(" ", ImGuiTableColumnFlags_WidthFixed, 18.0f, ColumnID_Favorite);
+		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 0.0f, ColumnID_Type);
+		ImGui::TableSetupColumn("Form ID", ImGuiTableColumnFlags_WidthFixed, 50.0f, ColumnID_FormID);
+		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 50.0f, ColumnID_Name);
+		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_WidthStretch, 50.0f, ColumnID_EditorID);
+		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_GoldValue);
+		ImGui::TableSetupColumn("DMG", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_BaseDamage);
 		ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Speed);
-		ImGui::TableSetupColumn("Crit Damage", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_CritDamage);
-		ImGui::TableSetupColumn("Skill", ImGuiTableColumnFlags_None, 20.0f, ColumnID_Skill);
+		ImGui::TableSetupColumn("Crit", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_CritDamage);
+		ImGui::TableSetupColumn("Skill", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Skill);
 		ImGui::TableSetupColumn("Weight", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Weight);
 		ImGui::TableSetupColumn("DPS", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_DPS);
 
-		ImGui::PushFont(a_style.headerFont.large);
+		ImGui::PushFont(a_style.font.medium);
 		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 		for (int column = 0; column < column_count; column++) {
 			ImGui::TableSetColumnIndex(column);
@@ -589,6 +667,8 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetColumnEnabled(ColumnID_Skill, a_config.aimShowSkillColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_Weight, a_config.aimShowWeightColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_DPS, a_config.aimShowDPSColumn);
+
+		ImGuiTable* table = g.CurrentTable;
 
 		if (dirty) {
 			ImGui::TableGetSortSpecs()->SpecsDirty = true;
@@ -629,7 +709,8 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				float col = item->favorite ? 1.0f : 0.5f;
 
 				if (favorite_state != nullptr) {
-					if (ImGui::ImageButton("##AddItemWindow::FavoriteButton", favorite_state, ImVec2(18.0f, 18.0f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+					const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
+					if (ImGui::ImageButton("##AddItemWindow::FavoriteButton", favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 						item->favorite = !item->favorite;
 					}
 				} else {
@@ -641,53 +722,73 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 
 				bool _itemSelected = false;
 
-				constexpr auto select_flags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
+				//	Type Name
 				ImGui::TableNextColumn();
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->typeName.c_str()));
-				ImGui::Selectable(item->typeName.c_str(), &_itemSelected, select_flags);
+				ImGui::Text(item->typeName.c_str());
+
+				// Form ID
 				ImGui::TableNextColumn();
-				ImGui::Selectable(item->formid.c_str(), &_itemSelected, select_flags);
+				ImGui::Text(item->formid.c_str());
+
+				// Item Name
 				ImGui::TableNextColumn();
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->name));
-				ImGui::Selectable(item->name, &_itemSelected, select_flags);
+				ImGui::Text(item->name);
+
+				// Editor ID
 				ImGui::TableNextColumn();
-				ImGui::TextWrapped(item->editorid.c_str());
+				ImGui::Text(item->editorid.c_str());
+
+				// Gold Value
 				ImGui::TableNextColumn();
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(std::to_string(item->goldValue).c_str()));
-				ImGui::Selectable(std::to_string(item->goldValue).c_str(), &_itemSelected, select_flags);
+				ImGui::Text(std::to_string(item->goldValue).c_str());
+
+				// Base Damage
 				ImGui::TableNextColumn();
 				if (item->formType == RE::FormType::Weapon) {
 					auto* weapon = item->form->As<RE::TESObjectWEAP>();
 					const auto baseDamage = Utils::CalcBaseDamage(weapon);
 					char buffer[12];
 					snprintf(buffer, sizeof(buffer), "%.2f", baseDamage);
-					ImGui::Selectable(buffer, &_itemSelected, select_flags);
+					ImGui::Text(buffer);  // Base Damage
 				}
+
+				// Weapon Speed
 				ImGui::TableNextColumn();
 				if (item->formType == RE::FormType::Weapon) {
 					auto* weapon = item->form->As<RE::TESObjectWEAP>();
 					const auto speed = weapon->weaponData.speed;
 					char buffer[12];
 					snprintf(buffer, sizeof(buffer), "%.2f", speed);
-					ImGui::Selectable(buffer, &_itemSelected, select_flags);
+					ImGui::Text(buffer);
 				}
+
+				// Crit Damage
 				ImGui::TableNextColumn();
 				if (item->formType == RE::FormType::Weapon) {
 					auto* weapon = item->form->As<RE::TESObjectWEAP>();
 					const uint16_t critDamage = weapon->GetCritDamage();
-					ImGui::Selectable(std::to_string(critDamage).c_str(), &_itemSelected, select_flags);
+					ImGui::Text(std::to_string(critDamage).c_str());
 				}
+
+				// Skill Type
 				ImGui::TableNextColumn();
 				if (true) {
 					auto skill = item->form->GetObjectTypeName();
-					ImGui::Selectable(skill, &_itemSelected, select_flags);
+					ImGui::Text(skill);
 				}
+
+				// Item Weight
 				ImGui::TableNextColumn();
 				if (true) {
 					char buffer[32];
 					snprintf(buffer, sizeof(buffer), "%.2f", item->weight);
-					ImGui::Selectable(buffer, &_itemSelected, select_flags);
+					ImGui::Text(buffer);
 				}
+
+				// Weapon DPS
 				ImGui::TableNextColumn();
 				if (item->formType == RE::FormType::Weapon) {
 					auto* weapon = item->form->As<RE::TESObjectWEAP>();
@@ -696,19 +797,23 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 					const float dps = baseDamage * speed;
 					char buffer[12];
 					snprintf(buffer, sizeof(buffer), "%.2f", dps);
-					ImGui::Selectable(buffer, &_itemSelected, select_flags);
+					ImGui::Text(buffer);
 				}
 
+				// Input Handlers
 				auto curRow = ImGui::TableGetHoveredRow();
-
 				if (curRow == ImGui::TableGetRowIndex()) {
-					ImGui::PushFont(a_style.tooltipFont.tiny);
+					ImGui::PushFont(a_style.font.tiny);
 					ShowItemCard(item);
 					ImGui::PopFont();
-				}
 
-				if (ImGui::IsMouseClicked(1, true)) {
-					ImGui::OpenPopup("TestItemPopupMenu");
+					if (ImGui::IsMouseClicked(0)) {
+						_itemSelected = true;
+					}
+
+					if (ImGui::IsMouseClicked(1, true)) {
+						ImGui::OpenPopup("TestItemPopupMenu");
+					}
 				}
 
 				if (ImGui::BeginPopup("TestItemPopupMenu")) {
@@ -716,10 +821,33 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 					ImGui::EndPopup();
 				}
 
+				// Shortcut Handlers
 				if (b_ClickToAdd && _itemSelected) {
 					ConsoleCommand::AddItem(item->formid.c_str(), clickToAddCount);
+				} else if (b_ClickToPlace && _itemSelected) {
+					ConsoleCommand::PlaceAtMe(item->formid.c_str(), clickToPlaceCount);
+				} else if (b_ClickToFavorite && _itemSelected) {
+					item->favorite = !item->favorite;
 				} else if (!b_ClickToAdd && _itemSelected) {
 					item->selected = true;
+				}
+
+				// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
+				// Sloppy way to handle row highlighting since ImGui natively doesn't support it.
+				ImRect row_rect(
+					table->WorkRect.Min.x,
+					table->RowPosY1,
+					table->WorkRect.Max.x,
+					table->RowPosY2);
+				row_rect.ClipWith(table->BgClipRect);
+
+				bool bHover =
+					ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
+					ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
+					!ImGui::IsAnyItemHovered();  // optional
+
+				if (bHover) {
+					table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 				}
 
 				ImGui::PopID();
@@ -810,43 +938,6 @@ void AddItemWindow::ApplyFilters()
 	dirty = true;
 }
 
-// Draw search bar for filtering items.
-void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
-{
-	(void)a_style;
-	(void)a_config;
-
-	ImGui::Text("Refine your search:");
-	if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
-			IM_ARRAYSIZE(inputBuffer),
-			InputSearchFlags)) {
-		ApplyFilters();
-	}
-
-	ImGui::SameLine();
-
-	auto searchByValue = InputSearchMap.at(searchKey);
-	auto combo_flags = ImGuiComboFlags_WidthFitPreview;
-	if (ImGui::BeginCombo("##AddItemWindow::InputFilter", searchByValue, combo_flags)) {
-		for (auto& item : InputSearchMap) {
-			auto searchBy = item.first;
-			auto _searchByValue = item.second;
-			bool is_selected = (searchKey == searchBy);
-
-			if (ImGui::Selectable(_searchByValue, is_selected)) {
-				searchKey = searchBy;
-				ApplyFilters();
-			}
-
-			if (is_selected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-
-		ImGui::EndCombo();
-	}
-}
-
 // TODO: Implement more here.
 void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 {
@@ -862,7 +953,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
 	if (ImGui::BeginTable("##AddItemWindow::ActionBarSelection", 1, ActionBarFlags, ImVec2(ImGui::GetContentRegionAvail().x, 150.0f))) {
-		ImGui::PushFont(a_style.headerFont.large);
+		ImGui::PushFont(a_style.font.medium);
 		ImGui::TableSetupColumn("Item(s)", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 		ImGui::TableNextRow();
@@ -874,13 +965,13 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 				if (ImGui::Selectable(item->name, false, ImGuiSelectableFlags_SpanAllColumns)) {
 					item->selected = false;
 				};
-				ImGui::SetItemTooltip("Click to remove.");
+				ImGui::SetDelayedTooltip("Click to remove.");
 			}
 		}
 		ImGui::EndTable();
 	}
 
-	ImGui::PushFont(a_style.buttonFont.medium);
+	ImGui::PushFont(a_style.font.medium);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.5f, 0.5f, a_style.button.w));
 	if (ImGui::Button("Clear Selection", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
@@ -892,17 +983,42 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 
 	ImGui::SeparatorText("Selection:");
 
-	ImGui::PushFont(a_style.buttonFont.medium);
+	ImGui::PushFont(a_style.font.medium);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 1.0f, 0.5f, a_style.button.w));
+
+	ImGui::InlineCheckbox("Sticky Select", &b_StickySelect);
+	ImGui::SetDelayedTooltip(
+		"Enabling this will keep your selected items select when you interact with\n"
+		"actions shown in this sidebar. If this is disabled, items will be cleared once\n"
+		"they are acted upon");
+	ImGui::NewLine();
+
 	if (ImGui::Button("Add to Inventory", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
 			if (item->selected) {
 				ConsoleCommand::AddItem(item->formid);
-				item->selected = false;
+				item->selected = b_StickySelect;
 				logger::info("Added item: {}", item->formid.c_str());
 			}
 		}
 	}
+	ImGui::SetDelayedTooltip(
+		"Directly add the selected item(s) above to your inventory.\n"
+		"You can optionally enable \"Click To Add\" or \"Click To Place\" to quickly\n"
+		"add or place items simply by clicking them in the left pane.");
+
+	if (ImGui::Button("Place At Me", ImVec2(button_width, button_height))) {
+		for (auto& item : itemList) {
+			if (item->selected) {
+				ConsoleCommand::PlaceAtMe(item->formid);
+				item->selected = b_StickySelect;
+			}
+		}
+	}
+	ImGui::SetDelayedTooltip(
+		"Directly place the selected item(s) above in the world.\n"
+		"You can optionally enable \"Click To Add\" or \"Click To Place\" to quickly\n"
+		"add or place items simply by clicking them in the left pane.");
 
 	if (ImGui::Button("Add to Favorites", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
@@ -911,6 +1027,9 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 			}
 		}
 	}
+	ImGui::SetDelayedTooltip(
+		"Add the selected items above to your favorites.\n"
+		"Clicking this repeatedly will toggle the favorite status of the selected items.");
 	ImGui::PopStyleColor(1);
 
 	if (ImGui::Button("Select All Favorites", ImVec2(button_width, button_height))) {
@@ -922,6 +1041,8 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 			}
 		}
 	}
+	ImGui::SetDelayedTooltip(
+		"Select all favorited items from the currently indexed search results.");
 
 	if (ImGui::Button("Select All", ImVec2(button_width, button_height))) {
 		for (auto& item : itemList) {
@@ -929,31 +1050,43 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		}
 	}
 
-	ImGui::HelpMarker(
+	ImGui::SeparatorText("Shortcuts:");
+
+	ImGui::SetDelayedTooltip(
+		"Select all items from the currently indexed search results.");
+	ImGui::InlineCheckbox("Click to Add", &b_ClickToAdd);
+
+	ImGui::SetDelayedTooltip(
 		"Enabling this will allow you to quickly add items to your inventory by left clicking.\n\n"
 		"This will disable the ability to select items for other actions.");
-	ImGui::InlineCheckbox("Click to AddItem", &b_ClickToAdd);
 
 	ImGui::NewLine();
 
 	if (b_ClickToAdd) {
-		ImGui::HelpMarker(
+		ImGui::InputInt("##AddItemWindow::ClickToAddInput", &clickToAddCount);
+		ImGui::SetDelayedTooltip(
 			"Amount of items to add when clicking on an item.");
-		ImGui::InputInt("##AddItemWindow::AddItemPosition", &clickToAddCount);
 	}
 
-	if (ImGui::Button("Show Plot", ImVec2(button_width, button_height))) {
-		b_ShowPlot = true;
+	ImGui::InlineCheckbox("Click to Place", &b_ClickToPlace);
+
+	ImGui::SetDelayedTooltip(
+		"Enabling this will allow you to quickly place items in the world by left clicking.\n\n"
+		"This will disable the ability to select items for other actions.");
+
+	ImGui::NewLine();
+
+	if (b_ClickToPlace) {
+		ImGui::InputInt("##AddItemWindow::ClickToPlaceInput", &clickToPlaceCount);
+		ImGui::SetDelayedTooltip(
+			"Amount of items to place when clicking on an item.");
 	}
 
-	if (ImGui::Button("Show Histogram", ImVec2(button_width, button_height))) {
-		b_ShowHistogram = true;
-	}
+	ImGui::InlineCheckbox("Click to Favorite", &b_ClickToFavorite);
 
-	if (ImGui::Button("Regenerate", ImVec2(button_width, button_height))) {
-		MEMData::GetSingleton()->Run();
-		ApplyFilters();
-	}
+	ImGui::SetDelayedTooltip(
+		"Enabling this will allow you to quickly favorite items by left clicking.\n\n"
+		"This will disable the ability to select items for other actions.");
 
 	ImGui::PopFont();  // Button Font
 	ImGui::PopStyleVar(2);
@@ -961,30 +1094,180 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 	ImGui::EndChild();
 }
 
-void AddItemWindow::ShowOptions(Settings::Style& a_style, Settings::Config& a_config)
+// Draw search bar for filtering items.
+void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 {
 	(void)a_style;
 	(void)a_config;
 
-	ImGui::SeparatorText("Select a mod:");
-	auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mod..";
-	if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", combo_text)) {
-		if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
-			selectedMod = nullptr;
+	if (ImGui::CollapsingHeader("Refine your search:", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::NewLine();
+		ImGui::Indent();
+
+		if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
+				IM_ARRAYSIZE(inputBuffer),
+				InputSearchFlags)) {
 			ApplyFilters();
-			ImGui::SetItemDefaultFocus();
 		}
-		for (auto& mod : MEMData::GetModList()) {
-			const char* modName = mod->GetFilename().data();
-			bool is_selected = false;
-			if (ImGui::Selectable(modName, is_selected)) {
-				selectedMod = mod;
+
+		ImGui::SameLine();
+
+		auto searchByValue = InputSearchMap.at(searchKey);
+		auto combo_flags = ImGuiComboFlags_WidthFitPreview;
+		if (ImGui::BeginCombo("##AddItemWindow::InputFilter", searchByValue, combo_flags)) {
+			for (auto& item : InputSearchMap) {
+				auto searchBy = item.first;
+				auto _searchByValue = item.second;
+				bool is_selected = (searchKey == searchBy);
+
+				if (ImGui::Selectable(_searchByValue, is_selected)) {
+					searchKey = searchBy;
+					ApplyFilters();
+				}
+
+				if (is_selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::NewLine();
+		ImGui::NewLine();
+
+		bool _change = false;
+
+		// Filter checkboxes up top.
+		for (auto& item : AddItemWindow::filterMap) {
+			auto first = std::get<0>(item);
+			const auto third = std::get<2>(item);
+
+			ImGui::SameLine();
+			if (ImGui::Checkbox(third.c_str(), first)) {
+				_change = true;
+			}
+		}
+
+		if (_change) {
+			itemFilters.clear();
+
+			for (auto& item : filterMap) {
+				auto first = *std::get<0>(item);
+				const auto second = std::get<1>(item);
+
+				if (first) {
+					itemFilters.insert(second);
+				}
+			}
+
+			ApplyFilters();
+			dirty = true;
+		}
+
+		ImGui::Unindent();
+		ImGui::NewLine();
+	}
+}
+
+void AddItemWindow::ShowModSelection(Settings::Style& a_style, Settings::Config& a_config)
+{
+	(void)a_style;
+	(void)a_config;
+
+	if (ImGui::CollapsingHeader("Filter by Mod:")) {
+		ImGui::NewLine();
+		ImGui::Indent();
+		auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mod..";
+		if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", combo_text)) {
+			if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
+				selectedMod = nullptr;
+				ApplyFilters();
+				ImGui::SetItemDefaultFocus();
+			}
+			for (auto& mod : MEMData::GetModList()) {
+				const char* modName = mod->GetFilename().data();
+				bool is_selected = false;
+				if (ImGui::Selectable(modName, is_selected)) {
+					selectedMod = mod;
+					ApplyFilters();
+				}
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::Unindent();
+		ImGui::NewLine();
+	}
+}
+
+void AddItemWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
+{
+	(void)a_style;
+	(void)a_config;
+
+	if (ImGui::CollapsingHeader("Advanced Options:")) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::NewLine();
+		ImGui::Indent();
+		constexpr auto flags = ImGuiTreeNodeFlags_Bullet;
+		if (ImGui::CollapsingHeader("Column Visiblity:", flags)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
+			ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
+			ImGui::InlineCheckbox("Favorite", &a_config.aimShowFavoriteColumn);
+			ImGui::InlineCheckbox("Type", &a_config.aimShowTypeColumn);
+			ImGui::InlineCheckbox("Form", &a_config.aimShowFormIDColumn);
+			ImGui::InlineCheckbox("Name", &a_config.aimShowNameColumn);
+			ImGui::NewLine();
+			ImGui::InlineCheckbox("Editor", &a_config.aimShowEditorIDColumn);
+			ImGui::InlineCheckbox("Gold", &a_config.aimShowGoldValueColumn);
+			ImGui::InlineCheckbox("Damage", &a_config.aimShowBaseDamageColumn);
+			ImGui::InlineCheckbox("Speed", &a_config.aimShowSpeedColumn);
+			ImGui::NewLine();
+			ImGui::InlineCheckbox("Crit", &a_config.aimShowCritDamageColumn);
+			ImGui::InlineCheckbox("Skill", &a_config.aimShowSkillColumn);
+			ImGui::InlineCheckbox("Weight", &a_config.aimShowWeightColumn);
+			ImGui::InlineCheckbox("DPS", &a_config.aimShowDPSColumn);
+			ImGui::NewLine();
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(1);
+		}
+
+		if (ImGui::CollapsingHeader("(Beta) Plot & Histogram:", flags)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
+			ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
+			const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x / 3, ImGui::GetFontSize() * 1.15f);
+			ImGui::HelpMarker(
+				"This will show a plot diagram of the current data set.\n\n"
+				"This is a BETA feature meaning it is hardly implemented/tested as of now.");
+			if (ImGui::Button("Show Plot", button_size)) {
+				// b_ShowPlot = !b_ShowPlot; Kinda shit, but I'll tease it anyway.
+			}
+
+			ImGui::HelpMarker(
+				"This will show a histogram window of the current data set.\n\n"
+				"This is a BETA feature meaning it is hardly implemented/tested as of now.");
+			if (ImGui::Button("Show Histogram", button_size)) {
+				b_ShowHistogram = !b_ShowHistogram;
+			}
+
+			ImGui::HelpMarker(
+				"Regenerate the list of cached forms from the game. This should only ever be needed if runtime changes are made.\n\n"
+				"(WARNING): This will take a second or two to complete and will freeze your game in doing so.");
+			if (ImGui::Button("Regenerate Cache", button_size)) {
+				MEMData::GetSingleton()->Run();
 				ApplyFilters();
 			}
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(1);
 		}
-		ImGui::EndCombo();
+
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(1);
+		ImGui::Unindent();
+		ImGui::NewLine();
 	}
 }
 

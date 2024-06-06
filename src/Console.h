@@ -10,7 +10,7 @@ public:
 		RE::ScriptLocals* a_locals, double& a_result, std::uint32_t& a_opcodeOffsetPtr);
 	static void Register();
 	static void AddItem(std::string a_formid, int a_count = 1);
-	static void PlaceAtMe(std::string formid);
+	static void PlaceAtMe(std::string a_formid, int a_count = 1);
 	static void SendConsoleCommand(std::string_view cmd);
 
 private:

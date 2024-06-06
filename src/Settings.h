@@ -160,11 +160,7 @@ public:
 
 		bool showTableRowBG = true;
 
-		GraphicManager::Font textFont;
-		GraphicManager::Font headerFont;
-		GraphicManager::Font sidebarFont;
-		GraphicManager::Font buttonFont;
-		GraphicManager::Font tooltipFont;
+		GraphicManager::Font font;
 
 		GraphicManager::Image splashImage;
 		GraphicManager::Image favoriteIconEnabled;

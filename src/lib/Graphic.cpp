@@ -109,6 +109,7 @@ void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::st
 		// out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
 		// out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
 		// out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+		out_struct[index].nano = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
 		out_struct[index].tiny = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 18.0f);
 		out_struct[index].medium = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
 		out_struct[index].large = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);

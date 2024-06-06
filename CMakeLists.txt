@@ -58,6 +58,7 @@ find_package(magic_enum CONFIG REQUIRED)
 find_package(xbyak CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(implot CONFIG REQUIRED)
 find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
 
 target_include_directories(
@@ -74,6 +75,7 @@ target_link_libraries(
 	xbyak::xbyak
 	nlohmann_json::nlohmann_json
 	imgui::imgui
+  implot::implot
 )
 
 # https://gitlab.kitware.com/cmake/cmake/-/issues/24922#note_1371990
