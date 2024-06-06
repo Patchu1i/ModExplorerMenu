@@ -1,7 +1,7 @@
 #include "Frame.h"
 #include "Settings.h"
 #include "lib/Graphic.h"
-#include "windows/AddItemWindow.h"
+#include "windows/AddItem/Window.h"
 #include "windows/HomeWindow.h"
 #include "windows/SettingsWindow.h"
 #include "windows/TeleportWindow.h"
