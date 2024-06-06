@@ -1,7 +1,9 @@
-#include "SettingsWindow.h"
+#include "Window.h"
+#include "Data.h"
 #include "Menu.h"
 #include "Settings.h"
-#include "lib/Anim.h"
+#include "Utils/Anim.h"
+#include "Utils/Util.h"
 #include <codecvt>
 
 //

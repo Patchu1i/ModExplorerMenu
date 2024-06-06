@@ -1,6 +1,6 @@
 #include "Menu.h"
-#include "Frame.h"
-#include "windows/SettingsWindow.h"
+#include "Windows/Frame.h"
+#include "Windows/Settings/Window.h"
 #include <dinput.h>
 
 void Menu::Draw()

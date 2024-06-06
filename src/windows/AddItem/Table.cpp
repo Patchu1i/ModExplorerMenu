@@ -1,7 +1,6 @@
 #include "Console.h"
+#include "Utils/Util.h"
 #include "Window.h"
-#include "lib/Util.h"
-
 
 // Draws a Copy to Clipboard button on Context popup.
 void AddItemWindow::ShowItemListContextMenu(MEMData::CachedItem& a_item)

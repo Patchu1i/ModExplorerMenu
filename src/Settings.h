@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/Graphic.h"
+#include "Graphic.h"
 
 // Current process of loading settings::
 // Start by loading the user Config and getting the Theme string.

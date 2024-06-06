@@ -1,7 +1,7 @@
 #include "Settings.h"
 #include "Menu.h"
 #include "SimpleIni.h"
-#include "lib/ini_comments.h"
+#include "Utils/INI.h"
 #include <codecvt>
 #include <format>
 

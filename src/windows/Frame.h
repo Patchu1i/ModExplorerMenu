@@ -1,6 +1,5 @@
 #pragma once
 
-#include "lib/Graphic.h"
 #include <PCH.h>
 
 class Frame
@@ -11,8 +10,6 @@ public:
 	static void RefreshStyle();
 
 	static inline std::atomic_bool _init = false;
-	//static inline ID3D11ShaderResourceView* header_texture;
-	static inline GraphicManager::Image header_texture;
 
 	static inline ImFont* text_font;
 	static inline ImFont* header_font;

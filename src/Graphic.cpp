@@ -1,5 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "Libraries/stb_image.h"
 
 #include "Graphic.h"
 #include "Menu.h"

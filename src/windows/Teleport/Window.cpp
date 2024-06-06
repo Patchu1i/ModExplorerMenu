@@ -1,6 +1,4 @@
-#include "TeleportWindow.h"
-#include "Data.h"
-//#include "Settings.h"
+#include "Window.h"
 
 // If I need to add filtering for items like Interior/Exterior or something, reference this:
 // std::vector<std::tuple<bool*, AddItemWindow::ItemType, std::string>> AddItemWindow::_filterMap = {

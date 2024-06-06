@@ -1,10 +1,10 @@
 #include "Frame.h"
+#include "Graphic.h"
 #include "Settings.h"
-#include "lib/Graphic.h"
-#include "windows/AddItem/Window.h"
-#include "windows/HomeWindow.h"
-#include "windows/SettingsWindow.h"
-#include "windows/TeleportWindow.h"
+#include "Windows/AddItem/Window.h"
+#include "Windows/Home/Window.h"
+#include "Windows/Settings/Window.h"
+#include "Windows/Teleport/Window.h"
 
 Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
 

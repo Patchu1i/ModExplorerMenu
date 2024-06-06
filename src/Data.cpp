@@ -1,5 +1,5 @@
 #include "Data.h"
-#include "lib/Worldspace.h"
+#include "Utils/Worldspace.h"
 
 // https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
 using _GetFormEditorID = const char* (*)(std::uint32_t);

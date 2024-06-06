@@ -1,7 +1,6 @@
 #include "Console.h"
+#include "Utils/Util.h"
 #include "Window.h"
-#include "lib/Util.h"
-
 
 // TODO: Implement more here.
 void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)

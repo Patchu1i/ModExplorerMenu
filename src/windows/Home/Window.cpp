@@ -1,6 +1,6 @@
-#include "HomeWindow.h"
+#include "Window.h"
 
-#include "lib/Graphic.h"
+#include "Graphic.h"
 
 void HomeWindow::Draw()
 {

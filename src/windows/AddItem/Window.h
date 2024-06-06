@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Data.h"
+#include "Graphic.h"
+#include "Libraries/DescriptionFrameworkAPI.h"
 #include "Settings.h"
-#include "lib/DescriptionFrameworkAPI.h"
-#include "lib/Graphic.h"
 #include <unordered_set>
 
 // #include "Console.h"

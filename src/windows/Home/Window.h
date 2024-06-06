@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Data.h"
+#include "Settings.h"
+
 class HomeWindow
 {
 public:
