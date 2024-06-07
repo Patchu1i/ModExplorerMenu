@@ -37,11 +37,8 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 				continue;
 			}
 
-			// npc specific stuff
-			//logger::info("NPC: {}", form->GetFullName());
-		} else if (formType == RE::FormType::WorldSpace) {
-			// GetFullName is the worldspace not cell.
-			//logger::info("CELL: {}", form->GetFullName());
+			// TODO: Implement NPC Cache
+			// Probably have to do this outside of item cache.
 		} else {
 			goldValue = form->GetGoldValue();
 
@@ -57,10 +54,7 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 		//Add mod file to list.
 		if (!_modList.contains(mod)) {
 			_modList.insert(mod);
-			// .first->GetFilename().data()
 		}
-
-		// write a logger::info() here to detail the size of _cache in memory and the amount of items added
 	}
 }
 
@@ -90,8 +84,6 @@ void MEMData::CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_cellMap
 				case 'DIDE':
 					gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
 					if (gotEDID && gotDATA && ((data & 1) == 0)) {
-						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
-						//a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						continue;
 					}
@@ -100,8 +92,6 @@ void MEMData::CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_cellMap
 				case 'ATAD':
 					gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
 					if (gotEDID && gotDATA && ((data & 1) == 0)) {
-						//a_cellMap.insert_or_assign(edid, CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
-						//a_map.insert_or_assign(edid, std::make_pair(cidx, a_file->fileName));
 						a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 						continue;
 					}
@@ -141,10 +131,10 @@ void MEMData::Run()
 	CacheItems<RE::IngredientItem>(dataHandler);
 	CacheItems<RE::TESKey>(dataHandler);
 
-	// NPC -- TODO: Implement
+	// TODO: Implement NPC
 	CacheItems<RE::TESNPC>(dataHandler);
 
-	// Cells -- TODO:: Implement
+	// TODO: Implement Cells
 	WorldspaceCells cells;
 
 	for (const auto& cell : cells.table) {
@@ -159,35 +149,4 @@ void MEMData::Run()
 	for (const auto& file : _modList) {
 		CacheCells(file, _cellCache);
 	}
-
-	// for (const auto& file : _modList) {
-	// 	CacheCells(file, _testMap);
-	// }
-
-	// for (const auto& cell : _testMap) {
-	// 	const auto& [editorid, pair] = cell;
-	// 	const auto& [cidx, fileName] = pair;
-
-	// 	auto _cellPair = std::make_pair(editorid, cidx);
-	// 	std::string _fileName = std::string(fileName);
-
-	// 	auto& spaceMap = pluginMap.emplace(_fileName, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>())->second;
-	// 	auto& zoneMap = spaceMap.emplace("Unkown", std::multimap<std::string, std::pair<std::string, uint32_t>>())->second;
-	// 	zoneMap.emplace("Unkown", _cellPair);
-	// }
-
-	// for (const auto& pluginPair : pluginMap) {
-	// 	const auto& [plugin, spaceMap] = pluginPair;
-
-	// 	for (const auto& spacePair : spaceMap) {
-	// 		const auto& [space, zoneMap] = spacePair;
-
-	// 		for (const auto& zonePair : zoneMap) {
-	// 			const auto& [zone, cellPair] = zonePair;
-	// 			const auto& [cell, cidx] = cellPair;
-
-	// 			logger::info("Plugin: {}, Space: {}, Zone: {}, Cell: {}", plugin, space, zone, cell);
-	// 		}
-	// 	}
-	// }
 }

@@ -4,8 +4,8 @@
 // Main Draw function for AddItem, called by Frame::Draw()
 void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 {
-	constexpr auto _flags = ImGuiOldColumnFlags_NoResize;
-	ImGui::BeginColumns("##HorizontalSplit", 2, _flags);
+	constexpr auto flags = ImGuiOldColumnFlags_NoResize;
+	ImGui::BeginColumns("##HorizontalSplit", 2, flags);
 
 	const float width = ImGui::GetWindowWidth();
 	ImGui::SetColumnWidth(0, width * 0.75f);
@@ -15,6 +15,7 @@ void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	ShowModSelection(a_style, a_config);
 	ShowAdvancedOptions(a_style, a_config);
 	ShowFormTable(a_style, a_config);
+
 	ImGui::NextColumn();
 	ShowActions(a_style, a_config);
 	ImGui::EndColumns();

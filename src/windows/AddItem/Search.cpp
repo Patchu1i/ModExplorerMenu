@@ -1,7 +1,6 @@
 #include "Utils/Util.h"
 #include "Window.h"
 
-
 void AddItemWindow::ApplyFilters()
 {
 	itemList.clear();
@@ -223,34 +222,22 @@ void AddItemWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Conf
 			ImGui::PopStyleVar(1);
 		}
 
-		if (ImGui::CollapsingHeader("(Beta) Plot & Histogram:", flags)) {
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-			ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-			const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x / 3, ImGui::GetFontSize() * 1.15f);
-			ImGui::HelpMarker(
-				"This will show a plot diagram of the current data set.\n\n"
-				"This is a BETA feature meaning it is hardly implemented/tested as of now.");
-			if (ImGui::Button("Show Plot", button_size)) {
-				// b_ShowPlot = !b_ShowPlot; Kinda shit, but I'll tease it anyway.
-			}
+		// DEPRECATED:: Moved to Plot window.
+		// if (ImGui::CollapsingHeader("(Beta) Plot & Histogram:", flags)) {
+		// 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
+		// 	ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
+		// 	const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x / 3, ImGui::GetFontSize() * 1.15f);
 
-			ImGui::HelpMarker(
-				"This will show a histogram window of the current data set.\n\n"
-				"This is a BETA feature meaning it is hardly implemented/tested as of now.");
-			if (ImGui::Button("Show Histogram", button_size)) {
-				b_ShowHistogram = !b_ShowHistogram;
-			}
-
-			ImGui::HelpMarker(
-				"Regenerate the list of cached forms from the game. This should only ever be needed if runtime changes are made.\n\n"
-				"(WARNING): This will take a second or two to complete and will freeze your game in doing so.");
-			if (ImGui::Button("Regenerate Cache", button_size)) {
-				MEMData::GetSingleton()->Run();
-				ApplyFilters();
-			}
-			ImGui::PopStyleColor(1);
-			ImGui::PopStyleVar(1);
-		}
+		// 	ImGui::HelpMarker(
+		// 		"Regenerate the list of cached forms from the game. This should only ever be needed if runtime changes are made.\n\n"
+		// 		"(WARNING): This will take a second or two to complete and will freeze your game in doing so.");
+		// 	if (ImGui::Button("Regenerate Cache", button_size)) {
+		// 		MEMData::GetSingleton()->Run();
+		// 		ApplyFilters();
+		// 	}
+		// 	ImGui::PopStyleColor(1);
+		// 	ImGui::PopStyleVar(1);
+		// }
 
 		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(1);

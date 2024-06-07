@@ -65,16 +65,6 @@ public:
 	static inline bool b_StickySelect = true;
 	static inline bool b_ClickToFavorite = false;
 
-	// Histogram
-	static inline int histogramBinCount = 0;
-	static inline bool b_ShowHistogram = false;
-	static inline std::vector<float> histogramData;
-
-	// plots
-	static inline bool b_ShowPlot = false;
-	static inline std::vector<float> plotA;
-	static inline std::vector<float> plotB;
-
 	// Search Input Field.
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 	static inline ColumnID searchKey = ColumnID::ColumnID_Name;

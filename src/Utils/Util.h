@@ -196,4 +196,34 @@ namespace Utils
 			return "None";
 		};
 	};
+
+	template <class T>
+	[[nodiscard]] inline static std::string GetItemDescription(T& a_interface, RE::TESForm* form)
+	{
+		std::string s_descFramework = "";
+		if (a_interface != nullptr) {
+			std::string desc = a_interface->GetDescription(form);
+			if (!desc.empty()) {
+				Utils::RemoveHTMLTags(desc);
+				s_descFramework = std::string(desc) + "\n";
+			}
+		}
+
+		std::string s_tesDescription = "";
+		if (form->As<RE::TESDescription>() != nullptr) {
+			const auto desc = form->As<RE::TESDescription>();
+			if (desc) {
+				RE::BSString buf;
+				desc->GetDescription(buf, nullptr);
+
+				if (form->formType == RE::FormType::Book) {
+					s_tesDescription = "[Right Click -> Read Me!]";
+				} else if (!buf.empty()) {
+					s_tesDescription = std::string(buf) + "\n";
+				}
+			}
+		}
+
+		return s_descFramework + s_tesDescription;
+	}
 }

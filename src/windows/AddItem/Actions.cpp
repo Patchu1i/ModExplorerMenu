@@ -2,7 +2,6 @@
 #include "Utils/Util.h"
 #include "Window.h"
 
-// TODO: Implement more here.
 void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 {
 	(void)a_config;
@@ -152,7 +151,7 @@ void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_co
 		"Enabling this will allow you to quickly favorite items by left clicking.\n\n"
 		"This will disable the ability to select items for other actions.");
 
-	ImGui::PopFont();  // Button Font
+	ImGui::PopFont();
 	ImGui::PopStyleVar(2);
 
 	ImGui::EndChild();

@@ -2,36 +2,6 @@
 #include "Utils/Util.h"
 #include "Window.h"
 
-
-std::string GetItemDescription(RE::TESForm* form)
-{
-	std::string s_descFramework = "";
-	if (g_DescriptionFrameworkInterface != nullptr) {
-		std::string desc = g_DescriptionFrameworkInterface->GetDescription(form);
-		if (!desc.empty()) {
-			Utils::RemoveHTMLTags(desc);
-			s_descFramework = std::string(desc) + "\n";
-		}
-	}
-
-	std::string s_tesDescription = "";
-	if (form->As<RE::TESDescription>() != nullptr) {
-		const auto desc = form->As<RE::TESDescription>();
-		if (desc) {
-			RE::BSString buf;
-			desc->GetDescription(buf, nullptr);
-
-			if (form->formType == RE::FormType::Book) {
-				s_tesDescription = "[Right Click -> Read Me!]";
-			} else if (!buf.empty()) {
-				s_tesDescription = std::string(buf) + "\n";
-			}
-		}
-	}
-
-	return s_descFramework + s_tesDescription;
-}
-
 // FIXME: Width get's messed up on ultra long titles.
 // TODO: Add more details to other items.
 void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
@@ -173,7 +143,7 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 		// Always show:
 		InlineInt("Gold Value:", item->goldValue);
 
-		const std::string desc = GetItemDescription(item->form);
+		const std::string desc = Utils::GetItemDescription(g_DescriptionFrameworkInterface, item->form);
 		if (!desc.empty()) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			if (formType == RE::FormType::Book) {

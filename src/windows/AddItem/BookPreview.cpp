@@ -1,7 +1,6 @@
 #include "Utils/Util.h"
 #include "Window.h"
 
-
 void AddItemWindow::ShowBookPreview()
 {
 	auto& io = ImGui::GetIO();
