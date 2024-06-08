@@ -218,6 +218,8 @@ void AddItemWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Conf
 			ImGui::InlineCheckbox("Weight", &a_config.aimShowWeightColumn);
 			ImGui::InlineCheckbox("DPS", &a_config.aimShowDPSColumn);
 			ImGui::NewLine();
+			ImGui::InlineCheckbox("Armor", &a_config.aimShowArmorRatingColumn);
+			ImGui::NewLine();
 			ImGui::PopStyleColor(1);
 			ImGui::PopStyleVar(1);
 		}

@@ -122,6 +122,7 @@ void Settings::SaveSettings()
 		a_ini.SetValue(rSections[AddItem], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowEditorIDColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowGoldValueColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowGoldValueColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowBaseDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowBaseDamageColumn).c_str());
+		a_ini.SetValue(rSections[AddItem], "ShowArmorRatingColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowArmorRatingColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowSpeedColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSpeedColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowCritDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowCritDamageColumn).c_str());
 		a_ini.SetValue(rSections[AddItem], "ShowSkillColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSkillColumn).c_str());
@@ -151,6 +152,7 @@ void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	user.config.aimShowEditorIDColumn = GET_VALUE<bool>(rSections[AddItem], "ShowEditorIDColumn", true, a_ini);
 	user.config.aimShowGoldValueColumn = GET_VALUE<bool>(rSections[AddItem], "ShowGoldValueColumn", false, a_ini);
 	user.config.aimShowBaseDamageColumn = GET_VALUE<bool>(rSections[AddItem], "ShowBaseDamageColumn", false, a_ini);
+	user.config.aimShowArmorRatingColumn = GET_VALUE<bool>(rSections[AddItem], "ShowArmorRatingColumn", false, a_ini);
 	user.config.aimShowSpeedColumn = GET_VALUE<bool>(rSections[AddItem], "ShowSpeedColumn", false, a_ini);
 	user.config.aimShowCritDamageColumn = GET_VALUE<bool>(rSections[AddItem], "ShowCritDamageColumn", false, a_ini);
 	user.config.aimShowSkillColumn = GET_VALUE<bool>(rSections[AddItem], "ShowSkillColumn", false, a_ini);

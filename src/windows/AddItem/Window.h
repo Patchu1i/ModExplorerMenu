@@ -46,6 +46,7 @@ public:
 		ColumnID_EditorID,
 		ColumnID_GoldValue,
 		ColumnID_BaseDamage,
+		ColumnID_ArmorRating,
 		ColumnID_Speed,
 		ColumnID_CritDamage,
 		ColumnID_Skill,
@@ -82,7 +83,7 @@ public:
 	static inline bool b_Book = false;
 	static inline bool b_Weapon = false;
 
-	static constexpr int column_count = 12;
+	static constexpr int column_count = 13;
 	static inline std::unordered_set<RE::FormType> itemFilters;
 	static inline std::vector<MEMData::CachedItem*> itemList;
 	static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {

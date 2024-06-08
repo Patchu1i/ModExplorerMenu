@@ -82,6 +82,7 @@ public:
 		bool aimShowEditorIDColumn;
 		bool aimShowGoldValueColumn;
 		bool aimShowBaseDamageColumn;
+		bool aimShowArmorRatingColumn;
 		bool aimShowSpeedColumn;
 		bool aimShowCritDamageColumn;
 		bool aimShowSkillColumn;

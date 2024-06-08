@@ -95,6 +95,19 @@ bool AddItemWindow::SortColumn(const MEMData::CachedItem* v1, const MEMData::Cac
 			delta = -1;
 		}
 		break;
+	case ColumnID_ArmorRating:
+		if (v1->formType == RE::FormType::Armor && v2->formType == RE::FormType::Armor) {
+			auto* armor1 = v1->form->As<RE::TESObjectARMO>();
+			auto* armor2 = v2->form->As<RE::TESObjectARMO>();
+			auto armorRating1 = armor1->armorRating;
+			auto armorRating2 = armor2->armorRating;
+			delta = (armorRating1 < armorRating2) ? -1 : (armorRating1 > armorRating2) ? 1 :
+			                                                                             0;
+		} else if (v1->formType == RE::FormType::Armor) {
+			delta = 1;
+		} else if (v2->formType == RE::FormType::Armor) {
+			delta = -1;
+		}
 	case ColumnID_CritDamage:
 		if (v1->formType == RE::FormType::Weapon && v2->formType == RE::FormType::Weapon) {
 			auto* weapon1 = v1->form->As<RE::TESObjectWEAP>();
@@ -197,6 +210,7 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetupColumn("Editor ID", ImGuiTableColumnFlags_WidthStretch, 50.0f, ColumnID_EditorID);
 		ImGui::TableSetupColumn("Gold", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_GoldValue);
 		ImGui::TableSetupColumn("DMG", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_BaseDamage);
+		ImGui::TableSetupColumn("Armor", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_ArmorRating);
 		ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Speed);
 		ImGui::TableSetupColumn("Crit", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_CritDamage);
 		ImGui::TableSetupColumn("Skill", ImGuiTableColumnFlags_WidthFixed, 20.0f, ColumnID_Skill);
@@ -227,6 +241,7 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 		ImGui::TableSetColumnEnabled(ColumnID_EditorID, a_config.aimShowEditorIDColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_GoldValue, a_config.aimShowGoldValueColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_BaseDamage, a_config.aimShowBaseDamageColumn);
+		ImGui::TableSetColumnEnabled(ColumnID_ArmorRating, a_config.aimShowArmorRatingColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_Speed, a_config.aimShowSpeedColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_CritDamage, a_config.aimShowCritDamageColumn);
 		ImGui::TableSetColumnEnabled(ColumnID_Skill, a_config.aimShowSkillColumn);
@@ -318,6 +333,13 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 					char buffer[12];
 					snprintf(buffer, sizeof(buffer), "%.2f", baseDamage);
 					ImGui::Text(buffer);  // Base Damage
+				}
+
+				ImGui::TableNextColumn();
+				if (item->formType == RE::FormType::Armor) {
+					auto* armor = item->form->As<RE::TESObjectARMO>();
+					const auto armorRating = Utils::CalcBaseArmorRating(armor);
+					ImGui::Text(std::to_string(armorRating).c_str());
 				}
 
 				// Weapon Speed
