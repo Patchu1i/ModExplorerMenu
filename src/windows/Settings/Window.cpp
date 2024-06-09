@@ -93,6 +93,7 @@ void AddImageDropdown(const char* a_text, GraphicManager::Image* a_imageRef)
 		for (const auto& image : images) {
 			if (ImGui::Selectable(image.first.c_str())) {
 				*a_imageRef = image.second;
+				SettingsWindow::changes.store(true);
 				SettingsWindow::file_changes.store(true);
 			}
 		}
@@ -187,6 +188,7 @@ void SettingsWindow::DrawThemeSelector()
 				if (ImGui::Selectable(theme.c_str())) {
 					config.theme = theme;
 					Settings::GetSingleton()->SetThemeFromIni(config.theme);
+					Settings::GetSingleton()->SaveSettings();
 					changes.store(true);
 				}
 			}

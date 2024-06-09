@@ -41,6 +41,24 @@ public:
 			plugin(plugin), space(space), zone(zone), fullName(fullName), editorid(editorid), mod(mod) {}
 	};
 
+	struct CachedNPC
+	{
+		RE::TESForm* form;
+		std::string plugin;
+		std::string name;
+		std::string formid;
+		std::string editorid;
+
+		float health;
+		float magicka;
+		float stamina;
+		float carryweight;
+
+		RE::TESNPC::Skills skills;
+
+		bool favorite;
+	};
+
 	[[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
 	{
 		return _modList;
@@ -61,22 +79,16 @@ private:
 
 	static inline std::vector<CachedItem> _cache;
 	static inline std::vector<CachedCell> _cellCache;
+	static inline std::vector<CachedNPC> _npcCache;
 	static inline std::unordered_set<RE::TESFile*> _modList;
-	// static inline std::map<std::string, CachedCell> _cellCache;  // EditorID, CachedCell
-	//inline static std::map<std::pair<std::uint32_t, const std::string>, std::string_view> _cellMap;
-
-	//inline static std::map<const std::string, std::pair<std::uint32_t, std::string_view>> _testMap;
-	//inline static std::map<const std::string, CachedCell> _newMap;
-
-	//inline static std::map<std::string, std::pair<std::string, std::pair<std::string, std::pair<std::string, MEMCell>>>> _cacheCells;
-	//inline static std::map<const std::string, std::map<std::string, std::map<std::string, std::pair<std::string, uint32_t>>>> _cacheCells;
-
-	//inline static std::multimap<std::string, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>> pluginMap;
 
 	void CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_map);
 
 	template <class T>
 	static void CacheItems(RE::TESDataHandler* a_data);
+
+	template <class T>
+	void CacheNPCs(RE::TESDataHandler* a_data);
 
 public:
 	static inline MEMData* GetSingleton()
@@ -85,14 +97,19 @@ public:
 		return &singleton;
 	}
 
-	static inline std::vector<CachedCell>& GetCellMap()
+	[[nodiscard]] static inline std::vector<CachedCell>& GetCellMap()
 	{
 		return _cellCache;
 	}
 
-	static inline std::vector<CachedItem>& GetItemList()
+	[[nodiscard]] static inline std::vector<CachedItem>& GetItemList()
 	{
 		return _cache;
+	}
+
+	[[nodiscard]] static inline std::vector<CachedNPC>& GetNPCList()
+	{
+		return _npcCache;
 	}
 
 	void Run();

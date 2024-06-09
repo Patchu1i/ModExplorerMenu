@@ -4,10 +4,15 @@
 
 namespace ImGui
 {
-	inline static void InlineCheckbox(const char* label, bool* v)
+
+	inline static bool InlineCheckbox(const char* label, bool* v)
 	{
-		ImGui::Checkbox(label, v);
+		bool changed = false;
+		if (ImGui::Checkbox(label, v)) {
+			changed = true;
+		}
 		ImGui::SameLine();
+		return changed;
 	}
 
 	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
@@ -41,6 +46,30 @@ namespace ImGui
 
 namespace Utils
 {
+
+	inline static std::vector<std::string> GetSkillNames()
+	{
+		return {
+			"Block",
+			"Two-Handed",
+			"One-Handed",
+			"Archery",
+			"Light Armor",
+			"Pickpocket",
+			"Lockpicking",
+			"Sneak",
+			"Alchemy",
+			"Speech",
+			"Illusion",
+			"Conjuration",
+			"Destruction",
+			"Restoration",
+			"Alteration",
+			"Enchanting",
+			"Smithing",
+			"Heavy Armor"
+		};
+	}
 
 	inline static void RemoveHTMLTags(std::string& a_string)
 	{
@@ -110,6 +139,68 @@ namespace Utils
 
 		return (float)std::round((baseDamage + 0) * (1.0 + skill / 200.0));
 	};
+
+	inline static const char* GetSpellType(RE::MagicSystem::SpellType a_type)
+	{
+		switch (a_type) {
+		case RE::MagicSystem::SpellType::kSpell:
+			return "Spell";
+		case RE::MagicSystem::SpellType::kDisease:
+			return "Disease";
+		case RE::MagicSystem::SpellType::kPower:
+			return "Power";
+		case RE::MagicSystem::SpellType::kLesserPower:
+			return "Lesser Power";
+		case RE::MagicSystem::SpellType::kAbility:
+			return "Ability";
+		case RE::MagicSystem::SpellType::kPoison:
+			return "Poison";
+		case RE::MagicSystem::SpellType::kEnchantment:
+			return "Enchantment";
+		case RE::MagicSystem::SpellType::kPotion:
+			return "Potion";
+		default:
+			return "Unknown";
+		}
+	}
+
+	// 	kConstantEffect
+	// kFireAndForget
+	// kConcentration
+	// kScroll
+	inline static const char* GetCastingType(RE::MagicSystem::CastingType a_type)
+	{
+		switch (a_type) {
+		case RE::MagicSystem::CastingType::kConstantEffect:
+			return "Constant Effect";
+		case RE::MagicSystem::CastingType::kFireAndForget:
+			return "Fire and Forget";
+		case RE::MagicSystem::CastingType::kConcentration:
+			return "Concentration";
+		case RE::MagicSystem::CastingType::kScroll:
+			return "Scroll";
+		default:
+			return "Unknown";
+		}
+	}
+
+	inline static const char* GetDeliveryType(RE::MagicSystem::Delivery a_delivery)
+	{
+		switch (a_delivery) {
+		case RE::MagicSystem::Delivery::kSelf:
+			return "Self";
+		case RE::MagicSystem::Delivery::kTouch:
+			return "Touch";
+		case RE::MagicSystem::Delivery::kAimed:
+			return "Aimed";
+		case RE::MagicSystem::Delivery::kTargetActor:
+			return "Target Actor";
+		case RE::MagicSystem::Delivery::kTargetLocation:
+			return "Target Location";
+		default:
+			return "Unknown";
+		}
+	}
 
 	inline static const char* GetArmorType(RE::TESObjectARMO* a_armor)
 	{
@@ -198,7 +289,7 @@ namespace Utils
 	};
 
 	template <class T>
-	[[nodiscard]] inline static std::string GetItemDescription(T& a_interface, RE::TESForm* form)
+	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form, T& a_interface = nullptr)
 	{
 		std::string s_descFramework = "";
 		if (a_interface != nullptr) {

@@ -15,6 +15,31 @@ std::string GetEditorID(RE::FormID a_formID)
 }
 
 template <class T>
+void MEMData::CacheNPCs(RE::TESDataHandler* a_data)
+{
+	for (auto form : a_data->GetFormArray<T>()) {
+		RE::TESNPC* npc = form->As<RE::TESNPC>();
+		RE::TESNPC::Skills skills = npc->playerSkills;
+
+		CachedNPC _npc = {
+			.form = form,
+			.plugin = form->GetFile()->fileName,
+			.name = form->GetFullName(),
+			.formid = fmt::format("{:08x}", form->GetFormID()),
+			.editorid = GetEditorID(form->GetFormID()),
+			.health = npc->GetBaseActorValue(RE::ActorValue::kHealth),
+			.magicka = npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+			.stamina = npc->GetBaseActorValue(RE::ActorValue::kStamina),
+			.carryweight = npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+			.skills = npc->playerSkills,
+			.favorite = false
+		};
+
+		_npcCache.push_back(_npc);
+	}
+}
+
+template <class T>
 void MEMData::CacheItems(RE::TESDataHandler* a_data)
 {
 	for (auto form : a_data->GetFormArray<T>()) {
@@ -132,7 +157,7 @@ void MEMData::Run()
 	CacheItems<RE::TESKey>(dataHandler);
 
 	// TODO: Implement NPC
-	CacheItems<RE::TESNPC>(dataHandler);
+	CacheNPCs<RE::TESNPC>(dataHandler);
 
 	// TODO: Implement Cells
 	WorldspaceCells cells;

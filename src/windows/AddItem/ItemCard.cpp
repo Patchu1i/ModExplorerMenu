@@ -143,7 +143,7 @@ void AddItemWindow::ShowItemCard(MEMData::CachedItem* item)
 		// Always show:
 		InlineInt("Gold Value:", item->goldValue);
 
-		const std::string desc = Utils::GetItemDescription(g_DescriptionFrameworkInterface, item->form);
+		const std::string desc = Utils::GetItemDescription(item->form, g_DescriptionFrameworkInterface);
 		if (!desc.empty()) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			if (formType == RE::FormType::Book) {

@@ -96,6 +96,25 @@ public:
 		bool teleShowZoneColumn;
 		bool teleShowFullNameColumn;
 		bool teleShowEditorIDColumn;
+
+		// NPC
+		bool npcShowFavoriteColumn;
+		bool npcShowPluginColumn;
+		bool npcShowNameColumn;
+		bool npcShowFormIDColumn;
+		bool npcShowEditorIDColumn;
+		bool npcShowHealthColumn;
+		bool npcShowHealthRegenColumn;
+		bool npcShowMagickaColumn;
+		bool npcShowMagickaRegenColumn;
+		bool npcShowStaminaColumn;
+		bool npcShowStaminaRegenColumn;
+		bool npcShowCarryWeightColumn;
+		bool npcShowMassColumn;
+		bool npcShowDamageResistColumn;
+		bool npcShowAttackDamageColumn;
+		bool npcShowUnarmedDamageColumn;
+		bool npcShowSkillsColumn;
 	};
 
 	ImGuiStyle test;
@@ -206,18 +225,6 @@ public:
 			return;
 		}
 	}
-
-	// Returns ImFont* from a string key in GraphicManager::font_library[key]
-	// static ImFont* GetFont(std::string& a_str)
-	// {
-	// 	return GraphicManager::font_library.find(a_str)->second;
-	// }
-
-	// // Returns ImTextureID from a string key in GraphicManager::image_library[key]
-	// static GraphicManager::Image GetImage(std::string& a_str)
-	// {
-	// 	return GraphicManager::image_library.find(a_str)->second;
-	// }
 
 	// https://github.com/powerof3/PhotoMode | License: MIT
 	template <class T>

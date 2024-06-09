@@ -135,6 +135,22 @@ void Settings::SaveSettings()
 		a_ini.SetValue(rSections[Teleport], "ShowZoneColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowZoneColumn).c_str());
 		a_ini.SetValue(rSections[Teleport], "ShowFullNameColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFullNameColumn).c_str());
 		a_ini.SetValue(rSections[Teleport], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowEditorIDColumn).c_str());
+
+		a_ini.SetValue(rSections[NPC], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowFavoriteColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowPluginColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowNameColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowNameColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowEditorIDColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowHealthColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowHealthColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowHealthRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowHealthRegenColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowMagickaColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMagickaColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowMagickaRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMagickaRegenColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowStaminaColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowStaminaColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowStaminaRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowStaminaRegenColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowCarryWeightColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowCarryWeightColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowMassColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMassColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowDamageResistColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowDamageResistColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowAttackDamageColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowAttackDamageColumn).c_str());
+		a_ini.SetValue(rSections[NPC], "ShowUnarmedDamageColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowUnarmedDamageColumn).c_str());
 	});
 }
 
@@ -165,6 +181,23 @@ void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	user.config.teleShowZoneColumn = GET_VALUE<bool>(rSections[Teleport], "ShowZoneColumn", true, a_ini);
 	user.config.teleShowFullNameColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFullNameColumn", true, a_ini);
 	user.config.teleShowEditorIDColumn = GET_VALUE<bool>(rSections[Teleport], "ShowEditorIDColumn", true, a_ini);
+
+	user.config.npcShowFavoriteColumn = GET_VALUE<bool>(rSections[NPC], "ShowFavoriteColumn", true, a_ini);
+	user.config.npcShowPluginColumn = GET_VALUE<bool>(rSections[NPC], "ShowPluginColumn", false, a_ini);
+	user.config.npcShowNameColumn = GET_VALUE<bool>(rSections[NPC], "ShowNameColumn", true, a_ini);
+	user.config.npcShowFormIDColumn = GET_VALUE<bool>(rSections[NPC], "ShowFormIDColumn", true, a_ini);
+	user.config.npcShowEditorIDColumn = GET_VALUE<bool>(rSections[NPC], "ShowEditorIDColumn", true, a_ini);
+	user.config.npcShowHealthColumn = GET_VALUE<bool>(rSections[NPC], "ShowHealthColumn", false, a_ini);
+	user.config.npcShowHealthRegenColumn = GET_VALUE<bool>(rSections[NPC], "ShowHealthRegenColumn", false, a_ini);
+	user.config.npcShowMagickaColumn = GET_VALUE<bool>(rSections[NPC], "ShowMagickaColumn", false, a_ini);
+	user.config.npcShowMagickaRegenColumn = GET_VALUE<bool>(rSections[NPC], "ShowMagickaRegenColumn", false, a_ini);
+	user.config.npcShowStaminaColumn = GET_VALUE<bool>(rSections[NPC], "ShowStaminaColumn", false, a_ini);
+	user.config.npcShowStaminaRegenColumn = GET_VALUE<bool>(rSections[NPC], "ShowStaminaRegenColumn", false, a_ini);
+	user.config.npcShowCarryWeightColumn = GET_VALUE<bool>(rSections[NPC], "ShowCarryWeightColumn", false, a_ini);
+	user.config.npcShowMassColumn = GET_VALUE<bool>(rSections[NPC], "ShowMassColumn", false, a_ini);
+	user.config.npcShowDamageResistColumn = GET_VALUE<bool>(rSections[NPC], "ShowDamageResistColumn", false, a_ini);
+	user.config.npcShowAttackDamageColumn = GET_VALUE<bool>(rSections[NPC], "ShowAttackDamageColumn", false, a_ini);
+	user.config.npcShowUnarmedDamageColumn = GET_VALUE<bool>(rSections[NPC], "ShowUnarmedDamageColumn", false, a_ini);
 }
 
 void Settings::InstantiateDefaultTheme(Settings::Style& a_out)

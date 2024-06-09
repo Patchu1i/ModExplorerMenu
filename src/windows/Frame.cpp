@@ -3,6 +3,7 @@
 #include "Settings.h"
 #include "Windows/AddItem/Window.h"
 #include "Windows/Home/Window.h"
+#include "Windows/NPC/Window.h"
 #include "Windows/Settings/Window.h"
 #include "Windows/Teleport/Window.h"
 
@@ -94,6 +95,7 @@ void Frame::Draw(bool is_settings_popped)
 			AddItemWindow::Draw(style, config);
 			break;
 		case ActiveWindow::NPC:
+			NPCWindow::Draw(style, config);
 			break;
 		case ActiveWindow::Lookup:
 			break;
@@ -118,6 +120,7 @@ void Frame::Install()
 	GraphicManager::Init();
 	AddItemWindow::Init();
 	HomeWindow::Init();
+	NPCWindow::Init();
 
 	RefreshStyle();
 
