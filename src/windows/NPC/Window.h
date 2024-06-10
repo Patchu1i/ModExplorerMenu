@@ -4,7 +4,6 @@
 #include "Libraries/DescriptionFrameworkAPI.h"
 #include "Settings.h"
 
-
 class NPCWindow
 {
 public:
@@ -15,10 +14,14 @@ public:
 	static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedNPC* a_npc);
+	static void PopulateListWithLocals();
 	static void ApplyFilters();
 	static void Init();
 
 	static inline std::vector<MEMData::CachedNPC*> npcList;
+
+	// Action / Preview Sidebar
+	static inline MEMData::CachedNPC* selectedNPC = nullptr;
 
 private:
 	static inline constexpr auto NPCTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Sortable |
@@ -43,8 +46,9 @@ private:
 
 	static inline int column_count = ColumnID::None;
 
-	// Action / Preview Sidebar
-	static inline MEMData::CachedNPC* selectedNPC = nullptr;
+	// Local actions
+	static inline bool showLocalsOnly = false;
+	static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
 
 	// Search Input Field.
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;

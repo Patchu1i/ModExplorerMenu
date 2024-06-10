@@ -1,10 +1,14 @@
 #include "Menu.h"
+#include "Console.h"
 #include "Windows/Frame.h"
 #include "Windows/Settings/Window.h"
 #include <dinput.h>
 
 void Menu::Draw()
 {
+	// TODO: Maybe hook this into an update call?
+	ConsoleCommand::ProcessMainThreadTasks();
+
 	if (!IsEnabled()) {
 		return;  // TODO: Should this be called one level up?
 	}

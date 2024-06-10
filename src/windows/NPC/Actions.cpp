@@ -1,3 +1,4 @@
+#include "Console.h"
 #include "Utils/Util.h"
 #include "Window.h"
 
@@ -6,12 +7,21 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 	(void)a_style;
 	(void)a_config;
 
+	ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
+	float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
+
+	const float button_height = ImGui::GetFontSize() * 1.5f;
+	const float button_width = ImGui::GetContentRegionAvail().x;
+
+	if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
+		PopulateListWithLocals();
+	}
+
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 	if (selectedNPC == nullptr) {
 		return;
 	}
-
-	ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
-	float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
 
 	// TODO: Stop being lazy and move these lambda's to a class or function body.
 	constexpr auto ProgressColor = [](const double value, const float max_value) -> ImVec4 {
@@ -46,6 +56,57 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 	if (npc == nullptr) {
 		return;
 	}
+
+	if (ImGui::Button("Place as New", ImVec2(button_width, button_height))) {
+		ConsoleCommand::PlaceAtMe(selectedNPC->formid, 1);
+	}
+
+	if (showLocalsOnly) {
+		if (ImGui::Button("Bring to Me", ImVec2(button_width, button_height))) {
+			ConsoleCommand::MoveToPlayer(std::format("{:08x}", selectedNPC->refID));
+		}
+	}
+
+	// if (ImGui::Button("Bring to Me", ImVec2(button_width, button_height))) {
+	// 	RE::FormID formid = selectedNPC->form->formID;
+
+	// 	// Using shared_ptr since AddTask is async and we need
+	// 	// to ensure the vector is alive when we return to the main thread/
+	// 	auto references = std::make_shared<std::vector<RE::FormID>>();
+
+	// 	auto callback = [references]() {
+	// 		if (references->empty()) {
+	// 			return;
+	// 		}
+
+	// 		// TODO: Implement behavior for multiple references.
+	// 		for (auto ref : *references) {
+	// 			ConsoleCommand::MoveToPlayer(std::format("{:08x}", ref));
+	// 		}
+	// 	};
+
+	// 	SKSE::GetTaskInterface()->AddTask([references, formid, callback]() {
+	// 		auto process = RE::ProcessLists::GetSingleton();
+	// 		for (auto& handle : process->highActorHandles) {
+	// 			if (!handle.get() || !handle.get().get()) {
+	// 				continue;
+	// 			}
+
+	// 			auto actor = handle.get().get();
+	// 			auto base = actor->GetBaseObject()->GetFormID();
+	// 			auto ref = actor->GetFormID();
+
+	// 			// Find object with matching baseid, and store its reference
+	// 			// into the references vector.
+	// 			if (base == formid) {
+	// 				logger::info("Found reference: {:08x}", ref);
+	// 				references->push_back(ref);
+	// 			}
+	// 		}
+
+	// 		callback();  // Callback to main thread upon completion.
+	// 	});
+	// }
 
 	if (ImGui::CollapsingHeader("NPC Skills")) {
 		const auto skills = npc->playerSkills;

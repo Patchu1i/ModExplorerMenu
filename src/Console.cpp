@@ -66,34 +66,117 @@ RE::NiPointer<RE::TESObjectREFR> GetConsoleRefr()
 
 inline void ConsoleCommand::SendConsoleCommand(std::string_view cmd)
 {
-	//auto* playerREF = RE::PlayerCharacter::GetSingleton()->AsReference();
-
 	const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
 	const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
 	if (script) {
-		logger::info("Sending console command: {}", cmd);
-		//const auto consoleRef = GetConsoleRefr().get();
 		const auto consoleRef = RE::Console::GetSelectedRef();
 		script->SetCommand(cmd);
 		script->CompileAndRun(consoleRef.get());
-		logger::info("deleting script");
 		delete script;
 	}
 }
 
-void ConsoleCommand::AddItem(std::string a_formid, int a_count)
+// Continously process the `ConsoleCommand::taskQueue` in the main thread.
+// This is called every frame using `DXGI::Present` hook.
+inline void ConsoleCommand::ProcessMainThreadTasks()
 {
-	std::string cmd = "player.additem " + a_formid + " " + std::to_string(a_count);
-	SendConsoleCommand(cmd);
+	if (!taskQueue.empty()) {
+		auto task = taskQueue.front();
+		task();
+		taskQueue.pop();
+	}
 }
 
-void ConsoleCommand::PlaceAtMe(std::string a_formid, int a_count)
+std::mutex mtx;
+// Start processing the `ConsoleCommand::commandQueue` in a separate thread.
+// Only one instance of this thread will run at a single time.
+void ConsoleCommand::StartProcessThread()
 {
-	std::string cmd = "player.placeatme " + a_formid + " " + std::to_string(a_count);
-	SendConsoleCommand(cmd);
+	if (isProcessing.load()) {
+		return;
+	}
+
+	isProcessing.store(true);
+	logger::info("isProcessing TRUE");
+	processThread = std::thread([]() {
+		while (true) {
+			std::pair<std::string, int> cmd;
+			{
+				std::lock_guard<std::mutex> lock(mtx);  // Lock the mutex
+				if (ConsoleCommand::commandQueue.empty()) {
+					logger::info("isProcessing FALSE end of queue");
+					isProcessing.store(false);
+					break;
+				}
+
+				cmd = ConsoleCommand::commandQueue.front();
+				ConsoleCommand::commandQueue.pop();
+			}
+
+			logger::info("Sent Command From Side Thread");
+
+			std::this_thread::sleep_for(std::chrono::seconds(cmd.second));
+
+			taskQueue.push([cmd]() {
+				ConsoleCommand::SendConsoleCommand(cmd.first);
+			});
+		}
+	});
+
+	processThread.detach();
 }
 
-// Register ConsoleCommand SCRIPT_FUNCTION.
+// Add an `std::string cmd` to the `ConsoleCommand::commandQueue` with an optional delay.
+// @param a_cmd: Command to be added to the queue.
+// @param a_delay: Delay in seconds before executing the command.
+void ConsoleCommand::AddToQueue(std::string a_cmd, int a_delay = 0)
+{
+	commandQueue.push(std::make_pair(a_cmd, a_delay));
+}
+
+// Add (a_count) of item(s) with form id (a_itemFormID) to player.
+// @param a_itemFormID: Base Form ID of the item.
+// @param a_count: Count of the item.
+void ConsoleCommand::AddItem(std::string a_itemFormID, int a_count)
+{
+	std::string cmd = "player.additem " + a_itemFormID + " " + std::to_string(a_count);
+	AddToQueue(cmd);
+
+	StartProcessThread();
+}
+
+// Place (a_count) of item(s) with form id (a_itemFormID) at player.
+// @param a_itemFormID: Base Form ID of the item.
+// @param a_count: Count of the item.
+void ConsoleCommand::PlaceAtMe(std::string a_itemFormID, int a_count)
+{
+	std::string cmd = "player.placeatme " + a_itemFormID + " " + std::to_string(a_count);
+	AddToQueue(cmd);
+
+	StartProcessThread();
+}
+
+// Move player to target reference id.
+// @param a_targetRefID: Reference FormID of the target.
+void ConsoleCommand::MoveTo(std::string a_targetRefID)
+{
+	AddToQueue("player.moveto " + a_targetRefID);
+
+	StartProcessThread();
+}
+
+// Move target reference id to player.
+// @param a_targetRefID: Reference FormID of the target.
+void ConsoleCommand::MoveToPlayer(std::string a_targetRefID)
+{
+	const int delay = 1;
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("moveto player", delay);
+
+	StartProcessThread();
+}
+
+// Register custom Console Command.
 void ConsoleCommand::Register()
 {
 	auto info = RE::SCRIPT_FUNCTION::LocateConsoleCommand("Timing");  // unused

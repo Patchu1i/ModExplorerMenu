@@ -116,6 +116,10 @@ void NPCWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 			ImGui::EndCombo();
 		}
 
+		if (ImGui::Checkbox("Show Local NPCs Only", &showLocalsOnly)) {
+			PopulateListWithLocals();
+		}
+
 		ImGui::Unindent();
 		ImGui::NewLine();
 	}
@@ -170,8 +174,7 @@ void NPCWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& 
 		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::NewLine();
 		ImGui::Indent();
-		constexpr auto flags = ImGuiTreeNodeFlags_Bullet;
-		if (ImGui::CollapsingHeader("Column Visiblity:", flags)) {
+		if (ImGui::TreeNode("Column Visiblity:")) {
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
 			ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
 			InlineCheckboxConfig("Favorite", &a_config.npcShowFavoriteColumn);
@@ -188,6 +191,7 @@ void NPCWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& 
 			ImGui::NewLine();
 			ImGui::PopStyleColor(1);
 			ImGui::PopStyleVar(1);
+			ImGui::TreePop();
 		}
 
 		// DEPRECATED:: Moved to Plot window.

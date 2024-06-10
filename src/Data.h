@@ -44,6 +44,7 @@ public:
 	struct CachedNPC
 	{
 		RE::TESForm* form;
+		RE::FormID refID;
 		std::string plugin;
 		std::string name;
 		std::string formid;
