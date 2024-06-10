@@ -78,7 +78,7 @@ inline void ConsoleCommand::SendConsoleCommand(std::string_view cmd)
 
 // Continously process the `ConsoleCommand::taskQueue` in the main thread.
 // This is called every frame using `DXGI::Present` hook.
-inline void ConsoleCommand::ProcessMainThreadTasks()
+void ConsoleCommand::ProcessMainThreadTasks()
 {
 	if (!taskQueue.empty()) {
 		auto task = taskQueue.front();
