@@ -176,6 +176,47 @@ void ConsoleCommand::MoveToPlayer(std::string a_targetRefID)
 	StartProcessThread();
 }
 
+// Kill target reference id.
+// @param a_targetRefID: Reference FormID of the target.
+void ConsoleCommand::Kill(std::string a_targetRefID)
+{
+	const int delay = 1;
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("kill", delay);
+
+	StartProcessThread();
+}
+
+// Resurrect target reference id.
+// @param a_targetRefID: Reference FormID of the target.
+void ConsoleCommand::Resurrect(std::string a_targetRefID)
+{
+	const int delay = 1;
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("resurrect 1", delay);
+
+	StartProcessThread();
+}
+
+void ConsoleCommand::UnEquipAll(std::string a_targetRefID)
+{
+	const int delay = 1;
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("unequipall", delay);
+
+	StartProcessThread();
+}
+
+void ConsoleCommand::ToggleFreeze(std::string a_targetRefID)
+{
+	const int delay = 1;
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("TAI", delay);
+	AddToQueue("TCAI");
+
+	StartProcessThread();
+}
+
 // Register custom Console Command.
 void ConsoleCommand::Register()
 {

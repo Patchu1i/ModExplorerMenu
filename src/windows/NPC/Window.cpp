@@ -26,4 +26,5 @@ void NPCWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 void NPCWindow::Init()
 {
 	g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
+	ApplyFilters();
 }

@@ -49,6 +49,8 @@ private:
 	// Local actions
 	static inline bool showLocalsOnly = false;
 	static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
+	static inline bool applyActionsToAll = false;
+	static inline bool placeFrozen = false;
 
 	// Search Input Field.
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;

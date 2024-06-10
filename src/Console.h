@@ -16,6 +16,10 @@ public:
 	static void PlaceAtMe(std::string a_itemFormID, int a_count = 1);
 	static void MoveToPlayer(std::string a_targetRefID);
 	static void MoveTo(std::string a_targetRefID);
+	static void Kill(std::string a_targetRefID);
+	static void Resurrect(std::string a_targetRefID);
+	static void UnEquipAll(std::string a_targetRefID);
+	static void ToggleFreeze(std::string a_targetRefID);
 
 	// Multi-threaded command processing.
 	static inline std::queue<std::pair<std::string, int>> commandQueue;  // Main thread -> Process thread

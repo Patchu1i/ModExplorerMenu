@@ -7,6 +7,10 @@ void NPCWindow::ApplyFilters()
 {
 	npcList.clear();
 
+	showLocalsOnly = false;
+
+	selectedNPC = nullptr;
+
 	auto& cached_item_list = MEMData::GetNPCList();
 
 	char compare[256];

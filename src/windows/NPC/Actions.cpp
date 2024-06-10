@@ -13,8 +13,14 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 	const float button_height = ImGui::GetFontSize() * 1.5f;
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
-	if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
-		PopulateListWithLocals();
+	if (!showLocalsOnly) {
+		if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
+			PopulateListWithLocals();
+		}
+	} else {
+		if (ImGui::Button("Show All NPCs", ImVec2(button_width, button_height))) {
+			ApplyFilters();
+		}
 	}
 
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -51,62 +57,108 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 		ImGui::Text(text);
 	};
 
-	auto* npc = selectedNPC->form->As<RE::TESNPC>();
-
-	if (npc == nullptr) {
-		return;
-	}
-
 	if (ImGui::Button("Place as New", ImVec2(button_width, button_height))) {
 		ConsoleCommand::PlaceAtMe(selectedNPC->formid, 1);
 	}
 
 	if (showLocalsOnly) {
-		if (ImGui::Button("Bring to Me", ImVec2(button_width, button_height))) {
-			ConsoleCommand::MoveToPlayer(std::format("{:08x}", selectedNPC->refID));
+		ImGui::Checkbox("Apply to All Nearby NPCS", &applyActionsToAll);
+
+		const auto refID = std::format("{:08x}", selectedNPC->refID);
+		if (ImGui::Button("Bring", ImVec2(button_width, button_height))) {
+			if (applyActionsToAll) {
+				for (auto& local : npcList) {
+					if (local->refID == selectedNPC->refID) {
+						continue;
+					}
+
+					const auto localRefID = std::format("{:08x}", local->refID);
+					ConsoleCommand::MoveToPlayer(localRefID);
+				}
+			} else {
+				ConsoleCommand::MoveToPlayer(refID);
+			}
+		}
+
+		if (ImGui::Button("Goto", ImVec2(button_width, button_height))) {
+			ConsoleCommand::MoveTo(refID);
+		}
+
+		if (ImGui::Button("Kill", ImVec2(button_width, button_height))) {
+			if (applyActionsToAll) {
+				for (auto& local : npcList) {
+					if (local->refID == selectedNPC->refID) {
+						continue;
+					}
+
+					const auto localRefID = std::format("{:08x}", local->refID);
+					ConsoleCommand::Kill(localRefID);
+				}
+			} else {
+				ConsoleCommand::Kill(refID);
+			}
+		}
+
+		if (ImGui::Button("Resurrect", ImVec2(button_width, button_height))) {
+			if (applyActionsToAll) {
+				for (auto& local : npcList) {
+					if (local->refID == selectedNPC->refID) {
+						continue;
+					}
+
+					const auto localRefID = std::format("{:08x}", local->refID);
+					ConsoleCommand::Resurrect(localRefID);
+				}
+			} else {
+				ConsoleCommand::Resurrect(refID);
+			}
+		}
+
+		if (ImGui::Button("Unequip All", ImVec2(button_width, button_height))) {
+			if (applyActionsToAll) {
+				for (auto& local : npcList) {
+					if (local->refID == selectedNPC->refID) {
+						continue;
+					}
+
+					const auto localRefID = std::format("{:08x}", local->refID);
+					ConsoleCommand::UnEquipAll(localRefID);
+				}
+			} else {
+				ConsoleCommand::UnEquipAll(refID);
+			}
+		}
+
+		if (ImGui::Button("Toggle Freeze", ImVec2(button_width, button_height))) {
+			ConsoleCommand::ToggleFreeze(refID);
+
+			if (applyActionsToAll) {
+				for (auto& local : npcList) {
+					if (local->refID == selectedNPC->refID) {
+						continue;
+					}
+
+					const auto localRefID = std::format("{:08x}", local->refID);
+					ConsoleCommand::ToggleFreeze(localRefID);
+				}
+			} else {
+				ConsoleCommand::ToggleFreeze(refID);
+			}
+		}
+
+		if (ImGui::Button("Save Reference", ImVec2(button_width, button_height))) {
+			//TODO: Implement saved references of unique actors (?)
+			// https://elderscrolls.fandom.com/wiki/Console_Commands_(Skyrim)/Characters
 		}
 	}
 
-	// if (ImGui::Button("Bring to Me", ImVec2(button_width, button_height))) {
-	// 	RE::FormID formid = selectedNPC->form->formID;
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-	// 	// Using shared_ptr since AddTask is async and we need
-	// 	// to ensure the vector is alive when we return to the main thread/
-	// 	auto references = std::make_shared<std::vector<RE::FormID>>();
+	auto* npc = selectedNPC->form->As<RE::TESNPC>();
 
-	// 	auto callback = [references]() {
-	// 		if (references->empty()) {
-	// 			return;
-	// 		}
-
-	// 		// TODO: Implement behavior for multiple references.
-	// 		for (auto ref : *references) {
-	// 			ConsoleCommand::MoveToPlayer(std::format("{:08x}", ref));
-	// 		}
-	// 	};
-
-	// 	SKSE::GetTaskInterface()->AddTask([references, formid, callback]() {
-	// 		auto process = RE::ProcessLists::GetSingleton();
-	// 		for (auto& handle : process->highActorHandles) {
-	// 			if (!handle.get() || !handle.get().get()) {
-	// 				continue;
-	// 			}
-
-	// 			auto actor = handle.get().get();
-	// 			auto base = actor->GetBaseObject()->GetFormID();
-	// 			auto ref = actor->GetFormID();
-
-	// 			// Find object with matching baseid, and store its reference
-	// 			// into the references vector.
-	// 			if (base == formid) {
-	// 				logger::info("Found reference: {:08x}", ref);
-	// 				references->push_back(ref);
-	// 			}
-	// 		}
-
-	// 		callback();  // Callback to main thread upon completion.
-	// 	});
-	// }
+	if (npc == nullptr) {
+		return;
+	}
 
 	if (ImGui::CollapsingHeader("NPC Skills")) {
 		const auto skills = npc->playerSkills;
