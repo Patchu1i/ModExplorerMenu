@@ -120,23 +120,12 @@ void NPCWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 			ImGui::EndCombo();
 		}
 
-		if (ImGui::Checkbox("Show Local NPCs Only", &showLocalsOnly)) {
-			PopulateListWithLocals();
-		}
+		ImGui::Checkbox("Click to Place", &b_clickToPlace);
+		ImGui::SameLine();
+		ImGui::Checkbox("Place Frozen", &b_placeFrozen);
+		ImGui::SameLine();
+		ImGui::Checkbox("Place Naked", &b_placeNaked);
 
-		ImGui::Unindent();
-		ImGui::NewLine();
-	}
-}
-
-void NPCWindow::ShowModSelection(Settings::Style& a_style, Settings::Config& a_config)
-{
-	(void)a_style;
-	(void)a_config;
-
-	if (ImGui::CollapsingHeader("Filter by Mod:")) {
-		ImGui::NewLine();
-		ImGui::Indent();
 		if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
 			if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 				selectedMod = "All Mods";
@@ -155,6 +144,7 @@ void NPCWindow::ShowModSelection(Settings::Style& a_style, Settings::Config& a_c
 			}
 			ImGui::EndCombo();
 		}
+
 		ImGui::Unindent();
 		ImGui::NewLine();
 	}

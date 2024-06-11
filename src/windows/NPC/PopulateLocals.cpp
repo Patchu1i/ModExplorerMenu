@@ -1,4 +1,5 @@
 #include "Window.h"
+#include <future>
 
 //TODO: Some poor data structure choices are showing here.
 //      Shouldn't need to reinstantiate an entire npc list

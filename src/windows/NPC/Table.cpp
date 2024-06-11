@@ -246,8 +246,21 @@ void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_conf
 					ImGui::PopFont();
 
 					if (ImGui::IsMouseClicked(0)) {
-						_itemSelected = true;
-						selectedNPC = npc;
+						if (b_clickToPlace) {
+							ConsoleCommand::PlaceAtMeNPC(npc->form->formID);
+							ConsoleCommand::PridLast();
+							if (b_placeFrozen) {
+								ConsoleCommand::ToggleFreeze(npc->formid, false);
+							}
+							if (b_placeNaked) {
+								ConsoleCommand::UnEquipAll(npc->formid, false);
+							}
+							_itemSelected = false;
+							selectedNPC = nullptr;
+						} else {
+							_itemSelected = true;
+							selectedNPC = npc;
+						}
 					}
 
 					// if (ImGui::IsMouseClicked(1, true)) {

@@ -10,7 +10,7 @@ void NPCWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 
 	// Left Column
 	ShowSearch(a_style, a_config);
-	ShowModSelection(a_style, a_config);
+	//ShowModSelection(a_style, a_config);
 	ShowAdvancedOptions(a_style, a_config);
 	ShowFormTable(a_style, a_config);
 

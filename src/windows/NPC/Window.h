@@ -15,6 +15,7 @@ public:
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedNPC* a_npc);
 	static void PopulateListWithLocals();
+	static std::shared_ptr<std::vector<RE::FormID>> GetRefID(RE::FormID a_targetBaseID);
 	static void ApplyFilters();
 	static void Init();
 
@@ -50,7 +51,9 @@ private:
 	static inline bool showLocalsOnly = false;
 	static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
 	static inline bool applyActionsToAll = false;
-	static inline bool placeFrozen = false;
+	static inline bool b_placeFrozen = false;
+	static inline bool b_clickToPlace = true;
+	static inline bool b_placeNaked = false;
 
 	// Search Input Field.
 	static inline const ImGuiTableSortSpecs* s_current_sort_specs;

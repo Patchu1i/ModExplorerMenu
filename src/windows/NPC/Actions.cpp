@@ -13,6 +13,10 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 	const float button_height = ImGui::GetFontSize() * 1.5f;
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
+	if (ImGui::Button("Riverwood", ImVec2(button_width, button_height))) {
+		ConsoleCommand::MoveTo("00013485");
+	}
+
 	if (!showLocalsOnly) {
 		if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
 			PopulateListWithLocals();
@@ -130,8 +134,6 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 		}
 
 		if (ImGui::Button("Toggle Freeze", ImVec2(button_width, button_height))) {
-			ConsoleCommand::ToggleFreeze(refID);
-
 			if (applyActionsToAll) {
 				for (auto& local : npcList) {
 					if (local->refID == selectedNPC->refID) {
