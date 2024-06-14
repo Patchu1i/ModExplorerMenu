@@ -247,14 +247,17 @@ void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_conf
 
 					if (ImGui::IsMouseClicked(0)) {
 						if (b_clickToPlace) {
-							ConsoleCommand::PlaceAtMeNPC(npc->form->formID);
+							ConsoleCommand::PlaceAtMeFormID(npc->form->formID);
 							ConsoleCommand::PridLast();
 							if (b_placeFrozen) {
-								ConsoleCommand::ToggleFreeze(npc->formid, false);
+								//ConsoleCommand::ToggleFreeze(npc->formid, false);
+								ConsoleCommand::Freeze();
 							}
 							if (b_placeNaked) {
-								ConsoleCommand::UnEquipAll(npc->formid, false);
+								//ConsoleCommand::UnEquipAll(npc->formid, false);
+								ConsoleCommand::UnEquip();
 							}
+							ConsoleCommand::StartProcessThread(false);
 							_itemSelected = false;
 							selectedNPC = nullptr;
 						} else {

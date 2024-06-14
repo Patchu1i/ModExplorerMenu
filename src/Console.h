@@ -13,19 +13,26 @@ public:
 
 	// Commands
 	static void AddItem(std::string a_itemFormID, int a_count = 1);
-
 	static void PlaceAtMe(std::string a_itemFormID, int a_count = 1);
-	static void PlaceAtMeNPC(RE::FormID a_npcBaseID);
+	static void PlaceAtMeFormID(RE::FormID a_npcBaseID, int a_count = 1);
 	static void PridLast();
-	static void MoveToPlayer(std::string a_targetRefID, bool prid = true);
-	static void MoveTo(std::string a_targetRefID);
-	static void Kill(std::string a_targetRefIDbool, bool prid = true);
-	static void Resurrect(std::string a_targetRefID, bool prid = true);
-	static void UnEquipAll(std::string a_targetRefID, bool prid = true);
-	static void ToggleFreeze(std::string a_targetRefID, bool prid = true);
+	static void MoveToREFR(std::string a_targetRefID);
+	static void MoveREFRToPlayer(std::string a_targetRefID);
+	static void KillREFR(std::string a_targetRefIDbool);
+	static void Kill();
+	static void ResurrectREFR(std::string a_targetRefID, int a_param = 1);
+	static void Resurrect(int a_param = 1);
+	static void UnEquipREFR(std::string a_targetRefID);
+	static void UnEquip();
+	static void FreezeREFR(std::string a_targetRefID);
+	static void Freeze();
 
 	// Multi-threaded command processing.
 	static inline std::string isWaitingFor;
+
+	static inline std::vector<RE::FormID> npcPlaceHistoryVector;
+	static inline std::unordered_set<RE::FormID> npcPlaceHistorySet;
+
 	static inline std::stack<std::string> commandHistory;
 	static inline std::deque<std::pair<std::string, std::chrono::milliseconds>> commandQueue;  // Main thread -> Process thread
 	static inline std::queue<std::function<void()>> taskQueue;                                 // Process thread -> Main thread
@@ -37,7 +44,7 @@ public:
 	static void AddToFront(std::string a_cmd, std::chrono::milliseconds a_delay);
 	static void WaitForLast();
 	static void ProcessMainThreadTasks();
-	static void StartProcessThread(bool unlock);
+	static void StartProcessThread(bool unlock = false);
 
 private:
 	ConsoleCommand() = delete;

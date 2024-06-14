@@ -1,31 +1,64 @@
 #include "Console.h"
 #include "Menu.h"
 
+// TODO: Clean up NPC History vector & set.
+
 std::mutex mtx;
+std::mutex tasks;
+
+// Get the FormID from a command string by parsing the second token.
+// @param cmd: Command string (e.g. prid ff0082fb).
+// TODO: Add exception if FormID not found in token.
+unsigned long GetFormFromCMD(std::string cmd)
+{
+	std::istringstream iss(cmd);
+	std::string token;
+	std::getline(iss, token, ' ');
+	std::getline(iss, token, ' ');
+	return std::stoul(token, nullptr, 16);
+}
+
+// Add NPC FormID to history vector and set.
+// @param a_ref: Reference FormID of the NPC.
+void AddNPCToHistory(RE::FormID a_ref)
+{
+	ConsoleCommand::npcPlaceHistoryVector.push_back(a_ref);
+	ConsoleCommand::npcPlaceHistorySet.insert(a_ref);
+}
+
+// Check if NPC FormID is in history set.
+// @param a_ref: Reference FormID of the NPC.
+bool IsNPCInHistory(RE::FormID a_ref)
+{
+	return ConsoleCommand::npcPlaceHistorySet.find(a_ref) != ConsoleCommand::npcPlaceHistorySet.end();
+}
+
+// Get the last NPC FormID from the history vector.
+// @return FormID of the last NPC.
+RE::FormID GetLastNPCReference()
+{
+	return ConsoleCommand::npcPlaceHistoryVector.back();
+}
 
 // Create, compile, and run a console command (script).
 // @param cmd: Command to be executed.
 // @note This function is called from the main thread.
 inline void ConsoleCommand::SendConsoleCommand(std::string cmd)
 {
+	auto references = std::make_shared<std::vector<RE::FormID>>();
 	// Intercept <prid_last> command for override.
 	if (cmd == "<prid_last>") {
 		if (commandHistory.empty()) {
-			throw std::runtime_error("No command history found");
+			stl::report_and_error("No command history found for <prid_last>.");
 		}
 
 		// Grab FormID from last command.
-		auto strlastCMD = commandHistory.top();
-		std::istringstream iss(strlastCMD);
-		std::getline(iss, strlastCMD, ' ');
-		std::getline(iss, strlastCMD, ' ');
-		logger::info("lastCMD: {}", strlastCMD);
-		auto lastID = RE::FormID(std::stoul(strlastCMD, nullptr, 16));
+		auto lastCommand = commandHistory.top();
+		auto lastID = RE::FormID(GetFormFromCMD(lastCommand));
 
 		// Iterate over nearby object references for match.
-		SKSE::GetTaskInterface()->AddTask([lastID]() {
+		SKSE::GetTaskInterface()->AddTask([references, lastID]() {
 			auto process = RE::ProcessLists::GetSingleton();
-			auto references = std::vector<RE::FormID>();
 
 			for (auto& handle : process->highActorHandles) {
 				if (!handle.get() || !handle.get().get()) {
@@ -37,21 +70,24 @@ inline void ConsoleCommand::SendConsoleCommand(std::string cmd)
 				auto ref = actor->GetFormID();
 
 				if (base == lastID) {
-					references.push_back(ref);
+					references->push_back(ref);
 				}
 			}
 
 			// Tell process thread that processing is open.
 			isLocked.store(false);
 
-			if (references.empty()) {
-				return;
+			if (references->empty()) {
+				stl::report_and_error("No matching references found using <prid_last>");
 			} else {
-				std::sort(references.begin(), references.end());
-				auto last = references.back();
+				for (auto ref : *references) {
+					if (!IsNPCInHistory(ref)) {
+						AddNPCToHistory(ref);
+					}
+				}
 
-				// std::sort to grab newest reference.
-				AddToFront("prid " + std::format("{:08x}", last), 0ms);
+				std::string cmd = "prid " + std::format("{:08x}", GetLastNPCReference());
+				AddToFront(cmd, 0ms);
 				StartProcessThread(true);
 			}
 		});
@@ -63,11 +99,20 @@ inline void ConsoleCommand::SendConsoleCommand(std::string cmd)
 	const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
 
 	if (script) {
+		auto queue = RE::UIMessageQueue::GetSingleton();
 		const auto consoleRef = RE::Console::GetSelectedRef();
-		script->SetCommand(cmd);
-		script->CompileAndRun(consoleRef.get());
-		logger::info("Script compiled {}", cmd);
+
+		if (queue) {
+			queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kShow, nullptr);
+			script->SetCommand(cmd);
+			script->CompileAndRun(consoleRef.get());
+			queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kHide, nullptr);
+		} else {
+			stl::report_and_fail("Failed to get UIMessageQueue singleton");
+		}
 		delete script;
+	} else {
+		stl::report_and_fail("Failed to create script using scriptFactory.");
 	}
 
 	commandHistory.push(cmd);
@@ -77,6 +122,7 @@ inline void ConsoleCommand::SendConsoleCommand(std::string cmd)
 // This executes functions in the task queue (FIFO).
 void ConsoleCommand::ProcessMainThreadTasks()
 {
+	std::lock_guard<std::mutex> lock(tasks);
 	if (!taskQueue.empty()) {
 		auto task = taskQueue.front();
 		if (task) {
@@ -93,7 +139,7 @@ void ConsoleCommand::ProcessMainThreadTasks()
 // the process thread "unlock" and continue processing the commandQueue.
 // (Note) Only one instance of this thread will run at a single time.
 // @param unlock: Unlock the process thread.
-void ConsoleCommand::StartProcessThread(bool unlock = false)
+void ConsoleCommand::StartProcessThread(bool unlock)
 {
 	if (isProcessing.load()) {
 		return;
@@ -102,7 +148,7 @@ void ConsoleCommand::StartProcessThread(bool unlock = false)
 	isProcessing.store(true);
 	processThread = std::thread([unlock]() {
 		while (true) {
-			std::pair<std::string, std::chrono::milliseconds> cmd;
+			auto cmd = std::shared_ptr<std::pair<std::string, std::chrono::milliseconds>>();
 			{
 				// Lock mutex for commandQueue access.
 				std::lock_guard<std::mutex> lock(mtx);
@@ -113,30 +159,27 @@ void ConsoleCommand::StartProcessThread(bool unlock = false)
 					break;
 				}
 
-				// Pop FILO command from commandQueue.
-				cmd = ConsoleCommand::commandQueue.front();
+				cmd = std::make_shared<std::pair<std::string, std::chrono::milliseconds>>(ConsoleCommand::commandQueue.front());
 
 				// Here we interrupt the process if we hit a <lock>.
 				// Expected behavior is to wait for <prid_last> to unlock.
 				// From the SKSETaskInterface call.
-				if (cmd.first == "<lock>") {
+				if (cmd->first == "<lock>") {
 					isProcessing.store(false);
 
 					if (unlock) {
 						ConsoleCommand::commandQueue.pop_front();
 					}
+
 					continue;
 				}
 
 				ConsoleCommand::commandQueue.pop_front();
 			}
 
-			// Optionally delay that may no longer be required.
-			std::this_thread::sleep_for(std::chrono::milliseconds(cmd.second));
-
 			// Send command as function to taskQueue on main thread.
 			taskQueue.push([cmd]() {
-				ConsoleCommand::SendConsoleCommand(cmd.first);
+				ConsoleCommand::SendConsoleCommand(cmd->first);
 			});
 		}
 	});
@@ -151,6 +194,7 @@ void ConsoleCommand::StartProcessThread(bool unlock = false)
 // @param a_delay: Delay in seconds before executing the command.
 void ConsoleCommand::AddToQueue(std::string a_cmd, std::chrono::milliseconds a_delay = 0ms)
 {
+	std::lock_guard<std::mutex> lock(mtx);
 	commandQueue.push_back(std::make_pair(a_cmd, a_delay));
 }
 
@@ -160,6 +204,7 @@ void ConsoleCommand::AddToQueue(std::string a_cmd, std::chrono::milliseconds a_d
 // @param a_delay: Delay in seconds before executing the command.
 void ConsoleCommand::AddToFront(std::string a_cmd, std::chrono::milliseconds a_delay)
 {
+	std::lock_guard<std::mutex> lock(mtx);
 	commandQueue.push_front(std::make_pair(a_cmd, a_delay));
 }
 
@@ -168,125 +213,108 @@ void ConsoleCommand::AddToFront(std::string a_cmd, std::chrono::milliseconds a_d
 // @param a_count: Count of the item.
 void ConsoleCommand::AddItem(std::string a_itemFormID, int a_count)
 {
-	std::string cmd = "player.additem " + a_itemFormID + " " + std::to_string(a_count);
-	AddToQueue(cmd, 0ms);
-	StartProcessThread();
+	AddToQueue("player.additem " + a_itemFormID + " " + std::to_string(a_count));
 }
 
 // Place a item at the player's location.
-// @param a_itemFormID: Base Form ID of the item.
-// @param a_count: Count of the item.
+// @param std::string a_itemFormID: Base Form ID of the item.
+// @param a_count: Count of objects
 void ConsoleCommand::PlaceAtMe(std::string a_itemFormID, int a_count)
 {
-	std::string cmd = "player.placeatme " + a_itemFormID + " " + std::to_string(a_count);
-	AddToQueue(cmd);
-	StartProcessThread();
+	AddToQueue("player.placeatme " + a_itemFormID + " " + std::to_string(a_count));
 }
 
 // Place an NPC at the player's location by its base FormID.
 // @param a_npcBaseID: Base Form ID of the NPC.
-// @param a_count: Count of the NPC.
-void ConsoleCommand::PlaceAtMeNPC(RE::FormID a_npcBaseID)
+// @param a_count: Count of objects
+void ConsoleCommand::PlaceAtMeFormID(RE::FormID a_npcBaseID, int a_count)
 {
-	auto s = std::format("{:08x}", a_npcBaseID);
-	AddToQueue("player.placeatme " + s + " 1");
-	StartProcessThread();
+	AddToQueue("player.placeatme " + std::format("{:08x}", a_npcBaseID) + " " + std::to_string(a_count));
 }
 
-// Fetch the last reference ID and set it as the console target reference.
+// Fetch the last spawned REFR ID and set it as the console target reference.
 void ConsoleCommand::PridLast()
 {
 	AddToQueue("<prid_last>");
 	AddToQueue("<lock>");
-	StartProcessThread();
 }
 
 // Move player to target reference id.
 // @param a_targetRefID: Reference FormID of the target.
-void ConsoleCommand::MoveTo(std::string a_targetRefID)
+void ConsoleCommand::MoveToREFR(std::string a_targetRefID)
 {
 	AddToQueue("player.moveto " + a_targetRefID);
-	StartProcessThread();
 }
 
 // Move target reference id to player.
 // @param a_targetRefID: Reference FormID of the target.
-// @param prid: Use prid command to set target reference.
-void ConsoleCommand::MoveToPlayer(std::string a_targetRefID, bool prid)
+void ConsoleCommand::MoveREFRToPlayer(std::string a_targetRefID)
 {
-	if (prid) {
-		auto const delay = 100ms;
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("moveto player", delay);
-	} else {
-		AddToQueue("moveto player " + a_targetRefID);
-	}
-
-	StartProcessThread();
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("moveto player");
 }
 
 // Kill target reference id.
 // @param a_targetRefID: Reference FormID of the target.
-// @param prid: Use prid command to set target reference.
-void ConsoleCommand::Kill(std::string a_targetRefID, bool prid)
+void ConsoleCommand::KillREFR(std::string a_targetRefID)
 {
-	if (prid) {
-		auto const delay = 100ms;
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("kill", delay);
-	} else {
-		AddToQueue("kill");
-	}
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("kill");
+}
 
-	StartProcessThread();
+// Kill selected reference or player.
+// @note Remember to call `ConsoleCommand::PridLast()`
+void ConsoleCommand::Kill()
+{
+	AddToQueue("kill");
 }
 
 // Resurrect target reference id.
 // @param a_targetRefID: Reference FormID of the target.
-// @param prid: Use prid command to set target reference.
-void ConsoleCommand::Resurrect(std::string a_targetRefID, bool prid)
+// @param a_param: Resurrect parameter <1, 2>
+// @note 1 = Resurect with items restored.
+// @note 0 = Remove corpse and create a fresh copy.
+void ConsoleCommand::ResurrectREFR(std::string a_targetRefID, int a_param)
 {
-	if (prid) {
-		auto const delay = 100ms;
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("resurrect 1", delay);
-	} else {
-		AddToQueue("resurrect 1");
-	}
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("resurrect " + std::to_string(a_param));
+}
 
-	StartProcessThread();
+// Ressurect selected reference (or restore inventory).
+// @note Remember to call `ConsoleCommand::PridLast()`
+void ConsoleCommand::Resurrect(int a_param)
+{
+	AddToQueue("resurrect " + std::to_string(a_param));
 }
 
 // Unequip all items from target reference id.
 // @param a_targetRefID: Reference FormID of the target.
-// @param prid: Use prid command to set target reference.
-void ConsoleCommand::UnEquipAll(std::string a_targetRefID, bool prid)
+void ConsoleCommand::UnEquipREFR(std::string a_targetRefID)
 {
-	if (prid) {
-		auto const delay = 100ms;
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("unequipall", delay);
-	} else {
-		AddToQueue("unequipall");
-	}
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("unequipall");
+}
 
-	StartProcessThread();
+// Unequip all equipped items for selected reference or player.
+// @note Remember to call `ConsoleCommand::PridLast()`
+void ConsoleCommand::UnEquip()
+{
+	AddToQueue("unequipall");
 }
 
 // Toggle AI for target reference id.
 // @param a_targetRefID: Reference FormID of the target.
-// @param prid: Use prid command to set target reference.
-void ConsoleCommand::ToggleFreeze(std::string a_targetRefID, bool prid)
+void ConsoleCommand::FreezeREFR(std::string a_targetRefID)
 {
-	if (prid) {
-		auto const delay = 100ms;
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("TAI", delay);
-	} else {
-		AddToQueue("TAI");
-	}
+	AddToQueue("prid " + a_targetRefID);
+	AddToQueue("TAI");
+}
 
-	StartProcessThread();
+// Toggle AI for selected reference or player.
+// @note Remember to call `ConsoleCommand::PridLast()`
+void ConsoleCommand::Freeze()
+{
+	AddToQueue("TAI");
 }
 
 // Callback definition for console command script.

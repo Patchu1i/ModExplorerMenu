@@ -14,7 +14,8 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 	const float button_width = ImGui::GetContentRegionAvail().x;
 
 	if (ImGui::Button("Riverwood", ImVec2(button_width, button_height))) {
-		ConsoleCommand::MoveTo("00013485");
+		ConsoleCommand::MoveToREFR("00013485");
+		ConsoleCommand::StartProcessThread();
 	}
 
 	if (!showLocalsOnly) {
@@ -76,16 +77,16 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 						continue;
 					}
 
-					const auto localRefID = std::format("{:08x}", local->refID);
-					ConsoleCommand::MoveToPlayer(localRefID);
+					//const auto localRefID = std::format("{:08x}", local->refID);
+					//ConsoleCommand::MoveToPlayer(localRefID);
 				}
 			} else {
-				ConsoleCommand::MoveToPlayer(refID);
+				//ConsoleCommand::MoveToPlayer(refID);
 			}
 		}
 
 		if (ImGui::Button("Goto", ImVec2(button_width, button_height))) {
-			ConsoleCommand::MoveTo(refID);
+			//ConsoleCommand::MoveTo(refID);
 		}
 
 		if (ImGui::Button("Kill", ImVec2(button_width, button_height))) {
@@ -95,11 +96,11 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 						continue;
 					}
 
-					const auto localRefID = std::format("{:08x}", local->refID);
-					ConsoleCommand::Kill(localRefID);
+					//const auto localRefID = std::format("{:08x}", local->refID);
+					//ConsoleCommand::Kill(localRefID);
 				}
 			} else {
-				ConsoleCommand::Kill(refID);
+				//ConsoleCommand::Kill(refID);
 			}
 		}
 
@@ -110,11 +111,11 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 						continue;
 					}
 
-					const auto localRefID = std::format("{:08x}", local->refID);
-					ConsoleCommand::Resurrect(localRefID);
+					//const auto localRefID = std::format("{:08x}", local->refID);
+					//ConsoleCommand::Resurrect(localRefID);
 				}
 			} else {
-				ConsoleCommand::Resurrect(refID);
+				//ConsoleCommand::Resurrect(refID);
 			}
 		}
 
@@ -125,11 +126,11 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 						continue;
 					}
 
-					const auto localRefID = std::format("{:08x}", local->refID);
-					ConsoleCommand::UnEquipAll(localRefID);
+					//const auto localRefID = std::format("{:08x}", local->refID);
+					//ConsoleCommand::UnEquipAll(localRefID);
 				}
 			} else {
-				ConsoleCommand::UnEquipAll(refID);
+				//ConsoleCommand::UnEquipAll(refID);
 			}
 		}
 
@@ -140,11 +141,11 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 						continue;
 					}
 
-					const auto localRefID = std::format("{:08x}", local->refID);
-					ConsoleCommand::ToggleFreeze(localRefID);
+					//const auto localRefID = std::format("{:08x}", local->refID);
+					//ConsoleCommand::ToggleFreeze(localRefID);
 				}
 			} else {
-				ConsoleCommand::ToggleFreeze(refID);
+				//ConsoleCommand::ToggleFreeze(refID);
 			}
 		}
 

@@ -411,8 +411,10 @@ void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_
 				// Shortcut Handlers
 				if (b_ClickToAdd && _itemSelected) {
 					ConsoleCommand::AddItem(item->formid.c_str(), clickToAddCount);
+					ConsoleCommand::StartProcessThread();
 				} else if (b_ClickToPlace && _itemSelected) {
 					ConsoleCommand::PlaceAtMe(item->formid.c_str(), clickToPlaceCount);
+					ConsoleCommand::StartProcessThread();
 				} else if (b_ClickToFavorite && _itemSelected) {
 					item->favorite = !item->favorite;
 				} else if (!b_ClickToAdd && _itemSelected) {
