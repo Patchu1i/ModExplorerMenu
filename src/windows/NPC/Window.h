@@ -15,6 +15,7 @@ public:
 	static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 	static void ShowItemCard(MEMData::CachedNPC* a_npc);
 	static void PopulateListWithLocals();
+	static void PopulateListWithSpawned();
 	static std::shared_ptr<std::vector<RE::FormID>> GetRefID(RE::FormID a_targetBaseID);
 	static void ApplyFilters();
 	static void Init();
@@ -45,10 +46,27 @@ private:
 		None,
 	};
 
+	enum State
+	{
+		showAll,
+		showLocal,
+		showSpawned
+	};
+
+	// State
+	static inline State currentState = showAll;
+	static void SetState(State newState)
+	{
+		currentState = newState;
+	}
+
+	static const State GetState()
+	{
+		return currentState;
+	}
+
 	static inline int column_count = ColumnID::None;
 
-	// Local actions
-	static inline bool showLocalsOnly = false;
 	static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
 	static inline bool applyActionsToAll = false;
 	static inline bool b_placeFrozen = false;

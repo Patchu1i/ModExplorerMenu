@@ -14,6 +14,36 @@ std::string GetEditorID(RE::FormID a_formID)
 	return {};
 }
 
+MEMData::CachedNPC* MEMData::CreateCachedNPC(RE::TESNPC* a_npc)
+{
+	auto form = a_npc->As<RE::TESForm>();
+	// CachedNPC npc = {
+	// 	.form = form,
+	// 	.plugin = form->GetFile()->fileName,
+	// 	.name = a_npc->GetFullName(),
+	// 	.formid = fmt::format("{:08x}", form->GetFormID()),
+	// 	.editorid = GetEditorID(form->GetFormID()),
+	// 	.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
+	// 	.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+	// 	.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
+	// 	.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+	// 	.skills = a_npc->playerSkills,
+	// 	.favorite = false
+	// };
+
+	return new CachedNPC({ .form = form,
+		.plugin = form->GetFile()->fileName,
+		.name = a_npc->GetFullName(),
+		.formid = fmt::format("{:08x}", form->GetFormID()),
+		.editorid = GetEditorID(form->GetFormID()),
+		.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
+		.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+		.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
+		.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+		.skills = a_npc->playerSkills,
+		.favorite = false });
+}
+
 template <class T>
 void MEMData::CacheNPCs(RE::TESDataHandler* a_data)
 {

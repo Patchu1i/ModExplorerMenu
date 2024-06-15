@@ -18,11 +18,17 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 		ConsoleCommand::StartProcessThread();
 	}
 
-	if (!showLocalsOnly) {
+	switch (currentState) {
+	case showAll:
 		if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
 			PopulateListWithLocals();
 		}
-	} else {
+		if (ImGui::Button("Show Spawned NPCs", ImVec2(button_width, button_height))) {
+			PopulateListWithSpawned();
+		}
+		break;
+	case showLocal:
+	case showSpawned:
 		if (ImGui::Button("Show All NPCs", ImVec2(button_width, button_height))) {
 			ApplyFilters();
 		}
@@ -66,94 +72,94 @@ void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config
 		ConsoleCommand::PlaceAtMe(selectedNPC->formid, 1);
 	}
 
-	if (showLocalsOnly) {
-		ImGui::Checkbox("Apply to All Nearby NPCS", &applyActionsToAll);
+	// if (showLocalsOnly) {
+	// 	ImGui::Checkbox("Apply to All Nearby NPCS", &applyActionsToAll);
 
-		const auto refID = std::format("{:08x}", selectedNPC->refID);
-		if (ImGui::Button("Bring", ImVec2(button_width, button_height))) {
-			if (applyActionsToAll) {
-				for (auto& local : npcList) {
-					if (local->refID == selectedNPC->refID) {
-						continue;
-					}
+	// 	const auto refID = std::format("{:08x}", selectedNPC->refID);
+	// 	if (ImGui::Button("Bring", ImVec2(button_width, button_height))) {
+	// 		if (applyActionsToAll) {
+	// 			for (auto& local : npcList) {
+	// 				if (local->refID == selectedNPC->refID) {
+	// 					continue;
+	// 				}
 
-					//const auto localRefID = std::format("{:08x}", local->refID);
-					//ConsoleCommand::MoveToPlayer(localRefID);
-				}
-			} else {
-				//ConsoleCommand::MoveToPlayer(refID);
-			}
-		}
+	// 				//const auto localRefID = std::format("{:08x}", local->refID);
+	// 				//ConsoleCommand::MoveToPlayer(localRefID);
+	// 			}
+	// 		} else {
+	// 			//ConsoleCommand::MoveToPlayer(refID);
+	// 		}
+	// 	}
 
-		if (ImGui::Button("Goto", ImVec2(button_width, button_height))) {
-			//ConsoleCommand::MoveTo(refID);
-		}
+	// 	if (ImGui::Button("Goto", ImVec2(button_width, button_height))) {
+	// 		//ConsoleCommand::MoveTo(refID);
+	// 	}
 
-		if (ImGui::Button("Kill", ImVec2(button_width, button_height))) {
-			if (applyActionsToAll) {
-				for (auto& local : npcList) {
-					if (local->refID == selectedNPC->refID) {
-						continue;
-					}
+	// 	if (ImGui::Button("Kill", ImVec2(button_width, button_height))) {
+	// 		if (applyActionsToAll) {
+	// 			for (auto& local : npcList) {
+	// 				if (local->refID == selectedNPC->refID) {
+	// 					continue;
+	// 				}
 
-					//const auto localRefID = std::format("{:08x}", local->refID);
-					//ConsoleCommand::Kill(localRefID);
-				}
-			} else {
-				//ConsoleCommand::Kill(refID);
-			}
-		}
+	// 				//const auto localRefID = std::format("{:08x}", local->refID);
+	// 				//ConsoleCommand::Kill(localRefID);
+	// 			}
+	// 		} else {
+	// 			//ConsoleCommand::Kill(refID);
+	// 		}
+	// 	}
 
-		if (ImGui::Button("Resurrect", ImVec2(button_width, button_height))) {
-			if (applyActionsToAll) {
-				for (auto& local : npcList) {
-					if (local->refID == selectedNPC->refID) {
-						continue;
-					}
+	// 	if (ImGui::Button("Resurrect", ImVec2(button_width, button_height))) {
+	// 		if (applyActionsToAll) {
+	// 			for (auto& local : npcList) {
+	// 				if (local->refID == selectedNPC->refID) {
+	// 					continue;
+	// 				}
 
-					//const auto localRefID = std::format("{:08x}", local->refID);
-					//ConsoleCommand::Resurrect(localRefID);
-				}
-			} else {
-				//ConsoleCommand::Resurrect(refID);
-			}
-		}
+	// 				//const auto localRefID = std::format("{:08x}", local->refID);
+	// 				//ConsoleCommand::Resurrect(localRefID);
+	// 			}
+	// 		} else {
+	// 			//ConsoleCommand::Resurrect(refID);
+	// 		}
+	// 	}
 
-		if (ImGui::Button("Unequip All", ImVec2(button_width, button_height))) {
-			if (applyActionsToAll) {
-				for (auto& local : npcList) {
-					if (local->refID == selectedNPC->refID) {
-						continue;
-					}
+	// 	if (ImGui::Button("Unequip All", ImVec2(button_width, button_height))) {
+	// 		if (applyActionsToAll) {
+	// 			for (auto& local : npcList) {
+	// 				if (local->refID == selectedNPC->refID) {
+	// 					continue;
+	// 				}
 
-					//const auto localRefID = std::format("{:08x}", local->refID);
-					//ConsoleCommand::UnEquipAll(localRefID);
-				}
-			} else {
-				//ConsoleCommand::UnEquipAll(refID);
-			}
-		}
+	// 				//const auto localRefID = std::format("{:08x}", local->refID);
+	// 				//ConsoleCommand::UnEquipAll(localRefID);
+	// 			}
+	// 		} else {
+	// 			//ConsoleCommand::UnEquipAll(refID);
+	// 		}
+	// 	}
 
-		if (ImGui::Button("Toggle Freeze", ImVec2(button_width, button_height))) {
-			if (applyActionsToAll) {
-				for (auto& local : npcList) {
-					if (local->refID == selectedNPC->refID) {
-						continue;
-					}
+	// 	if (ImGui::Button("Toggle Freeze", ImVec2(button_width, button_height))) {
+	// 		if (applyActionsToAll) {
+	// 			for (auto& local : npcList) {
+	// 				if (local->refID == selectedNPC->refID) {
+	// 					continue;
+	// 				}
 
-					//const auto localRefID = std::format("{:08x}", local->refID);
-					//ConsoleCommand::ToggleFreeze(localRefID);
-				}
-			} else {
-				//ConsoleCommand::ToggleFreeze(refID);
-			}
-		}
+	// 				//const auto localRefID = std::format("{:08x}", local->refID);
+	// 				//ConsoleCommand::ToggleFreeze(localRefID);
+	// 			}
+	// 		} else {
+	// 			//ConsoleCommand::ToggleFreeze(refID);
+	// 		}
+	// 	}
 
-		if (ImGui::Button("Save Reference", ImVec2(button_width, button_height))) {
-			//TODO: Implement saved references of unique actors (?)
-			// https://elderscrolls.fandom.com/wiki/Console_Commands_(Skyrim)/Characters
-		}
-	}
+	// 	if (ImGui::Button("Save Reference", ImVec2(button_width, button_height))) {
+	// 		//TODO: Implement saved references of unique actors (?)
+	// 		// https://elderscrolls.fandom.com/wiki/Console_Commands_(Skyrim)/Characters
+	// 	}
+	// }
 
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 

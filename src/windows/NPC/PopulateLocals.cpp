@@ -8,7 +8,7 @@
 
 void NPCWindow::PopulateListWithLocals()
 {
-	showLocalsOnly = true;  // TODO: Better state management.
+	SetState(showLocal);
 
 	auto references = std::make_shared<std::vector<RE::FormID>>();
 

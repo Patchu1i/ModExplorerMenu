@@ -5,9 +5,16 @@
 
 void NPCWindow::ApplyFilters()
 {
+	// Since these are manually allocated in PopulatedSpawned.cpp
+	if (GetState() == showSpawned) {
+		for (auto& npc : npcList) {
+			delete npc;
+		}
+	}
+
 	npcList.clear();
 
-	showLocalsOnly = false;
+	SetState(showAll);
 
 	selectedNPC = nullptr;
 

@@ -45,6 +45,8 @@ public:
 	static void WaitForLast();
 	static void ProcessMainThreadTasks();
 	static void StartProcessThread(bool unlock = false);
+	[[nodiscard]] static std::unordered_set<RE::FormID>* GetSpawnedActorsSet() { return &npcPlaceHistorySet; }
+	[[nodiscard]] static std::vector<RE::FormID>* GetSpawnedActorsVector() { return &npcPlaceHistoryVector; }
 
 private:
 	ConsoleCommand() = delete;

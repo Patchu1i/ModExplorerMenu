@@ -60,6 +60,8 @@ public:
 		bool favorite;
 	};
 
+	static CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc);
+
 	[[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
 	{
 		return _modList;
