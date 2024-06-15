@@ -1,6 +1,10 @@
 #include "Data.h"
 #include "Utils/Worldspace.h"
 
+// Saving this for later:
+// 		auto forms = RE::TESForm::GetAllForms();
+// 		for (auto iter = forms.first->begin(); iter != forms.first->end(); ++iter) {
+
 // https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
 using _GetFormEditorID = const char* (*)(std::uint32_t);
 
@@ -17,20 +21,6 @@ std::string GetEditorID(RE::FormID a_formID)
 MEMData::CachedNPC* MEMData::CreateCachedNPC(RE::TESNPC* a_npc)
 {
 	auto form = a_npc->As<RE::TESForm>();
-	// CachedNPC npc = {
-	// 	.form = form,
-	// 	.plugin = form->GetFile()->fileName,
-	// 	.name = a_npc->GetFullName(),
-	// 	.formid = fmt::format("{:08x}", form->GetFormID()),
-	// 	.editorid = GetEditorID(form->GetFormID()),
-	// 	.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
-	// 	.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-	// 	.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
-	// 	.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-	// 	.skills = a_npc->playerSkills,
-	// 	.favorite = false
-	// };
-
 	return new CachedNPC({ .form = form,
 		.plugin = form->GetFile()->fileName,
 		.name = a_npc->GetFullName(),
@@ -50,10 +40,15 @@ void MEMData::CacheNPCs(RE::TESDataHandler* a_data)
 	for (auto form : a_data->GetFormArray<T>()) {
 		RE::TESNPC* npc = form->As<RE::TESNPC>();
 		RE::TESNPC::Skills skills = npc->playerSkills;
+		auto mod = form->GetFile();
+
+		if (npc->IsPlayerRef()) {
+			continue;
+		}
 
 		CachedNPC _npc = {
 			.form = form,
-			.plugin = form->GetFile()->fileName,
+			.plugin = mod->fileName,
 			.name = form->GetFullName(),
 			.formid = fmt::format("{:08x}", form->GetFormID()),
 			.editorid = GetEditorID(form->GetFormID()),
@@ -66,6 +61,11 @@ void MEMData::CacheNPCs(RE::TESDataHandler* a_data)
 		};
 
 		_npcCache.push_back(_npc);
+
+		//Add mod file to list.
+		if (!_modList.contains(mod)) {
+			_modList.insert(mod);
+		}
 	}
 }
 
@@ -80,26 +80,11 @@ void MEMData::CacheItems(RE::TESDataHandler* a_data)
 		RE::FormType formType = form->GetFormType();
 		std::string typeName = static_cast<std::string>(RE::FormTypeToString(formType));
 		float weight = form->GetWeight();
+		auto goldValue = form->GetGoldValue();
 
-		std::int32_t goldValue = 0;
 		bool non_playable = false;
-
-		//logger::info("FormType: {}", typeName);
-
-		if (formType == RE::FormType::NPC) {
-			auto npc = form->As<RE::TESNPC>();
-			if (npc->IsPlayerRef()) {
-				continue;
-			}
-
-			// TODO: Implement NPC Cache
-			// Probably have to do this outside of item cache.
-		} else {
-			goldValue = form->GetGoldValue();
-
-			if (formType == RE::FormType::Weapon) {
-				non_playable = form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
-			}
+		if (formType == RE::FormType::Weapon) {
+			non_playable = form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
 		}
 
 		RE::TESFile* mod = form->GetFile();
@@ -186,12 +171,9 @@ void MEMData::Run()
 	CacheItems<RE::IngredientItem>(dataHandler);
 	CacheItems<RE::TESKey>(dataHandler);
 
-	// TODO: Implement NPC
 	CacheNPCs<RE::TESNPC>(dataHandler);
 
-	// TODO: Implement Cells
 	WorldspaceCells cells;
-
 	for (const auto& cell : cells.table) {
 		const auto& [_plugin, space, place, name, editorid] = cell;
 		std::string plugin = _plugin + ".esm";

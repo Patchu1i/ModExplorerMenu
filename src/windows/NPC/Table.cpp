@@ -63,6 +63,25 @@ bool NPCWindow::SortColumns(const MEMData::CachedNPC* v1, const MEMData::CachedN
 	case EditorID:  // std::string
 		delta = strcmp(v1->editorid.c_str(), v2->editorid.c_str());
 		break;
+	case Health:  // float
+		delta = (v1->health < v2->health) ? -1 : (v1->health > v2->health) ? 1 :
+		                                                                     0;
+		break;
+	case Magicka:  // float
+		delta = (v1->magicka < v2->magicka) ? -1 : (v1->magicka > v2->magicka) ? 1 :
+		                                                                         0;
+		break;
+	case Stamina:  // float
+		delta = (v1->stamina < v2->stamina) ? -1 : (v1->stamina > v2->stamina) ? 1 :
+		                                                                         0;
+		break;
+	case CarryWeight:  // float
+		delta = (v1->carryweight < v2->carryweight) ? -1 : (v1->carryweight > v2->carryweight) ? 1 :
+		                                                                                         0;
+		break;
+	case Plugin:  // std::string
+		delta = strcmp(v1->plugin.c_str(), v2->plugin.c_str());
+		break;
 	default:
 		break;
 	}
@@ -83,6 +102,7 @@ void NPCWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
 	s_current_sort_specs = sort_specs;
 	if (npcList.size() > 1)
 		std::sort(npcList.begin(), npcList.end(), SortColumns);
+
 	s_current_sort_specs = NULL;
 }
 
@@ -157,7 +177,7 @@ void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_conf
 		// Sort our data if sort specs have been changed!
 		if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 			if (sort_specs->SpecsDirty) {
-				// SortColumnsWithSpecs(sort_specs);
+				SortColumnsWithSpecs(sort_specs);
 				sort_specs->SpecsDirty = false;
 				dirty = false;
 			}

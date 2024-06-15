@@ -5,6 +5,15 @@
 namespace ImGui
 {
 
+	inline static bool DisabledButton(const char* label, bool& disabled, const ImVec2& size = ImVec2(0, 0))
+	{
+		float alpha = disabled ? 1.0f : 0.5f;
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+		auto result = ImGui::Button(label, size);
+		ImGui::PopStyleVar();
+		return result;
+	}
+
 	inline static bool InlineCheckbox(const char* label, bool* v)
 	{
 		bool changed = false;
@@ -24,6 +33,16 @@ namespace ImGui
 	inline static void SetDelayedTooltip(const char* text, float delay = 1.0f)
 	{
 		if (ImGui::IsItemHovered() && GImGui->HoveredIdTimer > delay) {
+			if (ImGui::BeginTooltip()) {
+				ImGui::Text(text);
+				ImGui::EndTooltip();
+			}
+		}
+	}
+
+	inline static void SetQuickTooltip(const char* text)
+	{
+		if (ImGui::IsItemHovered()) {
 			if (ImGui::BeginTooltip()) {
 				ImGui::Text(text);
 				ImGui::EndTooltip();

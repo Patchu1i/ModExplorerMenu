@@ -3,23 +3,23 @@
 #include "Utils/Util.h"
 #include "Window.h"
 
+// Populate list with NPCs according to filters & search results.
+// Will set state to `showAll` and delete any existing CachedNPC objects.
+// TODO: Find alternatives to C style comparison and copying.
 void NPCWindow::ApplyFilters()
 {
-	// Since these are manually allocated in PopulatedSpawned.cpp
-	if (GetState() == showSpawned) {
+	// Since these are manually allocated, we need to delete them.
+	if (GetState() == showSpawned || GetState() == showLocal) {
 		for (auto& npc : npcList) {
 			delete npc;
 		}
 	}
 
-	npcList.clear();
-
 	SetState(showAll);
-
+	npcList.clear();
 	selectedNPC = nullptr;
 
 	auto& cached_item_list = MEMData::GetNPCList();
-
 	char compare[256];
 	char input[256];
 
@@ -194,23 +194,6 @@ void NPCWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& 
 			ImGui::PopStyleVar(1);
 			ImGui::TreePop();
 		}
-
-		// DEPRECATED:: Moved to Plot window.
-		// if (ImGui::CollapsingHeader("(Beta) Plot & Histogram:", flags)) {
-		// 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-		// 	ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-		// 	const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x / 3, ImGui::GetFontSize() * 1.15f);
-
-		// 	ImGui::HelpMarker(
-		// 		"Regenerate the list of cached forms from the game. This should only ever be needed if runtime changes are made.\n\n"
-		// 		"(WARNING): This will take a second or two to complete and will freeze your game in doing so.");
-		// 	if (ImGui::Button("Regenerate Cache", button_size)) {
-		// 		MEMData::GetSingleton()->Run();
-		// 		ApplyFilters();
-		// 	}
-		// 	ImGui::PopStyleColor(1);
-		// 	ImGui::PopStyleVar(1);
-		// }
 
 		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(1);

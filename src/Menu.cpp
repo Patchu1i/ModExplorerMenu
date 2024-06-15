@@ -25,10 +25,6 @@ void Menu::Draw()
 
 	Frame::Draw(is_settings_popped);
 
-	// if (is_settings_popped) {
-	// 	SettingsWindow::DrawPopped();
-	// }
-
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
