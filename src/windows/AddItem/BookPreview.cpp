@@ -16,8 +16,8 @@ namespace ModExplorerMenu
 			desc->GetDescription(buf, nullptr);
 			std::string bufStr = std::string(buf);
 			Utils::RemoveHTMLTags(bufStr);
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize(openBook->GetName().c_str()).x * 0.5f);
-			ImGui::Text(openBook->GetName().c_str());
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize(openBook->GetName().data()).x * 0.5f);
+			ImGui::Text(openBook->GetName().data());
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			ImGui::TextWrapped(bufStr.c_str());
 		}

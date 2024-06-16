@@ -19,14 +19,14 @@ namespace ModExplorerMenu
 
 		if (ImGui::Selectable("Copy Name", false, flags)) {
 			ImGui::LogToClipboard();
-			ImGui::LogText(a_item.GetName().c_str());
+			ImGui::LogText(a_item.GetName().data());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
 		if (ImGui::Selectable("Copy Editor ID", false, flags)) {
 			ImGui::LogToClipboard();
-			ImGui::LogText(a_item.GetEditorID().c_str());
+			ImGui::LogText(a_item.GetEditorID().data());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
@@ -315,12 +315,12 @@ namespace ModExplorerMenu
 
 					// Item Name
 					ImGui::TableNextColumn();
-					ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->GetName().c_str()));
-					ImGui::Text(item->GetName().c_str());
+					ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->GetName().data()));
+					ImGui::Text(item->GetName().data());
 
 					// Editor ID
 					ImGui::TableNextColumn();
-					ImGui::Text(item->GetEditorID().c_str());
+					ImGui::Text(item->GetEditorID().data());
 
 					// Gold Value
 					ImGui::TableNextColumn();

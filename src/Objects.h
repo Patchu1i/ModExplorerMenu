@@ -15,21 +15,25 @@ namespace ModExplorerMenu
 		return {};
 	}
 
-	class BaseItem
+	class Base
 	{
 	public:
 		RE::TESForm* TESForm;  // cannot be const
 		const RE::FormID FormID;
 		const RE::TESFile* TESFile;
 
+		const std::string name = TESForm->GetName();
+		const std::string editorid = GetEditorIDString(FormID);
+		const std::string filename = TESFile->fileName;
+
 		bool favorite = false;
 		bool selected = false;
 
-		[[nodiscard]] inline std::string GetName() const { return TESForm->GetName(); }
-		[[nodiscard]] inline RE::FormID GetBaseForm() const { return FormID; }
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
-		[[nodiscard]] inline std::string GetEditorID() const { return GetEditorIDString(TESForm->GetFormID()); }
-		[[nodiscard]] inline std::string GetPluginName() const { return TESFile->fileName; }
+		[[nodiscard]] inline std::string_view GetName() const { return name; }
+		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
+		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
+		[[nodiscard]] inline RE::FormID GetBaseForm() const { return FormID; }
 		[[nodiscard]] inline RE::FormType GetFormType() const { return TESForm->GetFormType(); }
 		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
 		[[nodiscard]] inline bool IsSelected() const { return selected; }
@@ -40,7 +44,7 @@ namespace ModExplorerMenu
 		}
 	};
 
-	class Item : public BaseItem
+	class Item : public Base
 	{
 	public:
 		[[nodiscard]] inline float GetWeight() const { return TESForm->GetWeight(); }
@@ -62,6 +66,33 @@ namespace ModExplorerMenu
 			};
 		}
 	};
+
+	class NPC : public Base
+	{
+	public:
+		[[nodiscard]] inline float GetHealth() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kHealth); }
+		[[nodiscard]] inline float GetMagicka() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kMagicka); }
+		[[nodiscard]] inline float GetStamina() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kStamina); }
+		[[nodiscard]] inline float GetCarryWeight() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kCarryWeight); }
+
+		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const { return TESForm->As<RE::TESNPC>()->playerSkills; }
+	};
+
+	// 	RE::TESForm* form;
+	// RE::FormID refID;
+	// std::string plugin;
+	// std::string name;
+	// std::string formid;
+	// std::string editorid;
+
+	// float health;
+	// float magicka;
+	// float stamina;
+	// float carryweight;
+
+	// RE::TESNPC::Skills skills;
+
+	// bool favorite;
 
 	class Cell
 	{

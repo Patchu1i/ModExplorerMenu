@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_set>
 
-
 using MEMMap = std::multimap<std::string, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>>;
 
 namespace ModExplorerMenu
@@ -65,7 +64,7 @@ namespace ModExplorerMenu
 			bool favorite;
 		};
 
-		static CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc);
+		static NPC* CreateCachedNPC(RE::TESNPC* a_npc);
 
 		[[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
 		{
@@ -87,7 +86,7 @@ namespace ModExplorerMenu
 
 		static inline std::vector<Item> _cache;
 		static inline std::vector<CachedCell> _cellCache;
-		static inline std::vector<CachedNPC> _npcCache;
+		static inline std::vector<NPC> _npcCache;
 		static inline std::unordered_set<RE::TESFile*> _modList;
 
 		void CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_map);
@@ -115,7 +114,7 @@ namespace ModExplorerMenu
 			return _cache;
 		}
 
-		[[nodiscard]] static inline std::vector<CachedNPC>& GetNPCList()
+		[[nodiscard]] static inline std::vector<NPC>& GetNPCList()
 		{
 			return _npcCache;
 		}

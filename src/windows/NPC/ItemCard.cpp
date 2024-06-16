@@ -6,7 +6,7 @@ namespace ModExplorerMenu
 {
 	// FIXME: Width get's messed up on ultra long titles.
 	// TODO: Add more details to other items.
-	void NPCWindow::ShowItemCard(Data::CachedNPC* a_npc)
+	void NPCWindow::ShowItemCard(NPC* a_npc)
 	{
 		//ImGui::SetNextWindowSize(ImVec2(10, 10));
 		if (ImGui::BeginTooltip()) {
@@ -52,28 +52,28 @@ namespace ModExplorerMenu
 			}
 
 			// Header
-			const auto name = a_npc->name;
-			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.c_str()));
-			ImGui::Text(name.c_str());
+			const auto name = a_npc->GetName();
+			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.data()));
+			ImGui::Text(name.data());
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-			if (a_npc->form->formType == RE::FormType::NPC) {
-				auto* npc = a_npc->form->As<RE::TESNPC>();
+			if (a_npc->GetFormType() == RE::FormType::NPC) {
+				auto* npc = a_npc->TESForm->As<RE::TESNPC>();
 
 				if (npc == nullptr) {
 					ImGui::EndTooltip();
 					return;
 				}
 
-				const float health = a_npc->health;
-				const float magicka = a_npc->magicka;
-				const float stamina = a_npc->stamina;
-				const float carryweight = a_npc->carryweight;
+				// const float health = a_npc->health;
+				// const float magicka = a_npc->magicka;
+				// const float stamina = a_npc->stamina;
+				// const float carryweight = a_npc->carryweight;
 
-				InlineBar("Health:", health, 100);
-				InlineBar("Magicka:", magicka, 100);
-				InlineBar("Stamina:", stamina, 100);
-				InlineBar("Carry Weight:", carryweight, 100);
+				InlineBar("Health:", a_npc->GetHealth(), 100);
+				InlineBar("Magicka:", a_npc->GetMagicka(), 100);
+				InlineBar("Stamina:", a_npc->GetStamina(), 100);
+				InlineBar("Carry Weight:", a_npc->GetCarryWeight(), 100);
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			}

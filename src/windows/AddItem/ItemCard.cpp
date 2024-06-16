@@ -54,8 +54,8 @@ namespace ModExplorerMenu
 			}
 
 			// Header
-			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->GetName().c_str()));
-			ImGui::Text(item->GetName().c_str());
+			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(item->GetName().data()));
+			ImGui::Text(item->GetName().data());
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 			if (formType == RE::FormType::Armor) {

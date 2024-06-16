@@ -27,7 +27,7 @@ namespace ModExplorerMenu
 
 			for (auto& item : itemList) {
 				if (item->selected) {
-					if (ImGui::Selectable(item->GetName().c_str(), false, ImGuiSelectableFlags_SpanAllColumns)) {
+					if (ImGui::Selectable(item->GetName().data(), false, ImGuiSelectableFlags_SpanAllColumns)) {
 						item->selected = false;
 					};
 					ImGui::SetDelayedTooltip("Click to remove.");

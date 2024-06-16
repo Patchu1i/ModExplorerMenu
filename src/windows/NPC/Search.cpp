@@ -22,67 +22,43 @@ namespace ModExplorerMenu
 		selectedNPC = nullptr;
 
 		auto& cached_item_list = Data::GetNPCList();
-		char compare[256];
-		char input[256];
 
-		strncpy(input, inputBuffer, sizeof(input) - 1);
+		std::string compare;
+		std::string input = inputBuffer;
+		std::transform(input.begin(), input.end(), input.begin(),
+			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		bool skip = false;
+		//std::transform(input.begin(), input.end(), input.begin(), ::tolower);
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
+			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
+				continue;
+
+			if (item.GetName() == "")  // skip empty names
+				continue;
+
 			switch (searchKey) {
 			case Name:
-				strncpy(compare, item.name.c_str(), sizeof(compare) - 1);
+				compare = item.GetName();
 				break;
 			case FormID:
-				strncpy(compare, item.formid.c_str(), sizeof(compare) - 1);
+				compare = item.GetFormID();
 				break;
 			case EditorID:
-				strncpy(compare, item.editorid.c_str(), sizeof(compare) - 1);
-				break;
-			case None:
-				skip = true;
+				compare = item.GetEditorID();
 				break;
 			default:
-				strncpy(compare, item.name.c_str(), sizeof(compare) - 1);
+				compare = item.GetName();
 				break;
 			}
 
-			if (selectedMod != "All Mods" && item.plugin != selectedMod)  // inactive mods
-				continue;
+			// Will probably need to revisit this during localization. :(
+			std::transform(compare.begin(), compare.end(), compare.begin(),
+				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-			if (item.name == "")  // skip empty names
-				continue;
-
-			auto lower_compare = strlwr(compare);
-
-			if (strstr(lower_compare, input) != nullptr) {
+			if (compare.find(input) != std::string::npos) {
 				npcList.push_back(&item);
-				continue;
-			}
-
-			if (skip) {
-				char _name[256];
-				char _editorid[256];
-				char _formid[256];
-
-				strcpy(_name, item.name.c_str());
-				strcpy(_editorid, item.editorid.c_str());
-				strcpy(_formid, item.formid.c_str());
-
-				strlwr(_name);
-				strlwr(_editorid);
-				strlwr(_formid);
-
-				if (strstr(_name, input) != nullptr) {
-					npcList.push_back(&item);
-				} else if (strstr(_editorid, input) != nullptr) {
-					npcList.push_back(&item);
-				} else if (strstr(_formid, input) != nullptr) {
-					npcList.push_back(&item);
-				}
-
 				continue;
 			}
 		}

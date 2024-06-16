@@ -72,7 +72,7 @@ namespace ModExplorerMenu
 		};
 
 		if (ImGui::Button("Place as New", ImVec2(button_width, button_height))) {
-			Console::PlaceAtMe(selectedNPC->formid, 1);
+			Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
 		}
 
 		// if (showLocalsOnly) {
@@ -166,14 +166,14 @@ namespace ModExplorerMenu
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		auto* npc = selectedNPC->form->As<RE::TESNPC>();
+		auto* npc = selectedNPC->TESForm->As<RE::TESNPC>();
 
 		if (npc == nullptr) {
 			return;
 		}
 
 		if (ImGui::CollapsingHeader("NPC Skills")) {
-			const auto skills = npc->playerSkills;
+			const auto skills = selectedNPC->GetSkills();
 			const auto skillNames = Utils::GetSkillNames();
 			for (int i = 0; i < 18; i++) {
 				const auto skillName = skillNames[i];

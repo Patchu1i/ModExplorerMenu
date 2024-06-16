@@ -43,7 +43,7 @@
 
 namespace ModExplorerMenu
 {
-	bool NPCWindow::SortColumns(const Data::CachedNPC* v1, const Data::CachedNPC* v2)
+	bool NPCWindow::SortColumns(const NPC* v1, const NPC* v2)
 	{
 		const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
 		const ImGuiID ID = sort_specs->Specs->ColumnUserID;
@@ -57,32 +57,32 @@ namespace ModExplorerMenu
 			                                                                             0;
 			break;
 		case FormID:  // std::string
-			delta = strcmp(v1->formid.c_str(), v2->formid.c_str());
+			delta = v1->GetFormID().compare(v2->GetFormID());
 			break;
 		case Name:  // const char *
-			delta = strcmp(v1->name.c_str(), v2->name.c_str());
+			delta = v1->GetName().compare(v2->GetName());
 			break;
 		case EditorID:  // std::string
-			delta = strcmp(v1->editorid.c_str(), v2->editorid.c_str());
+			delta = v1->GetEditorID().compare(v2->GetEditorID());
 			break;
 		case Health:  // float
-			delta = (v1->health < v2->health) ? -1 : (v1->health > v2->health) ? 1 :
-			                                                                     0;
-			break;
-		case Magicka:  // float
-			delta = (v1->magicka < v2->magicka) ? -1 : (v1->magicka > v2->magicka) ? 1 :
-			                                                                         0;
-			break;
-		case Stamina:  // float
-			delta = (v1->stamina < v2->stamina) ? -1 : (v1->stamina > v2->stamina) ? 1 :
-			                                                                         0;
-			break;
-		case CarryWeight:  // float
-			delta = (v1->carryweight < v2->carryweight) ? -1 : (v1->carryweight > v2->carryweight) ? 1 :
+			delta = (v1->GetHealth() < v2->GetHealth()) ? -1 : (v1->GetHealth() > v2->GetHealth()) ? 1 :
 			                                                                                         0;
 			break;
+		case Magicka:  // float
+			delta = (v1->GetMagicka() < v2->GetMagicka()) ? -1 : (v1->GetMagicka() > v2->GetMagicka()) ? 1 :
+			                                                                                             0;
+			break;
+		case Stamina:  // float
+			delta = (v1->GetStamina() < v2->GetStamina()) ? -1 : (v1->GetStamina() > v2->GetStamina()) ? 1 :
+			                                                                                             0;
+			break;
+		case CarryWeight:  // float
+			delta = (v1->GetCarryWeight() < v2->GetCarryWeight()) ? -1 : (v1->GetCarryWeight() > v2->GetCarryWeight()) ? 1 :
+			                                                                                                             0;
+			break;
 		case Plugin:  // std::string
-			delta = strcmp(v1->plugin.c_str(), v2->plugin.c_str());
+			delta = v1->GetPluginName().compare(v2->GetPluginName());
 			break;
 		default:
 			break;
@@ -226,38 +226,38 @@ namespace ModExplorerMenu
 
 					// Form ID
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->formid.c_str());
+					ImGui::Text(npc->GetFormID().c_str());
 
 					//	Plugin
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->plugin.c_str());
+					ImGui::Text(npc->GetPluginName().data());
 
 					// Item Name
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->name.c_str());
+					ImGui::Text(npc->GetName().data());
 
 					// Editor ID
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->editorid.c_str());
+					ImGui::Text(npc->GetEditorID().data());
 
 					// Health
 					ImGui::TableNextColumn();
-					const auto health = std::format("{:.0f}", npc->health);
+					const auto health = std::format("{:.0f}", npc->GetHealth());
 					ImGui::Text(health.c_str());
 
 					// Magicka
 					ImGui::TableNextColumn();
-					const auto magicka = std::format("{:.0f}", npc->magicka);
+					const auto magicka = std::format("{:.0f}", npc->GetMagicka());
 					ImGui::Text(magicka.c_str());
 
 					// Stamina
 					ImGui::TableNextColumn();
-					const auto stamina = std::format("{:.0f}", npc->stamina);
+					const auto stamina = std::format("{:.0f}", npc->GetStamina());
 					ImGui::Text(stamina.c_str());
 
 					// Carry Weight
 					ImGui::TableNextColumn();
-					const auto carry = std::format("{:.0f}", npc->carryweight);
+					const auto carry = std::format("{:.0f}", npc->GetCarryWeight());
 					ImGui::Text(carry.c_str());
 
 					// Input Handlers
@@ -269,7 +269,7 @@ namespace ModExplorerMenu
 
 						if (ImGui::IsMouseClicked(0)) {
 							if (b_clickToPlace) {
-								Console::PlaceAtMeFormID(npc->form->formID);
+								Console::PlaceAtMeFormID(npc->GetBaseForm());
 								Console::PridLast();
 								if (b_placeFrozen) {
 									//ConsoleCommand::ToggleFreeze(npc->formid, false);

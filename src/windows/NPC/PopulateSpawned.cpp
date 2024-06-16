@@ -10,7 +10,7 @@ namespace ModExplorerMenu
 		SetState(showSpawned);
 		npcList.clear();
 
-		std::vector<Data::CachedNPC*> cached_search;
+		std::vector<NPC*> cached_search;
 		for (auto& npc : Data::GetNPCList()) {
 			cached_search.push_back(&npc);
 		}

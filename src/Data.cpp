@@ -20,49 +20,55 @@ namespace ModExplorerMenu
 		return {};
 	}
 
-	Data::CachedNPC* Data::CreateCachedNPC(RE::TESNPC* a_npc)
+	NPC* Data::CreateCachedNPC(RE::TESNPC* a_npc)
 	{
 		auto form = a_npc->As<RE::TESForm>();
-		return new CachedNPC({ .form = form,
-			.plugin = form->GetFile()->fileName,
-			.name = a_npc->GetFullName(),
-			.formid = fmt::format("{:08x}", form->GetFormID()),
-			.editorid = GetEditorID(form->GetFormID()),
-			.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
-			.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-			.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
-			.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-			.skills = a_npc->playerSkills,
-			.favorite = false });
+		return new NPC({ form,
+			form->GetFormID(),
+			form->GetFile() });
+		// return new CachedNPC({ .form = form,
+		// 	.plugin = form->GetFile()->fileName,
+		// 	.name = a_npc->GetFullName(),
+		// 	.formid = fmt::format("{:08x}", form->GetFormID()),
+		// 	.editorid = GetEditorID(form->GetFormID()),
+		// 	.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
+		// 	.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+		// 	.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
+		// 	.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+		// 	.skills = a_npc->playerSkills,
+		// 	.favorite = false });
 	}
 
 	template <class T>
 	void Data::CacheNPCs(RE::TESDataHandler* a_data)
 	{
-		for (auto form : a_data->GetFormArray<T>()) {
+		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::TESNPC* npc = form->As<RE::TESNPC>();
-			RE::TESNPC::Skills skills = npc->playerSkills;
-			auto mod = form->GetFile();
+			RE::TESFile* mod = form->GetFile();
+
+			RE::FormID formid = form->GetFormID();
 
 			if (npc->IsPlayerRef()) {
 				continue;
 			}
 
-			CachedNPC _npc = {
-				.form = form,
-				.plugin = mod->fileName,
-				.name = form->GetFullName(),
-				.formid = fmt::format("{:08x}", form->GetFormID()),
-				.editorid = GetEditorID(form->GetFormID()),
-				.health = npc->GetBaseActorValue(RE::ActorValue::kHealth),
-				.magicka = npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-				.stamina = npc->GetBaseActorValue(RE::ActorValue::kStamina),
-				.carryweight = npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-				.skills = npc->playerSkills,
-				.favorite = false
-			};
+			_npcCache.push_back({ form, formid, mod });
 
-			_npcCache.push_back(_npc);
+			// item _npc = {
+			// 	.form = form,
+			// 	.plugin = mod->fileName,
+			// 	.name = form->GetFullName(),
+			// 	.formid = fmt::format("{:08x}", form->GetFormID()),
+			// 	.editorid = GetEditorID(form->GetFormID()),
+			// 	.health = npc->GetBaseActorValue(RE::ActorValue::kHealth),
+			// 	.magicka = npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+			// 	.stamina = npc->GetBaseActorValue(RE::ActorValue::kStamina),
+			// 	.carryweight = npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+			// 	.skills = npc->playerSkills,
+			// 	.favorite = false
+			// };
+
+			// _npcCache.push_back(_npc);
 
 			//Add mod file to list.
 			if (!_modList.contains(mod)) {
@@ -74,24 +80,11 @@ namespace ModExplorerMenu
 	template <class T>
 	void Data::CacheItems(RE::TESDataHandler* a_data)
 	{
-		for (auto form : a_data->GetFormArray<T>()) {
-			//const char* name = form->GetFullName();
-			RE::FormID _formid = form->GetFormID();
-			//std::string formid = fmt::format("{:08x}", _formid);
-			//std::string editorid = GetEditorID(_formid);
-			//RE::FormType formType = form->GetFormType();
-			//std::string typeName = static_cast<std::string>(RE::FormTypeToString(formType));
-			//float weight = form->GetWeight();
-			//auto goldValue = form->GetGoldValue();
-
-			//bool non_playable = false;
-			//if (formType == RE::FormType::Weapon) {
-			//	non_playable = form->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
-			//}
-
+		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
+			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
 
-			_cache.push_back(ModExplorerMenu::Item{ form, _formid, mod });
+			_cache.push_back(ModExplorerMenu::Item{ form, formid, mod });
 			//_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, weight, non_playable });
 
 			//Add mod file to list.

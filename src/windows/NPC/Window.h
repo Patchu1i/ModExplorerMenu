@@ -15,17 +15,17 @@ namespace ModExplorerMenu
 		static void ShowModSelection(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowItemCard(Data::CachedNPC* a_npc);
+		static void ShowItemCard(NPC* a_npc);
 		static void PopulateListWithLocals();
 		static void PopulateListWithSpawned();
 		static std::shared_ptr<std::vector<RE::FormID>> GetRefID(RE::FormID a_targetBaseID);
 		static void ApplyFilters();
 		static void Init();
 
-		static inline std::vector<Data::CachedNPC*> npcList;
+		static inline std::vector<NPC*> npcList;
 
 		// Action / Preview Sidebar
-		static inline Data::CachedNPC* selectedNPC = nullptr;
+		static inline NPC* selectedNPC = nullptr;
 
 	private:
 		static inline constexpr auto NPCTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Sortable |
@@ -77,7 +77,7 @@ namespace ModExplorerMenu
 
 		// Search Input Field.
 		static inline const ImGuiTableSortSpecs* s_current_sort_specs;
-		static inline ColumnID searchKey = ColumnID::None;
+		static inline ColumnID searchKey = ColumnID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
@@ -86,13 +86,12 @@ namespace ModExplorerMenu
 
 		// Sorting & Filtering
 		static inline const std::map<ColumnID, const char*> InputSearchMap = {
-			{ None, "None" },
 			{ Name, "Name" },
 			{ EditorID, "Editor ID" },
 			{ FormID, "Form ID" }
 		};
 
-		static bool SortColumns(const Data::CachedNPC* v1, const Data::CachedNPC* v2);
+		static bool SortColumns(const NPC* v1, const NPC* v2);
 		static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
 	};
 }
