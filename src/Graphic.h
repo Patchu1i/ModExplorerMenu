@@ -5,96 +5,99 @@
 // Sourced from dTry's Wheeler and Llama's Tiny Hud. Adapted to NG.
 // Huge gratitude for their public works.
 
-class GraphicManager
+namespace ModExplorerMenu
 {
-private:
-public:
-	struct Image
+	class GraphicManager
 	{
-		ID3D11ShaderResourceView* texture = nullptr;
-		int32_t width = 0;
-		int32_t height = 0;
-	};
+	private:
+	public:
+		struct Image
+		{
+			ID3D11ShaderResourceView* texture = nullptr;
+			int32_t width = 0;
+			int32_t height = 0;
+		};
 
-	struct Font
-	{
-		ImFont* nano = nullptr;
-		ImFont* tiny = nullptr;
-		ImFont* medium = nullptr;
-		ImFont* large = nullptr;
-	};
+		struct Font
+		{
+			ImFont* nano = nullptr;
+			ImFont* tiny = nullptr;
+			ImFont* medium = nullptr;
+			ImFont* large = nullptr;
+		};
 
-	enum FontSize
-	{
-		Nano,
-		Tiny,
-		Medium,
-		Large
-	};
+		enum FontSize
+		{
+			Nano,
+			Tiny,
+			Medium,
+			Large
+		};
 
-	static inline std::map<std::string, GraphicManager::Image> image_library;
-	static inline std::map<std::string, Font> font_library;
+		static inline std::map<std::string, GraphicManager::Image> image_library;
+		static inline std::map<std::string, Font> font_library;
 
-	static void DrawImage(Image& a_texture, ImVec2 a_center);
-	static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
-	static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct);
+		static void DrawImage(Image& a_texture, ImVec2 a_center);
+		static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
+		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct);
 
-	static void Init();
+		static void Init();
 
-	[[nodiscard]] static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
-		int& out_height);
+		[[nodiscard]] static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
+			int& out_height);
 
-	[[nodiscard]] static Font GetFont(std::string a_font)
-	{
-		// switch (a_size) {
-		// case FontSize::Tiny:
-		// 	return font_library[a_font].tiny;
-		// case FontSize::Medium:
-		// 	return font_library[a_font].medium;
-		// case FontSize::Large:
-		// 	return font_library[a_font].large;
-		// }
+		[[nodiscard]] static Font GetFont(std::string a_font)
+		{
+			// switch (a_size) {
+			// case FontSize::Tiny:
+			// 	return font_library[a_font].tiny;
+			// case FontSize::Medium:
+			// 	return font_library[a_font].medium;
+			// case FontSize::Large:
+			// 	return font_library[a_font].large;
+			// }
 
-		auto found = font_library.find(a_font);
-		if (found != font_library.end()) {
-			return found->second;
-		}
-
-		logger::warn("Font Reference not found: {}", a_font);
-		return Font();
-	}
-
-	[[nodiscard]] static std::string GetFontName(Font a_font)
-	{
-		// Note to self: return font_library[key] adds key value if not valid.
-		for (const auto& [key, value] : font_library) {
-			if (value.medium == a_font.medium) {
-				return key;
+			auto found = font_library.find(a_font);
+			if (found != font_library.end()) {
+				return found->second;
 			}
+
+			logger::warn("Font Reference not found: {}", a_font);
+			return Font();
 		}
 
-		return "Default";
-	}
-
-	[[nodiscard]] static Image GetImage(std::string a_name)
-	{
-		auto found = image_library.find(a_name);
-		if (found != image_library.end()) {
-			return found->second;
-		}
-
-		return Image();
-	}
-
-	[[nodiscard]] static std::string GetImageName(Image a_image)
-	{
-		// Note to self: return image_library[key] adds key value if not valid.
-		for (const auto& [key, value] : image_library) {
-			if (value.texture == a_image.texture) {
-				return key;
+		[[nodiscard]] static std::string GetFontName(Font a_font)
+		{
+			// Note to self: return font_library[key] adds key value if not valid.
+			for (const auto& [key, value] : font_library) {
+				if (value.medium == a_font.medium) {
+					return key;
+				}
 			}
+
+			return "Default";
 		}
 
-		return "None";
-	}
-};
+		[[nodiscard]] static Image GetImage(std::string a_name)
+		{
+			auto found = image_library.find(a_name);
+			if (found != image_library.end()) {
+				return found->second;
+			}
+
+			return Image();
+		}
+
+		[[nodiscard]] static std::string GetImageName(Image a_image)
+		{
+			// Note to self: return image_library[key] adds key value if not valid.
+			for (const auto& [key, value] : image_library) {
+				if (value.texture == a_image.texture) {
+					return key;
+				}
+			}
+
+			return "None";
+		}
+	};
+}

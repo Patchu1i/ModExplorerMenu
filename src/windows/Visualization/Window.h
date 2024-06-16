@@ -5,9 +5,12 @@
 
 // #include "Console.h"
 
-class VisualizationWindow
+namespace ModExplorerMenu
 {
-public:
-	static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-	static void ShowPlot(Settings::Style& a_style, Settings::Config& a_config);
-};
+	class VisualizationWindow
+	{
+	public:
+		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowPlot(Settings::Style& a_style, Settings::Config& a_config);
+	};
+}

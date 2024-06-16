@@ -7,7 +7,6 @@
 #include "Windows/Frame.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
-
 //#include "versiondb.h"
 #include "versionlibdb.h"
 
@@ -54,9 +53,9 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
-			MEMData::GetSingleton()->Run();
-			Settings::GetSingleton()->LoadSettings(Settings::ini_mem_path);
-			Frame::Install();
+			ModExplorerMenu::Data::GetSingleton()->Run();
+			ModExplorerMenu::Settings::GetSingleton()->LoadSettings(ModExplorerMenu::Settings::ini_mem_path);
+			ModExplorerMenu::Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
 			logger::info("kPostLoad");
@@ -98,7 +97,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		return false;
 	}
 
-	ConsoleCommand::Register();
+	ModExplorerMenu::Console::Register();
 	//DumpSpecificVersion();
 
 	return true;

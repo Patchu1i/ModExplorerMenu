@@ -3,9 +3,12 @@
 #include "Data.h"
 #include "Settings.h"
 
-class HomeWindow
+namespace ModExplorerMenu
 {
-public:
-	static void Draw();
-	static void Init();
-};
+	class HomeWindow
+	{
+	public:
+		static void Draw();
+		static void Init();
+	};
+}
