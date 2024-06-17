@@ -42,16 +42,6 @@ namespace ModExplorerMenu
 		ImGui::PopStyleVar(1);
 	}
 
-	void AddItemWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
-	{
-		s_current_sort_specs = sort_specs;
-		if (itemList.size() > 1)
-			std::sort(itemList.begin(), itemList.end(), [](const Item* a, const Item* b) {
-				return AddItemWindow::ISortable::SortColumns<Item>(a, b);
-			});
-		s_current_sort_specs = NULL;
-	}
-
 	// Draw the table of items
 	void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{
@@ -60,23 +50,24 @@ namespace ModExplorerMenu
 		auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
-		if (newColumns.IsAllColumnsDisabled()) {
+		if (columnList.IsAllColumnsDisabled()) {
 			ImGui::Text("No columns are enabled. Please enable at least one column.");
 			return;
 		}
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##AddItemWindow::Table", newColumns.GetTotalColumns(), AddItemTableFlags | rowBG, table_size)) {
+		auto extendWidth = (columnList.EnabledColumns() > 4) ? columnList.EnabledColumns() * 50.0f : 0;
+		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), AddItemTableFlags | rowBG, table_size, table_size.x + extendWidth)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
-			for (auto& column : newColumns.columns) {
+			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
 			}
 
 			ImGui::PushFont(a_style.font.medium);
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 			int column_n = 0;
-			for (auto& column : newColumns.columns) {
+			for (auto& column : columnList.columns) {
 				ImGui::TableSetColumnIndex(column_n);
 				ImGui::PushID(column.key);
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);  // (?)
@@ -100,7 +91,7 @@ namespace ModExplorerMenu
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs(sort_specs);
+					SortColumnsWithSpecs<std::vector<Item*>, Item>(itemList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}
@@ -132,14 +123,17 @@ namespace ModExplorerMenu
 
 					ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
 					float col = item->favorite ? 1.0f : 0.5f;
+					bool clickToAct = b_ClickToAdd || b_ClickToPlace || b_ClickToFavorite;
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::ImageButton("##AddItemWindow::FavoriteButton", favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							item->favorite = !item->favorite;
+						if (ImGui::DisabledImageButton("##AddItemWindow::FavoriteButton", clickToAct, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!clickToAct) {
+								item->favorite = !item->favorite;
+							}
 						}
 					} else {
-						ImGui::Checkbox("##AddItemWindow::FavoriteCheckbox", &item->favorite);
+						ImGui::DisabledCheckbox("##AddItemWindow::FavoriteCheckbox", clickToAct, item->favorite);
 					}
 
 					ImGui::PopStyleColor(3);

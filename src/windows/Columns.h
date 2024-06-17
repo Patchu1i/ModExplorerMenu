@@ -18,24 +18,9 @@ namespace ModExplorerMenu
 
 		enum ID
 		{
-			Favorite,
-			Plugin,
-			Type,
-			FormID,
-			Name,
-			EditorID,
-            Health,
-            Magicka,
-            Stamina,
-            CarryWeight,
-			GoldValue,
-			BaseDamage,
-			ArmorRating,
-			Speed,
-			CritDamage,
-			Skill,
-			Weight,
-			DPS
+			Favorite, Plugin, Type, FormID, Name, EditorID, Health,
+            Magicka, Stamina, CarryWeight, GoldValue, BaseDamage,
+            ArmorRating, Speed, CritDamage, Skill, Weight, DPS
 		};
 
         ID key;
@@ -67,6 +52,15 @@ namespace ModExplorerMenu
         }
 
         inline int GetTotalColumns() { return static_cast<int>(columns.size()); }
+        inline int EnabledColumns() {
+            int count = 0;
+            for (auto& column : columns) {
+                if (*column.enabled) {
+                    count++;
+                }
+            }
+            return count;
+        }
     };
 
     class NPCColumns : public BaseColumnList
@@ -78,7 +72,7 @@ namespace ModExplorerMenu
         {
             columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
             columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_WidthFixed, 50.0f, showFormID, BaseColumn::ID::FormID });
+            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID });
             columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, showName, BaseColumn::ID::Name });
             columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
             columns.push_back({ "Health", ImGuiTableColumnFlags_WidthFixed, 30.0f, showHealth, BaseColumn::ID::Health });
@@ -99,8 +93,8 @@ namespace ModExplorerMenu
         {
             columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
             columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", ImGuiTableColumnFlags_WidthFixed, 50.0f, showType, BaseColumn::ID::Type});
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_WidthFixed, 50.0f, showFormID, BaseColumn::ID::FormID});
+            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, showType, BaseColumn::ID::Type});
+            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID});
             columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, showName, BaseColumn::ID::Name});
             columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID});
             columns.push_back({ "GoldValue", ImGuiTableColumnFlags_None, 0.0f, showGoldValue, BaseColumn::ID::GoldValue});
@@ -319,6 +313,17 @@ namespace ModExplorerMenu
 
 
             return false;
+        }
+
+        template <class List, class Object>
+        inline static void SortColumnsWithSpecs(List& a_list, ImGuiTableSortSpecs* sort_specs)
+        {
+            s_current_sort_specs = sort_specs;
+            if (a_list.size() > 1)
+                std::sort(a_list.begin(), a_list.end(), [](const Object* a, const Object* b) {
+                    return SortColumns<Object>(a, b);
+                });
+            s_current_sort_specs = NULL;
         }
 	};
 	// clang-format on

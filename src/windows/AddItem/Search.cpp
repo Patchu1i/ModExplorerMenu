@@ -31,11 +31,6 @@ namespace ModExplorerMenu
 					continue;
 				}
 			}
-			// for (auto filter : filterMap) {
-			// 	if (item.GetFormType() == std::get<1>(filter) && *std::get<0>(filter) == false) {
-			// 		continue;
-			// 	}
-			// }
 
 			switch (searchKey) {
 			case BaseColumn::ID::Name:
@@ -157,7 +152,7 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::NewLine();
+			ImGui::SameLine();
 
 			const auto addAllItems = []() {
 				for (auto& item : Data::GetItemList()) {
@@ -169,7 +164,7 @@ namespace ModExplorerMenu
 				Console::StartProcessThread();
 			};
 
-			if (ImGui::Button("Add All Items In Mod")) {
+			if (ImGui::Button("Add All From Mod")) {
 				const auto items = Data::GetItemList();
 
 				auto count = 0;
@@ -207,20 +202,21 @@ namespace ModExplorerMenu
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
 				ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
 				ImGui::InlineCheckbox("Favorite", &a_config.aimShowFavoriteColumn);
+				ImGui::InlineCheckbox("Plugin", &a_config.aimShowPluginColumn);
 				ImGui::InlineCheckbox("Type", &a_config.aimShowTypeColumn);
 				ImGui::InlineCheckbox("Form", &a_config.aimShowFormIDColumn);
-				ImGui::InlineCheckbox("Name", &a_config.aimShowNameColumn);
 				ImGui::NewLine();
+				ImGui::InlineCheckbox("Name", &a_config.aimShowNameColumn);
 				ImGui::InlineCheckbox("Editor", &a_config.aimShowEditorIDColumn);
 				ImGui::InlineCheckbox("Gold", &a_config.aimShowGoldValueColumn);
 				ImGui::InlineCheckbox("Damage", &a_config.aimShowBaseDamageColumn);
-				ImGui::InlineCheckbox("Speed", &a_config.aimShowSpeedColumn);
 				ImGui::NewLine();
+				ImGui::InlineCheckbox("Speed", &a_config.aimShowSpeedColumn);
 				ImGui::InlineCheckbox("Crit", &a_config.aimShowCritDamageColumn);
 				ImGui::InlineCheckbox("Skill", &a_config.aimShowSkillColumn);
 				ImGui::InlineCheckbox("Weight", &a_config.aimShowWeightColumn);
-				ImGui::InlineCheckbox("DPS", &a_config.aimShowDPSColumn);
 				ImGui::NewLine();
+				ImGui::InlineCheckbox("DPS", &a_config.aimShowDPSColumn);
 				ImGui::InlineCheckbox("Armor", &a_config.aimShowArmorRatingColumn);
 				ImGui::NewLine();
 				ImGui::PopStyleColor(1);

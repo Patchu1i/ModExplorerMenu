@@ -34,7 +34,7 @@ namespace ModExplorerMenu
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();
 
-		newColumns = AddItemColumns(
+		columnList = AddItemColumns(
 			&config.aimShowFavoriteColumn,
 			&config.aimShowPluginColumn,
 			&config.aimShowTypeColumn,

@@ -43,16 +43,6 @@
 
 namespace ModExplorerMenu
 {
-	void NPCWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
-	{
-		s_current_sort_specs = sort_specs;
-		if (npcList.size() > 1)
-			std::sort(npcList.begin(), npcList.end(), [](const NPC* a, const NPC* b) {
-				return NPCWindow::ISortable::SortColumns<NPC>(a, b);
-			});
-		s_current_sort_specs = NULL;
-	}
-
 	// Draw the table of items
 	void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{
@@ -97,7 +87,7 @@ namespace ModExplorerMenu
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs(sort_specs);
+					SortColumnsWithSpecs<std::vector<NPC*>, NPC>(npcList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}

@@ -12,22 +12,20 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		//ShowModSelection(a_style, a_config);
 		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
+		// Right Column
 		ImGui::NextColumn();
 		ShowActions(a_style, a_config);
 		ImGui::EndColumns();
-
-		// if (openBook != nullptr) {
-		// 	ShowBookPreview();
-		// }
 	}
 
 	void NPCWindow::Init()
 	{
 		auto& config = Settings::GetSingleton()->GetConfig();
+
+		SetState(showAll);
 
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();

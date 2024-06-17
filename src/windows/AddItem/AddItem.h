@@ -20,8 +20,6 @@ namespace ModExplorerMenu
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowItemListContextMenu(Item& a_item);
-		static void ShowPlotGraph();
-		static void ShowHistogramGraph();
 		static void ShowBookPreview();
 		static void ApplyFilters();
 		static void Init();
@@ -38,26 +36,7 @@ namespace ModExplorerMenu
 			Weapon
 		};
 
-		// enum ColumnID
-		// {
-		// 	ColumnID_Favorite,
-		// 	ColumnID_Plugin,
-		// 	ColumnID_Type,
-		// 	ColumnID_FormID,
-		// 	ColumnID_Name,
-		// 	ColumnID_EditorID,
-		// 	ColumnID_GoldValue,
-		// 	ColumnID_BaseDamage,
-		// 	ColumnID_ArmorRating,
-		// 	ColumnID_Speed,
-		// 	ColumnID_CritDamage,
-		// 	ColumnID_Skill,
-		// 	ColumnID_Weight,
-		// 	ColumnID_DPS,
-		// 	kTotal
-		// };
-
-		static inline AddItemColumns newColumns;
+		static inline AddItemColumns columnList;
 
 		// Show book window.
 		static inline Item* openBook = nullptr;
@@ -90,8 +69,8 @@ namespace ModExplorerMenu
 			{ &b_Book, RE::FormType::Book, "BOOK" }, { &b_Weapon, RE::FormType::Weapon, "WEAP" }
 		};
 
-		static bool SortColumn(const Item* v1, const Item* v2);
-		static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
+		//static bool SortColumn(const Item* v1, const Item* v2);
+		//static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
 
 		// Description Framework API.
 		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
