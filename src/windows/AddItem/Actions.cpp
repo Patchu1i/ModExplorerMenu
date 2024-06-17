@@ -2,7 +2,6 @@
 #include "Console.h"
 #include "Utils/Util.h"
 
-
 namespace ModExplorerMenu
 {
 	void AddItemWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)

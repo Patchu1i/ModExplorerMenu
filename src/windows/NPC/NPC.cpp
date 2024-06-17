@@ -27,7 +27,20 @@ namespace ModExplorerMenu
 
 	void NPCWindow::Init()
 	{
+		auto& config = Settings::GetSingleton()->GetConfig();
+
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();
+
+		columnList = NPCColumns(
+			&config.npcShowFavoriteColumn,
+			&config.npcShowPluginColumn,
+			&config.npcShowFormIDColumn,
+			&config.npcShowNameColumn,
+			&config.npcShowEditorIDColumn,
+			&config.npcShowHealthColumn,
+			&config.npcShowMagickaColumn,
+			&config.npcShowStaminaColumn,
+			&config.npcShowCarryWeightColumn);
 	}
 }

@@ -165,6 +165,7 @@ namespace ModExplorerMenu
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
 
 		user.config.aimShowFavoriteColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFavoriteColumn", true, a_ini);
+		user.config.aimShowPluginColumn = GET_VALUE<bool>(rSections[AddItem], "ShowPluginColumn", true, a_ini);
 		user.config.aimShowTypeColumn = GET_VALUE<bool>(rSections[AddItem], "ShowTypeColumn", true, a_ini);
 		user.config.aimShowFormIDColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFormIDColumn", false, a_ini);
 		user.config.aimShowNameColumn = GET_VALUE<bool>(rSections[AddItem], "ShowNameColumn", true, a_ini);

@@ -1,5 +1,6 @@
+#include "AddItem.h"
 #include "Utils/Util.h"
-#include "Window.h"
+
 
 namespace ModExplorerMenu
 {

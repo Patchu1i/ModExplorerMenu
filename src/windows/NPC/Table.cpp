@@ -52,36 +52,36 @@ namespace ModExplorerMenu
 
 		switch (ID) {
 		// Delta must be +1 or -1 to indicate move. Otherwise comparitor is invalid.
-		case Favorite:  // bool
+		case BaseColumn::ID::Favorite:  // bool
 			delta = (v1->favorite < v2->favorite) ? -1 : (v1->favorite > v2->favorite) ? 1 :
 			                                                                             0;
 			break;
-		case FormID:  // std::string
+		case BaseColumn::ID::FormID:  // std::string
 			delta = v1->GetFormID().compare(v2->GetFormID());
 			break;
-		case Name:  // const char *
+		case BaseColumn::ID::Name:  // const char *
 			delta = v1->GetName().compare(v2->GetName());
 			break;
-		case EditorID:  // std::string
+		case BaseColumn::ID::EditorID:  // std::string
 			delta = v1->GetEditorID().compare(v2->GetEditorID());
 			break;
-		case Health:  // float
+		case BaseColumn::ID::Health:  // float
 			delta = (v1->GetHealth() < v2->GetHealth()) ? -1 : (v1->GetHealth() > v2->GetHealth()) ? 1 :
 			                                                                                         0;
 			break;
-		case Magicka:  // float
+		case BaseColumn::ID::Magicka:  // float
 			delta = (v1->GetMagicka() < v2->GetMagicka()) ? -1 : (v1->GetMagicka() > v2->GetMagicka()) ? 1 :
 			                                                                                             0;
 			break;
-		case Stamina:  // float
+		case BaseColumn::ID::Stamina:  // float
 			delta = (v1->GetStamina() < v2->GetStamina()) ? -1 : (v1->GetStamina() > v2->GetStamina()) ? 1 :
 			                                                                                             0;
 			break;
-		case CarryWeight:  // float
+		case BaseColumn::ID::CarryWeight:  // float
 			delta = (v1->GetCarryWeight() < v2->GetCarryWeight()) ? -1 : (v1->GetCarryWeight() > v2->GetCarryWeight()) ? 1 :
 			                                                                                                             0;
 			break;
-		case Plugin:  // std::string
+		case BaseColumn::ID::Plugin:  // std::string
 			delta = v1->GetPluginName().compare(v2->GetPluginName());
 			break;
 		default:
@@ -111,66 +111,39 @@ namespace ModExplorerMenu
 	// Draw the table of items
 	void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{
+		(void)a_config;
+
 		auto results = std::string("Results (") + std::to_string(npcList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
-		bool noColumns = !a_config.npcShowAttackDamageColumn && !a_config.npcShowCarryWeightColumn && !a_config.npcShowPluginColumn &&
-		                 !a_config.npcShowEditorIDColumn && !a_config.npcShowFormIDColumn && !a_config.npcShowHealthColumn &&
-		                 !a_config.npcShowMagickaColumn && !a_config.npcShowNameColumn && !a_config.npcShowStaminaColumn &&
-		                 !a_config.npcShowFavoriteColumn;
-
-		if (noColumns) {
+		if (columnList.IsAllColumnsDisabled()) {
 			ImGui::Text("No columns are enabled. Please enable at least one column.");
 			return;
 		}
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
-		// TODO: innerWidth of table determines ScrollX buffer. Need to figure out how I can incrementally
-		// increase the width of innerWidth based on enabled columns to create a more dynamically sized window.
-
-		ImGuiContext& g = *ImGui::GetCurrentContext();
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##NPCWindow::Table", column_count, NPCTableFlags | rowBG, table_size, table_size.x + 100.0f)) {
+		if (ImGui::BeginTable("##NPCWindow::Table", columnList.GetTotalColumns(), NPCTableFlags | rowBG, table_size, table_size.x + 100.0f)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
-			ImGui::TableSetupColumn("Favorite", ImGuiTableColumnFlags_WidthFixed, 18.0f, Favorite);
-			ImGui::TableSetupColumn("FormID", ImGuiTableColumnFlags_None, 35.0f, FormID);
-			ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_None, 0.0f, Plugin);
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None, 0.0f, Name);
-			ImGui::TableSetupColumn("EditorID", ImGuiTableColumnFlags_None, 0.0f, EditorID);
-			ImGui::TableSetupColumn("Health", ImGuiTableColumnFlags_None, 25.0f, Health);
-			ImGui::TableSetupColumn("Magicka", ImGuiTableColumnFlags_None, 25.0f, Magicka);
-			ImGui::TableSetupColumn("Stamina", ImGuiTableColumnFlags_None, 25.0f, Stamina);
-			ImGui::TableSetupColumn("Carry Weight", ImGuiTableColumnFlags_None, 25.0f, CarryWeight);
+			for (auto& column : columnList.columns) {
+				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
+			}
 
 			ImGui::PushFont(a_style.font.medium);
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-			for (int column = 0; column < column_count; column++) {
-				ImGui::TableSetColumnIndex(column);
-				const char* column_name = ImGui::TableGetColumnName(column);  // Retrieve name passed to TableSetupColumn()
-				ImGui::PushID(column);
+			int column_n = 0;
+			for (auto& column : columnList.columns) {
+				ImGui::TableSetColumnIndex(column_n);
+				ImGui::PushID(column.key + 10);
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-
-				// if (column != ColumnID_FormID && column != ColumnID_EditorID)
-				// 	ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(column_name));
-
-				ImGui::TableHeader(column_name);
-
+				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
+
+				ImGui::TableSetColumnEnabled(column_n, *column.enabled);
+				column_n++;
 			}
 			ImGui::PopFont();
-
-			ImGui::TableSetColumnEnabled(Favorite, a_config.npcShowFavoriteColumn);
-			ImGui::TableSetColumnEnabled(FormID, a_config.npcShowFormIDColumn);
-			ImGui::TableSetColumnEnabled(Plugin, a_config.npcShowPluginColumn);
-			ImGui::TableSetColumnEnabled(Name, a_config.npcShowNameColumn);
-			ImGui::TableSetColumnEnabled(EditorID, a_config.npcShowEditorIDColumn);
-			ImGui::TableSetColumnEnabled(Health, a_config.npcShowHealthColumn);
-			ImGui::TableSetColumnEnabled(Magicka, a_config.npcShowMagickaColumn);
-			ImGui::TableSetColumnEnabled(Stamina, a_config.npcShowStaminaColumn);
-			ImGui::TableSetColumnEnabled(CarryWeight, a_config.npcShowCarryWeightColumn);
-
-			ImGuiTable* table = g.CurrentTable;
 
 			if (dirty) {
 				ImGui::TableGetSortSpecs()->SpecsDirty = true;
@@ -186,6 +159,8 @@ namespace ModExplorerMenu
 			}
 
 			ImGuiListClipper clipper;
+			ImGuiContext& g = *ImGui::GetCurrentContext();
+			ImGuiTable* table = g.CurrentTable;
 
 			int count = 0;
 			clipper.Begin(static_cast<int>(npcList.size()), ImGui::GetTextLineHeightWithSpacing());
@@ -212,9 +187,6 @@ namespace ModExplorerMenu
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						// if (ImGui::ImageButton("##NPCWindow::FavoriteButton", favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-						// 	npc->favorite = !npc->favorite;
-						// }
 						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_clickToPlace, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 							if (!b_clickToPlace) {
 								npc->favorite = !npc->favorite;
@@ -229,13 +201,13 @@ namespace ModExplorerMenu
 
 					bool _itemSelected = false;
 
-					// Form ID
-					ImGui::TableNextColumn();
-					ImGui::Text(npc->GetFormID().c_str());
-
 					//	Plugin
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetPluginName().data());
+
+					// Form ID
+					ImGui::TableNextColumn();
+					ImGui::Text(npc->GetFormID().c_str());
 
 					// Item Name
 					ImGui::TableNextColumn();

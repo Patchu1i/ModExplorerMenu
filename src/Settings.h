@@ -79,6 +79,7 @@ namespace ModExplorerMenu
 
 			// Additem
 			bool aimShowFavoriteColumn;
+			bool aimShowPluginColumn;
 			bool aimShowTypeColumn;
 			bool aimShowFormIDColumn;
 			bool aimShowNameColumn;

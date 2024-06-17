@@ -1,6 +1,6 @@
 #include "AddItem.h"
+#include "Console.h"
 #include "Utils/Util.h"
-
 
 namespace ModExplorerMenu
 {
@@ -12,40 +12,45 @@ namespace ModExplorerMenu
 
 		std::string compare;
 		std::string input = inputBuffer;
-
-		bool skip = false;
+		std::transform(input.begin(), input.end(), input.begin(),
+			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
-			switch (searchKey) {
-			case ColumnID_Name:
-				compare = item.GetName().substr(0, 256);
-				break;
-			case ColumnID_FormID:
-				compare = item.GetFormID().substr(0, 256);
-				break;
-			case ColumnID_EditorID:
-				compare = item.GetEditorID().substr(0, 256);
-				break;
-			case ColumnID_None:
-				skip = true;
-				break;
-			default:
-				compare = item.GetName().substr(0, 256);
-				break;
-			}
-
-			if (selectedMod != nullptr && item.TESFile != selectedMod)  // inactive mods
+			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
 				continue;
 
-			if (itemFilters.count(item.GetFormType()) <= 0)  // non-selected filter
+			if (item.GetName() == "")
 				continue;
 
 			if (item.IsNonPlayable())  // non-useable
 				continue;
 
-			if (item.GetName() == "")  // skip empty names
-				continue;
+			if (itemFilters.size() > 0) {
+				if (itemFilters.find(item.GetFormType()) == itemFilters.end()) {
+					continue;
+				}
+			}
+			// for (auto filter : filterMap) {
+			// 	if (item.GetFormType() == std::get<1>(filter) && *std::get<0>(filter) == false) {
+			// 		continue;
+			// 	}
+			// }
+
+			switch (searchKey) {
+			case BaseColumn::ID::Name:
+				compare = item.GetName();
+				break;
+			case BaseColumn::ID::FormID:
+				compare = item.GetFormID();
+				break;
+			case BaseColumn::ID::EditorID:
+				compare = item.GetEditorID();
+				break;
+			default:
+				compare = item.GetName();
+				break;
+			}
 
 			// Will probably need to revisit this during localization. :(
 			std::transform(compare.begin(), compare.end(), compare.begin(),
@@ -54,13 +59,6 @@ namespace ModExplorerMenu
 			if (compare.find(input) != std::string::npos) {
 				itemList.push_back(&item);
 				continue;
-			}
-
-			if (skip) {
-				if (compare.find(input) > 0) {
-					itemList.push_back(&item);
-					continue;
-				}
 			}
 		}
 
@@ -138,23 +136,11 @@ namespace ModExplorerMenu
 				dirty = true;
 			}
 
-			ImGui::Unindent();
 			ImGui::NewLine();
-		}
-	}
 
-	void AddItemWindow::ShowModSelection(Settings::Style& a_style, Settings::Config& a_config)
-	{
-		(void)a_style;
-		(void)a_config;
-
-		if (ImGui::CollapsingHeader("Filter by Mod:")) {
-			ImGui::NewLine();
-			ImGui::Indent();
-			auto combo_text = selectedMod ? selectedMod->GetFilename().data() : "Filter by mod..";
-			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", combo_text)) {
-				if (ImGui::Selectable("All Mods", selectedMod == nullptr)) {
-					selectedMod = nullptr;
+			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
+				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
+					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
@@ -162,7 +148,7 @@ namespace ModExplorerMenu
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
 					if (ImGui::Selectable(modName, is_selected)) {
-						selectedMod = mod;
+						selectedMod = modName;
 						ApplyFilters();
 					}
 					if (is_selected)
@@ -170,6 +156,37 @@ namespace ModExplorerMenu
 				}
 				ImGui::EndCombo();
 			}
+
+			ImGui::NewLine();
+
+			const auto addAllItems = []() {
+				for (auto& item : Data::GetItemList()) {
+					if (item.GetPluginName() == selectedMod) {
+						Console::AddItem(item.GetFormID());
+					}
+				}
+
+				Console::StartProcessThread();
+			};
+
+			if (ImGui::Button("Add All Items In Mod")) {
+				const auto items = Data::GetItemList();
+
+				auto count = 0;
+				for (auto item : items) {
+					if (item.GetPluginName() == selectedMod) {
+						count++;
+					}
+				}
+
+				if (count > 500) {
+					ImGui::OpenPopup("Large Query Detected");
+				} else {
+					addAllItems();
+				}
+			}
+			ImGui::ShowWarningPopup("Large Query Detected", addAllItems);
+
 			ImGui::Unindent();
 			ImGui::NewLine();
 		}
@@ -209,23 +226,6 @@ namespace ModExplorerMenu
 				ImGui::PopStyleColor(1);
 				ImGui::PopStyleVar(1);
 			}
-
-			// DEPRECATED:: Moved to Plot window.
-			// if (ImGui::CollapsingHeader("(Beta) Plot & Histogram:", flags)) {
-			// 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-			// 	ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-			// 	const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x / 3, ImGui::GetFontSize() * 1.15f);
-
-			// 	ImGui::HelpMarker(
-			// 		"Regenerate the list of cached forms from the game. This should only ever be needed if runtime changes are made.\n\n"
-			// 		"(WARNING): This will take a second or two to complete and will freeze your game in doing so.");
-			// 	if (ImGui::Button("Regenerate Cache", button_size)) {
-			// 		Data::GetSingleton()->Run();
-			// 		ApplyFilters();
-			// 	}
-			// 	ImGui::PopStyleColor(1);
-			// 	ImGui::PopStyleVar(1);
-			// }
 
 			ImGui::PopStyleColor(1);
 			ImGui::PopStyleVar(1);

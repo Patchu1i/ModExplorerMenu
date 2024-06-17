@@ -47,6 +47,9 @@ namespace ModExplorerMenu
 	class Item : public Base
 	{
 	public:
+		const int32_t value = TESForm->GetGoldValue();
+		const float weight = TESForm->GetWeight();
+
 		[[nodiscard]] inline float GetWeight() const { return TESForm->GetWeight(); }
 		[[nodiscard]] inline std::int32_t GetValue() const { return TESForm->GetGoldValue(); }
 

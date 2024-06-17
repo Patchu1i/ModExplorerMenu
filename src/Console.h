@@ -31,8 +31,6 @@ namespace ModExplorerMenu
 		static void Teleport(std::string a_editorID);
 
 		// Multi-threaded command processing.
-		static inline std::string isWaitingFor;
-
 		static inline std::vector<RE::FormID> npcPlaceHistoryVector;
 		static inline std::unordered_set<RE::FormID> npcPlaceHistorySet;
 

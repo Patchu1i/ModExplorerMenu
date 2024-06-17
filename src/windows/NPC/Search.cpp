@@ -2,7 +2,6 @@
 #include "NPC.h"
 #include "Utils/Util.h"
 
-
 namespace ModExplorerMenu
 {
 	// Populate list with NPCs according to filters & search results.
@@ -28,8 +27,6 @@ namespace ModExplorerMenu
 		std::transform(input.begin(), input.end(), input.begin(),
 			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		//std::transform(input.begin(), input.end(), input.begin(), ::tolower);
-
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
 			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
@@ -39,13 +36,13 @@ namespace ModExplorerMenu
 				continue;
 
 			switch (searchKey) {
-			case Name:
+			case BaseColumn::ID::Name:
 				compare = item.GetName();
 				break;
-			case FormID:
+			case BaseColumn::ID::FormID:
 				compare = item.GetFormID();
 				break;
-			case EditorID:
+			case BaseColumn::ID::EditorID:
 				compare = item.GetEditorID();
 				break;
 			default:

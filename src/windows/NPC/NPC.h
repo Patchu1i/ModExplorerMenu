@@ -3,6 +3,7 @@
 #include "Data.h"
 #include "Libraries/DescriptionFrameworkAPI.h"
 #include "Settings.h"
+#include "Windows/Columns.h"
 
 namespace ModExplorerMenu
 {
@@ -33,20 +34,6 @@ namespace ModExplorerMenu
 		                                             ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX |
 		                                             ImGuiTableFlags_SizingStretchProp;
 
-		enum ColumnID
-		{
-			Favorite,
-			FormID,
-			Plugin,
-			Name,
-			EditorID,
-			Health,
-			Magicka,
-			Stamina,
-			CarryWeight,
-			None,
-		};
-
 		enum State
 		{
 			showAll,
@@ -54,20 +41,15 @@ namespace ModExplorerMenu
 			showSpawned
 		};
 
+		// Column Container
+		static inline NPCColumns columnList;
+
 		// State
 		static inline State currentState = showAll;
-		static void SetState(State newState)
-		{
-			currentState = newState;
-		}
+		static inline void SetState(State newState) { currentState = newState; }
+		static inline const State GetState() { return currentState; }
 
-		static const State GetState()
-		{
-			return currentState;
-		}
-
-		static inline int column_count = ColumnID::None;
-
+		// NPC Spawning & Actions
 		static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
 		static inline bool applyActionsToAll = false;
 		static inline bool b_placeFrozen = false;
@@ -76,7 +58,7 @@ namespace ModExplorerMenu
 
 		// Search Input Field.
 		static inline const ImGuiTableSortSpecs* s_current_sort_specs;
-		static inline ColumnID searchKey = ColumnID::Name;
+		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
@@ -84,10 +66,10 @@ namespace ModExplorerMenu
 		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
 
 		// Sorting & Filtering
-		static inline const std::map<ColumnID, const char*> InputSearchMap = {
-			{ Name, "Name" },
-			{ EditorID, "Editor ID" },
-			{ FormID, "Form ID" }
+		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
+			{ BaseColumn::ID::Name, "Name" },
+			{ BaseColumn::ID::EditorID, "Editor ID" },
+			{ BaseColumn::ID::FormID, "Form ID" }
 		};
 
 		static bool SortColumns(const NPC* v1, const NPC* v2);

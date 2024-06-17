@@ -38,14 +38,17 @@ namespace ModExplorerMenu
 			};
 
 			const auto InlineInt = [popWidth, barSize](const char* label, const int value) {
+				const auto defaultWidth = popWidth - ImGui::CalcTextSize(std::to_string(value).c_str()).x;
+				const auto width = std::max(defaultWidth, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(std::to_string(value).c_str()).x);
 				ImGui::Text(label);
-				ImGui::SameLine(popWidth - ImGui::CalcTextSize(std::to_string(value).c_str()).x);
+				ImGui::SameLine(width);
 				ImGui::Text("%d", value);
 			};
 
 			const auto InlineText = [popWidth](const char* label, const char* text) {
+				const auto width = std::max(popWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x);
 				ImGui::Text(label);
-				ImGui::SameLine(popWidth - ImGui::CalcTextSize(text).x);
+				ImGui::SameLine(width);
 				ImGui::Text(text);
 			};
 

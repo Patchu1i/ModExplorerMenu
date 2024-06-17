@@ -14,7 +14,7 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		ShowModSelection(a_style, a_config);
+		//ShowModSelection(a_style, a_config);
 		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
@@ -29,6 +29,25 @@ namespace ModExplorerMenu
 
 	void AddItemWindow::Init()
 	{
+		auto& config = Settings::GetSingleton()->GetConfig();
+
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
+		ApplyFilters();
+
+		newColumns = AddItemColumns(
+			&config.aimShowFavoriteColumn,
+			&config.aimShowPluginColumn,
+			&config.aimShowTypeColumn,
+			&config.aimShowFormIDColumn,
+			&config.aimShowNameColumn,
+			&config.aimShowEditorIDColumn,
+			&config.aimShowGoldValueColumn,
+			&config.aimShowBaseDamageColumn,
+			&config.aimShowArmorRatingColumn,
+			&config.aimShowSpeedColumn,
+			&config.aimShowCritDamageColumn,
+			&config.aimShowSkillColumn,
+			&config.aimShowWeightColumn,
+			&config.aimShowDPSColumn);
 	}
 }
