@@ -1,15 +1,99 @@
 #pragma once
 
 #include "PCH.h"
+#include "Settings.h"
 
 namespace ImGui
 {
+	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
+	{
+		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
+		       ImGui::CalcTextSize(text).x / 2;
+	};
+
+	// TODO: Implement more use cases for this.
+	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
+	{
+		auto& style = ModExplorerMenu::Settings::GetSingleton()->GetStyle();
+
+		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
+		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
+		const float center_x = ImGui::GetMainViewport()->Size.x * 0.5f;
+		const float center_y = ImGui::GetMainViewport()->Size.y * 0.5f;
+
+		const float pos_x = center_x - (width * 0.5f);
+		const float pos_y = center_y - (height * 0.5f);
+
+		const float buttonHeight = ImGui::GetFontSize() * 1.5f;
+
+		ImGui::SetNextWindowSize(ImVec2(width, height));
+		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
+		if (ImGui::BeginPopupModal(warning, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
+			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(warning));
+			ImGui::PushFont(style.font.medium);
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+			ImGui::Text(warning);
+			ImGui::PopStyleColor(1);
+			ImGui::PopFont();
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			ImGui::TextWrapped(
+				"You are about to spawn a large number of objects. This may result in"
+				"undefined behavior such as your game freezing, crashing, or weird things"
+				"occuring. It's not recommended to use this outside of testing purposes. ");
+
+			ImGui::NewLine();
+			ImGui::Text("Do you understand, and wish to proceed?");
+			ImGui::NewLine();
+
+			ImGui::SetCursorPosY(ImGui::GetWindowSize().y - (buttonHeight * 2) - 20.0f);  // subtract button size * 2 + separator
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			if (ImGui::Button("Yes, I understand", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
+				callback();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::Button("No, take me back!", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
 
 	inline static bool DisabledButton(const char* label, bool& disabled, const ImVec2& size = ImVec2(0, 0))
 	{
 		float alpha = disabled ? 1.0f : 0.5f;
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 		auto result = ImGui::Button(label, size);
+		ImGui::PopStyleVar();
+		return result;
+	}
+
+	inline static bool DisabledCheckbox(const char* label, bool& disabled, bool& v)
+	{
+		float alpha = disabled ? 0.5f : 1.0f;
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+
+		bool result;
+		if (disabled) {
+			auto preview = v;
+			result = ImGui::Checkbox(label, &preview);
+		} else {
+			result = ImGui::Checkbox(label, &v);
+		}
+		ImGui::PopStyleVar();
+		return result;
+	}
+
+	inline static bool DisabledImageButton(
+		const char* label, bool& disabled, ImTextureID user_texture_id, const ImVec2& size = ImVec2(0, 0),
+		const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0),
+		const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	{
+		float alpha = disabled ? 0.5f : 1.0f;
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+		auto result = ImGui::ImageButton(label, user_texture_id, size, uv0, uv1, bg_col, tint_col);
 		ImGui::PopStyleVar();
 		return result;
 	}
@@ -23,12 +107,6 @@ namespace ImGui
 		ImGui::SameLine();
 		return changed;
 	}
-
-	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
-	{
-		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
-		       ImGui::CalcTextSize(text).x / 2;
-	};
 
 	inline static void SetDelayedTooltip(const char* text, float delay = 1.0f)
 	{

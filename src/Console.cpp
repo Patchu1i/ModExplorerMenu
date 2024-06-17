@@ -79,7 +79,7 @@ namespace ModExplorerMenu
 				isLocked.store(false);
 
 				if (references->empty()) {
-					stl::report_and_error("No matching references found using <prid_last>");
+					//stl::report_and_error("No matching references found using <prid_last>");
 				} else {
 					for (auto ref : *references) {
 						if (!IsNPCInHistory(ref)) {
@@ -179,6 +179,7 @@ namespace ModExplorerMenu
 				}
 
 				// Send command as function to taskQueue on main thread.
+				std::lock_guard<std::mutex> lock(tasks);
 				taskQueue.push([cmd]() {
 					Console::SendConsoleCommand(cmd->first);
 				});
@@ -195,8 +196,11 @@ namespace ModExplorerMenu
 	// @param a_delay: Delay in seconds before executing the command.
 	void Console::AddToQueue(std::string a_cmd, std::chrono::milliseconds a_delay = 0ms)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
-		commandQueue.push_back(std::make_pair(a_cmd, a_delay));
+		// Ensure we're actually in-game.
+		if (RE::PlayerCharacter::GetSingleton()->Is3DLoaded()) {
+			std::lock_guard<std::mutex> lock(mtx);
+			commandQueue.push_back(std::make_pair(a_cmd, a_delay));
+		}
 	}
 
 	// Add a console command to the front of the command queue.

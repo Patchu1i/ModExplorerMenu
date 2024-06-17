@@ -1,5 +1,6 @@
 #include "Window.h"
 
+#include "Console.h"
 #include "Utils/Util.h"
 #include "Window.h"
 
@@ -111,6 +112,8 @@ namespace ModExplorerMenu
 			ImGui::SameLine();
 			ImGui::Checkbox("Place Naked", &b_placeNaked);
 
+			ImGui::NewLine();
+
 			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
@@ -129,6 +132,34 @@ namespace ModExplorerMenu
 				}
 				ImGui::EndCombo();
 			}
+
+			ImGui::NewLine();
+
+			auto spawnAllNPCS = []() {
+				for (auto& npc : npcList) {
+					Console::PlaceAtMe(npc->GetFormID(), 1);
+					Console::PridLast();
+
+					if (b_placeFrozen)
+						Console::Freeze();
+
+					if (b_placeNaked)
+						Console::UnEquip();
+				}
+
+				Console::StartProcessThread();
+			};
+
+			if (ImGui::Button("Place All NPCs from Selected Mod")) {
+				if (selectedMod != "All Mods") {
+					if (npcList.size() > 50) {
+						ImGui::OpenPopup("Large Query Detected");
+					} else {
+						spawnAllNPCS();
+					}
+				}
+			}
+			ImGui::ShowWarningPopup("Large Query Detected", spawnAllNPCS);
 
 			ImGui::Unindent();
 			ImGui::NewLine();

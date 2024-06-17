@@ -31,8 +31,6 @@ namespace ModExplorerMenu
 
 	void Frame::Draw(bool is_settings_popped)
 	{
-		Properties window;
-
 		auto& style = Settings::GetSingleton()->GetStyle();
 		auto& config = Settings::GetSingleton()->GetConfig();
 
@@ -40,7 +38,7 @@ namespace ModExplorerMenu
 			SettingsWindow::DrawPopped();
 		}
 
-		// Doing this here to prevent edge cases of Skyrim window resizing.
+		Properties window;
 		const float center_x = window.screenSize.x * 0.5f;
 		const float center_y = (window.screenSize.y * 0.5f) - (window.panel_h * 0.5f);
 		const float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f);

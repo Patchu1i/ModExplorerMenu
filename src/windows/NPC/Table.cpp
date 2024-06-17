@@ -212,11 +212,16 @@ namespace ModExplorerMenu
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::ImageButton("##NPCWindow::FavoriteButton", favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							npc->favorite = !npc->favorite;
+						// if (ImGui::ImageButton("##NPCWindow::FavoriteButton", favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+						// 	npc->favorite = !npc->favorite;
+						// }
+						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_clickToPlace, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!b_clickToPlace) {
+								npc->favorite = !npc->favorite;
+							}
 						}
 					} else {
-						ImGui::Checkbox("##NPCWindow::FavoriteCheckbox", &npc->favorite);
+						ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_clickToPlace, npc->favorite);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -268,23 +273,22 @@ namespace ModExplorerMenu
 						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {
+							_itemSelected = true;
+							selectedNPC = npc;
+
 							if (b_clickToPlace) {
 								Console::PlaceAtMeFormID(npc->GetBaseForm());
 								Console::PridLast();
 								if (b_placeFrozen) {
-									//ConsoleCommand::ToggleFreeze(npc->formid, false);
 									Console::Freeze();
 								}
 								if (b_placeNaked) {
-									//ConsoleCommand::UnEquipAll(npc->formid, false);
 									Console::UnEquip();
 								}
 								Console::StartProcessThread(false);
+
 								_itemSelected = false;
 								selectedNPC = nullptr;
-							} else {
-								_itemSelected = true;
-								selectedNPC = npc;
 							}
 						}
 
