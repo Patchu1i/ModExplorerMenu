@@ -1,8 +1,7 @@
-#include "Window.h"
-
 #include "Console.h"
+#include "NPC.h"
 #include "Utils/Util.h"
-#include "Window.h"
+
 
 namespace ModExplorerMenu
 {

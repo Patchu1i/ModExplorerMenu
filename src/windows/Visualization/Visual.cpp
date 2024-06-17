@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "Visual.h"
 
 namespace ModExplorerMenu
 {

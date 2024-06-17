@@ -1,6 +1,8 @@
+#include "AddItem.h"
 #include "Console.h"
 #include "Utils/Util.h"
-#include "Window.h"
+#include "Windows/ItemCards.h"
+
 
 namespace ModExplorerMenu
 {
@@ -393,7 +395,8 @@ namespace ModExplorerMenu
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
 						ImGui::PushFont(a_style.font.tiny);
-						ShowItemCard(item);
+						//ShowItemCard(item);
+						ShowItemCard<Item>(item);
 						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {

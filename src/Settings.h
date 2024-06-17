@@ -122,7 +122,7 @@ namespace ModExplorerMenu
 
 		ImGuiStyle test;
 
-		struct Style
+		struct Style  // should extend ImGuiStyle (?)
 		{
 			ImVec4 text = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 			ImVec4 textDisabled = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -180,6 +180,7 @@ namespace ModExplorerMenu
 			float grabRounding = 3;
 			float popupBorderSize = 1;
 			float popupRounding = 3;
+			float globalFontSize = 0.5;
 
 			bool showTableRowBG = true;
 

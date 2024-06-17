@@ -1,7 +1,7 @@
 #include "Menu.h"
 #include "Console.h"
 #include "Windows/Frame.h"
-#include "Windows/Settings/Window.h"
+#include "Windows/UserSettings/UserSettings.h"
 #include <dinput.h>
 
 namespace ModExplorerMenu
@@ -73,6 +73,8 @@ namespace ModExplorerMenu
 	{
 		auto& style = ImGui::GetStyle();
 		auto& colors = style.Colors;
+
+		ImGui::GetIO().FontGlobalScale = user.globalFontSize;
 
 		colors[ImGuiCol_Text] = user.text;
 		colors[ImGuiCol_TextDisabled] = user.textDisabled;

@@ -15,7 +15,6 @@ namespace ModExplorerMenu
 		static void ShowModSelection(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowItemCard(NPC* a_npc);
 		static void PopulateListWithLocals();
 		static void PopulateListWithSpawned();
 		static std::shared_ptr<std::vector<RE::FormID>> GetRefID(RE::FormID a_targetBaseID);

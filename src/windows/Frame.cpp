@@ -1,11 +1,12 @@
 #include "Frame.h"
 #include "Graphic.h"
 #include "Settings.h"
-#include "Windows/AddItem/Window.h"
-#include "Windows/Home/Window.h"
-#include "Windows/NPC/Window.h"
-#include "Windows/Settings/Window.h"
-#include "Windows/Teleport/Window.h"
+#include "Windows/AddItem/AddItem.h"
+#include "Windows/Home/Home.h"
+#include "Windows/NPC/NPC.h"
+#include "Windows/Teleport/Teleport.h"
+#include "Windows/UserSettings/UserSettings.h"
+
 
 namespace ModExplorerMenu
 {

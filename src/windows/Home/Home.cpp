@@ -1,5 +1,4 @@
-#include "Window.h"
-
+#include "Home.h"
 #include "Graphic.h"
 
 namespace ModExplorerMenu

@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "UserSettings.h"
 #include "Data.h"
 #include "Menu.h"
 #include "Settings.h"
@@ -320,6 +320,7 @@ namespace ModExplorerMenu
 			AddColorPicker("Text Disabled Color:", style.textDisabled);
 			AddColorPicker("Text Selected BG Color:", style.textSelectedBg);
 			AddFontDropdown("Font", &style.font);
+			AddSliderPicker("Font Size:", style.globalFontSize, 0.5f, 3.0f);
 			ImGui::Unindent();
 		}
 

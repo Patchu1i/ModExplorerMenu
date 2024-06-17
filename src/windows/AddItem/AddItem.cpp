@@ -1,8 +1,10 @@
-#include "Window.h"
+#include "AddItem.h"
+#include "Settings.h"
 
 namespace ModExplorerMenu
 {
-	void NPCWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
+	// Main Draw function for AddItem, called by Frame::Draw()
+	void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		constexpr auto flags = ImGuiOldColumnFlags_NoResize;
 		ImGui::BeginColumns("##HorizontalSplit", 2, flags);
@@ -12,7 +14,7 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		//ShowModSelection(a_style, a_config);
+		ShowModSelection(a_style, a_config);
 		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
@@ -20,14 +22,13 @@ namespace ModExplorerMenu
 		ShowActions(a_style, a_config);
 		ImGui::EndColumns();
 
-		// if (openBook != nullptr) {
-		// 	ShowBookPreview();
-		// }
+		if (openBook != nullptr) {
+			ShowBookPreview();
+		}
 	}
 
-	void NPCWindow::Init()
+	void AddItemWindow::Init()
 	{
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-		ApplyFilters();
 	}
 }

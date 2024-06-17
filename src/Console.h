@@ -28,6 +28,7 @@ namespace ModExplorerMenu
 		static void UnEquip();
 		static void FreezeREFR(std::string a_targetRefID);
 		static void Freeze();
+		static void Teleport(std::string a_editorID);
 
 		// Multi-threaded command processing.
 		static inline std::string isWaitingFor;

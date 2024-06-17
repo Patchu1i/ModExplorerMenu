@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "NPC.h"
 
 namespace ModExplorerMenu
 {

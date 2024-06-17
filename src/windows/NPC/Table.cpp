@@ -1,8 +1,8 @@
-#include "Window.h"
+#include "NPC.h"
 
 #include "Console.h"
 #include "Utils/Util.h"
-#include "Window.h"
+#include "Windows/ItemCards.h"
 
 // Draws a Copy to Clipboard button on Context popup.
 // void NPCWindow::ShowItemListContextMenu(Data::CachedItem& a_item)
@@ -269,7 +269,7 @@ namespace ModExplorerMenu
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
 						ImGui::PushFont(a_style.font.tiny);
-						ShowItemCard(npc);
+						ShowItemCard<NPC>(npc);
 						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {

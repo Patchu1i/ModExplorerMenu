@@ -266,6 +266,7 @@ namespace ModExplorerMenu
 		a_out.showTableRowBG = true;
 
 		a_out.font;
+		a_out.globalFontSize;
 
 		a_out.splashImage;
 		a_out.favoriteIconEnabled;
@@ -339,6 +340,7 @@ namespace ModExplorerMenu
 		user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
 		user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TextFont", def.style.font, a_ini);
+		user.style.globalFontSize = GET_VALUE<float>(rSections[Fonts], "GlobalFontSize", def.style.globalFontSize, a_ini);
 
 		user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
 		user.style.favoriteIconEnabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconEnabled", def.style.favoriteIconEnabled, a_ini);
@@ -412,6 +414,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 
 			a_ini.SetValue(rSections[Fonts], "Font", Settings::ToString(a_user.font, false).c_str());
+			a_ini.SetValue(rSections[Fonts], "GlobalFontSize", Settings::ToString(a_user.globalFontSize, false).c_str());
 
 			a_ini.SetValue(rSections[Images], "SplashImage", Settings::ToString(a_user.splashImage, false).c_str());
 			a_ini.SetValue(rSections[Images], "FavoriteIconEnabled", Settings::ToString(a_user.favoriteIconEnabled, false).c_str());

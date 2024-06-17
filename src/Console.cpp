@@ -3,9 +3,13 @@
 
 namespace ModExplorerMenu
 {
+	std::mutex m_Process;
+	std::mutex m_Task;
 
-	std::mutex mtx;
-	std::mutex tasks;
+	inline bool IsPlayerLoaded()
+	{
+		return RE::PlayerCharacter::GetSingleton()->Is3DLoaded();
+	}
 
 	// Get the FormID from a command string by parsing the second token.
 	// @param cmd: Command string (e.g. prid ff0082fb).
@@ -123,7 +127,7 @@ namespace ModExplorerMenu
 	// This executes functions in the task queue (FIFO).
 	void Console::ProcessMainThreadTasks()
 	{
-		std::lock_guard<std::mutex> lock(tasks);
+		std::lock_guard<std::mutex> lock(m_Task);
 		if (!taskQueue.empty()) {
 			auto task = taskQueue.front();
 			if (task) {
@@ -152,7 +156,7 @@ namespace ModExplorerMenu
 				auto cmd = std::shared_ptr<std::pair<std::string, std::chrono::milliseconds>>();
 				{
 					// Lock mutex for commandQueue access.
-					std::lock_guard<std::mutex> lock(mtx);
+					std::lock_guard<std::mutex> lock(m_Process);
 
 					// If commandQueue is empty, break out of loop and open processor.
 					if (Console::commandQueue.empty()) {
@@ -179,7 +183,7 @@ namespace ModExplorerMenu
 				}
 
 				// Send command as function to taskQueue on main thread.
-				std::lock_guard<std::mutex> lock(tasks);
+				std::lock_guard<std::mutex> lock(m_Task);
 				taskQueue.push([cmd]() {
 					Console::SendConsoleCommand(cmd->first);
 				});
@@ -196,11 +200,8 @@ namespace ModExplorerMenu
 	// @param a_delay: Delay in seconds before executing the command.
 	void Console::AddToQueue(std::string a_cmd, std::chrono::milliseconds a_delay = 0ms)
 	{
-		// Ensure we're actually in-game.
-		if (RE::PlayerCharacter::GetSingleton()->Is3DLoaded()) {
-			std::lock_guard<std::mutex> lock(mtx);
-			commandQueue.push_back(std::make_pair(a_cmd, a_delay));
-		}
+		std::lock_guard<std::mutex> lock(m_Process);
+		commandQueue.push_back(std::make_pair(a_cmd, a_delay));
 	}
 
 	// Add a console command to the front of the command queue.
@@ -209,7 +210,7 @@ namespace ModExplorerMenu
 	// @param a_delay: Delay in seconds before executing the command.
 	void Console::AddToFront(std::string a_cmd, std::chrono::milliseconds a_delay)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
+		std::lock_guard<std::mutex> lock(m_Process);
 		commandQueue.push_front(std::make_pair(a_cmd, a_delay));
 	}
 
@@ -218,7 +219,9 @@ namespace ModExplorerMenu
 	// @param a_count: Count of the item.
 	void Console::AddItem(std::string a_itemFormID, int a_count)
 	{
-		AddToQueue("player.additem " + a_itemFormID + " " + std::to_string(a_count));
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.additem " + a_itemFormID + " " + std::to_string(a_count));
+		}
 	}
 
 	// Place a item at the player's location.
@@ -226,7 +229,9 @@ namespace ModExplorerMenu
 	// @param a_count: Count of objects
 	void Console::PlaceAtMe(std::string a_itemFormID, int a_count)
 	{
-		AddToQueue("player.placeatme " + a_itemFormID + " " + std::to_string(a_count));
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.placeatme " + a_itemFormID + " " + std::to_string(a_count));
+		}
 	}
 
 	// Place an NPC at the player's location by its base FormID.
@@ -234,14 +239,18 @@ namespace ModExplorerMenu
 	// @param a_count: Count of objects
 	void Console::PlaceAtMeFormID(RE::FormID a_npcBaseID, int a_count)
 	{
-		AddToQueue("player.placeatme " + std::format("{:08x}", a_npcBaseID) + " " + std::to_string(a_count));
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.placeatme " + std::format("{:08x}", a_npcBaseID) + " " + std::to_string(a_count));
+		}
 	}
 
 	// Fetch the last spawned REFR ID and set it as the console target reference.
 	void Console::PridLast()
 	{
-		AddToQueue("<prid_last>");
-		AddToQueue("<lock>");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("<prid_last>");
+			AddToQueue("<lock>");
+		}
 	}
 
 	// Move player to target reference id.
@@ -255,23 +264,29 @@ namespace ModExplorerMenu
 	// @param a_targetRefID: Reference FormID of the target.
 	void Console::MoveREFRToPlayer(std::string a_targetRefID)
 	{
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("moveto player");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("prid " + a_targetRefID);
+			AddToQueue("moveto player");
+		}
 	}
 
 	// Kill target reference id.
 	// @param a_targetRefID: Reference FormID of the target.
 	void Console::KillREFR(std::string a_targetRefID)
 	{
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("kill");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("prid " + a_targetRefID);
+			AddToQueue("kill");
+		}
 	}
 
 	// Kill selected reference or player.
 	// @note Remember to call `Console::PridLast()`
 	void Console::Kill()
 	{
-		AddToQueue("kill");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("kill");
+		}
 	}
 
 	// Resurrect target reference id.
@@ -281,45 +296,66 @@ namespace ModExplorerMenu
 	// @note 0 = Remove corpse and create a fresh copy.
 	void Console::ResurrectREFR(std::string a_targetRefID, int a_param)
 	{
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("resurrect " + std::to_string(a_param));
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("prid " + a_targetRefID);
+			AddToQueue("resurrect " + std::to_string(a_param));
+		}
 	}
 
 	// Ressurect selected reference (or restore inventory).
 	// @note Remember to call `Console::PridLast()`
 	void Console::Resurrect(int a_param)
 	{
-		AddToQueue("resurrect " + std::to_string(a_param));
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("resurrect " + std::to_string(a_param));
+		}
 	}
 
 	// Unequip all items from target reference id.
 	// @param a_targetRefID: Reference FormID of the target.
 	void Console::UnEquipREFR(std::string a_targetRefID)
 	{
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("unequipall");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("prid " + a_targetRefID);
+			AddToQueue("unequipall");
+		}
 	}
 
 	// Unequip all equipped items for selected reference or player.
 	// @note Remember to call `Console::PridLast()`
 	void Console::UnEquip()
 	{
-		AddToQueue("unequipall");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("unequipall");
+		}
 	}
 
 	// Toggle AI for target reference id.
 	// @param a_targetRefID: Reference FormID of the target.
 	void Console::FreezeREFR(std::string a_targetRefID)
 	{
-		AddToQueue("prid " + a_targetRefID);
-		AddToQueue("TAI");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("prid " + a_targetRefID);
+			AddToQueue("TAI");
+		}
 	}
 
 	// Toggle AI for selected reference or player.
 	// @note Remember to call `Console::PridLast()`
 	void Console::Freeze()
 	{
-		AddToQueue("TAI");
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("TAI");
+		}
+	}
+
+	// Teleport player to cell by EditorID
+	// @param a_editorID: EditorID of the target cell.
+	void Console::Teleport(std::string a_editorID)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("coc " + a_editorID);
+		}
 	}
 
 	// Callback definition for console command script.

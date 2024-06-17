@@ -22,7 +22,7 @@ namespace ModExplorerMenu
 		static void ShowPlotGraph();
 		static void ShowHistogramGraph();
 		static void ShowItemListContextMenu(Item& a_item);
-		static void ShowItemCard(Item* item);
+		//static void ShowItemCard(Item* item);
 		static void ShowBookPreview();
 		static void ApplyFilters();
 		static void Init();
