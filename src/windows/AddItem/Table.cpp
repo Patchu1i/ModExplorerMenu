@@ -42,6 +42,16 @@ namespace ModExplorerMenu
 		ImGui::PopStyleVar(1);
 	}
 
+	void AddItemWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
+	{
+		s_current_sort_specs = sort_specs;
+		if (itemList.size() > 1)
+			std::sort(itemList.begin(), itemList.end(), [](const Item* a, const Item* b) {
+				return AddItemWindow::ISortable::SortColumns<Item>(a, b);
+			});
+		s_current_sort_specs = NULL;
+	}
+
 	// Draw the table of items
 	void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{

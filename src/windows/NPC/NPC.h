@@ -7,7 +7,7 @@
 
 namespace ModExplorerMenu
 {
-	class NPCWindow
+	class NPCWindow : private ISortable
 	{
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
@@ -57,7 +57,7 @@ namespace ModExplorerMenu
 		static inline bool b_placeNaked = false;
 
 		// Search Input Field.
-		static inline const ImGuiTableSortSpecs* s_current_sort_specs;
+		//static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
@@ -72,7 +72,7 @@ namespace ModExplorerMenu
 			{ BaseColumn::ID::FormID, "Form ID" }
 		};
 
-		static bool SortColumns(const NPC* v1, const NPC* v2);
+		//static bool SortColumns(const NPC* v1, const NPC* v2);
 		static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
 	};
 }

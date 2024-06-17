@@ -43,68 +43,13 @@
 
 namespace ModExplorerMenu
 {
-	bool NPCWindow::SortColumns(const NPC* v1, const NPC* v2)
-	{
-		const ImGuiTableSortSpecs* sort_specs = s_current_sort_specs;
-		const ImGuiID ID = sort_specs->Specs->ColumnUserID;
-
-		int delta = 0;
-
-		switch (ID) {
-		// Delta must be +1 or -1 to indicate move. Otherwise comparitor is invalid.
-		case BaseColumn::ID::Favorite:  // bool
-			delta = (v1->favorite < v2->favorite) ? -1 : (v1->favorite > v2->favorite) ? 1 :
-			                                                                             0;
-			break;
-		case BaseColumn::ID::FormID:  // std::string
-			delta = v1->GetFormID().compare(v2->GetFormID());
-			break;
-		case BaseColumn::ID::Name:  // const char *
-			delta = v1->GetName().compare(v2->GetName());
-			break;
-		case BaseColumn::ID::EditorID:  // std::string
-			delta = v1->GetEditorID().compare(v2->GetEditorID());
-			break;
-		case BaseColumn::ID::Health:  // float
-			delta = (v1->GetHealth() < v2->GetHealth()) ? -1 : (v1->GetHealth() > v2->GetHealth()) ? 1 :
-			                                                                                         0;
-			break;
-		case BaseColumn::ID::Magicka:  // float
-			delta = (v1->GetMagicka() < v2->GetMagicka()) ? -1 : (v1->GetMagicka() > v2->GetMagicka()) ? 1 :
-			                                                                                             0;
-			break;
-		case BaseColumn::ID::Stamina:  // float
-			delta = (v1->GetStamina() < v2->GetStamina()) ? -1 : (v1->GetStamina() > v2->GetStamina()) ? 1 :
-			                                                                                             0;
-			break;
-		case BaseColumn::ID::CarryWeight:  // float
-			delta = (v1->GetCarryWeight() < v2->GetCarryWeight()) ? -1 : (v1->GetCarryWeight() > v2->GetCarryWeight()) ? 1 :
-			                                                                                                             0;
-			break;
-		case BaseColumn::ID::Plugin:  // std::string
-			delta = v1->GetPluginName().compare(v2->GetPluginName());
-			break;
-		default:
-			break;
-		}
-
-		if (delta > 0) {
-			return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? true : false;
-		}
-		if (delta < 0) {
-			return (sort_specs->Specs->SortDirection == ImGuiSortDirection_Ascending) ? false : true;
-		}
-
-		return false;  // prevent assertion (?)
-	}
-
-	// Sorts the columns of referenced list by sort_specs
 	void NPCWindow::SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs)
 	{
 		s_current_sort_specs = sort_specs;
 		if (npcList.size() > 1)
-			std::sort(npcList.begin(), npcList.end(), SortColumns);
-
+			std::sort(npcList.begin(), npcList.end(), [](const NPC* a, const NPC* b) {
+				return NPCWindow::ISortable::SortColumns<NPC>(a, b);
+			});
 		s_current_sort_specs = NULL;
 	}
 

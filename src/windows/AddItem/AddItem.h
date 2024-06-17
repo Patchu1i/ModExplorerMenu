@@ -11,7 +11,7 @@
 
 namespace ModExplorerMenu
 {
-	class AddItemWindow
+	class AddItemWindow : private ISortable
 	{
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
@@ -108,7 +108,7 @@ namespace ModExplorerMenu
 		static inline constexpr auto ActionBarFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 
 		// Search Input Field.
-		static inline const ImGuiTableSortSpecs* s_current_sort_specs;
+		//static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
