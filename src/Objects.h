@@ -15,7 +15,7 @@ namespace ModExplorerMenu
 		return {};
 	}
 
-	class Base
+	class BaseObject
 	{
 	public:
 		RE::TESForm* TESForm;  // cannot be const
@@ -44,7 +44,30 @@ namespace ModExplorerMenu
 		}
 	};
 
-	class Item : public Base
+	class Cell
+	{
+	public:
+		const std::string filename;
+		const std::string space;
+		const std::string zone;
+		const std::string cellName;
+		const std::string editorid;
+
+		bool favorite = false;
+		const RE::TESFile* mod;
+
+		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
+		[[nodiscard]] inline std::string_view GetSpace() const { return space; }
+		[[nodiscard]] inline std::string_view GetZone() const { return zone; }
+		[[nodiscard]] inline std::string_view GetCellName() const { return cellName; }
+		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
+		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
+
+		Cell(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
+			filename(filename), space(space), zone(zone), cellName(cellName), editorid(editorid), mod(mod) {}
+	};
+
+	class Item : public BaseObject
 	{
 	public:
 		const int32_t value = TESForm->GetGoldValue();
@@ -70,7 +93,7 @@ namespace ModExplorerMenu
 		}
 	};
 
-	class NPC : public Base
+	class NPC : public BaseObject
 	{
 	public:
 		[[nodiscard]] inline float GetHealth() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kHealth); }
@@ -79,37 +102,5 @@ namespace ModExplorerMenu
 		[[nodiscard]] inline float GetCarryWeight() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kCarryWeight); }
 
 		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const { return TESForm->As<RE::TESNPC>()->playerSkills; }
-	};
-
-	// 	RE::TESForm* form;
-	// RE::FormID refID;
-	// std::string plugin;
-	// std::string name;
-	// std::string formid;
-	// std::string editorid;
-
-	// float health;
-	// float magicka;
-	// float stamina;
-	// float carryweight;
-
-	// RE::TESNPC::Skills skills;
-
-	// bool favorite;
-
-	class Cell
-	{
-	public:
-		std::string plugin;
-		std::string space;
-		std::string zone;
-		std::string fullName;
-		std::string editorid;
-		uint32_t cellid;
-		bool favorite = false;
-		const RE::TESFile* mod;
-
-		Cell(std::string plugin, std::string space, std::string zone, std::string fullName, std::string editorid, const RE::TESFile* mod = nullptr) :
-			plugin(plugin), space(space), zone(zone), fullName(fullName), editorid(editorid), mod(mod) {}
 	};
 }

@@ -7,7 +7,6 @@
 #include "Windows/Teleport/Teleport.h"
 #include "Windows/UserSettings/UserSettings.h"
 
-
 namespace ModExplorerMenu
 {
 	Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
@@ -101,7 +100,7 @@ namespace ModExplorerMenu
 			case ActiveWindow::Lookup:
 				break;
 			case ActiveWindow::Teleport:
-				TeleportWindow::Draw(style);
+				TeleportWindow::Draw(style, config);
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
@@ -122,6 +121,7 @@ namespace ModExplorerMenu
 		AddItemWindow::Init();
 		HomeWindow::Init();
 		NPCWindow::Init();
+		TeleportWindow::Init();
 
 		RefreshStyle();
 

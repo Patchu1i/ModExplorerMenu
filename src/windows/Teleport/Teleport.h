@@ -2,38 +2,51 @@
 
 #include "Data.h"
 #include "Settings.h"
+#include "Windows/Columns.h"
 
 namespace ModExplorerMenu
 {
 	class TeleportWindow : private ISortable
 	{
 	private:
-		static inline std::vector<Data::CachedCell*> cellList;
+		static inline std::vector<Cell*> cellList;
+		static inline TeleportColumns columnList;
+		static inline Cell* selectedCell;
 
 	public:
-		static void Draw(Settings::Style& a_style);
+		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
 		static void Init();
 
 	private:
-		// enum ColumnID
-		// {
-		// 	ColumnID_Favorite,
-		// 	ColumnID_Plugin,
-		// 	ColumnID_Space,
-		// 	ColumnID_Zone,
-		// 	ColumnID_FullName,
-		// 	ColumnID_EditorID,
-		// 	ColumnID_None,
-		// };
+		static void ApplyFilters();
+		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 
-		//static bool SortColumn(const Data::CachedCell* v1, const Data::CachedCell* v2);
-		//static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
+		static inline constexpr auto TeleportTableFlags =
+			ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
+			ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
+			ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
+			ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
 
-		//static inline const ImGuiTableSortSpecs* s_current_sort_specs;
-		static inline ColumnID searchKey = ColumnID_None;
+		// Actions
+		static inline bool b_clickToTele = false;
+
+		// Searching
+		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
 		static inline char inputBuffer[256] = "";
-		static inline RE::TESFile* selectedMod = nullptr;
+		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
+
+		// Sorting & Filtering
+		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
+			{ BaseColumn::ID::Plugin, "Plugin" },
+			{ BaseColumn::ID::Space, "Worldspace" },
+			{ BaseColumn::ID::Zone, "Zone" },
+			{ BaseColumn::ID::CellName, "Cell Name" },
+			{ BaseColumn::ID::EditorID, "Editor ID" }
+		};
 
 		//static const int column_count = 6;
 		//static inline std::map<std::string, Data::CachedCell*> cellMap;

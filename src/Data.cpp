@@ -26,17 +26,6 @@ namespace ModExplorerMenu
 		return new NPC({ form,
 			form->GetFormID(),
 			form->GetFile() });
-		// return new CachedNPC({ .form = form,
-		// 	.plugin = form->GetFile()->fileName,
-		// 	.name = a_npc->GetFullName(),
-		// 	.formid = fmt::format("{:08x}", form->GetFormID()),
-		// 	.editorid = GetEditorID(form->GetFormID()),
-		// 	.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
-		// 	.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-		// 	.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
-		// 	.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-		// 	.skills = a_npc->playerSkills,
-		// 	.favorite = false });
 	}
 
 	template <class T>
@@ -53,22 +42,6 @@ namespace ModExplorerMenu
 			}
 
 			_npcCache.push_back({ form, formid, mod });
-
-			// item _npc = {
-			// 	.form = form,
-			// 	.plugin = mod->fileName,
-			// 	.name = form->GetFullName(),
-			// 	.formid = fmt::format("{:08x}", form->GetFormID()),
-			// 	.editorid = GetEditorID(form->GetFormID()),
-			// 	.health = npc->GetBaseActorValue(RE::ActorValue::kHealth),
-			// 	.magicka = npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-			// 	.stamina = npc->GetBaseActorValue(RE::ActorValue::kStamina),
-			// 	.carryweight = npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-			// 	.skills = npc->playerSkills,
-			// 	.favorite = false
-			// };
-
-			// _npcCache.push_back(_npc);
 
 			//Add mod file to list.
 			if (!_modList.contains(mod)) {
@@ -96,7 +69,7 @@ namespace ModExplorerMenu
 
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
-	void Data::CacheCells(RE::TESFile* a_file, std::vector<CachedCell>& a_cellMap)
+	void Data::CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_cellMap)
 	{
 		if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
 			logger::warn(FMT_STRING("failed to open file: {:s}"sv), a_file->fileName);
@@ -120,7 +93,7 @@ namespace ModExplorerMenu
 					case 'DIDE':
 						gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+							a_cellMap.push_back(Cell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 							continue;
 						}
 						break;
@@ -128,7 +101,7 @@ namespace ModExplorerMenu
 					case 'ATAD':
 						gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(CachedCell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+							a_cellMap.push_back(Cell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
 							continue;
 						}
 						break;
@@ -175,7 +148,7 @@ namespace ModExplorerMenu
 			std::string plugin = _plugin + ".esm";
 			const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
 
-			_cellCache.push_back(CachedCell(plugin, space, place, name, editorid, mod));
+			_cellCache.push_back(Cell(plugin, space, place, name, editorid, mod));
 		}
 
 		// Overwrite _cellCache with Baka changes

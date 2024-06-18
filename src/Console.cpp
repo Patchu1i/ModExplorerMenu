@@ -106,6 +106,7 @@ namespace ModExplorerMenu
 		if (script) {
 			auto queue = RE::UIMessageQueue::GetSingleton();
 			const auto consoleRef = RE::Console::GetSelectedRef();
+			//auto* playerREF = RE::PlayerCharacter::GetSingleton()->AsReference();
 
 			if (queue) {
 				queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kShow, nullptr);
@@ -353,9 +354,7 @@ namespace ModExplorerMenu
 	// @param a_editorID: EditorID of the target cell.
 	void Console::Teleport(std::string a_editorID)
 	{
-		if (IsPlayerLoaded()) [[likely]] {
-			AddToQueue("coc " + a_editorID);
-		}
+		AddToQueue("coc " + a_editorID);
 	}
 
 	// Callback definition for console command script.

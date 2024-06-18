@@ -20,7 +20,8 @@ namespace ModExplorerMenu
 		{
 			Favorite, Plugin, Type, FormID, Name, EditorID, Health,
             Magicka, Stamina, CarryWeight, GoldValue, BaseDamage,
-            ArmorRating, Speed, CritDamage, Skill, Weight, DPS
+            ArmorRating, Speed, CritDamage, Skill, Weight, DPS,
+            Space, Zone, CellName
 		};
 
         ID key;
@@ -60,6 +61,22 @@ namespace ModExplorerMenu
                 }
             }
             return count;
+        }
+    };
+
+    class TeleportColumns : public BaseColumnList
+    {
+    public:
+        TeleportColumns(
+            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showSpace = nullptr, bool* showZone = nullptr,
+            bool* showCellName = nullptr, bool* showEditorID = nullptr)
+        {
+            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
+            columns.push_back({ "Space", ImGuiTableColumnFlags_None, 0.0f, showSpace, BaseColumn::ID::Space });
+            columns.push_back({ "Zone", ImGuiTableColumnFlags_None, 0.0f, showZone, BaseColumn::ID::Zone });
+            columns.push_back({ "CellName", ImGuiTableColumnFlags_None, 0.0f, showCellName, BaseColumn::ID::CellName });
+            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
         }
     };
 
@@ -177,21 +194,27 @@ namespace ModExplorerMenu
 			case BaseColumn::ID::Favorite:
                 delta = (lhs->favorite < rhs->favorite) ? -1 : (lhs->favorite > rhs->favorite) ? 1 : 0;
                 break;
+            case BaseColumn::ID::EditorID:
+                delta = lhs->editorid.compare(rhs->editorid);
+                break;
             case BaseColumn::ID::Plugin:
                 delta = lhs->filename.compare(rhs->filename);
                 break;
             case BaseColumn::ID::Type:
-                delta = lhs->GetTypeName().compare(rhs->GetTypeName());
-                break;
+                if constexpr (!std::is_same<Object, BaseObject>::value)
+                    break;
+                else delta = lhs->GetTypeName().compare(rhs->GetTypeName());
+                    break;
             case BaseColumn::ID::FormID:
-                delta = (lhs->FormID < rhs->FormID) ? -1 : (lhs->FormID > rhs->FormID) ? 1 : 0;
-                break;
+                if constexpr (!std::is_same<Object, BaseObject>::value)
+                    break;
+                else delta = (lhs->FormID < rhs->FormID) ? -1 : (lhs->FormID > rhs->FormID) ? 1 : 0;
+                    break;
             case BaseColumn::ID::Name:
-                delta = lhs->name.compare(rhs->name);
-                break;
-            case BaseColumn::ID::EditorID:
-                delta = lhs->editorid.compare(rhs->editorid);
-                break;
+                if constexpr (!std::is_same<Object, BaseObject>::value)
+                    break;
+                else delta = lhs->name.compare(rhs->name);
+                    break;
             case BaseColumn::ID::Health:
                 if constexpr (!std::is_same<Object, NPC>::value)
                     break;
@@ -216,6 +239,21 @@ namespace ModExplorerMenu
                 if constexpr (!std::is_same<Object, Item>::value) 
                     break;
                 else delta = (lhs->value < rhs->value) ? -1 : (lhs->value > rhs->value) ? 1 : 0;
+                    break;
+            case BaseColumn::ID::Space:
+                if constexpr (!std::is_same<Object, Cell>::value)
+                    break;
+                else delta = lhs->space.compare(rhs->space);
+                    break;
+            case BaseColumn::ID::Zone:
+                if constexpr (!std::is_same<Object, Cell>::value)
+                    break;
+                else delta = lhs->zone.compare(rhs->zone);
+                    break;
+            case BaseColumn::ID::CellName:
+                if constexpr (!std::is_same<Object, Cell>::value)
+                    break;
+                else delta = lhs->cellName.compare(rhs->cellName);
                     break;
             case BaseColumn::ID::BaseDamage:
                 if constexpr (!std::is_same<Object, Item>::value) {

@@ -11,6 +11,14 @@ namespace ImGui
 		       ImGui::CalcTextSize(text).x / 2;
 	};
 
+	// inline static void InlineCheckboxConfig(const char* label, bool* v)
+	// {
+	// 	if (ImGui::InlineCheckbox(label, v)) {
+	// 		Settings::GetSingleton()->SaveSettings();
+	// 		logger::info("Saved settings.");
+	// 	}
+	// }
+
 	// TODO: Implement more use cases for this.
 	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
 	{

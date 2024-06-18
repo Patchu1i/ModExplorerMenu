@@ -1,5 +1,4 @@
-#include "Console.h"
-#include "NPC.h"
+#include "Teleport.h"
 #include "Utils/Util.h"
 
 namespace ModExplorerMenu
@@ -7,20 +6,12 @@ namespace ModExplorerMenu
 	// Populate list with NPCs according to filters & search results.
 	// Will set state to `showAll` and delete any existing CachedNPC objects.
 	// TODO: Find alternatives to C style comparison and copying.
-	void NPCWindow::ApplyFilters()
+	void TeleportWindow::ApplyFilters()
 	{
-		// Since these are manually allocated, we need to delete them.
-		if (GetState() == showSpawned || GetState() == showLocal) {
-			for (auto& npc : npcList) {
-				delete npc;
-			}
-		}
+		cellList.clear();
+		selectedCell = nullptr;
 
-		SetState(showAll);
-		npcList.clear();
-		selectedNPC = nullptr;
-
-		auto& cached_item_list = Data::GetNPCList();
+		auto& cached_item_list = Data::GetCellMap();
 
 		std::string compare;
 		std::string input = inputBuffer;
@@ -32,21 +23,27 @@ namespace ModExplorerMenu
 			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
 				continue;
 
-			if (item.GetName() == "")  // skip empty names
-				continue;
+			// if (item.GetName() == "")  // skip empty names
+			// 	continue;
 
 			switch (searchKey) {
-			case BaseColumn::ID::Name:
-				compare = item.GetName();
+			case BaseColumn::ID::Plugin:
+				compare = item.GetPluginName();
 				break;
-			case BaseColumn::ID::FormID:
-				compare = item.GetFormID();
+			case BaseColumn::ID::Space:
+				compare = item.GetSpace();
+				break;
+			case BaseColumn::ID::Zone:
+				compare = item.GetZone();
+				break;
+			case BaseColumn::ID::CellName:
+				compare = item.GetCellName();
 				break;
 			case BaseColumn::ID::EditorID:
 				compare = item.GetEditorID();
 				break;
 			default:
-				compare = item.GetName();
+				compare = item.GetEditorID();
 				break;
 			}
 
@@ -55,7 +52,7 @@ namespace ModExplorerMenu
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 			if (compare.find(input) != std::string::npos) {
-				npcList.push_back(&item);
+				cellList.push_back(&item);
 				continue;
 			}
 		}
@@ -64,7 +61,7 @@ namespace ModExplorerMenu
 	}
 
 	// Draw search bar for filtering items.
-	void NPCWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
+	void TeleportWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		(void)a_style;
 		(void)a_config;
@@ -73,7 +70,7 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 			ImGui::Indent();
 
-			if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
+			if (ImGui::InputTextWithHint("##TeleportWindow::InputField", "Enter text to filter results by...", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					ImGuiInputTextFlags_EscapeClearsAll)) {
 				ApplyFilters();
@@ -102,15 +99,15 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::Checkbox("Click to Place", &b_clickToPlace);
-			ImGui::SameLine();
-			ImGui::Checkbox("Place Frozen", &b_placeFrozen);
-			ImGui::SameLine();
-			ImGui::Checkbox("Place Naked", &b_placeNaked);
+			// ImGui::Checkbox("Click to Place", &b_clickToPlace);
+			// ImGui::SameLine();
+			// ImGui::Checkbox("Place Frozen", &b_placeFrozen);
+			// ImGui::SameLine();
+			// ImGui::Checkbox("Place Naked", &b_placeNaked);
 
 			ImGui::NewLine();
 
-			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
+			if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
 					ApplyFilters();
@@ -131,38 +128,38 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
-			auto spawnAllNPCS = []() {
-				for (auto& npc : npcList) {
-					Console::PlaceAtMe(npc->GetFormID(), 1);
-					Console::PridLast();
+			// auto spawnAllNPCS = []() {
+			// 	for (auto& npc : npcList) {
+			// 		Console::PlaceAtMe(npc->GetFormID(), 1);
+			// 		Console::PridLast();
 
-					if (b_placeFrozen)
-						Console::Freeze();
+			// 		if (b_placeFrozen)
+			// 			Console::Freeze();
 
-					if (b_placeNaked)
-						Console::UnEquip();
-				}
+			// 		if (b_placeNaked)
+			// 			Console::UnEquip();
+			// 	}
 
-				Console::StartProcessThread();
-			};
+			// 	Console::StartProcessThread();
+			// };
 
-			if (ImGui::Button("Place All NPCs from Selected Mod")) {
-				if (selectedMod != "All Mods") {
-					if (npcList.size() > 50) {
-						ImGui::OpenPopup("Large Query Detected");
-					} else {
-						spawnAllNPCS();
-					}
-				}
-			}
-			ImGui::ShowWarningPopup("Large Query Detected", spawnAllNPCS);
+			// if (ImGui::Button("Place All NPCs from Selected Mod")) {
+			// 	if (selectedMod != "All Mods") {
+			// 		if (npcList.size() > 50) {
+			// 			ImGui::OpenPopup("Large Query Detected");
+			// 		} else {
+			// 			spawnAllNPCS();
+			// 		}
+			// 	}
+			// }
+			// ImGui::ShowWarningPopup("Large Query Detected", spawnAllNPCS);
 
 			ImGui::Unindent();
 			ImGui::NewLine();
 		}
 	}
 
-	void NPCWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
+	void TeleportWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		(void)a_style;
 		(void)a_config;
@@ -175,17 +172,13 @@ namespace ModExplorerMenu
 			if (ImGui::TreeNode("Column Visiblity:")) {
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
 				ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-				ImGui::InlineCheckbox("Favorite", &a_config.npcShowFavoriteColumn);
-				ImGui::InlineCheckbox("FormID", &a_config.npcShowFormIDColumn);
-				ImGui::InlineCheckbox("Plugin", &a_config.npcShowPluginColumn);
-				ImGui::InlineCheckbox("Name", &a_config.npcShowNameColumn);
+				ImGui::InlineCheckbox("Favorite", &a_config.teleShowFavoriteColumn);
+				ImGui::InlineCheckbox("Plugin", &a_config.teleShowPluginColumn);
+				ImGui::InlineCheckbox("Space", &a_config.teleShowSpaceColumn);
+				ImGui::InlineCheckbox("Zone", &a_config.teleShowZoneColumn);
 				ImGui::NewLine();
-				ImGui::InlineCheckbox("EditorID", &a_config.npcShowEditorIDColumn);
-				ImGui::InlineCheckbox("Health", &a_config.npcShowHealthColumn);
-				ImGui::InlineCheckbox("Magicka", &a_config.npcShowMagickaColumn);
-				ImGui::InlineCheckbox("Stamina", &a_config.npcShowStaminaColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("Carry Weight", &a_config.npcShowCarryWeightColumn);
+				ImGui::InlineCheckbox("Cell Name", &a_config.teleShowFullNameColumn);
+				ImGui::InlineCheckbox("Editor ID", &a_config.teleShowEditorIDColumn);
 				ImGui::NewLine();
 				ImGui::PopStyleColor(1);
 				ImGui::PopStyleVar(1);
