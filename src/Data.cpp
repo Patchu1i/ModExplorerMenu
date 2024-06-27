@@ -93,7 +93,7 @@ namespace ModExplorerMenu
 					case 'DIDE':
 						gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(Cell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
 							continue;
 						}
 						break;
@@ -101,7 +101,7 @@ namespace ModExplorerMenu
 					case 'ATAD':
 						gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(Cell(a_file->fileName, "Unkown", "Unkown", "Unkown", edid, a_file));
+							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
 							continue;
 						}
 						break;

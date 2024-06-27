@@ -201,17 +201,17 @@ namespace ModExplorerMenu
                 delta = lhs->filename.compare(rhs->filename);
                 break;
             case BaseColumn::ID::Type:
-                if constexpr (!std::is_same<Object, BaseObject>::value)
+                if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
                 else delta = lhs->GetTypeName().compare(rhs->GetTypeName());
                     break;
             case BaseColumn::ID::FormID:
-                if constexpr (!std::is_same<Object, BaseObject>::value)
+                if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
                 else delta = (lhs->FormID < rhs->FormID) ? -1 : (lhs->FormID > rhs->FormID) ? 1 : 0;
                     break;
             case BaseColumn::ID::Name:
-                if constexpr (!std::is_same<Object, BaseObject>::value)
+                if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
                 else delta = lhs->name.compare(rhs->name);
                     break;

@@ -3,7 +3,6 @@
 #include "NPC.h"
 #include "Utils/Util.h"
 
-
 namespace ModExplorerMenu
 {
 	void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
@@ -16,11 +15,6 @@ namespace ModExplorerMenu
 
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
-
-		if (ImGui::Button("Riverwood", ImVec2(button_width, button_height))) {
-			Console::MoveToREFR("00013485");
-			Console::StartProcessThread();
-		}
 
 		switch (currentState) {
 		case showAll:

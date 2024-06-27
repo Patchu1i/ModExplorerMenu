@@ -12,6 +12,7 @@ namespace ModExplorerMenu
 			RE::ScriptLocals* a_locals, double& a_result, std::uint32_t& a_opcodeOffsetPtr);
 		static void Register();
 		static void SendConsoleCommand(std::string cmd);
+		static void SendQuickCommand(std::string cmd);
 
 		// Commands
 		static void AddItem(std::string a_itemFormID, int a_count = 1);

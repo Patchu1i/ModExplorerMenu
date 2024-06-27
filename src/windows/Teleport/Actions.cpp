@@ -16,10 +16,8 @@ namespace ModExplorerMenu
 		for (auto& cell : tempList) {
 			if (cell.favorite) {
 				if (ImGui::Button(cell.GetEditorID().data(), button_size)) {
-					Console::SendConsoleCommand("coc riverwood");
-					//Console::SendConsoleCommand("coc " + cell.GetEditorID());
-					//Console::Teleport(cell.GetEditorID());
-					//Console::StartProcessThread();
+					Console::Teleport(cell.GetEditorID().data());
+					Console::StartProcessThread();
 					break;
 				}
 			}

@@ -23,6 +23,15 @@ namespace ModExplorerMenu
 		return std::stoul(token, nullptr, 16);
 	}
 
+	std::string GetCellIDFromCMD(std::string cmd)
+	{
+		std::istringstream iss(cmd);
+		std::string token;
+		std::getline(iss, token, ' ');
+		std::getline(iss, token, ' ');
+		return token;
+	}
+
 	// Add NPC FormID to history vector and set.
 	// @param a_ref: Reference FormID of the NPC.
 	void AddNPCToHistory(RE::FormID a_ref)
@@ -45,13 +54,64 @@ namespace ModExplorerMenu
 		return Console::npcPlaceHistoryVector.back();
 	}
 
+	void Console::SendQuickCommand(std::string cmd)
+	{
+		//auto riverwood = RE::TESForm::LookupByEditorID<RE::TESObjectCELL>("Riverwood");
+		//auto player = RE::PlayerCharacter::GetSingleton();
+		//player->CenterOnCell("riverwood");
+
+		// if (riverwood) {
+		// 	auto player = RE::PlayerCharacter::GetSingleton();
+		// 	player->CenterOnCell(riverwood);
+		// } else {
+		// 	logger::info("no riverwood");
+
+		// 	for (auto& cell : RE::TESDataHandler::GetSingleton()->GetFormArray<RE::TESObjectCELL>()) {
+		// 		if (player) {
+		// 			//player->CenterOnCell(cell);
+		// 			logger::info("sent");
+		// 			break;
+		// 		}
+		// 	}
+		// }
+		// const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+		// const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
+
+		// if (script) {
+		// 	const auto consoleRef = RE::Console::GetSelectedRef();
+		// 	auto* playerREF = RE::PlayerCharacter::GetSingleton();
+		// 	script->SetCommand("coc riverwood");
+		// 	script->CompileAndRun(consoleRef.get());
+		// 	delete script;
+		// } else {
+		// 	stl::report_and_fail("Failed to create script using scriptFactory.");
+		// }
+
+		commandHistory.push(cmd);
+	}
+
 	// Create, compile, and run a console command (script).
 	// @param cmd: Command to be executed.
 	// @note This function is called from the main thread.
 	inline void Console::SendConsoleCommand(std::string cmd)
 	{
-		auto references = std::make_shared<std::vector<RE::FormID>>();
+		// Intercept <coc> command for override.
+		if (cmd.find("coc") != std::string::npos) {
+			std::string targetCell = GetCellIDFromCMD(cmd);
+			SKSE::GetTaskInterface()->AddTask([targetCell]() {
+				auto* player = RE::PlayerCharacter::GetSingleton();
+
+				if (player) {
+					player->CenterOnCell(targetCell.c_str());
+				}
+			});
+
+			commandHistory.push(cmd);
+			return;
+		}
+
 		// Intercept <prid_last> command for override.
+		auto references = std::make_shared<std::vector<RE::FormID>>();
 		if (cmd == "<prid_last>") {
 			if (commandHistory.empty()) {
 				stl::report_and_error("No command history found for <prid_last>.");
