@@ -2,8 +2,10 @@
 #include "Graphic.h"
 #include "Settings.h"
 #include "Windows/AddItem/AddItem.h"
+#include "Windows/Cheat/Cheat.h"
 #include "Windows/Home/Home.h"
 #include "Windows/NPC/NPC.h"
+#include "Windows/Object/Object.h"
 #include "Windows/Teleport/Teleport.h"
 #include "Windows/UserSettings/UserSettings.h"
 
@@ -60,6 +62,10 @@ namespace ModExplorerMenu
 				_activeWindow = ActiveWindow::AddItem;
 			}
 
+			if (ImGui::Button("Object", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+				_activeWindow = ActiveWindow::Object;
+			}
+
 			if (ImGui::Button("NPC", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::NPC;
 			}
@@ -70,6 +76,10 @@ namespace ModExplorerMenu
 
 			if (ImGui::Button("Teleport", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Teleport;
+			}
+
+			if (ImGui::Button("Cheat", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+				_activeWindow = ActiveWindow::Cheat;
 			}
 
 			if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
@@ -86,13 +96,16 @@ namespace ModExplorerMenu
 		ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
 		ImGui::PushFont(style.font.nano);
-		if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus)) {
+		if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus + ImGuiWindowFlags_NoScrollbar + ImGuiWindowFlags_NoScrollWithMouse)) {
 			switch (_activeWindow) {
 			case ActiveWindow::Home:
 				HomeWindow::Draw();
 				break;
 			case ActiveWindow::AddItem:
 				AddItemWindow::Draw(style, config);
+				break;
+			case ActiveWindow::Object:
+				ObjectWindow::Draw(style, config);
 				break;
 			case ActiveWindow::NPC:
 				NPCWindow::Draw(style, config);
@@ -101,6 +114,9 @@ namespace ModExplorerMenu
 				break;
 			case ActiveWindow::Teleport:
 				TeleportWindow::Draw(style, config);
+				break;
+			case ActiveWindow::Cheat:
+				CheatWindow::Draw(style, config);
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
@@ -122,6 +138,7 @@ namespace ModExplorerMenu
 		HomeWindow::Init();
 		NPCWindow::Init();
 		TeleportWindow::Init();
+		ObjectWindow::Init();
 
 		RefreshStyle();
 

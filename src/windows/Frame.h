@@ -22,9 +22,11 @@ namespace ModExplorerMenu
 		{
 			Home,
 			AddItem,
+			Object,
 			Lookup,
 			NPC,
 			Teleport,
+			Cheat,
 			Settings
 		};
 

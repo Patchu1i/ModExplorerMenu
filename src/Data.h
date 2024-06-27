@@ -87,6 +87,7 @@ namespace ModExplorerMenu
 		static inline std::vector<Item> _cache;
 		static inline std::vector<Cell> _cellCache;
 		static inline std::vector<NPC> _npcCache;
+		static inline std::vector<StaticObject> _staticCache;
 		static inline std::unordered_set<RE::TESFile*> _modList;
 
 		void CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_map);
@@ -96,6 +97,9 @@ namespace ModExplorerMenu
 
 		template <class T>
 		void CacheNPCs(RE::TESDataHandler* a_data);
+
+		template <class T>
+		void CacheStaticObjects(RE::TESDataHandler* a_data);
 
 	public:
 		static inline Data* GetSingleton()
@@ -117,6 +121,11 @@ namespace ModExplorerMenu
 		[[nodiscard]] static inline std::vector<NPC>& GetNPCList()
 		{
 			return _npcCache;
+		}
+
+		[[nodiscard]] static inline std::vector<StaticObject>& GetObjectList()
+		{
+			return _staticCache;
 		}
 
 		void Run();

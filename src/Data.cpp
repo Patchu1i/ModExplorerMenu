@@ -67,6 +67,21 @@ namespace ModExplorerMenu
 		}
 	}
 
+	template <class T>
+	void Data::CacheStaticObjects(RE::TESDataHandler* a_data)
+	{
+		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
+			RE::FormID formid = form->GetFormID();
+			RE::TESFile* mod = form->GetFile();
+
+			_staticCache.push_back(ModExplorerMenu::StaticObject{ form, formid, mod });
+
+			if (!_modList.contains(mod)) {
+				_modList.insert(mod);
+			}
+		}
+	}
+
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
 	void Data::CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_cellMap)
@@ -141,6 +156,14 @@ namespace ModExplorerMenu
 		CacheItems<RE::TESKey>(dataHandler);
 
 		CacheNPCs<RE::TESNPC>(dataHandler);
+
+		// TODO: Did I miss any?
+		CacheStaticObjects<RE::TESObjectTREE>(dataHandler);
+		CacheStaticObjects<RE::TESObjectACTI>(dataHandler);
+		CacheStaticObjects<RE::TESObjectDOOR>(dataHandler);
+		CacheStaticObjects<RE::TESObjectSTAT>(dataHandler);
+		CacheStaticObjects<RE::TESObjectCONT>(dataHandler);
+		CacheStaticObjects<RE::TESObjectLIGH>(dataHandler);
 
 		WorldspaceCells cells;
 		for (const auto& cell : cells.table) {

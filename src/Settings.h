@@ -47,6 +47,7 @@ namespace ModExplorerMenu
 			Widgets,
 			Main,
 			AddItem,
+			Object,
 			FormLookup,
 			NPC,
 			Teleport,
@@ -64,6 +65,7 @@ namespace ModExplorerMenu
 			{ Widgets, "Widgets" },
 			{ Main, "Main" },
 			{ AddItem, "AddItem" },
+			{ Object, "Object" },
 			{ FormLookup, "FormLookup" },
 			{ NPC, "NPC" },
 			{ Teleport, "Teleport" },
@@ -92,6 +94,13 @@ namespace ModExplorerMenu
 			bool aimShowSkillColumn;
 			bool aimShowWeightColumn;
 			bool aimShowDPSColumn;
+
+			// Static Objects
+			bool soShowFavoriteColumn;
+			bool soShowPluginColumn;
+			bool soShowTypeColumn;
+			bool soShowFormIDColumn;
+			bool soShowEditorIDColumn;
 
 			// Teleport
 			bool teleShowFavoriteColumn;

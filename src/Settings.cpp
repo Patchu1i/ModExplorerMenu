@@ -179,6 +179,12 @@ namespace ModExplorerMenu
 		user.config.aimShowWeightColumn = GET_VALUE<bool>(rSections[AddItem], "ShowWeightColumn", false, a_ini);
 		user.config.aimShowDPSColumn = GET_VALUE<bool>(rSections[AddItem], "ShowDPSColumn", false, a_ini);
 
+		user.config.soShowFavoriteColumn = GET_VALUE<bool>(rSections[Object], "ShowFavoriteColumn", true, a_ini);
+		user.config.soShowPluginColumn = GET_VALUE<bool>(rSections[Object], "ShowPluginColumn", true, a_ini);
+		user.config.soShowTypeColumn = GET_VALUE<bool>(rSections[Object], "ShowTypeColumn", true, a_ini);
+		user.config.soShowFormIDColumn = GET_VALUE<bool>(rSections[Object], "ShowFormIDColumn", false, a_ini);
+		user.config.soShowEditorIDColumn = GET_VALUE<bool>(rSections[Object], "ShowEditorIDColumn", true, a_ini);
+
 		user.config.teleShowFavoriteColumn = GET_VALUE<bool>(rSections[Teleport], "ShowFavoriteColumn", true, a_ini);
 		user.config.teleShowPluginColumn = GET_VALUE<bool>(rSections[Teleport], "ShowPluginColumn", true, a_ini);
 		user.config.teleShowSpaceColumn = GET_VALUE<bool>(rSections[Teleport], "ShowSpaceColumn", true, a_ini);

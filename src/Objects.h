@@ -44,6 +44,10 @@ namespace ModExplorerMenu
 		}
 	};
 
+	class StaticObject : public BaseObject
+	{
+	};
+
 	class Cell
 	{
 	public:

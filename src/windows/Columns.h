@@ -80,6 +80,22 @@ namespace ModExplorerMenu
         }
     };
 
+    class ObjectColumns : public BaseColumnList
+    {
+    public:
+        ObjectColumns(
+            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showType = nullptr, bool* showFormID = nullptr,
+            bool* showEditorID = nullptr
+        )
+        {
+            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
+            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, showType, BaseColumn::ID::Type });
+            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID });
+            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
+        }
+    };
+
     class NPCColumns : public BaseColumnList
     {
     public:
