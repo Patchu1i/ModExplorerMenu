@@ -56,36 +56,17 @@ namespace ModExplorerMenu
 
 	void Console::SendQuickCommand(std::string cmd)
 	{
-		//auto riverwood = RE::TESForm::LookupByEditorID<RE::TESObjectCELL>("Riverwood");
-		//auto player = RE::PlayerCharacter::GetSingleton();
-		//player->CenterOnCell("riverwood");
+		logger::info("{}", cmd);
+		const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+		const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
 
-		// if (riverwood) {
-		// 	auto player = RE::PlayerCharacter::GetSingleton();
-		// 	player->CenterOnCell(riverwood);
-		// } else {
-		// 	logger::info("no riverwood");
-
-		// 	for (auto& cell : RE::TESDataHandler::GetSingleton()->GetFormArray<RE::TESObjectCELL>()) {
-		// 		if (player) {
-		// 			//player->CenterOnCell(cell);
-		// 			logger::info("sent");
-		// 			break;
-		// 		}
-		// 	}
-		// }
-		// const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-		// const auto script = scriptFactory ? scriptFactory->Create() : nullptr;
-
-		// if (script) {
-		// 	const auto consoleRef = RE::Console::GetSelectedRef();
-		// 	auto* playerREF = RE::PlayerCharacter::GetSingleton();
-		// 	script->SetCommand("coc riverwood");
-		// 	script->CompileAndRun(consoleRef.get());
-		// 	delete script;
-		// } else {
-		// 	stl::report_and_fail("Failed to create script using scriptFactory.");
-		// }
+		if (script) {
+			script->SetCommand(cmd);
+			script->CompileAndRun(nullptr);
+			delete script;
+		} else {
+			stl::report_and_fail("Failed to create script using scriptFactory.");
+		}
 
 		commandHistory.push(cmd);
 	}

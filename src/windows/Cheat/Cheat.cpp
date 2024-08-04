@@ -31,8 +31,69 @@ namespace ModExplorerMenu
 		ImGui::EndColumns();
 	}
 
+	void CheatWindow::OnEnterCallback(const Tab::ID& a_id)
+	{
+		auto* actor = RE::PlayerCharacter::GetSingleton()->AsActorValueOwner();
+
+		if (actor == nullptr) {
+			return;
+		}
+
+		if (a_id == Tab::ID::kShouts) {
+			iDragonSouls = (int)actor->GetActorValue(RE::ActorValue::kDragonSouls);
+
+			auto* handler = RE::TESDataHandler::GetSingleton();
+			auto shoutList = handler->GetFormArray<RE::TESShout>();
+			auto wordList = handler->GetFormArray<RE::TESWordOfPower>();
+
+			shouts.clear();
+			words.clear();
+
+			for (RE::TESShout* shout : shoutList) {
+				if (shout == nullptr) {
+					continue;
+				}
+
+				bool isValidWord = true;
+				for (auto var : shout->variations) {
+					if (var.word == nullptr) {
+						isValidWord = false;
+						break;
+					}
+
+					if (strlen(var.word->GetFullName()) >= 9) {
+						isValidWord = false;
+						break;
+					}
+
+					if (strlen(var.word->GetFullName()) == 0) {
+						isValidWord = false;
+						break;
+					}
+				}
+
+				if (isValidWord == false) {
+					continue;
+				}
+
+				logger::info("Shout: {}", shout->GetFullName());
+				for (auto var : shout->variations) {
+					logger::info("Word: {}", var.word->GetFullName());
+				}
+
+				logger::info("-----");
+
+				shouts.push_back(shout);
+			}
+
+			for (RE::TESWordOfPower* word : wordList) {
+				words.push_back(word);
+			}
+		}
+	}
+
 	void CheatWindow::Init()
 	{
-		// ?
+		//activeTab = &m_shouts;
 	}
 }

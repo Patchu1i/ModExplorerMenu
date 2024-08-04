@@ -13,25 +13,31 @@ namespace ModExplorerMenu
 
 		ImGui::SeparatorText(activeTab->GetName().c_str());
 
-		if (activeTab == &m_dragonSouls) {
-			// Show Dragon Souls tab
-			ImGui::Text("Dragon Souls: %d", 0);
-		} else if (activeTab == &m_perks) {
-			// Show Perks tab
-		} else if (activeTab == &m_skills) {
-			// Show Skills tab
-		} else if (activeTab == &m_shouts) {
-			// Show Shouts tab
-		} else if (activeTab == &m_character) {
-			// Show Character tab
-		} else if (activeTab == &m_progression) {
-			// Show Progression tab
-		} else if (activeTab == &m_combat) {
-			// Show Combat tab
-		} else if (activeTab == &m_world) {
-			// Show World tab
-		} else if (activeTab == &m_misc) {
-			// Show Misc tab
+		switch (activeTab->GetID()) {
+		case Tab::ID::kPerks:
+			ShowPerks();
+			break;
+		case Tab::ID::kSkills:
+			ShowSkills();
+			break;
+		case Tab::ID::kShouts:
+			ShowShouts();
+			break;
+		case Tab::ID::kCharacter:
+			ShowCharacter();
+			break;
+		case Tab::ID::kProgression:
+			ShowProgression();
+			break;
+		case Tab::ID::kCombat:
+			ShowCombat();
+			break;
+		case Tab::ID::kWorld:
+			ShowWorld();
+			break;
+		case Tab::ID::kMisc:
+			ShowMisc();
+			break;
 		}
 	}
 }

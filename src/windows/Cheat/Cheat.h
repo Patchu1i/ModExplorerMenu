@@ -5,27 +5,60 @@
 
 namespace ModExplorerMenu
 {
-	class Tab
+
+	class PersistentData
 	{
-	private:
-		std::string m_name;
-		bool m_enabled;
-
 	public:
-		Tab(std::string a_name, bool a_enabled) :
-			m_name(a_name),
-			m_enabled(a_enabled)
-		{}
-
-		void Enable() { m_enabled = true; }
-		void Disable() { m_enabled = false; }
-
-		bool IsEnabled() { return m_enabled; }
-
-		[[nodiscard]] std::string GetName() { return m_name; }
+		static inline int iDragonSouls = 0;
+		static inline std::vector<RE::TESShout*> shouts;
+		static inline std::vector<RE::TESWordOfPower*> words;
 	};
 
-	class CheatWindow
+	class Tab
+	{
+	public:
+		enum ID
+		{
+			kPerks,
+			kSkills,
+			kShouts,
+			kCharacter,
+			kProgression,
+			kCombat,
+			kWorld,
+			kMisc
+		};
+
+	private:
+		const std::string m_name;
+		bool m_enabled;
+		const ID m_id;
+		const std::function<void(const ID&)> callback;
+
+	public:
+		Tab(const std::string a_name, bool a_enabled, const ID m_id, const std::function<void(const ID&)> callback) :
+			m_name(a_name),
+			m_enabled(a_enabled),
+			m_id(m_id),
+			callback(std::move(callback))
+		{}
+
+		void OnEnter() { callback(m_id); }
+		void Disable() { m_enabled = false; }
+
+		void Enable()
+		{
+			m_enabled = true;
+			OnEnter();
+		}
+
+		bool IsEnabled() { return m_enabled; }
+		ID GetID() const { return m_id; }
+
+		[[nodiscard]] std::string GetName() const { return m_name; }
+	};
+
+	class CheatWindow : public PersistentData
 	{
 	private:
 		static inline Tab* activeTab;
@@ -35,23 +68,22 @@ namespace ModExplorerMenu
 			for (auto& tab : tabs) {
 				tab.Disable();
 			}
-			a_tab.Enable();
 
+			a_tab.Enable();
 			activeTab = &a_tab;
 		}
 
-		static inline Tab m_dragonSouls = Tab("Dragon Souls", true);
-		static inline Tab m_perks = Tab("Perks", false);
-		static inline Tab m_skills = Tab("Skills", false);
-		static inline Tab m_shouts = Tab("Shouts", false);
-		static inline Tab m_character = Tab("Character", false);
-		static inline Tab m_progression = Tab("Progression", false);
-		static inline Tab m_combat = Tab("Combat", false);
-		static inline Tab m_world = Tab("World", false);
-		static inline Tab m_misc = Tab("Misc", false);
+		static void OnEnterCallback(const Tab::ID& a_id);
+		static inline Tab m_perks = Tab("Perks", false, Tab::ID::kPerks, OnEnterCallback);
+		static inline Tab m_skills = Tab("Skills", false, Tab::ID::kSkills, OnEnterCallback);
+		static inline Tab m_shouts = Tab("Shouts", false, Tab::ID::kShouts, OnEnterCallback);
+		static inline Tab m_character = Tab("Character", false, Tab::ID::kCharacter, OnEnterCallback);
+		static inline Tab m_progression = Tab("Progression", false, Tab::ID::kProgression, OnEnterCallback);
+		static inline Tab m_combat = Tab("Combat", false, Tab::ID::kCombat, OnEnterCallback);
+		static inline Tab m_world = Tab("World", false, Tab::ID::kWorld, OnEnterCallback);
+		static inline Tab m_misc = Tab("Misc", false, Tab::ID::kMisc, OnEnterCallback);
 
 		static inline std::vector<Tab> tabs = {
-			m_dragonSouls,
 			m_perks,
 			m_skills,
 			m_shouts,
@@ -62,36 +94,20 @@ namespace ModExplorerMenu
 			m_misc
 		};
 
-		// enum Tab
-		// {
-		// 	kDragonSouls,
-		// 	kPerks,
-		// 	kSkills,
-		// 	kShouts,
-		// 	kCharacter,
-		// 	kProgression,
-		// 	kCombat,
-		// 	kWorld,
-		// 	kMisc
-		// };
-
-		// std::map<Tab, bool> m_tabs = {
-		// 	{ kDragonSouls, true },
-		// 	{ kPerks, false },
-		// 	{ kSkills, false },
-		// 	{ kShouts, false },
-		// 	{ kCharacter, false },
-		// 	{ kProgression, false },
-		// 	{ kCombat, false },
-		// 	{ kWorld, false },
-		// 	{ kMisc, false }
-		// };
-
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSidebar(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSubMenu(Settings::Style& a_style, Settings::Config& a_config);
 		static void Init();
+
+		static void ShowPerks();
+		static void ShowSkills();
+		static void ShowShouts();
+		static void ShowCharacter();
+		static void ShowProgression();
+		static void ShowCombat();
+		static void ShowWorld();
+		static void ShowMisc();
 
 	private:
 	};
