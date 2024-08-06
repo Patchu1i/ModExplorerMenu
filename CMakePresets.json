@@ -67,22 +67,6 @@
 				"win64",
 				"msvc"
 			]
-		},
-		{
-			"name": "ALL-VSCODE",
-			"cacheVariables": {
-				"BUILD_SKYRIM": true,
-				"ENABLE_SKYRIM_AE": "ON",
-				"ENABLE_SKYRIM_SE": "ON",
-				"ENABLE_SKYRIM_VR": "OFF",
-				"AUTO_PLUGIN_DEPLOYMENT": "ON"
-			},
-			"inherits": [
-				"common",
-				"vcpkg",
-				"win64",
-				"vscode"
-			]
 		}
 	]
 }
