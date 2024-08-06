@@ -19,6 +19,14 @@ namespace ImGui
 	// 	}
 	// }
 
+	// https://github.com/ocornut/imgui/issues/4719
+	inline static void SelectableColor(ImU32 color)
+	{
+		ImVec2 p_min = ImGui::GetItemRectMin();
+		ImVec2 p_max = ImGui::GetItemRectMax();
+		ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, color);
+	}
+
 	// TODO: Implement more use cases for this.
 	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
 	{

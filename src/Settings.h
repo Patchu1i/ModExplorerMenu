@@ -190,7 +190,7 @@ namespace ModExplorerMenu
 			float grabRounding = 3;
 			float popupBorderSize = 1;
 			float popupRounding = 3;
-			float globalFontSize = 0.5;
+			float globalFontSize = 1.0;
 
 			bool showTableRowBG = true;
 

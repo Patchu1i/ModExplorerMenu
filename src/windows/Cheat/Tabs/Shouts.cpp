@@ -1,5 +1,6 @@
 #include "Console.h"
 #include "Windows/Cheat/Cheat.h"
+#include "Utils/Util.h"
 
 namespace ModExplorerMenu
 {
@@ -15,13 +16,15 @@ namespace ModExplorerMenu
 		ImGui::NewLine();
 
 		ImGui::Text("Dragon Souls:");
-		ImGui::SameLine();
-		if (ImGui::InputInt("##DragonSoulAmount", &iDragonSouls)) {
-			actor->SetActorValue(RE::ActorValue::kDragonSouls, (float)iDragonSouls);
-		}
+		ImGui::NewLine();
+		ImGui::InputInt("##DragonSoulAmount", &iDragonSouls);
 		ImGui::SameLine();
 		if (ImGui::Button("Set")) {
 			actor->SetActorValue(RE::ActorValue::kDragonSouls, (float)iDragonSouls);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Refresh")) {
+			iDragonSouls = actor->GetActorValue(RE::ActorValue::kDragonSouls);
 		}
 
 		ImGui::NewLine();
@@ -31,10 +34,10 @@ namespace ModExplorerMenu
 		ImGui::Text("Shouts:");
 		ImGui::NewLine();
 
-		//ImGuiContext& g = *ImGui::GetCurrentContext();
-		//ImGuiTable* table = g.CurrentTable;
+		constexpr auto flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		auto size = ImGui::GetContentRegionAvail();
 
-		if (ImGui::BeginTable("##ShoutTable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+		if (ImGui::BeginTable("##ShoutTable", 4, flags, size)) {
 			ImGui::TableSetupColumn("Shout");
 			ImGui::TableSetupColumn("First");
 			ImGui::TableSetupColumn("Second");
@@ -45,34 +48,44 @@ namespace ModExplorerMenu
 			auto curRow = ImGui::TableGetHoveredRow();
 			auto curCol = ImGui::TableGetHoveredColumn();
 
-			auto isKnown = [](RE::TESShout* shout) {
+			auto isShoutKnown = [](RE::TESShout* shout) {
 				return shout->GetKnown();
+			};
+
+			auto isWordKnown = [](RE::TESWordOfPower* word) {
+				return word->GetKnown();
 			};
 
 			for (RE::TESShout* shout : shouts) {
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				ImGui::Selectable(shout->GetFullName(), isKnown(shout) || (curCol >= 0) && (curRow == ImGui::TableGetRowIndex()));
 
-				shout->GetKnown();
+				bool shoutIsKnown = isShoutKnown(shout);
+				ImGui::Selectable(shout->GetFullName(), shoutIsKnown || (curCol >= 0) && (curRow == ImGui::TableGetRowIndex()));
+
+				if (shoutIsKnown) {
+					ImGui::SelectableColor(IM_COL32(25, 255, 25, 50));
+				}
 
 				int wordNum = 0;
 				for (auto var : shout->variations) {
 					wordNum++;
 
 					ImGui::TableNextColumn();
-					if (ImGui::Selectable(var.word->GetName(), isKnown(shout) || (curCol >= wordNum) && (curRow == ImGui::TableGetRowIndex()))) {
-						//std::string formid = std::format("0{:x}", shout->formID);
+					bool isKnown = shoutIsKnown && isWordKnown(var.word);
+					if (ImGui::Selectable(var.word->GetName(), isKnown || (curCol >= wordNum) && (curRow == ImGui::TableGetRowIndex()))) {
 
 						for (int i = 0; i < wordNum; i++) {
-							//logger::info("shout word: {}", shout->variations[i].word->fullName);
 							auto wordID = shout->variations[i].word->formID;
 							auto stringID = std::format("0{:x}", wordID);
 							logger::info("shout1 formid: {}", stringID);
 							Console::SendConsoleCommand("player.teachword " + stringID);
 							Console::SendConsoleCommand("player.unlockword " + stringID);
 						}
-						// Console::SendConsoleCommand("player.teachword " + std::to_string(shout->formID));
+					}
+
+					if (isKnown) {
+						ImGui::SelectableColor(IM_COL32(25, 255, 25, 50));
 					}
 				}
 			}
