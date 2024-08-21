@@ -1,6 +1,6 @@
 #include "Console.h"
-#include "Windows/Cheat/Cheat.h"
 #include "Utils/Util.h"
+#include "Windows/Cheat/Cheat.h"
 
 namespace ModExplorerMenu
 {
@@ -24,7 +24,7 @@ namespace ModExplorerMenu
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Refresh")) {
-			iDragonSouls = actor->GetActorValue(RE::ActorValue::kDragonSouls);
+			iDragonSouls = (int)actor->GetActorValue(RE::ActorValue::kDragonSouls);
 		}
 
 		ImGui::NewLine();
@@ -74,7 +74,6 @@ namespace ModExplorerMenu
 					ImGui::TableNextColumn();
 					bool isKnown = shoutIsKnown && isWordKnown(var.word);
 					if (ImGui::Selectable(var.word->GetName(), isKnown || (curCol >= wordNum) && (curRow == ImGui::TableGetRowIndex()))) {
-
 						for (int i = 0; i < wordNum; i++) {
 							auto wordID = shout->variations[i].word->formID;
 							auto stringID = std::format("0{:x}", wordID);

@@ -14,9 +14,6 @@ namespace ModExplorerMenu
 		ImGui::SeparatorText(activeTab->GetName().c_str());
 
 		switch (activeTab->GetID()) {
-		case Tab::ID::kPerks:
-			ShowPerks();
-			break;
 		case Tab::ID::kSkills:
 			ShowSkills();
 			break;
