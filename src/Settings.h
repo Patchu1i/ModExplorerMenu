@@ -354,7 +354,7 @@ namespace ModExplorerMenu
 		// Horrendous de-serialization.
 		[[nodiscard]] static inline float GetFloat(std::string& a_str) { return std::stof(a_str); };
 		[[nodiscard]] static inline int GetInt(std::string& a_str) { return std::stoi(a_str); };
-		[[nodiscard]] static inline bool GetBool(std::string& a_str) { return a_str == "1"; };
+		[[nodiscard]] static inline bool GetBool(std::string& a_str) { return a_str == "true"; };
 		[[nodiscard]] static inline std::string GetString(std::string& a_str) { return a_str; };  // lol
 		[[nodiscard]] inline Style& GetStyle() { return user.style; };
 		[[nodiscard]] inline Config& GetConfig() { return user.config; };
