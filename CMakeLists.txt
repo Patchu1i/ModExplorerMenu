@@ -39,7 +39,7 @@ endif()
 # ## Build options
 # ########################################################################################################################
 message("Options:")
-option(AUTO_PLUGIN_DEPLOYMENT "Copy the build output and addons to env:SamplePluginOutputDir." OFF)
+option(AUTO_PLUGIN_DEPLOYMENT "Copy the build output and addons to env:SamplePluginOutputDir." ON)
 option(ZIP_TO_DIST "Zip the base mod and addons to their own 7z file in dist." ON)
 option(AIO_ZIP_TO_DIST "Zip the base mod and addons to a AIO 7z file in dist." OFF)
 message("\tAuto plugin deployment: ${AUTO_PLUGIN_DEPLOYMENT}")

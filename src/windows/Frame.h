@@ -26,7 +26,6 @@ namespace ModExplorerMenu
 			Lookup,
 			NPC,
 			Teleport,
-			Cheat,
 			Settings
 		};
 

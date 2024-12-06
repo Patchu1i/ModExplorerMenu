@@ -190,7 +190,6 @@ namespace ModExplorerMenu
 	void AddItemWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		(void)a_style;
-		(void)a_config;
 
 		if (ImGui::CollapsingHeader("Advanced Options:")) {
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);

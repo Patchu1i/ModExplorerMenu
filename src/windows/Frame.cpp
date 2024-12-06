@@ -2,7 +2,6 @@
 #include "Graphic.h"
 #include "Settings.h"
 #include "Windows/AddItem/AddItem.h"
-#include "Windows/Cheat/Cheat.h"
 #include "Windows/Home/Home.h"
 #include "Windows/NPC/NPC.h"
 #include "Windows/Object/Object.h"
@@ -78,10 +77,6 @@ namespace ModExplorerMenu
 				_activeWindow = ActiveWindow::Teleport;
 			}
 
-			if (ImGui::Button("Cheat", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Cheat;
-			}
-
 			if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Settings;
 			}
@@ -114,9 +109,6 @@ namespace ModExplorerMenu
 				break;
 			case ActiveWindow::Teleport:
 				TeleportWindow::Draw(style, config);
-				break;
-			case ActiveWindow::Cheat:
-				CheatWindow::Draw(style, config);
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();

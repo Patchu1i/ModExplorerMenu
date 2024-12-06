@@ -32,7 +32,7 @@ namespace ModExplorerMenu
 		ID3D11DeviceContext* GetContext() const { return context; };
 
 		static inline bool is_settings_popped = false;
-		static constexpr inline uint32_t keybind = 210;
+		static constexpr inline uint32_t keybind = 211;
 		static inline std::atomic<bool> initialized = false;
 
 	private:
