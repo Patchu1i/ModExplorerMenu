@@ -3,6 +3,7 @@
 #include "Menu.h"
 #include "Settings.h"
 #include "Utils/Anim.h"
+#include "Utils/Keycode.h"
 #include "Utils/Util.h"
 #include <codecvt>
 
@@ -64,6 +65,121 @@ namespace ModExplorerMenu
 			SettingsWindow::changes.store(true);
 			SettingsWindow::file_changes.store(true);
 		}
+	}
+
+	static int newModifier = 0;
+	void AddModifier(const char* a_text, int& a_modifier)
+	{
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		auto id = "##Modifier" + std::string(a_text);
+		auto width = 200.0f;
+		ImGui::Text(a_text);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::Button(std::to_string(a_modifier).c_str())) {
+			ImGui::OpenPopup("##ModifierPopup");
+			newModifier = 0;
+		}
+
+		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopup("##ModifierPopup", flags)) {
+			if (newModifier > 0) {
+				if (ImGui::IsModifierKey(newModifier) && GetAsyncKeyState(newModifier)) {
+					a_modifier = ImGui::GetSkyrimKeyCode(newModifier);
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+					ImGui::CloseCurrentPopup();
+				} else {
+					newModifier = 0;
+				}
+			}
+
+			if (newModifier == 0) {
+				for (auto& Key : ImGui::KeyCodes) {
+					if (GetAsyncKeyState(Key)) {
+						if (ImGui::IsModifierKey(Key)) {
+							newModifier = Key;
+						}
+
+						if (Key == VK_ESCAPE) {
+							ImGui::CloseCurrentPopup();
+						}
+					}
+				}
+			}
+
+			ImGui::Text("Press a key to set the modifier.");
+			ImGui::NewLine();
+			ImGui::Text("Press (ESC) to cancel.");
+
+			ImGui::EndPopup();
+		}
+	}
+
+	static int newKeybind = 0;
+	void AddKeybind(const char* a_text, int& a_keybind)
+	{
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		auto id = "##Keybind" + std::string(a_text);
+		auto width = 200.0f;
+		ImGui::Text(a_text);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::Button(std::to_string(a_keybind).c_str())) {
+			ImGui::OpenPopup("##KeybindPopup");
+			newKeybind = 0;
+		}
+
+		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopup("##KeybindPopup", flags)) {
+			if (newKeybind > 0) {
+				if (ImGui::IsKeyboardWhitelist(newKeybind) && GetAsyncKeyState(newKeybind)) {
+					a_keybind = ImGui::GetSkyrimKeyCode(newKeybind);
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+					ImGui::CloseCurrentPopup();
+				} else {
+					newKeybind = 0;
+				}
+			}
+
+			if (newKeybind == 0) {
+				for (auto& Key : ImGui::KeyCodes) {
+					if (GetAsyncKeyState(Key)) {
+						if (ImGui::IsKeyboardWhitelist(Key)) {
+							newKeybind = Key;
+						}
+
+						if (Key == VK_ESCAPE) {
+							ImGui::CloseCurrentPopup();
+						}
+					}
+				}
+			}
+
+			ImGui::Text("Press a key to set the keybind.");
+			ImGui::NewLine();
+			ImGui::Text("Press (ESC) to cancel.");
+
+			ImGui::EndPopup();
+		}
+
+		// for (auto& key : ImGui::KeyCodes) {
+		// 	if (GetAsyncKeyState(key)) {
+		// 		a_keybind = (uint32_t)key;
+		// 		SettingsWindow::changes.store(true);
+		// 		SettingsWindow::file_changes.store(true);
+		// 		ImGui::CloseCurrentPopup();
+		// 		logger::info("Keybind set to: {}", a_keybind);
+		// 		break;
+		// 	}
+		// }
 	}
 
 	void AddCheckbox(const char* a_text, bool& a_boolRef)
@@ -165,6 +281,20 @@ namespace ModExplorerMenu
 		}
 
 		ImGui::End();
+	}
+
+	void SettingsWindow::DrawGeneralSettings()
+	{
+		//Settings::Style& style = Settings::GetSingleton()->GetStyle();
+		Settings::Config& config = Settings::GetSingleton()->GetConfig();
+
+		if (changes.load()) {
+			Menu::GetSingleton()->RefreshStyle();
+			changes.store(false);
+		}
+
+		AddKeybind("Toggle Menu Keybind", config.showMenuKey);
+		AddModifier("Toggle Menu (Modifier)", config.showMenuModifier);
 	}
 
 	void SettingsWindow::DrawThemeSelector()
@@ -404,6 +534,12 @@ namespace ModExplorerMenu
 
 		constexpr auto child_flags = ImGuiChildFlags_Border;
 		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {
+			if (ImGui::CollapsingHeader("General Configuration", ImGuiTreeNodeFlags_Framed)) {
+				ImGui::Indent();
+				DrawGeneralSettings();
+				ImGui::Unindent();
+			}
+
 			if (ImGui::CollapsingHeader("Theme Configuration", ImGuiTreeNodeFlags_Framed)) {
 				ImGui::Indent();
 				DrawThemeSelector();

@@ -551,6 +551,9 @@ namespace ModExplorerMenu
 					break;
 				}
 
+				uint32_t showMenuKey = Settings::GetSingleton()->GetConfig().showMenuKey;
+				uint32_t showMenuModifier = Settings::GetSingleton()->GetConfig().showMenuModifier;
+
 				switch (button->device.get()) {
 				case RE::INPUT_DEVICE::kMouse:
 					if (!Menu::IsEnabled()) {
@@ -570,9 +573,21 @@ namespace ModExplorerMenu
 						io.AddKeyEvent(ImGui_ImplWin32_VirtualKeyToImGuiKey(key), button->IsPressed());
 					}
 
-					if (button->GetIDCode() == Menu::keybind) {
+					if (button->GetIDCode() == showMenuModifier) {
+						if (button->IsPressed()) {
+							Menu::is_modifier_pressed = true;
+						} else {
+							Menu::is_modifier_pressed = false;
+						}
+					}
+
+					if (button->GetIDCode() == showMenuKey) {
 						if (button->IsDown() && Menu::initialized.load()) {
-							Menu::Toggle();
+							if (showMenuModifier == 0) {
+								Menu::Toggle();
+							} else if (Menu::is_modifier_pressed == true) {
+								Menu::Toggle();
+							}
 						}
 					} else if (button->GetIDCode() == uint32_t(41)) {  // console escape.
 						if (button->IsDown() && Menu::IsEnabled()) {

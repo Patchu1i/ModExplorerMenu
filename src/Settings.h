@@ -78,8 +78,8 @@ namespace ModExplorerMenu
 		{
 			// Main
 			std::string theme = "Default";
-
-			int showMenu;
+			int showMenuKey;
+			int showMenuModifier;
 
 			// Additem
 			bool aimShowFavoriteColumn;
@@ -238,7 +238,6 @@ namespace ModExplorerMenu
 				return a_style ? "true" : "false";
 			} else {
 				stl::report_and_fail("Unsupported type for ToString");  // FIXME: static_assert?
-				return;
 			}
 		}
 

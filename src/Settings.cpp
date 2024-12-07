@@ -81,11 +81,14 @@ namespace ModExplorerMenu
 		a_ini.SetValue(rSections[Widgets], NULL, NULL, GetComment(iComment::ThemeWidgetsHeader));
 	}
 
+	// Master ini has no defaults, they're established here. Theme defaults are derived from def class.
 	void Settings::CreateDefaultMaster()
 	{
 		GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
 			FormatMasterIni(a_ini);
 			a_ini.SetValue(rSections[Main], "Theme", "Default");
+			a_ini.SetValue(rSections[Main], "ShowMenuKey", "211");
+			a_ini.SetValue(rSections[Main], "ShowMenuModifier", "0");
 		});
 	}
 
@@ -117,7 +120,8 @@ namespace ModExplorerMenu
 			FormatMasterIni(a_ini);
 
 			a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
-			a_ini.SetValue(rSections[Main], "ShowMenu", std::to_string(Settings::GetSingleton()->user.config.showMenu).c_str());
+			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(Settings::GetSingleton()->user.config.showMenuKey).c_str());
+			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 
 			a_ini.SetValue(rSections[AddItem], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFavoriteColumn).c_str());
 			a_ini.SetValue(rSections[AddItem], "ShowTypeColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowTypeColumn).c_str());
@@ -164,7 +168,8 @@ namespace ModExplorerMenu
 	void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	{
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
-		user.config.showMenu = GET_VALUE<int>(rSections[Main], "ShowMenu", 0, a_ini);
+		user.config.showMenuKey = GET_VALUE<int>(rSections[Main], "ShowMenuKey", 211, a_ini);
+		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", 0, a_ini);
 
 		user.config.aimShowFavoriteColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFavoriteColumn", true, a_ini);
 		user.config.aimShowPluginColumn = GET_VALUE<bool>(rSections[AddItem], "ShowPluginColumn", true, a_ini);
