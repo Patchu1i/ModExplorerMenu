@@ -117,6 +117,7 @@ namespace ModExplorerMenu
 			FormatMasterIni(a_ini);
 
 			a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
+			a_ini.SetValue(rSections[Main], "ShowMenu", std::to_string(Settings::GetSingleton()->user.config.showMenu).c_str());
 
 			a_ini.SetValue(rSections[AddItem], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFavoriteColumn).c_str());
 			a_ini.SetValue(rSections[AddItem], "ShowTypeColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowTypeColumn).c_str());
@@ -163,6 +164,7 @@ namespace ModExplorerMenu
 	void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	{
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
+		user.config.showMenu = GET_VALUE<int>(rSections[Main], "ShowMenu", 0, a_ini);
 
 		user.config.aimShowFavoriteColumn = GET_VALUE<bool>(rSections[AddItem], "ShowFavoriteColumn", true, a_ini);
 		user.config.aimShowPluginColumn = GET_VALUE<bool>(rSections[AddItem], "ShowPluginColumn", true, a_ini);

@@ -79,6 +79,8 @@ namespace ModExplorerMenu
 			// Main
 			std::string theme = "Default";
 
+			int showMenu;
+
 			// Additem
 			bool aimShowFavoriteColumn;
 			bool aimShowPluginColumn;
