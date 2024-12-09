@@ -123,7 +123,7 @@ namespace ModExplorerMenu
 
 					ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
 					float col = item->favorite ? 1.0f : 0.5f;
-					bool clickToAct = b_ClickToAdd || b_ClickToPlace || b_ClickToFavorite;
+					bool clickToAct = b_AddToInventory || b_PlaceOnGround || b_AddToFavorites;
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
@@ -261,15 +261,15 @@ namespace ModExplorerMenu
 					}
 
 					// Shortcut Handlers
-					if (b_ClickToAdd && _itemSelected) {
+					if (b_AddToInventory && _itemSelected) {
 						Console::AddItem(item->GetFormID().c_str(), clickToAddCount);
 						Console::StartProcessThread();
-					} else if (b_ClickToPlace && _itemSelected) {
-						Console::PlaceAtMe(item->GetFormID().c_str(), clickToPlaceCount);
+					} else if (b_PlaceOnGround && _itemSelected) {
+						Console::PlaceAtMe(item->GetFormID().c_str(), clickToAddCount);
 						Console::StartProcessThread();
-					} else if (b_ClickToFavorite && _itemSelected) {
+					} else if (b_AddToFavorites && _itemSelected) {
 						item->favorite = !item->favorite;
-					} else if (!b_ClickToAdd && _itemSelected) {
+					} else if (!b_AddToInventory && _itemSelected) {
 						item->selected = true;
 					}
 

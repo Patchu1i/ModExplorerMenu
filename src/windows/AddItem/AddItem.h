@@ -42,12 +42,11 @@ namespace ModExplorerMenu
 		static inline Item* openBook = nullptr;
 
 		// Actions
-		static inline bool b_ClickToAdd = false;
+		static inline bool b_AddToInventory = false;
 		static inline int clickToAddCount = 1;
-		static inline bool b_ClickToPlace = false;
+		static inline bool b_PlaceOnGround = false;
 		static inline int clickToPlaceCount = 1;
-		static inline bool b_StickySelect = true;
-		static inline bool b_ClickToFavorite = false;
+		static inline bool b_AddToFavorites = false;
 
 		// Table & Filtering.
 		static inline bool b_Alchemy = true;
