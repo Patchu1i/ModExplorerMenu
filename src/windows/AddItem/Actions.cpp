@@ -19,12 +19,9 @@ namespace ModExplorerMenu
 		ImGui::SeparatorText("Behavior:");
 
 		ImGui::PushFont(a_style.font.medium);
-		// ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.8f, 0.5f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.5f, 0.6f, 0.5f, 0.8f));
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.5f, 0.6f, 0.5f, 0.8f));
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.5f, 0.6f, 0.5f, 0.4f));
-
-		auto width = ImGui::GetContentRegionAvail().x;
 
 		// Add To Inventory Toggle.
 		if (ImGui::Selectable("Add to Inventory", &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {

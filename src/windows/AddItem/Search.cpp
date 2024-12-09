@@ -17,21 +17,6 @@ namespace ModExplorerMenu
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
-				continue;
-
-			if (item.GetName() == "")
-				continue;
-
-			if (item.IsNonPlayable())  // non-useable
-				continue;
-
-			if (itemFilters.size() > 0) {
-				if (itemFilters.find(item.GetFormType()) == itemFilters.end()) {
-					continue;
-				}
-			}
-
 			switch (searchKey) {
 			case BaseColumn::ID::Name:
 				compare = item.GetName();
@@ -47,9 +32,33 @@ namespace ModExplorerMenu
 				break;
 			}
 
-			// Will probably need to revisit this during localization. :(
+			// If the input is wrapped in quotes, we do an exact match across all parameters.
 			std::transform(compare.begin(), compare.end(), compare.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+				std::string match = input.substr(1, input.size() - 2);
+
+				if (compare == match) {
+					itemList.push_back(&item);
+				}
+				continue;
+			}
+
+			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
+				continue;
+
+			if (item.GetName() == "")
+				continue;
+
+			if (item.IsNonPlayable())  // non-useable
+				continue;
+
+			if (itemFilters.size() > 0) {
+				if (itemFilters.find(item.GetFormType()) == itemFilters.end()) {
+					continue;
+				}
+			}
 
 			if (compare.find(input) != std::string::npos) {
 				itemList.push_back(&item);
