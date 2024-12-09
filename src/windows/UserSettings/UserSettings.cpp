@@ -68,7 +68,7 @@ namespace ModExplorerMenu
 	}
 
 	static int newModifier = 0;
-	void AddModifier(const char* a_text, int& a_modifier)
+	void AddModifier(const char* a_text, int& a_modifier, int defaultKey)
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Modifier" + std::string(a_text);
@@ -79,6 +79,14 @@ namespace ModExplorerMenu
 		if (ImGui::Button(std::to_string(a_modifier).c_str())) {
 			ImGui::OpenPopup("##ModifierPopup");
 			newModifier = 0;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Reset##ResetModifier")) {
+			a_modifier = defaultKey;
+			SettingsWindow::changes.store(true);
+			SettingsWindow::file_changes.store(true);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
@@ -120,7 +128,7 @@ namespace ModExplorerMenu
 	}
 
 	static int newKeybind = 0;
-	void AddKeybind(const char* a_text, int& a_keybind)
+	void AddKeybind(const char* a_text, int& a_keybind, int defaultKey)
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Keybind" + std::string(a_text);
@@ -131,6 +139,14 @@ namespace ModExplorerMenu
 		if (ImGui::Button(std::to_string(a_keybind).c_str())) {
 			ImGui::OpenPopup("##KeybindPopup");
 			newKeybind = 0;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Reset##ResetKeybind")) {
+			a_keybind = defaultKey;
+			SettingsWindow::changes.store(true);
+			SettingsWindow::file_changes.store(true);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
@@ -293,8 +309,8 @@ namespace ModExplorerMenu
 			changes.store(false);
 		}
 
-		AddKeybind("Toggle Menu Keybind", config.showMenuKey);
-		AddModifier("Toggle Menu (Modifier)", config.showMenuModifier);
+		AddKeybind("Toggle Menu Keybind", config.showMenuKey, 211);
+		AddModifier("Toggle Menu (Modifier)", config.showMenuModifier, 0);
 	}
 
 	void SettingsWindow::DrawThemeSelector()
