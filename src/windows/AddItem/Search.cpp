@@ -32,10 +32,10 @@ namespace ModExplorerMenu
 				break;
 			}
 
-			// If the input is wrapped in quotes, we do an exact match across all parameters.
 			std::transform(compare.begin(), compare.end(), compare.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
+			// If the input is wrapped in quotes, we do an exact match across all parameters.
 			if (!input.empty() && input.front() == '"' && input.back() == '"') {
 				std::string match = input.substr(1, input.size() - 2);
 
@@ -45,8 +45,13 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
+			if (selectedMod == "Favorite" && !item.IsFavorite()) {
 				continue;
+			}
+
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
+				continue;
+			}
 
 			if (item.GetName() == "")
 				continue;
@@ -148,6 +153,13 @@ namespace ModExplorerMenu
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
+
+				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
 				for (auto& mod : Data::GetModList()) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;

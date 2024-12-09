@@ -53,6 +53,8 @@ namespace ModExplorerMenu
 			for (auto& item : itemList) {
 				Console::AddItem(item->GetFormID());
 			}
+
+			Console::StartProcessThread();
 		}
 		ImGui::SetDelayedTooltip(
 			"Add all items from the table to your inventory.\n\n"
@@ -63,6 +65,8 @@ namespace ModExplorerMenu
 			for (auto& item : itemList) {
 				Console::PlaceAtMe(item->GetFormID());
 			}
+
+			Console::StartProcessThread();
 		}
 		ImGui::SetDelayedTooltip(
 			"Place all items from the table on the ground.\n\n"
@@ -70,6 +74,13 @@ namespace ModExplorerMenu
 			"Use at your own risk.");
 
 		ImGui::PopStyleColor(1);
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+
+		// Show Favorites
+		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
+			selectedMod = "Favorite";
+			ApplyFilters();
+		}
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
