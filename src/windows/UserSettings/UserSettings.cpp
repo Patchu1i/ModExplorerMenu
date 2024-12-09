@@ -519,6 +519,7 @@ namespace ModExplorerMenu
 		auto& config = Settings::GetSingleton()->GetConfig();
 
 		AddCheckbox("Toggle Favorite Column", config.aimShowFavoriteColumn);
+		AddCheckbox("Toggle Plugin Column", config.aimShowPluginColumn);
 		AddCheckbox("Toggle Type Column", config.aimShowTypeColumn);
 		AddCheckbox("Toggle FormID Column", config.aimShowFormIDColumn);
 		AddCheckbox("Toggle Name Column", config.aimShowNameColumn);
