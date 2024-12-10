@@ -30,11 +30,18 @@ namespace ModExplorerMenu
 	template <class T>
 	T GET_VALUE(const char* section, const char* key, T a_default, CSimpleIniA& a_ini)
 	{
+		std::string value;
+
 		if (a_ini.GetValue(section, key) == nullptr) {
 			a_ini.SetValue(section, key, Settings::ToString(a_default, false).c_str());
+			return a_default;
+		} else {
+			value = a_ini.GetValue(section, key);
 		}
 
-		std::string value = a_ini.GetValue(section, key);
+		if (value.empty()) {
+			stl::report_and_fail("Failed to parse value from .ini file! Ensure you're using the correct format!");
+		}
 
 		// A+ plus de-serialization.
 		if constexpr (std::is_same_v<T, ImVec4>) {
@@ -65,6 +72,7 @@ namespace ModExplorerMenu
 	{
 		a_ini.SetValue(rSections[Main], NULL, NULL, GetComment(iComment::PresetMainHeader));
 		a_ini.SetValue(rSections[AddItem], NULL, NULL, GetComment(iComment::PresetAddItemHeader));
+		a_ini.SetValue(rSections[Object], NULL, NULL, GetComment(iComment::PresetObjectHeader));
 		a_ini.SetValue(rSections[FormLookup], NULL, NULL, GetComment(iComment::PresetFormLookupHeader));
 		a_ini.SetValue(rSections[NPC], NULL, NULL, GetComment(iComment::PresetNPCHeader));
 		a_ini.SetValue(rSections[Teleport], NULL, NULL, GetComment(iComment::PresetTeleportHeader));
@@ -114,6 +122,11 @@ namespace ModExplorerMenu
 		Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 	}
 
+	static std::string boolToString(bool a_bool)
+	{
+		return a_bool ? "true" : "false";
+	}
+
 	void Settings::SaveSettings()
 	{
 		GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
@@ -123,42 +136,49 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(Settings::GetSingleton()->user.config.showMenuKey).c_str());
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 
-			a_ini.SetValue(rSections[AddItem], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFavoriteColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowTypeColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowTypeColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowFormIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowFormIDColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowNameColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowNameColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowEditorIDColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowGoldValueColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowGoldValueColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowBaseDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowBaseDamageColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowArmorRatingColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowArmorRatingColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowSpeedColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSpeedColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowCritDamageColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowCritDamageColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowSkillColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowSkillColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowWeightColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowWeightColumn).c_str());
-			a_ini.SetValue(rSections[AddItem], "ShowDPSColumn", std::to_string(Settings::GetSingleton()->user.config.aimShowDPSColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowFavoriteColumn", boolToString(Settings::GetSingleton()->user.config.aimShowFavoriteColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowPluginColumn", boolToString(Settings::GetSingleton()->user.config.aimShowPluginColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowTypeColumn", boolToString(Settings::GetSingleton()->user.config.aimShowTypeColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowFormIDColumn", boolToString(Settings::GetSingleton()->user.config.aimShowFormIDColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowNameColumn", boolToString(Settings::GetSingleton()->user.config.aimShowNameColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowEditorIDColumn", boolToString(Settings::GetSingleton()->user.config.aimShowEditorIDColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowGoldValueColumn", boolToString(Settings::GetSingleton()->user.config.aimShowGoldValueColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowBaseDamageColumn", boolToString(Settings::GetSingleton()->user.config.aimShowBaseDamageColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowArmorRatingColumn", boolToString(Settings::GetSingleton()->user.config.aimShowArmorRatingColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowSpeedColumn", boolToString(Settings::GetSingleton()->user.config.aimShowSpeedColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowCritDamageColumn", boolToString(Settings::GetSingleton()->user.config.aimShowCritDamageColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowSkillColumn", boolToString(Settings::GetSingleton()->user.config.aimShowSkillColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowWeightColumn", boolToString(Settings::GetSingleton()->user.config.aimShowWeightColumn).c_str());
+			a_ini.SetValue(rSections[AddItem], "ShowDPSColumn", boolToString(Settings::GetSingleton()->user.config.aimShowDPSColumn).c_str());
 
-			a_ini.SetValue(rSections[Teleport], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFavoriteColumn).c_str());
-			a_ini.SetValue(rSections[Teleport], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowPluginColumn).c_str());
-			a_ini.SetValue(rSections[Teleport], "ShowSpaceColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowSpaceColumn).c_str());
-			a_ini.SetValue(rSections[Teleport], "ShowZoneColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowZoneColumn).c_str());
-			a_ini.SetValue(rSections[Teleport], "ShowFullNameColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowFullNameColumn).c_str());
-			a_ini.SetValue(rSections[Teleport], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.teleShowEditorIDColumn).c_str());
+			a_ini.SetValue(rSections[Object], "ShowFavoriteColumn", boolToString(Settings::GetSingleton()->user.config.soShowFavoriteColumn).c_str());
+			a_ini.SetValue(rSections[Object], "ShowPluginColumn", boolToString(Settings::GetSingleton()->user.config.soShowPluginColumn).c_str());
+			a_ini.SetValue(rSections[Object], "ShowTypeColumn", boolToString(Settings::GetSingleton()->user.config.soShowTypeColumn).c_str());
+			a_ini.SetValue(rSections[Object], "ShowFormIDColumn", boolToString(Settings::GetSingleton()->user.config.soShowFormIDColumn).c_str());
+			a_ini.SetValue(rSections[Object], "ShowEditorIDColumn", boolToString(Settings::GetSingleton()->user.config.soShowEditorIDColumn).c_str());
 
-			a_ini.SetValue(rSections[NPC], "ShowFavoriteColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowFavoriteColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowPluginColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowPluginColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowNameColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowNameColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowEditorIDColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowEditorIDColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowHealthColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowHealthColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowHealthRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowHealthRegenColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowMagickaColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMagickaColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowMagickaRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMagickaRegenColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowStaminaColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowStaminaColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowStaminaRegenColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowStaminaRegenColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowCarryWeightColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowCarryWeightColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowMassColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowMassColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowDamageResistColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowDamageResistColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowAttackDamageColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowAttackDamageColumn).c_str());
-			a_ini.SetValue(rSections[NPC], "ShowUnarmedDamageColumn", std::to_string(Settings::GetSingleton()->user.config.npcShowUnarmedDamageColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowFavoriteColumn", boolToString(Settings::GetSingleton()->user.config.teleShowFavoriteColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowPluginColumn", boolToString(Settings::GetSingleton()->user.config.teleShowPluginColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowSpaceColumn", boolToString(Settings::GetSingleton()->user.config.teleShowSpaceColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowZoneColumn", boolToString(Settings::GetSingleton()->user.config.teleShowZoneColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowFullNameColumn", boolToString(Settings::GetSingleton()->user.config.teleShowFullNameColumn).c_str());
+			a_ini.SetValue(rSections[Teleport], "ShowEditorIDColumn", boolToString(Settings::GetSingleton()->user.config.teleShowEditorIDColumn).c_str());
+
+			a_ini.SetValue(rSections[NPC], "ShowFavoriteColumn", boolToString(Settings::GetSingleton()->user.config.npcShowFavoriteColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowPluginColumn", boolToString(Settings::GetSingleton()->user.config.npcShowPluginColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowNameColumn", boolToString(Settings::GetSingleton()->user.config.npcShowNameColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowEditorIDColumn", boolToString(Settings::GetSingleton()->user.config.npcShowEditorIDColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowHealthColumn", boolToString(Settings::GetSingleton()->user.config.npcShowHealthColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowHealthRegenColumn", boolToString(Settings::GetSingleton()->user.config.npcShowHealthRegenColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowMagickaColumn", boolToString(Settings::GetSingleton()->user.config.npcShowMagickaColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowMagickaRegenColumn", boolToString(Settings::GetSingleton()->user.config.npcShowMagickaRegenColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowStaminaColumn", boolToString(Settings::GetSingleton()->user.config.npcShowStaminaColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowStaminaRegenColumn", boolToString(Settings::GetSingleton()->user.config.npcShowStaminaRegenColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowCarryWeightColumn", boolToString(Settings::GetSingleton()->user.config.npcShowCarryWeightColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowMassColumn", boolToString(Settings::GetSingleton()->user.config.npcShowMassColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowDamageResistColumn", boolToString(Settings::GetSingleton()->user.config.npcShowDamageResistColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowAttackDamageColumn", boolToString(Settings::GetSingleton()->user.config.npcShowAttackDamageColumn).c_str());
+			a_ini.SetValue(rSections[NPC], "ShowUnarmedDamageColumn", boolToString(Settings::GetSingleton()->user.config.npcShowUnarmedDamageColumn).c_str());
 		});
 	}
 

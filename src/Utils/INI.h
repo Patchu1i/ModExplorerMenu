@@ -7,6 +7,7 @@ namespace IniHelper
 		MasterPresetHeader,
 		PresetMainHeader,
 		PresetAddItemHeader,
+		PresetObjectHeader,
 		PresetFormLookupHeader,
 		PresetNPCHeader,
 		PresetTeleportHeader,
@@ -40,6 +41,10 @@ namespace IniHelper
 		{ iComment::PresetAddItemHeader,
 			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n"
 			"# # Add Item Menu configuration\n"
+			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n" },
+		{ iComment::PresetObjectHeader,
+			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n"
+			"# # Object Menu configuration\n"
 			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n" },
 		{ iComment::PresetFormLookupHeader,
 			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n"
