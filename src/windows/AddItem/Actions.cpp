@@ -81,6 +81,8 @@ namespace ModExplorerMenu
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}
+
+		ImGui::PopStyleColor(1);
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
