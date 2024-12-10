@@ -2,6 +2,7 @@
 #include "Console.h"
 #include "Utils/Util.h"
 #include "Windows/ItemCards.h"
+#include "Windows/Persistent.h"
 
 namespace ModExplorerMenu
 {
@@ -269,6 +270,7 @@ namespace ModExplorerMenu
 						Console::StartProcessThread();
 					} else if (b_AddToFavorites && _itemSelected) {
 						item->favorite = !item->favorite;
+						PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
 					} else if (!b_AddToInventory && _itemSelected) {
 						item->selected = true;
 					}
