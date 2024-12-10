@@ -66,9 +66,20 @@ namespace ModExplorerMenu
 
 		static NPC* CreateCachedNPC(RE::TESNPC* a_npc);
 
-		[[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
+		// [[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
+		// {
+		// 	return _modList;
+		// }
+
+		[[nodiscard]] static inline std::vector<RE::TESFile*> GetModList()
 		{
-			return _modList;
+			std::vector<RE::TESFile*> modList(_modList.begin(), _modList.end());
+
+			std::sort(modList.begin(), modList.end(), [](const RE::TESFile* a, const RE::TESFile* b) {
+				return a->GetFilename() < b->GetFilename();
+			});
+
+			return modList;
 		}
 
 	private:
