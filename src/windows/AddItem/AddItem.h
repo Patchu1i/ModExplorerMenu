@@ -40,6 +40,7 @@ namespace ModExplorerMenu
 
 		// Show book window.
 		static inline Item* openBook = nullptr;
+		static inline Item* itemPreview = nullptr;
 
 		// Actions
 		static inline bool b_AddToInventory = false;

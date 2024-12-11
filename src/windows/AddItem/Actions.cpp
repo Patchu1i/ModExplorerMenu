@@ -1,6 +1,7 @@
 #include "AddItem.h"
 #include "Console.h"
 #include "Utils/Util.h"
+#include "Windows/ItemPreview.h"
 
 namespace ModExplorerMenu
 {
@@ -85,6 +86,9 @@ namespace ModExplorerMenu
 		ImGui::PopStyleColor(1);
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
+
+		ImGui::SeparatorText("Preview:");
+		ShowItemPreview<Item>(itemPreview);
 
 		ImGui::EndChild();
 	}
