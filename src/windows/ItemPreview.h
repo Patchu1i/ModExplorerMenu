@@ -87,7 +87,6 @@ namespace ModExplorerMenu
 				auto* armor = a_object->TESForm->As<RE::TESObjectARMO>();
 
 				if (armor == nullptr) {
-					ImGui::EndTooltip();
 					return;
 				}
 
@@ -97,20 +96,21 @@ namespace ModExplorerMenu
 				const auto equipSlot = Utils::GetArmorSlot(armor);
 
 				if (armorRating == 0) {
-					InlineText("Armor Rating:", "None");
+					// InlineText("Armor Rating:", "None");
+					InlineText(ICON_RPG_ARMOR " Rating:", "None");
 				} else {
-					InlineBar("Armor Rating:", armorRating, armorRatingMax);
+					// InlineBar("Armor Rating:", armorRating, armorRatingMax);
+					InlineBar(ICON_RPG_ARMOR " Rating:", armorRating, armorRatingMax);
 				}
 
-				InlineText("Armor Type:", armorType);
-				InlineText("Equip Slot:", equipSlot);
+				InlineText(ICON_RPG_ARMOR " Type:", armorType);
+				InlineText(ICON_RPG_ARMOR " Slot:", equipSlot);
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {
 				auto* weapon = a_object->TESForm->As<RE::TESObjectWEAP>();
 
 				if (weapon == nullptr) {
-					ImGui::EndTooltip();
 					return;
 				}
 
@@ -136,33 +136,34 @@ namespace ModExplorerMenu
 				const auto type = weaponTypes[static_cast<int>(weapon->GetWeaponType())];
 
 				if (weapon->IsStaff()) {
-					InlineText("Base Damage:", "N/A");
+					// InlineText("Base Damage:", "N/A");
+					InlineText(ICON_RPG_ATTACK, "N/A");
 				} else if (weapon->IsBow() || weapon->IsCrossbow()) {
-					InlineBar("Base Damage:", damage, max_damage);
-					InlineBar("Draw Speed:", speed, 1.5f);
-					InlineInt("DPS:", dps);
+					InlineBar(ICON_RPG_ATTACK " DMG:", damage, max_damage);
+					InlineBar(ICON_RPG_ATTACK " Speed:", speed, 1.5f);
+					InlineInt(ICON_RPG_ATTACK " DPS:", dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineInt("Critical Damage:", critDamage);
-					InlineText("Skill:", std::to_string(skill).c_str());
+					InlineInt(ICON_RPG_CRITICAL " DMG:", critDamage);
+					InlineText(ICON_RPG_SKILL " Skill:", std::to_string(skill).c_str());
 				} else {
 					const float reach = (float)(weapon->weaponData.reach);
 					const float stagger = weapon->weaponData.staggerValue;
-					InlineBar("Base Damage:", damage, max_damage);
-					InlineBar("Speed:", speed, 1.5f);
-					InlineInt("DPS:", dps);
+					InlineBar(ICON_RPG_ATTACK " DMG:", damage, max_damage);
+					InlineBar(ICON_RPG_ATTACK " Speed:", speed, 1.5f);
+					InlineInt(ICON_RPG_ATTACK " DPS:", dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineBar("Reach:", reach, 1.5f);
-					InlineBar("stagger:", stagger, 2.0f);
-					InlineInt("Critical Damage:", critDamage);
-					InlineText("Skill:", std::to_string(skill).c_str());
+					InlineInt(ICON_RPG_CRITICAL " DMG:", critDamage);
+					InlineText(ICON_RPG_SKILL " Skill:", std::to_string(skill).c_str());
+					InlineBar(ICON_RPG_WEAPON " Reach:", reach, 1.5f);
+					InlineBar(ICON_RPG_WEAPON " Stagger:", stagger, 2.0f);
 				}
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				InlineText("Type:", type);
+				InlineText(ICON_RPG_WEAPON_TYPE " Type:", type);
 			}
 
-			InlineInt("Weight:", (int)a_object->GetWeight());
-			InlineInt("Gold Value:", a_object->GetValue());
+			InlineInt(ICON_RPG_WEIGHT " WT:", (int)a_object->GetWeight());
+			InlineInt(ICON_RPG_VALUE " Value:", a_object->GetValue());
 
 			const std::string desc = Utils::GetItemDescription(a_object->TESForm, g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
