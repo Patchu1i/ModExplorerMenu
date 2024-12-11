@@ -92,6 +92,19 @@ namespace ModExplorerMenu
 		}
 	}
 
+	void MergeIconFont(ImGuiIO& io)
+	{
+		ImFontConfig config;
+		config.MergeMode = true;
+		//config.GlyphMinAdvanceX = 30.0f;  // Use if you want to make the icon monospaced
+		config.GlyphOffset.y = 2.0f;
+		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
+		io.Fonts->AddFontFromFileTTF("Data/Interface/ModExplorerMenu/fonts/icons/rpgawesome-webfont.ttf", 16.0f, &config, icon_ranges);
+	}
+
+	// TODO: Remove the nano, small, medium, etc indices and replace with a single font size parameter.
+	// This will allow for easier font merging and more universal font usage. Only issue is that the font dpi and scale
+	// might be a problem if changing UI size?
 	void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct)
 	{
 		if (std::filesystem::exists(a_path) == false) {
@@ -108,13 +121,14 @@ namespace ModExplorerMenu
 			auto index = entry.path().filename().stem().string();
 
 			ImGuiIO& io = ImGui::GetIO();
-			// out_struct[index + "-Small"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
-			// out_struct[index + "-Medium"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
-			// out_struct[index + "-Large"] = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
 			out_struct[index].nano = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f);
+			MergeIconFont(io);
 			out_struct[index].tiny = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 18.0f);
+			MergeIconFont(io);
 			out_struct[index].medium = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f);
+			MergeIconFont(io);
 			out_struct[index].large = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f);
+			MergeIconFont(io);
 		}
 	}
 
@@ -149,6 +163,8 @@ namespace ModExplorerMenu
 		font_library["Default"].tiny = ImGui::GetIO().Fonts->AddFontDefault();
 		font_library["Default"].medium = font_library["Default"].tiny;
 		font_library["Default"].large = font_library["Default"].medium;
+
+		MergeIconFont(ImGui::GetIO());
 
 		GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
 		GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library);

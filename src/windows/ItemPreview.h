@@ -59,6 +59,7 @@ namespace ModExplorerMenu
 			return std::string(text);
 		};
 
+		// Name Bar
 		const auto name = a_object->GetName();
 		ImGui::Selectable(TruncateText(name.data(), maxWidth).c_str(), true, ImGuiSelectableFlags_SpanAvailWidth);
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -68,7 +69,6 @@ namespace ModExplorerMenu
 			auto* npc = a_object->TESForm->As<RE::TESNPC>();
 
 			if (npc == nullptr) {
-				ImGui::EndTooltip();
 				return;
 			}
 

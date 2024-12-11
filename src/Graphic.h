@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils/IconRpgAwesome.h"
 #include "d3d11.h"
 
 // Sourced from dTry's Wheeler and Llama's Tiny Hud. Adapted to NG.
@@ -36,6 +37,7 @@ namespace ModExplorerMenu
 
 		static inline std::map<std::string, GraphicManager::Image> image_library;
 		static inline std::map<std::string, Font> font_library;
+		static inline std::map<std::string, Font> icon_library;
 
 		static void DrawImage(Image& a_texture, ImVec2 a_center);
 		static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);

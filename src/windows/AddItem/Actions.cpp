@@ -25,21 +25,21 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.5f, 0.6f, 0.5f, 0.4f));
 
 		// Add To Inventory Toggle.
-		if (ImGui::Selectable("Add to Inventory", &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(ICON_RPG_HAND " Add to Inventory", &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
 			b_AddToFavorites = false;
 		};
 		ImGui::SetDelayedTooltip("Quickly add item(s) to your inventory by left clicking.");
 
 		// Place On Ground Toggle.
-		if (ImGui::Selectable("Place on Ground", &b_PlaceOnGround, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(ICON_RPG_GRASS " Place on Ground", &b_PlaceOnGround, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_AddToFavorites = false;
 		}
 		ImGui::SetDelayedTooltip("Place item(s) on the ground by left clicking.");
 
 		// Add To Favorites Toggle.
-		if (ImGui::Selectable("Add to Favorites", &b_AddToFavorites, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(ICON_RPG_HEART " Add to Favorites", &b_AddToFavorites, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_PlaceOnGround = false;
 		}
