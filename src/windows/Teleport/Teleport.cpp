@@ -20,7 +20,6 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
 		// Right Column
@@ -31,16 +30,10 @@ namespace ModExplorerMenu
 
 	void TeleportWindow::Init()
 	{
-		auto& config = Settings::GetSingleton()->GetConfig();
+		// auto& config = Settings::GetSingleton()->GetConfig();
 
 		ApplyFilters();
 
-		columnList = TeleportColumns(
-			&config.teleShowFavoriteColumn,
-			&config.teleShowPluginColumn,
-			&config.teleShowSpaceColumn,
-			&config.teleShowZoneColumn,
-			&config.teleShowFullNameColumn,
-			&config.teleShowEditorIDColumn);
+		columnList = TeleportColumns();
 	}
 }

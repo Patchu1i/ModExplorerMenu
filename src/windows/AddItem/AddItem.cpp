@@ -14,14 +14,14 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		//ShowModSelection(a_style, a_config);
-		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
+		// Right Column
 		ImGui::NextColumn();
 		ShowActions(a_style, a_config);
 		ImGui::EndColumns();
 
+		// Book Prompt
 		if (openBook != nullptr) {
 			ShowBookPreview();
 		}
@@ -29,25 +29,11 @@ namespace ModExplorerMenu
 
 	void AddItemWindow::Init()
 	{
-		auto& config = Settings::GetSingleton()->GetConfig();
+		// auto& config = Settings::GetSingleton()->GetConfig();
 
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();
 
-		columnList = AddItemColumns(
-			&config.aimShowFavoriteColumn,
-			&config.aimShowPluginColumn,
-			&config.aimShowTypeColumn,
-			&config.aimShowFormIDColumn,
-			&config.aimShowNameColumn,
-			&config.aimShowEditorIDColumn,
-			&config.aimShowGoldValueColumn,
-			&config.aimShowBaseDamageColumn,
-			&config.aimShowArmorRatingColumn,
-			&config.aimShowSpeedColumn,
-			&config.aimShowCritDamageColumn,
-			&config.aimShowSkillColumn,
-			&config.aimShowWeightColumn,
-			&config.aimShowDPSColumn);
+		columnList = AddItemColumns();
 	}
 }

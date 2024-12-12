@@ -15,7 +15,7 @@ namespace ModExplorerMenu
 	{
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
+		// static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
@@ -69,9 +69,6 @@ namespace ModExplorerMenu
 			{ &b_Book, RE::FormType::Book, "BOOK" }, { &b_Weapon, RE::FormType::Weapon, "WEAP" }
 		};
 
-		//static bool SortColumn(const Item* v1, const Item* v2);
-		//static void SortColumnsWithSpecs(ImGuiTableSortSpecs* sort_specs);
-
 		// Description Framework API.
 		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
 
@@ -80,7 +77,7 @@ namespace ModExplorerMenu
 		static inline constexpr auto AddItemTableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Sortable |
 		                                                 ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
 		                                                 ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
-		                                                 ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX |
+		                                                 ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY |
 		                                                 ImGuiTableFlags_SizingStretchProp;
 		static inline constexpr auto InputSearchFlags = ImGuiInputTextFlags_EscapeClearsAll;
 

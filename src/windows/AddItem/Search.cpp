@@ -207,46 +207,4 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 		}
 	}
-
-	void AddItemWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
-	{
-		(void)a_style;
-
-		if (ImGui::CollapsingHeader("Advanced Options:")) {
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::NewLine();
-			ImGui::Indent();
-			constexpr auto flags = ImGuiTreeNodeFlags_Bullet;
-			if (ImGui::CollapsingHeader("Column Visiblity:", flags)) {
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-				ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-				ImGui::InlineCheckbox("Favorite", &a_config.aimShowFavoriteColumn);
-				ImGui::InlineCheckbox("Plugin", &a_config.aimShowPluginColumn);
-				ImGui::InlineCheckbox("Type", &a_config.aimShowTypeColumn);
-				ImGui::InlineCheckbox("Form", &a_config.aimShowFormIDColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("Name", &a_config.aimShowNameColumn);
-				ImGui::InlineCheckbox("Editor", &a_config.aimShowEditorIDColumn);
-				ImGui::InlineCheckbox("Gold", &a_config.aimShowGoldValueColumn);
-				ImGui::InlineCheckbox("Damage", &a_config.aimShowBaseDamageColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("Speed", &a_config.aimShowSpeedColumn);
-				ImGui::InlineCheckbox("Crit", &a_config.aimShowCritDamageColumn);
-				ImGui::InlineCheckbox("Skill", &a_config.aimShowSkillColumn);
-				ImGui::InlineCheckbox("Weight", &a_config.aimShowWeightColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("DPS", &a_config.aimShowDPSColumn);
-				ImGui::InlineCheckbox("Armor", &a_config.aimShowArmorRatingColumn);
-				ImGui::NewLine();
-				ImGui::PopStyleColor(1);
-				ImGui::PopStyleVar(1);
-			}
-
-			ImGui::PopStyleColor(1);
-			ImGui::PopStyleVar(1);
-			ImGui::Unindent();
-			ImGui::NewLine();
-		}
-	}
 }

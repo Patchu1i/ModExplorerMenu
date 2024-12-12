@@ -20,7 +20,6 @@ namespace ModExplorerMenu
 
 		// Left Column
 		ShowSearch(a_style, a_config);
-		ShowAdvancedOptions(a_style, a_config);
 		ShowFormTable(a_style, a_config);
 
 		// Right Column
@@ -31,15 +30,10 @@ namespace ModExplorerMenu
 
 	void ObjectWindow::Init()
 	{
-		auto& config = Settings::GetSingleton()->GetConfig();
+		// auto& config = Settings::GetSingleton()->GetConfig();
 
 		ApplyFilters();
 
-		columnList = ObjectColumns(
-			&config.soShowFavoriteColumn,
-			&config.soShowPluginColumn,
-			&config.soShowTypeColumn,
-			&config.soShowFormIDColumn,
-			&config.soShowEditorIDColumn);
+		columnList = ObjectColumns();
 	}
 }

@@ -80,56 +80,6 @@ namespace ModExplorerMenu
 			std::string theme = "Default";
 			int showMenuKey;
 			int showMenuModifier;
-
-			// Additem
-			bool aimShowFavoriteColumn;
-			bool aimShowPluginColumn;
-			bool aimShowTypeColumn;
-			bool aimShowFormIDColumn;
-			bool aimShowNameColumn;
-			bool aimShowEditorIDColumn;
-			bool aimShowGoldValueColumn;
-			bool aimShowBaseDamageColumn;
-			bool aimShowArmorRatingColumn;
-			bool aimShowSpeedColumn;
-			bool aimShowCritDamageColumn;
-			bool aimShowSkillColumn;
-			bool aimShowWeightColumn;
-			bool aimShowDPSColumn;
-
-			// Static Objects
-			bool soShowFavoriteColumn;
-			bool soShowPluginColumn;
-			bool soShowTypeColumn;
-			bool soShowFormIDColumn;
-			bool soShowEditorIDColumn;
-
-			// Teleport
-			bool teleShowFavoriteColumn;
-			bool teleShowPluginColumn;
-			bool teleShowSpaceColumn;
-			bool teleShowZoneColumn;
-			bool teleShowFullNameColumn;
-			bool teleShowEditorIDColumn;
-
-			// NPC
-			bool npcShowFavoriteColumn;
-			bool npcShowPluginColumn;
-			bool npcShowNameColumn;
-			bool npcShowFormIDColumn;
-			bool npcShowEditorIDColumn;
-			bool npcShowHealthColumn;
-			bool npcShowHealthRegenColumn;
-			bool npcShowMagickaColumn;
-			bool npcShowMagickaRegenColumn;
-			bool npcShowStaminaColumn;
-			bool npcShowStaminaRegenColumn;
-			bool npcShowCarryWeightColumn;
-			bool npcShowMassColumn;
-			bool npcShowDamageResistColumn;
-			bool npcShowAttackDamageColumn;
-			bool npcShowUnarmedDamageColumn;
-			bool npcShowSkillsColumn;
 		};
 
 		ImGuiStyle test;

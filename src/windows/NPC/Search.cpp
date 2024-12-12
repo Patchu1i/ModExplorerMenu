@@ -161,41 +161,4 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 		}
 	}
-
-	void NPCWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
-	{
-		(void)a_style;
-		(void)a_config;
-
-		if (ImGui::CollapsingHeader("Advanced Options:")) {
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::NewLine();
-			ImGui::Indent();
-			if (ImGui::TreeNode("Column Visiblity:")) {
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-				ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-				ImGui::InlineCheckbox("Favorite", &a_config.npcShowFavoriteColumn);
-				ImGui::InlineCheckbox("FormID", &a_config.npcShowFormIDColumn);
-				ImGui::InlineCheckbox("Plugin", &a_config.npcShowPluginColumn);
-				ImGui::InlineCheckbox("Name", &a_config.npcShowNameColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("EditorID", &a_config.npcShowEditorIDColumn);
-				ImGui::InlineCheckbox("Health", &a_config.npcShowHealthColumn);
-				ImGui::InlineCheckbox("Magicka", &a_config.npcShowMagickaColumn);
-				ImGui::InlineCheckbox("Stamina", &a_config.npcShowStaminaColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("Carry Weight", &a_config.npcShowCarryWeightColumn);
-				ImGui::NewLine();
-				ImGui::PopStyleColor(1);
-				ImGui::PopStyleVar(1);
-				ImGui::TreePop();
-			}
-
-			ImGui::PopStyleColor(1);
-			ImGui::PopStyleVar(1);
-			ImGui::Unindent();
-			ImGui::NewLine();
-		}
-	}
 }

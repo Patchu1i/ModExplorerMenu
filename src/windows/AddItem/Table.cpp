@@ -50,15 +50,10 @@ namespace ModExplorerMenu
 		auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
-		if (columnList.IsAllColumnsDisabled()) {
-			ImGui::Text("No columns are enabled. Please enable at least one column.");
-			return;
-		}
-
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		auto extendWidth = (columnList.EnabledColumns() > 4) ? columnList.EnabledColumns() * 50.0f : 0;
-		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), AddItemTableFlags | rowBG, table_size, table_size.x + extendWidth)) {
+		// auto extendWidth = (columnList.EnabledColumns() > 4) ? columnList.EnabledColumns() * 50.0f : 0;
+		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), AddItemTableFlags | rowBG, table_size, table_size.x)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
@@ -79,8 +74,16 @@ namespace ModExplorerMenu
 				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
 
-				ImGui::TableSetColumnEnabled(column_n, *column.enabled);
 				column_n++;
+
+				// Saving for later if I need to refer to column state.
+				// if (ImGui::TableGetColumnFlags(column_n) & ImGuiTableColumnFlags_IsEnabled) {
+				// 	logger::info("Column {} is enabled", column.name);
+				// }
+
+				// This works, but disables context functionality. Would have to create
+				// explicit header buttons to enable/disable columns.
+				//ImGui::TableSetColumnEnabled(column_n, *column.enabled);
 			}
 			ImGui::PopFont();
 

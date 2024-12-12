@@ -21,7 +21,6 @@ namespace ModExplorerMenu
 		static void ApplyFilters();
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 
 		static inline constexpr auto TeleportTableFlags =

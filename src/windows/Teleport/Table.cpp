@@ -51,11 +51,6 @@ namespace ModExplorerMenu
 		auto results = std::string("Results (") + std::to_string(cellList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
-		if (columnList.IsAllColumnsDisabled()) {
-			ImGui::Text("No columns are enabled. Please enable at least one column.");
-			return;
-		}
-
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
@@ -75,7 +70,7 @@ namespace ModExplorerMenu
 				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
 
-				ImGui::TableSetColumnEnabled(column_n, *column.enabled);
+				// ImGui::TableSetColumnEnabled(column_n, *column.enabled);
 				column_n++;
 			}
 			ImGui::PopFont();

@@ -32,7 +32,6 @@ namespace ModExplorerMenu
 	private:
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void PopulateListWithLocals();
 		static void PopulateListWithSpawned();

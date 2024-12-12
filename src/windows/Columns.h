@@ -14,7 +14,7 @@ namespace ModExplorerMenu
 		ImGuiTableColumnFlags flags;
 
 		float width;
-		bool* enabled;
+		bool enabled;
 
 		enum ID
 		{
@@ -32,112 +32,107 @@ namespace ModExplorerMenu
     public:
         std::vector<BaseColumn> columns;
 
-        bool IsColumnEnabled(BaseColumn::ID a_id)
-        {
-            for (auto& column : columns) {
-                if (column.key == a_id) {
-                    return *column.enabled;
-                }
-            }
-            return false;
-        }
+        // Deprecated
+        // bool IsColumnEnabled(BaseColumn::ID a_id)
+        // {
+        //     for (auto& column : columns) {
+        //         if (column.key == a_id) {
+        //             return *column.enabled;
+        //         }
+        //     }
+        //     return false;
+        // }
 
-        bool IsAllColumnsDisabled()
-        {
-            for (auto& column : columns) {
-                if (*column.enabled) {
-                    return false;
-                }
-            }
-            return true;
-        }
+        // Deprecated
+        // bool IsAllColumnsDisabled()
+        // {
+        //     for (auto& column : columns) {
+        //         if (*column.enabled) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
 
         inline int GetTotalColumns() { return static_cast<int>(columns.size()); }
-        inline int EnabledColumns() {
-            int count = 0;
-            for (auto& column : columns) {
-                if (*column.enabled) {
-                    count++;
-                }
-            }
-            return count;
-        }
+
+        // Deprecated
+        // inline int EnabledColumns() {
+        //     int count = 0;
+        //     for (auto& column : columns) {
+        //         if (*column.enabled) {
+        //             count++;
+        //         }
+        //     }
+        //     return count;
+        // }
     };
 
     class TeleportColumns : public BaseColumnList
     {
     public:
-        TeleportColumns(
-            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showSpace = nullptr, bool* showZone = nullptr,
-            bool* showCellName = nullptr, bool* showEditorID = nullptr)
+        TeleportColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "Space", ImGuiTableColumnFlags_None, 0.0f, showSpace, BaseColumn::ID::Space });
-            columns.push_back({ "Zone", ImGuiTableColumnFlags_None, 0.0f, showZone, BaseColumn::ID::Zone });
-            columns.push_back({ "CellName", ImGuiTableColumnFlags_None, 0.0f, showCellName, BaseColumn::ID::CellName });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
+            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultHide, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "Space", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Space });
+            columns.push_back({ "Zone", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Zone });
+            columns.push_back({ "CellName", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::CellName });
+            columns.push_back({ "EditorID", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
     class ObjectColumns : public BaseColumnList
     {
     public:
-        ObjectColumns(
-            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showType = nullptr, bool* showFormID = nullptr,
-            bool* showEditorID = nullptr
-        )
+        ObjectColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, showType, BaseColumn::ID::Type });
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
+            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Type });
+            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
     class NPCColumns : public BaseColumnList
     {
     public:
-        NPCColumns(
-            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showFormID = nullptr, bool* showName = nullptr, bool* showEditorID = nullptr,
-            bool* showHealth = nullptr, bool* showMagicka = nullptr, bool* showStamina = nullptr, bool* showCarryWeight = nullptr)
+        NPCColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID });
-            columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, showName, BaseColumn::ID::Name });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID });
-            columns.push_back({ "Health", ImGuiTableColumnFlags_WidthFixed, 30.0f, showHealth, BaseColumn::ID::Health });
-            columns.push_back({ "Magicka", ImGuiTableColumnFlags_WidthFixed, 30.0f, showMagicka, BaseColumn::ID::Magicka });
-            columns.push_back({ "Stamina", ImGuiTableColumnFlags_WidthFixed, 30.0f, showStamina, BaseColumn::ID::Stamina });
-            columns.push_back({ "CarryWeight", ImGuiTableColumnFlags_WidthFixed, 30.0f, showCarryWeight, BaseColumn::ID::CarryWeight });
+            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Name });
+            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ "Health", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Health });
+            columns.push_back({ "Magicka", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Magicka });
+            columns.push_back({ "Stamina", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Stamina });
+            columns.push_back({ "CarryWeight", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::CarryWeight });
         }
     };
     
 	class AddItemColumns : public BaseColumnList
 	{
-	public:       
-        AddItemColumns(
-            bool* showFavorite = nullptr, bool* showPlugin = nullptr, bool* showType = nullptr, bool* showFormID = nullptr,
-            bool* showName = nullptr, bool* showEditorID = nullptr, bool* showGoldValue = nullptr, bool* showBaseDamage = nullptr,
-            bool* showArmorRating = nullptr, bool* showSpeed = nullptr, bool* showCritDamage = nullptr, bool* showSkill = nullptr,
-            bool* showWeight = nullptr, bool* showDPS = nullptr)
+	public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
+        AddItemColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, showFavorite, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, showPlugin, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, showType, BaseColumn::ID::Type});
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, showFormID, BaseColumn::ID::FormID});
-            columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, showName, BaseColumn::ID::Name});
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, showEditorID, BaseColumn::ID::EditorID});
-            columns.push_back({ "GoldValue", ImGuiTableColumnFlags_None, 0.0f, showGoldValue, BaseColumn::ID::GoldValue});
-            columns.push_back({ "BaseDamage", ImGuiTableColumnFlags_WidthFixed, 30.0f, showBaseDamage, BaseColumn::ID::BaseDamage});
-            columns.push_back({ "ArmorRating", ImGuiTableColumnFlags_WidthFixed, 30.0f, showArmorRating, BaseColumn::ID::ArmorRating});
-            columns.push_back({ "Speed", ImGuiTableColumnFlags_WidthFixed, 30.0f, showSpeed, BaseColumn::ID::Speed});
-            columns.push_back({ "Crit", ImGuiTableColumnFlags_WidthFixed, 30.0f, showCritDamage, BaseColumn::ID::CritDamage});
-            columns.push_back({ "Skill", ImGuiTableColumnFlags_WidthFixed, 0.0f, showSkill, BaseColumn::ID::Skill});
-            columns.push_back({ "Weight", ImGuiTableColumnFlags_WidthFixed, 30.0f, showWeight, BaseColumn::ID::Weight});
-            columns.push_back({ "DPS", ImGuiTableColumnFlags_WidthFixed, 30.0f, showDPS, BaseColumn::ID::DPS});
+            columns.push_back({ ICON_RPG_HEART, flag, 0.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "Type", flag, 0.0f, false, BaseColumn::ID::Type});
+            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID});
+            columns.push_back({ "Name", flag, 0.0f, false, BaseColumn::ID::Name});
+            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID});
+            columns.push_back({ "GoldValue", flag, 0.0f, false, BaseColumn::ID::GoldValue});
+            columns.push_back({ "BaseDamage", flag, 0.0f, false, BaseColumn::ID::BaseDamage});
+            columns.push_back({ "ArmorRating", flag, 0.0f, false, BaseColumn::ID::ArmorRating});
+            columns.push_back({ "Speed", flag, 0.0f, false, BaseColumn::ID::Speed});
+            columns.push_back({ "Crit", flag, 0.0f, false, BaseColumn::ID::CritDamage});
+            columns.push_back({ "Skill", flag, 0.0f, false, BaseColumn::ID::Skill});
+            columns.push_back({ "Weight", flag, 0.0f, false, BaseColumn::ID::Weight});
+            columns.push_back({ "DPS", flag, 0.0f, false, BaseColumn::ID::DPS});
         }
 	};
 

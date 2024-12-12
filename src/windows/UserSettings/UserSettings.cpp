@@ -5,6 +5,7 @@
 #include "Utils/Anim.h"
 #include "Utils/Keycode.h"
 #include "Utils/Util.h"
+#include "Windows/AddItem/AddItem.h"
 #include <codecvt>
 
 namespace ModExplorerMenu
@@ -514,37 +515,6 @@ namespace ModExplorerMenu
 		ImGui::NewLine();
 	}
 
-	void SettingsWindow::DrawAddItemSettings()
-	{
-		auto& config = Settings::GetSingleton()->GetConfig();
-
-		AddCheckbox("Toggle Favorite Column", config.aimShowFavoriteColumn);
-		AddCheckbox("Toggle Plugin Column", config.aimShowPluginColumn);
-		AddCheckbox("Toggle Type Column", config.aimShowTypeColumn);
-		AddCheckbox("Toggle FormID Column", config.aimShowFormIDColumn);
-		AddCheckbox("Toggle Name Column", config.aimShowNameColumn);
-		AddCheckbox("Toggle Editor ID Column", config.aimShowEditorIDColumn);
-		AddCheckbox("Toggle Gold Value Column", config.aimShowGoldValueColumn);
-		AddCheckbox("Toggle Base Damage Column", config.aimShowBaseDamageColumn);
-		AddCheckbox("Toggle Speed Column", config.aimShowSpeedColumn);
-		AddCheckbox("Toggle Crit Damage Column", config.aimShowCritDamageColumn);
-		AddCheckbox("Toggle Skill Column", config.aimShowSkillColumn);
-		AddCheckbox("Toggle Weight Column", config.aimShowWeightColumn);
-		AddCheckbox("Toggle DPS Column", config.aimShowDPSColumn);
-	}
-
-	void SettingsWindow::DrawTeleportSettings()
-	{
-		auto& config = Settings::GetSingleton()->GetConfig();
-
-		AddCheckbox("Toggle Favorite Column", config.teleShowFavoriteColumn);
-		AddCheckbox("Toggle Plugin Column", config.teleShowPluginColumn);
-		AddCheckbox("Toggle Space Column", config.teleShowSpaceColumn);
-		AddCheckbox("Toggle Zone Column", config.teleShowZoneColumn);
-		AddCheckbox("Toggle Full Name Column", config.teleShowFullNameColumn);
-		AddCheckbox("Toggle Editor ID Column", config.teleShowEditorIDColumn);
-	}
-
 	void SettingsWindow::Draw()
 	{
 		ImGui::Text("Welcome to the Settings Window!");
@@ -560,18 +530,6 @@ namespace ModExplorerMenu
 			if (ImGui::CollapsingHeader("Theme Configuration", ImGuiTreeNodeFlags_Framed)) {
 				ImGui::Indent();
 				DrawThemeSelector();
-				ImGui::Unindent();
-			}
-
-			if (ImGui::CollapsingHeader("AddItem Configuration", ImGuiTreeNodeFlags_Framed)) {
-				ImGui::Indent();
-				DrawAddItemSettings();
-				ImGui::Unindent();
-			}
-
-			if (ImGui::CollapsingHeader("Teleport Configuration", ImGuiTreeNodeFlags_Framed)) {
-				ImGui::Indent();
-				DrawTeleportSettings();
 				ImGui::Unindent();
 			}
 		}

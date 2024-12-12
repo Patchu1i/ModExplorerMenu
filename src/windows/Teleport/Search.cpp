@@ -158,37 +158,4 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 		}
 	}
-
-	void TeleportWindow::ShowAdvancedOptions(Settings::Style& a_style, Settings::Config& a_config)
-	{
-		(void)a_style;
-		(void)a_config;
-
-		if (ImGui::CollapsingHeader("Advanced Options:")) {
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::NewLine();
-			ImGui::Indent();
-			if (ImGui::TreeNode("Column Visiblity:")) {
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, a_style.frameBorderSize);
-				ImGui::PushStyleColor(ImGuiCol_Header, a_style.frameBg);
-				ImGui::InlineCheckbox("Favorite", &a_config.teleShowFavoriteColumn);
-				ImGui::InlineCheckbox("Plugin", &a_config.teleShowPluginColumn);
-				ImGui::InlineCheckbox("Space", &a_config.teleShowSpaceColumn);
-				ImGui::InlineCheckbox("Zone", &a_config.teleShowZoneColumn);
-				ImGui::NewLine();
-				ImGui::InlineCheckbox("Cell Name", &a_config.teleShowFullNameColumn);
-				ImGui::InlineCheckbox("Editor ID", &a_config.teleShowEditorIDColumn);
-				ImGui::NewLine();
-				ImGui::PopStyleColor(1);
-				ImGui::PopStyleVar(1);
-				ImGui::TreePop();
-			}
-
-			ImGui::PopStyleColor(1);
-			ImGui::PopStyleVar(1);
-			ImGui::Unindent();
-			ImGui::NewLine();
-		}
-	}
 }
