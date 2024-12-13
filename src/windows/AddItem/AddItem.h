@@ -87,6 +87,7 @@ namespace ModExplorerMenu
 		//static inline const ImGuiTableSortSpecs* s_current_sort_specs;
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
+		static inline char modListBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
 		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {

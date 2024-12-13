@@ -147,6 +147,10 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
+			ImGui::InputTextWithHint("##AddItemWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
+				IM_ARRAYSIZE(modListBuffer),
+				InputSearchFlags);
+
 			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
@@ -160,9 +164,28 @@ namespace ModExplorerMenu
 					ImGui::SetItemDefaultFocus();
 				}
 
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				for (auto& mod : Data::GetModList()) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					if (std::strlen(modListBuffer) > 0) {
+						std::string compare = modName;
+						std::string input = modListBuffer;
+
+						std::transform(input.begin(), input.end(), input.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						std::transform(compare.begin(), compare.end(), compare.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						if (compare.find(input) != std::string::npos) {
+							// Do nothing?
+						} else {
+							continue;
+						}
+					}
 					if (ImGui::Selectable(modName, is_selected)) {
 						selectedMod = modName;
 						ApplyFilters();
@@ -184,24 +207,6 @@ namespace ModExplorerMenu
 
 				Console::StartProcessThread();
 			};
-
-			if (ImGui::Button("Add All From Mod")) {
-				const auto items = Data::GetItemList();
-
-				auto count = 0;
-				for (auto item : items) {
-					if (item.GetPluginName() == selectedMod) {
-						count++;
-					}
-				}
-
-				if (count > 500) {
-					ImGui::OpenPopup("Large Query Detected");
-				} else {
-					addAllItems();
-				}
-			}
-			ImGui::ShowWarningPopup("Large Query Detected", addAllItems);
 
 			ImGui::Unindent();
 			ImGui::NewLine();
