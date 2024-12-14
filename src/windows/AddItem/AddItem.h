@@ -43,7 +43,7 @@ namespace ModExplorerMenu
 		static inline Item* itemPreview = nullptr;
 
 		// Actions
-		static inline bool b_AddToInventory = false;
+		static inline bool b_AddToInventory = true;
 		static inline int clickToAddCount = 1;
 		static inline bool b_PlaceOnGround = false;
 		static inline int clickToPlaceCount = 1;

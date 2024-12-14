@@ -61,7 +61,22 @@ namespace ModExplorerMenu
 
 		// Name Bar
 		const auto name = a_object->GetName();
-		ImGui::Selectable(TruncateText(name.data(), maxWidth).c_str(), true, ImGuiSelectableFlags_SpanAvailWidth);
+
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		const auto cursor = ImGui::GetCursorScreenPos();
+		const auto size = ImGui::GetContentRegionAvail();
+		const auto color = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
+		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
+
+		ImGui::NewLine();
+		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.data()));
+		ImGui::Text(name.data());
+		ImGui::NewLine();
+
+		//ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		//ImGui::Selectable(TruncateText(name.data(), maxWidth).c_str(), true, ImGuiSelectableFlags_SpanAvailWidth, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 2.5f));
+		//ImGui::PopStyleVar(1);
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		// NPC Specific Item Card details:

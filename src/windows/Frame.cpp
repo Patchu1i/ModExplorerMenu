@@ -1,6 +1,6 @@
 #include "Frame.h"
 #include "Graphic.h"
-#include "Settings.h"
+#include "Menu.h"
 #include "Windows/AddItem/AddItem.h"
 #include "Windows/Home/Home.h"
 #include "Windows/NPC/NPC.h"
@@ -24,9 +24,9 @@ namespace ModExplorerMenu
 		{
 			screenSize = ImGui::GetMainViewport()->Size;
 			sidebar_w = screenSize.x * 0.10f;
-			sidebar_h = screenSize.y * 0.65f;
-			panel_w = screenSize.x * 0.50f;
-			panel_h = screenSize.y * 0.65f;
+			sidebar_h = screenSize.y * 0.75f;
+			panel_w = screenSize.x * 0.60f;
+			panel_h = screenSize.y * 0.75f;
 		}
 	};
 
@@ -51,39 +51,61 @@ namespace ModExplorerMenu
 		ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
 		ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
 
-		ImGui::PushFont(style.font.medium);
+		// ImGui::GetFontSize() * 1.5f
+
+		ImGui::PushFont(style.font.large);
+		ImGui::PushStyleColor(ImGuiCol_Header, style.button);
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.buttonHovered);
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 		if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
-			if (ImGui::Button("Home", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			auto iWidth = ImGui::GetContentRegionAvail().x;
+			auto iHeight = ImGui::GetWindowSize().y / 12;
+			ImGui::Image(GraphicManager::image_library["logo"].texture, ImVec2(iWidth, iHeight));
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			if (ImGui::Selectable("Home", &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Home;
+				ResetSelectable();
 			}
 
-			if (ImGui::Button("Add Item", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable("Add Item", &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::AddItem;
+				ResetSelectable();
 			}
 
-			if (ImGui::Button("Object", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable("Object", &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Object;
+				ResetSelectable();
 			}
 
-			if (ImGui::Button("NPC", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable("NPC", &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::NPC;
+				ResetSelectable();
 			}
 
-			if (ImGui::Button("Lookup", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Lookup;
-			}
-
-			if (ImGui::Button("Teleport", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable("Teleport", &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Teleport;
+				ResetSelectable();
 			}
 
-			if (ImGui::Button("Settings", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			if (ImGui::Selectable("Settings", &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Settings;
+				ResetSelectable();
+			}
+
+			if (ImGui::Selectable("Exit", false, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+				Menu::GetSingleton()->Toggle();
 			}
 
 			ImGui::End();
 		}
 		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar(1);
 
 		// Draw Panel Frame conditionally
 		static constexpr ImGuiWindowFlags panel_flag = sidebar_flag;
@@ -104,8 +126,6 @@ namespace ModExplorerMenu
 				break;
 			case ActiveWindow::NPC:
 				NPCWindow::Draw(style, config);
-				break;
-			case ActiveWindow::Lookup:
 				break;
 			case ActiveWindow::Teleport:
 				TeleportWindow::Draw(style, config);

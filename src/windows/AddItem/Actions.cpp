@@ -20,9 +20,9 @@ namespace ModExplorerMenu
 		ImGui::SeparatorText("Behavior:");
 
 		ImGui::PushFont(a_style.font.medium);
-		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.5f, 0.6f, 0.5f, 0.8f));
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.5f, 0.6f, 0.5f, 0.8f));
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.5f, 0.6f, 0.5f, 0.4f));
+		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
 		// Add To Inventory Toggle.
 		if (ImGui::Selectable(ICON_RPG_HAND " Add to Inventory", &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
@@ -47,7 +47,7 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(3);
 		ImGui::SeparatorText("Shortcuts:");
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.5f, 0.8f, a_style.button.w));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
 		// Add All From Table Shortcut.
 		if (ImGui::Button("Add All From Table", ImVec2(button_width, button_height))) {
@@ -75,7 +75,6 @@ namespace ModExplorerMenu
 			"Use at your own risk.");
 
 		ImGui::PopStyleColor(1);
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
 
 		// Show Favorites
 		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
@@ -83,7 +82,6 @@ namespace ModExplorerMenu
 			ApplyFilters();
 		}
 
-		ImGui::PopStyleColor(1);
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 

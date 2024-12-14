@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Settings.h"
 #include <PCH.h>
 
 namespace ModExplorerMenu
@@ -23,12 +24,27 @@ namespace ModExplorerMenu
 			Home,
 			AddItem,
 			Object,
-			Lookup,
 			NPC,
 			Teleport,
 			Settings
 		};
 
+		static inline bool b_Home = true;
+		static inline bool b_AddItem = false;
+		static inline bool b_Object = false;
+		static inline bool b_NPC = false;
+		static inline bool b_Settings = false;
+		static inline bool b_Teleport = false;
+
 		static ActiveWindow _activeWindow;
+		static void ResetSelectable()
+		{
+			b_Home = (_activeWindow == Home);
+			b_AddItem = (_activeWindow == AddItem);
+			b_Object = (_activeWindow == Object);
+			b_NPC = (_activeWindow == NPC);
+			b_Settings = (_activeWindow == Settings);
+			b_Teleport = (_activeWindow == Teleport);
+		}
 	};
 }
