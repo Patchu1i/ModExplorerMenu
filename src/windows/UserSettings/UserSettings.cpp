@@ -137,7 +137,7 @@ namespace ModExplorerMenu
 		ImGui::Text(a_text);
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::SetNextItemWidth(width);
-		if (ImGui::Button(std::to_string(a_keybind).c_str())) {
+		if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind))) {
 			ImGui::OpenPopup("##KeybindPopup");
 			newKeybind = 0;
 		}
