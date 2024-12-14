@@ -53,3 +53,5 @@
 #define ICON_RPG_WEAPON_TYPE "\xee\xa5\x87"   // U+E947
 #define ICON_RPG_SKILL "\xee\xa6\xaf"         // U+E9AF
 #define ICON_RPG_VALUE "\xee\xa7\xa0"         // U+EA40
+#define ICON_RPG_SPAWNED_NPC "\xee\xa9\xad"   // U+EA6D
+#define ICON_RPG_MULTI_NPC "\xee\xa6\x9e"     // U+E9AE

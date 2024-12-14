@@ -10,24 +10,18 @@ namespace ModExplorerMenu
 	class NPCWindow : private ISortable
 	{
 	private:
-		enum State
-		{
-			showAll,
-			showLocal,
-			showSpawned
-		};
-
 		static inline std::vector<NPC*> npcList;
 		static inline NPCColumns columnList;
-		static inline State currentState;
 		static inline NPC* selectedNPC = nullptr;
+
+		// Show State Variables.
+		static inline bool b_ShowNearbyNPC = false;
+		static inline bool b_ShowSpawnedNPC = false;
+		static inline bool b_ShowAllNPC = false;
 
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
 		static void Init();
-
-		static inline void SetState(State a_state) { currentState = a_state; }
-		static State GetState() { return currentState; }
 
 	private:
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);

@@ -10,13 +10,16 @@ namespace ModExplorerMenu
 	void NPCWindow::ApplyFilters()
 	{
 		// Since these are manually allocated, we need to delete them.
-		if (GetState() == showSpawned || GetState() == showLocal) {
+		if (b_ShowSpawnedNPC || b_ShowNearbyNPC) {
 			for (auto& npc : npcList) {
 				delete npc;
 			}
 		}
 
-		SetState(showAll);
+		b_ShowAllNPC = true;
+		b_ShowNearbyNPC = false;
+		b_ShowSpawnedNPC = false;
+
 		npcList.clear();
 		selectedNPC = nullptr;
 

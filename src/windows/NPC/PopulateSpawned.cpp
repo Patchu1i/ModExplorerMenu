@@ -7,7 +7,10 @@ namespace ModExplorerMenu
 	// with *new* CachedNPC objects from the spawned actors vector.
 	void NPCWindow::PopulateListWithSpawned()
 	{
-		SetState(showSpawned);
+		b_ShowNearbyNPC = false;
+		b_ShowSpawnedNPC = true;
+		b_ShowAllNPC = false;
+
 		npcList.clear();
 
 		std::vector<NPC*> cached_search;

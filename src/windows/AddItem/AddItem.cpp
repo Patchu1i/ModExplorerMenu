@@ -29,11 +29,8 @@ namespace ModExplorerMenu
 
 	void AddItemWindow::Init()
 	{
-		// auto& config = Settings::GetSingleton()->GetConfig();
-
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();
-
 		columnList = AddItemColumns();
 	}
 }

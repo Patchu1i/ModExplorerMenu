@@ -52,8 +52,7 @@ namespace ModExplorerMenu
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		// auto extendWidth = (columnList.EnabledColumns() > 4) ? columnList.EnabledColumns() * 50.0f : 0;
-		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), AddItemTableFlags | rowBG, table_size, table_size.x)) {
+		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, table_size, table_size.x)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
@@ -141,8 +140,6 @@ namespace ModExplorerMenu
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);
-
-					bool _itemSelected = false;
 
 					//	Plugin
 					ImGui::TableNextColumn();
@@ -249,35 +246,29 @@ namespace ModExplorerMenu
 						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {
-							_itemSelected = true;
+							if (b_AddToInventory) {
+								Console::AddItem(item->GetFormID().c_str(), clickToAddCount);
+								Console::StartProcessThread();
+							} else if (b_PlaceOnGround) {
+								Console::PlaceAtMe(item->GetFormID().c_str(), clickToAddCount);
+								Console::StartProcessThread();
+							} else if (b_AddToFavorites) {
+								item->favorite = !item->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
+							}
 						}
 
 						if (ImGui::IsMouseClicked(1, true)) {
-							ImGui::OpenPopup("TestItemPopupMenu");
+							ImGui::OpenPopup("ShowItemContextMenu");
 						}
 					}
 
-					if (ImGui::BeginPopup("TestItemPopupMenu")) {
+					if (ImGui::BeginPopup("ShowItemContextMenu")) {
 						ShowItemListContextMenu(*item);
 						ImGui::EndPopup();
 					}
 
-					// Shortcut Handlers
-					if (b_AddToInventory && _itemSelected) {
-						Console::AddItem(item->GetFormID().c_str(), clickToAddCount);
-						Console::StartProcessThread();
-					} else if (b_PlaceOnGround && _itemSelected) {
-						Console::PlaceAtMe(item->GetFormID().c_str(), clickToAddCount);
-						Console::StartProcessThread();
-					} else if (b_AddToFavorites && _itemSelected) {
-						item->favorite = !item->favorite;
-						PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
-					} else if (!b_AddToInventory && _itemSelected) {
-						item->selected = true;
-					}
-
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
-					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.
 					ImRect row_rect(
 						table->WorkRect.Min.x,
 						table->RowPosY1,
@@ -293,6 +284,7 @@ namespace ModExplorerMenu
 					if (bHover) {
 						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 					}
+					// End of Row Background Hover effect.
 
 					ImGui::PopID();
 				}

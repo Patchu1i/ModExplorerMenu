@@ -7,38 +7,49 @@ namespace ModExplorerMenu
 {
 	void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 	{
-		(void)a_style;
 		(void)a_config;
 
-		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
-		float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		switch (currentState) {
-		case showAll:
-			if (ImGui::Button("Show Nearby NPCs", ImVec2(button_width, button_height))) {
-				PopulateListWithLocals();
-			}
-			if (ImGui::Button("Show Spawned NPCs", ImVec2(button_width, button_height))) {
-				PopulateListWithSpawned();
-			}
-			break;
-		case showLocal:
-		case showSpawned:
-			if (ImGui::Button("Show All NPCs", ImVec2(button_width, button_height))) {
-				ApplyFilters();
-			}
-		}
+		ImGui::SeparatorText("Shortcuts:");
 
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::PushFont(a_style.font.medium);
+		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
+
+		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Show Nearby NPCs", &b_ShowNearbyNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			PopulateListWithLocals();
+		}
+		ImGui::SetDelayedTooltip("Show NPCs that are nearby your character.");
+
+		if (ImGui::Selectable(ICON_RPG_SPAWNED_NPC " Show Spawned NPCs", &b_ShowSpawnedNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			PopulateListWithSpawned();
+		}
+		ImGui::SetDelayedTooltip("Show NPCs that have been spawned by the player.");
+
+		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Show All NPCs", &b_ShowAllNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			ApplyFilters();
+		}
+		ImGui::SetDelayedTooltip("Show all NPCs in the game.");
+
+		ImGui::PopStyleColor(3);
 
 		if (selectedNPC == nullptr) {
+			ImGui::PopFont();
+			ImGui::PopStyleVar(2);
 			return;
 		}
 
-		// TODO: Stop being lazy and move these lambda's to a class or function body.
+		ImGui::SeparatorText("Actions:");
+
+		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
+		float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
+
 		constexpr auto ProgressColor = [](const double value, const float max_value) -> ImVec4 {
 			const float dampen = 0.7f;
 			const float ratio = (float)value / max_value;
@@ -164,6 +175,8 @@ namespace ModExplorerMenu
 		auto* npc = selectedNPC->TESForm->As<RE::TESNPC>();
 
 		if (npc == nullptr) {
+			ImGui::PopFont();
+			ImGui::PopStyleVar(2);
 			return;
 		}
 
@@ -211,5 +224,10 @@ namespace ModExplorerMenu
 				}
 			}
 		}
+
+		ImGui::PopFont();
+		ImGui::PopStyleVar(2);
+
+		//ImGui::EndChild();
 	}
 }

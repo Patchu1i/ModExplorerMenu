@@ -6,7 +6,10 @@ namespace ModExplorerMenu
 	// with *new* CachedNPC objects from `RE::ProcessLists->highActorHandles`.
 	void NPCWindow::PopulateListWithLocals()
 	{
-		SetState(showLocal);
+		b_ShowNearbyNPC = true;
+		b_ShowSpawnedNPC = false;
+		b_ShowAllNPC = false;
+
 		npcList.clear();
 
 		SKSE::GetTaskInterface()->AddTask([]() {

@@ -63,8 +63,12 @@ namespace ModExplorerMenu
 
 		// Place All from Table Shortcut.
 		if (ImGui::Button("Place All From Table", ImVec2(button_width, button_height))) {
-			for (auto& item : itemList) {
-				Console::PlaceAtMe(item->GetFormID());
+			if (itemList.size() > 30) {
+				ImGui::OpenPopup("Warning: Large Query Detected");
+			} else {
+				for (auto& item : itemList) {
+					Console::PlaceAtMe(item->GetFormID());
+				}
 			}
 
 			Console::StartProcessThread();
@@ -75,6 +79,12 @@ namespace ModExplorerMenu
 			"Use at your own risk.");
 
 		ImGui::PopStyleColor(1);
+
+		ImGui::ShowWarningPopup("Warning: Large Query Detected", [&]() {
+			for (auto& item : itemList) {
+				Console::PlaceAtMe(item->GetFormID());
+			}
+		});
 
 		// Show Favorites
 		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {

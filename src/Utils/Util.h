@@ -11,23 +11,9 @@ namespace ImGui
 		       ImGui::CalcTextSize(text).x / 2;
 	};
 
-	// inline static void InlineCheckboxConfig(const char* label, bool* v)
-	// {
-	// 	if (ImGui::InlineCheckbox(label, v)) {
-	// 		Settings::GetSingleton()->SaveSettings();
-	// 		logger::info("Saved settings.");
-	// 	}
-	// }
-
-	// https://github.com/ocornut/imgui/issues/4719
-	inline static void SelectableColor(ImU32 color)
-	{
-		ImVec2 p_min = ImGui::GetItemRectMin();
-		ImVec2 p_max = ImGui::GetItemRectMax();
-		ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, color);
-	}
-
 	// TODO: Implement more use cases for this.
+	// Call ImGui::OpenPopup(<popup_name>) inside a user event.
+	// Call ImGui::ShowWarningPopup(<popup_name>, <callback>) outside of conditional logic.
 	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
 	{
 		auto& style = ModExplorerMenu::Settings::GetSingleton()->GetStyle();
@@ -56,8 +42,8 @@ namespace ImGui
 
 			ImGui::TextWrapped(
 				"You are about to spawn a large number of objects. This may result in"
-				"undefined behavior such as your game freezing, crashing, or weird things"
-				"occuring. It's not recommended to use this outside of testing purposes. ");
+				" undefined behavior such as your game freezing, crashing, or weird things"
+				" occuring. It's not recommended to use this outside of testing purposes. ");
 
 			ImGui::NewLine();
 			ImGui::Text("Do you understand, and wish to proceed?");
@@ -146,7 +132,7 @@ namespace ImGui
 
 	inline static void HelpMarker(const char* desc)
 	{
-		ImGui::TextDisabled("(?)");
+		ImGui::TextDisabled(ICON_RPG_QUESTION);
 		if (ImGui::BeginItemTooltip()) {
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 			ImGui::TextUnformatted(desc);
@@ -277,10 +263,6 @@ namespace Utils
 		}
 	}
 
-	// 	kConstantEffect
-	// kFireAndForget
-	// kConcentration
-	// kScroll
 	inline static const char* GetCastingType(RE::MagicSystem::CastingType a_type)
 	{
 		switch (a_type) {

@@ -22,10 +22,6 @@ namespace ModExplorerMenu
 
 	void NPCWindow::Init()
 	{
-		// auto& config = Settings::GetSingleton()->GetConfig();
-
-		SetState(showAll);
-
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 		ApplyFilters();
 

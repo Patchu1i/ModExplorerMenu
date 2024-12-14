@@ -85,7 +85,7 @@ namespace ModExplorerMenu
 
 			if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
-					InputSearchFlags)) {
+					Frame::INPUT_FLAGS)) {
 				ApplyFilters();
 			}
 
@@ -148,7 +148,7 @@ namespace ModExplorerMenu
 
 			ImGui::InputTextWithHint("##AddItemWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
-				InputSearchFlags);
+				Frame::INPUT_FLAGS);
 
 			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
