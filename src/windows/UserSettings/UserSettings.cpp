@@ -212,6 +212,27 @@ namespace ModExplorerMenu
 		}
 	}
 
+	void AddSelectionDropdown(const char* a_text, int& a_selection, const std::vector<std::string>& a_items)
+	{
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		auto id = "##SelectionDropdown" + std::string(a_text);
+		auto width = 200.0f;
+		ImGui::Text(a_text);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::PushItemWidth(width);
+		if (ImGui::BeginCombo(id.c_str(), a_items[a_selection].c_str())) {
+			for (int i = 0; i < a_items.size(); ++i) {
+				if (ImGui::Selectable(a_items[i].c_str())) {
+					a_selection = i;
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+	}
+
 	void AddImageDropdown(const char* a_text, GraphicManager::Image* a_imageRef)
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -312,6 +333,9 @@ namespace ModExplorerMenu
 
 		AddKeybind("Toggle Menu Keybind", config.showMenuKey, 211);
 		AddModifier("Toggle Menu (Modifier)", config.showMenuModifier, 0);
+
+		std::vector<std::string> sorts = { "Alphabetical", "Install Date" };
+		AddSelectionDropdown("Mod List Sorting", config.modListSort, sorts);
 	}
 
 	void SettingsWindow::DrawThemeSelector()

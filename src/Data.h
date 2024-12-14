@@ -64,6 +64,14 @@ namespace ModExplorerMenu
 			bool favorite;
 		};
 
+		enum
+		{
+			ITEM_MOD_LIST = 0,
+			NPC_MOD_LIST,
+			STATIC_MOD_LIST,
+			CELL_MOD_LIST
+		};
+
 		static NPC* CreateCachedNPC(RE::TESNPC* a_npc);
 
 		// [[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
@@ -71,15 +79,38 @@ namespace ModExplorerMenu
 		// 	return _modList;
 		// }
 
-		[[nodiscard]] static inline std::vector<RE::TESFile*> GetModList()
+		[[nodiscard]] static inline std::vector<RE::TESFile*> SortModList(std::vector<RE::TESFile*> modList, int sort = 0)
 		{
-			std::vector<RE::TESFile*> modList(_modList.begin(), _modList.end());
-
-			std::sort(modList.begin(), modList.end(), [](const RE::TESFile* a, const RE::TESFile* b) {
-				return a->GetFilename() < b->GetFilename();
-			});
+			switch (sort) {
+			case 0:  // Alphabetical
+				std::sort(modList.begin(), modList.end(), [](const RE::TESFile* a, const RE::TESFile* b) {
+					return a->GetFilename() < b->GetFilename();
+				});
+				break;
+			case 1:  // Last Installed
+				std::sort(modList.begin(), modList.end(), [](RE::TESFile* a, RE::TESFile* b) {
+					return _modListLastModified[a] > _modListLastModified[b];
+				});
+				break;
+			}
 
 			return modList;
+		}
+
+		[[nodiscard]] static inline std::vector<RE::TESFile*> GetModList(int listType, int sort = 0)
+		{
+			switch (listType) {
+			case ITEM_MOD_LIST:
+				return SortModList(std::vector<RE::TESFile*>(_itemModList.begin(), _itemModList.end()), sort);
+			case NPC_MOD_LIST:
+				return SortModList(std::vector<RE::TESFile*>(_npcModList.begin(), _npcModList.end()), sort);
+			case STATIC_MOD_LIST:
+				return SortModList(std::vector<RE::TESFile*>(_staticModList.begin(), _staticModList.end()), sort);
+			case CELL_MOD_LIST:
+				return SortModList(std::vector<RE::TESFile*>(_cellModList.begin(), _cellModList.end()), sort);
+			default:
+				return SortModList(std::vector<RE::TESFile*>(_modList.begin(), _modList.end()), sort);
+			}
 		}
 
 	private:
@@ -101,6 +132,13 @@ namespace ModExplorerMenu
 		static inline std::vector<StaticObject> _staticCache;
 		static inline std::unordered_set<RE::TESFile*> _modList;
 
+		static inline std::unordered_set<RE::TESFile*> _itemModList;
+		static inline std::unordered_set<RE::TESFile*> _npcModList;
+		static inline std::unordered_set<RE::TESFile*> _staticModList;
+		static inline std::unordered_set<RE::TESFile*> _cellModList;
+
+		static inline std::unordered_map<RE::TESFile*, std::time_t> _modListLastModified;
+
 		void CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_map);
 
 		template <class T>
@@ -111,6 +149,31 @@ namespace ModExplorerMenu
 
 		template <class T>
 		void CacheStaticObjects(RE::TESDataHandler* a_data);
+
+		// Windows Specific API for File Creation Time
+		[[nodiscard]] static std::time_t GetFileCreationTime(const std::filesystem::path& path)
+		{
+			HANDLE hFile = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile == INVALID_HANDLE_VALUE) {
+				std::cerr << "Unable to open file: " << path << std::endl;
+				return std::time_t{};
+			}
+
+			FILETIME creationTime;
+			if (!GetFileTime(hFile, &creationTime, NULL, NULL)) {
+				std::cerr << "Unable to get file creation time: " << path << std::endl;
+				CloseHandle(hFile);
+				return std::time_t{};
+			}
+
+			CloseHandle(hFile);
+
+			ULARGE_INTEGER ull;
+			ull.LowPart = creationTime.dwLowDateTime;
+			ull.HighPart = creationTime.dwHighDateTime;
+
+			return std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(std::chrono::nanoseconds(ull.QuadPart * 100))));
+		}
 
 	public:
 		static inline Data* GetSingleton()

@@ -80,6 +80,7 @@ namespace ModExplorerMenu
 			std::string theme = "Default";
 			int showMenuKey;
 			int showMenuModifier;
+			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
 		};
 
 		ImGuiStyle test;
@@ -186,6 +187,8 @@ namespace ModExplorerMenu
 				return std::format("{:.3f}", a_style);
 			} else if constexpr (std::is_same_v<bool, T>) {
 				return a_style ? "true" : "false";
+			} else if constexpr (std::is_same_v<int, T>) {
+				return std::to_string(a_style);
 			} else {
 				stl::report_and_fail("Unsupported type for ToString");  // FIXME: static_assert?
 			}

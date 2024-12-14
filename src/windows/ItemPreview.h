@@ -74,9 +74,6 @@ namespace ModExplorerMenu
 		ImGui::Text(name.data());
 		ImGui::NewLine();
 
-		//ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-		//ImGui::Selectable(TruncateText(name.data(), maxWidth).c_str(), true, ImGuiSelectableFlags_SpanAvailWidth, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 2.5f));
-		//ImGui::PopStyleVar(1);
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		// NPC Specific Item Card details:
@@ -183,12 +180,16 @@ namespace ModExplorerMenu
 			const std::string desc = Utils::GetItemDescription(a_object->TESForm, g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				if (a_object->GetFormType() == RE::FormType::Book) {
-					ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(desc.c_str()));  // Read Me!
-				}
+				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Description"));
+				ImGui::Text("Description");
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::PushTextWrapPos(maxWidth);
 				ImGui::TextWrapped(desc.c_str());
 				ImGui::PopTextWrapPos();
+			}
+
+			if (a_object->GetFormType() == RE::FormType::Book) {
+				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(desc.c_str()));  // Read Me!
 			}
 		}
 	}

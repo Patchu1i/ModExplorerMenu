@@ -64,7 +64,6 @@ namespace ModExplorerMenu
 	void TeleportWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		(void)a_style;
-		(void)a_config;
 
 		if (ImGui::CollapsingHeader("Refine your search:", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::NewLine();
@@ -113,7 +112,7 @@ namespace ModExplorerMenu
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
-				for (auto& mod : Data::GetModList()) {
+				for (auto& mod : Data::GetModList(Data::CELL_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
 					if (ImGui::Selectable(modName, is_selected)) {

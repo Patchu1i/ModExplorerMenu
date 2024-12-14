@@ -44,8 +44,8 @@ namespace ModExplorerMenu
 			_npcCache.push_back({ form, formid, mod });
 
 			//Add mod file to list.
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
+			if (!_npcModList.contains(mod)) {
+				_npcModList.insert(mod);
 			}
 		}
 	}
@@ -61,8 +61,16 @@ namespace ModExplorerMenu
 			//_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, weight, non_playable });
 
 			//Add mod file to list.
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
+			if (!_itemModList.contains(mod)) {
+				_itemModList.insert(mod);
+
+				std::filesystem::path path = std::string("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data\\") + mod->fileName;
+				if (std::filesystem::exists(path)) {
+					std::time_t creationTime = GetFileCreationTime(path);
+					_modListLastModified[mod] = creationTime;
+				} else {
+					logger::info("File does not exist: {}", path.string());
+				}
 			}
 		}
 	}
@@ -76,14 +84,15 @@ namespace ModExplorerMenu
 
 			_staticCache.push_back(ModExplorerMenu::StaticObject{ form, formid, mod });
 
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
+			if (!_staticModList.contains(mod)) {
+				_staticModList.insert(mod);
 			}
 		}
 	}
 
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
+	// Doesn't capture every cell, but it's a start.
 	void Data::CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_cellMap)
 	{
 		if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
@@ -109,6 +118,11 @@ namespace ModExplorerMenu
 						gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
 							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
+
+							if (!_cellModList.contains(a_file)) {
+								_cellModList.insert(a_file);
+							}
+
 							continue;
 						}
 						break;
@@ -117,6 +131,10 @@ namespace ModExplorerMenu
 						gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
 						if (gotEDID && gotDATA && ((data & 1) == 0)) {
 							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
+
+							if (!_cellModList.contains(a_file)) {
+								_cellModList.insert(a_file);
+							}
 							continue;
 						}
 						break;
@@ -170,6 +188,11 @@ namespace ModExplorerMenu
 			const auto& [_plugin, space, place, name, editorid] = cell;
 			std::string plugin = _plugin + ".esm";
 			const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
+			RE::TESFile* modFile = const_cast<RE::TESFile*>(mod);
+
+			if (!_cellModList.contains(modFile)) {
+				_cellModList.insert(modFile);
+			}
 
 			_cellCache.push_back(Cell(plugin, space, place, name, editorid, mod));
 		}
