@@ -5,6 +5,7 @@
 #include "Hooks.h"
 #include "Settings.h"
 #include "Windows/Frame.h"
+#include "Windows/Persistent.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 //#include "versiondb.h"
@@ -53,6 +54,7 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
+			ModExplorerMenu::PersistentData::LoadFromFile();
 			ModExplorerMenu::Data::GetSingleton()->Run();
 			ModExplorerMenu::Settings::GetSingleton()->LoadSettings(ModExplorerMenu::Settings::ini_mem_path);
 			ModExplorerMenu::Frame::Install();

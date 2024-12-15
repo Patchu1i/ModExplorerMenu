@@ -3,6 +3,7 @@
 #include "Data.h"
 #include "Settings.h"
 #include "Windows/Columns.h"
+#include "Windows/Frame.h"
 
 namespace ModExplorerMenu
 {

@@ -68,7 +68,8 @@ namespace ModExplorerMenu
 			}
 		}
 
-		std::vector<std::string> LoadFromFile();
+		static void LoadFromFile();
+		static std::unordered_map<std::string, bool> m_favorites;
 
 		constexpr inline static const wchar_t* json_favorite_path = L"Data/Interface/ModExplorerMenu/User/";
 	};

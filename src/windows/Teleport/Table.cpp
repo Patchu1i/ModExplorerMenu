@@ -2,6 +2,7 @@
 
 #include "Console.h"
 #include "Utils/Util.h"
+#include "Windows/Persistent.h"
 // #include "Windows/ItemCards.h"
 
 // Draws a Copy to Clipboard button on Context popup.
@@ -120,6 +121,7 @@ namespace ModExplorerMenu
 						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_clickToTele, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 							if (!b_clickToTele) {
 								cell->favorite = !cell->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<Cell*>(cell);
 							}
 						}
 					} else {

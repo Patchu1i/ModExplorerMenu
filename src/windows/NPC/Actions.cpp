@@ -22,30 +22,49 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
-		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Show Nearby NPCs", &b_ShowNearbyNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
-			PopulateListWithLocals();
+		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Click to Select", &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			b_ClickToFavorite = false;
 		}
-		ImGui::SetDelayedTooltip("Show NPCs that are nearby your character.");
 
-		if (ImGui::Selectable(ICON_RPG_SPAWNED_NPC " Show Spawned NPCs", &b_ShowSpawnedNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
-			PopulateListWithSpawned();
+		if (ImGui::Selectable(ICON_RPG_SPAWNED_NPC " Click to Favorite", &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			b_ClickToSelect = false;
 		}
-		ImGui::SetDelayedTooltip("Show NPCs that have been spawned by the player.");
-
-		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Show All NPCs", &b_ShowAllNPC, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
-			ApplyFilters();
-		}
-		ImGui::SetDelayedTooltip("Show all NPCs in the game.");
 
 		ImGui::PopStyleColor(3);
 
-		if (selectedNPC == nullptr) {
+		ImGui::SeparatorText("Actions:");
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
+
+		if (ImGui::Button("Place Selected NPC", ImVec2(button_width, button_height))) {
+			if (selectedNPC != nullptr) {
+				Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
+				Console::StartProcessThread();
+			}
+		}
+
+		if (ImGui::Button("Place All From Table", ImVec2(button_width, button_height))) {
+			for (auto& npc : npcList) {
+				Console::PlaceAtMe(npc->GetFormID(), 1);
+			}
+
+			Console::StartProcessThread();
+		}
+
+		ImGui::PopStyleColor(1);
+
+		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
+			selectedMod = "Favorite";
+			ApplyFilters();
+		}
+
+		if (selectedNPC == nullptr && hoveredNPC == nullptr) {
 			ImGui::PopFont();
 			ImGui::PopStyleVar(2);
 			return;
 		}
 
-		ImGui::SeparatorText("Actions:");
+		ImGui::SeparatorText("Info:");
 
 		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
 		float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
@@ -77,102 +96,13 @@ namespace ModExplorerMenu
 			ImGui::Text(text);
 		};
 
-		if (ImGui::Button("Place as New", ImVec2(button_width, button_height))) {
-			Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
+		RE::TESNPC* npc = nullptr;
+
+		if (hoveredNPC != nullptr) {
+			npc = hoveredNPC->TESForm->As<RE::TESNPC>();
+		} else if (selectedNPC != nullptr) {
+			npc = selectedNPC->TESForm->As<RE::TESNPC>();
 		}
-
-		// if (showLocalsOnly) {
-		// 	ImGui::Checkbox("Apply to All Nearby NPCS", &applyActionsToAll);
-
-		// 	const auto refID = std::format("{:08x}", selectedNPC->refID);
-		// 	if (ImGui::Button("Bring", ImVec2(button_width, button_height))) {
-		// 		if (applyActionsToAll) {
-		// 			for (auto& local : npcList) {
-		// 				if (local->refID == selectedNPC->refID) {
-		// 					continue;
-		// 				}
-
-		// 				//const auto localRefID = std::format("{:08x}", local->refID);
-		// 				//ConsoleCommand::MoveToPlayer(localRefID);
-		// 			}
-		// 		} else {
-		// 			//ConsoleCommand::MoveToPlayer(refID);
-		// 		}
-		// 	}
-
-		// 	if (ImGui::Button("Goto", ImVec2(button_width, button_height))) {
-		// 		//ConsoleCommand::MoveTo(refID);
-		// 	}
-
-		// 	if (ImGui::Button("Kill", ImVec2(button_width, button_height))) {
-		// 		if (applyActionsToAll) {
-		// 			for (auto& local : npcList) {
-		// 				if (local->refID == selectedNPC->refID) {
-		// 					continue;
-		// 				}
-
-		// 				//const auto localRefID = std::format("{:08x}", local->refID);
-		// 				//ConsoleCommand::Kill(localRefID);
-		// 			}
-		// 		} else {
-		// 			//ConsoleCommand::Kill(refID);
-		// 		}
-		// 	}
-
-		// 	if (ImGui::Button("Resurrect", ImVec2(button_width, button_height))) {
-		// 		if (applyActionsToAll) {
-		// 			for (auto& local : npcList) {
-		// 				if (local->refID == selectedNPC->refID) {
-		// 					continue;
-		// 				}
-
-		// 				//const auto localRefID = std::format("{:08x}", local->refID);
-		// 				//ConsoleCommand::Resurrect(localRefID);
-		// 			}
-		// 		} else {
-		// 			//ConsoleCommand::Resurrect(refID);
-		// 		}
-		// 	}
-
-		// 	if (ImGui::Button("Unequip All", ImVec2(button_width, button_height))) {
-		// 		if (applyActionsToAll) {
-		// 			for (auto& local : npcList) {
-		// 				if (local->refID == selectedNPC->refID) {
-		// 					continue;
-		// 				}
-
-		// 				//const auto localRefID = std::format("{:08x}", local->refID);
-		// 				//ConsoleCommand::UnEquipAll(localRefID);
-		// 			}
-		// 		} else {
-		// 			//ConsoleCommand::UnEquipAll(refID);
-		// 		}
-		// 	}
-
-		// 	if (ImGui::Button("Toggle Freeze", ImVec2(button_width, button_height))) {
-		// 		if (applyActionsToAll) {
-		// 			for (auto& local : npcList) {
-		// 				if (local->refID == selectedNPC->refID) {
-		// 					continue;
-		// 				}
-
-		// 				//const auto localRefID = std::format("{:08x}", local->refID);
-		// 				//ConsoleCommand::ToggleFreeze(localRefID);
-		// 			}
-		// 		} else {
-		// 			//ConsoleCommand::ToggleFreeze(refID);
-		// 		}
-		// 	}
-
-		// 	if (ImGui::Button("Save Reference", ImVec2(button_width, button_height))) {
-		// 		//TODO: Implement saved references of unique actors (?)
-		// 		// https://elderscrolls.fandom.com/wiki/Console_Commands_(Skyrim)/Characters
-		// 	}
-		// }
-
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-		auto* npc = selectedNPC->TESForm->As<RE::TESNPC>();
 
 		if (npc == nullptr) {
 			ImGui::PopFont();
@@ -180,8 +110,30 @@ namespace ModExplorerMenu
 			return;
 		}
 
-		if (ImGui::CollapsingHeader("NPC Skills")) {
-			const auto skills = selectedNPC->GetSkills();
+		// Name Bar
+		const auto name = npc->GetName();
+
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		const auto cursor = ImGui::GetCursorScreenPos();
+		const auto size = ImGui::GetContentRegionAvail();
+		const auto color = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
+		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
+
+		ImGui::NewLine();
+		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
+		ImGui::Text(name);
+		ImGui::NewLine();
+
+		if (ImGui::CollapsingHeader("NPC Skills", ImGuiTreeNodeFlags_DefaultOpen)) {
+			RE::TESNPC::Skills skills;
+
+			if (hoveredNPC != nullptr) {
+				skills = hoveredNPC->GetSkills();
+			} else if (selectedNPC != nullptr) {
+				skills = selectedNPC->GetSkills();
+			}
+
 			const auto skillNames = Utils::GetSkillNames();
 			for (int i = 0; i < 18; i++) {
 				const auto skillName = skillNames[i];
@@ -227,7 +179,5 @@ namespace ModExplorerMenu
 
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
-
-		//ImGui::EndChild();
 	}
 }

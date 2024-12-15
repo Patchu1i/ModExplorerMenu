@@ -97,15 +97,46 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
+			ImGui::InputTextWithHint("##ObjectWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
+				IM_ARRAYSIZE(modListBuffer),
+				Frame::INPUT_FLAGS);
+
 			if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
+
+				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				for (auto& mod : Data::GetModList(Data::STATIC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					if (std::strlen(modListBuffer) > 0) {
+						std::string compare = modName;
+						std::string input = modListBuffer;
+
+						std::transform(input.begin(), input.end(), input.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						std::transform(compare.begin(), compare.end(), compare.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						if (compare.find(input) != std::string::npos) {
+							// Do nothing?
+						} else {
+							continue;
+						}
+					}
+
 					if (ImGui::Selectable(modName, is_selected)) {
 						selectedMod = modName;
 						ApplyFilters();

@@ -2,6 +2,7 @@
 
 #include "Console.h"
 #include "Utils/Util.h"
+#include "Windows/Persistent.h"
 
 // Draws a Copy to Clipboard button on Context popup.
 // void NPCWindow::ShowItemListContextMenu(Data::CachedItem& a_item)
@@ -53,7 +54,7 @@ namespace ModExplorerMenu
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##NPCWindow::Table", columnList.GetTotalColumns(), NPCTableFlags | rowBG, table_size, table_size.x + 100.0f)) {
+		if (ImGui::BeginTable("##NPCWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, table_size, table_size.x + 100.0f)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
@@ -91,6 +92,8 @@ namespace ModExplorerMenu
 			ImGuiContext& g = *ImGui::GetCurrentContext();
 			ImGuiTable* table = g.CurrentTable;
 
+			hoveredNPC = nullptr;
+
 			int count = 0;
 			clipper.Begin(static_cast<int>(npcList.size()), ImGui::GetTextLineHeightWithSpacing());
 			while (clipper.Step()) {
@@ -116,19 +119,18 @@ namespace ModExplorerMenu
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_clickToPlace, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!b_clickToPlace) {
+						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_ClickToFavorite, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!b_ClickToFavorite) {
 								npc->favorite = !npc->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
 							}
 						}
 					} else {
-						ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_clickToPlace, npc->favorite);
+						ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite);
 					}
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);
-
-					bool _itemSelected = false;
 
 					//	Plugin
 					ImGui::TableNextColumn();
@@ -169,50 +171,17 @@ namespace ModExplorerMenu
 					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						ImGui::PushFont(a_style.font.tiny);
-						//ShowItemCard<NPC>(npc);
-						ImGui::PopFont();
+						hoveredNPC = npc;
 
 						if (ImGui::IsMouseClicked(0)) {
-							_itemSelected = true;
-							selectedNPC = npc;
-
-							if (b_clickToPlace) {
-								Console::PlaceAtMeFormID(npc->GetBaseForm());
-								Console::PridLast();
-								if (b_placeFrozen) {
-									Console::Freeze();
-								}
-								if (b_placeNaked) {
-									Console::UnEquip();
-								}
-								Console::StartProcessThread(false);
-
-								_itemSelected = false;
-								selectedNPC = nullptr;
+							if (b_ClickToSelect) {
+								selectedNPC = npc;
+							} else if (b_ClickToFavorite) {
+								npc->favorite = !npc->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
 							}
 						}
-
-						// if (ImGui::IsMouseClicked(1, true)) {
-						// 	ImGui::OpenPopup("TestItemPopupMenu");
-						// }
 					}
-
-					// if (ImGui::BeginPopup("TestItemPopupMenu")) {
-					// 	ShowItemListContextMenu(*item);
-					// 	ImGui::EndPopup();
-					// }
-
-					// Shortcut Handlers
-					// if (b_ClickToAdd && _itemSelected) {
-					// 	ConsoleCommand::AddItem(item->formid.c_str(), clickToAddCount);
-					// } else if (b_ClickToPlace && _itemSelected) {
-					// 	ConsoleCommand::PlaceAtMe(item->formid.c_str(), clickToPlaceCount);
-					// } else if (b_ClickToFavorite && _itemSelected) {
-					// 	item->favorite = !item->favorite;
-					// } else if (!b_ClickToAdd && _itemSelected) {
-					// 	item->selected = true;
-					// }
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
 					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.

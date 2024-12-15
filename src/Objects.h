@@ -21,12 +21,12 @@ namespace ModExplorerMenu
 		RE::TESForm* TESForm;  // cannot be const
 		const RE::FormID FormID;
 		const RE::TESFile* TESFile;
+		bool favorite = false;
 
 		const std::string name = TESForm->GetName();
 		const std::string editorid = GetEditorIDString(FormID);
 		const std::string filename = TESFile->fileName;
 
-		bool favorite = false;
 		bool selected = false;
 
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
@@ -46,29 +46,6 @@ namespace ModExplorerMenu
 
 	class StaticObject : public BaseObject
 	{
-	};
-
-	class Cell
-	{
-	public:
-		const std::string filename;
-		const std::string space;
-		const std::string zone;
-		const std::string cellName;
-		const std::string editorid;
-
-		bool favorite = false;
-		const RE::TESFile* mod;
-
-		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
-		[[nodiscard]] inline std::string_view GetSpace() const { return space; }
-		[[nodiscard]] inline std::string_view GetZone() const { return zone; }
-		[[nodiscard]] inline std::string_view GetCellName() const { return cellName; }
-		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
-		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
-
-		Cell(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
-			filename(filename), space(space), zone(zone), cellName(cellName), editorid(editorid), mod(mod) {}
 	};
 
 	class Item : public BaseObject
@@ -106,5 +83,28 @@ namespace ModExplorerMenu
 		[[nodiscard]] inline float GetCarryWeight() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kCarryWeight); }
 
 		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const { return TESForm->As<RE::TESNPC>()->playerSkills; }
+	};
+
+	class Cell
+	{
+	public:
+		const std::string filename;
+		const std::string space;
+		const std::string zone;
+		const std::string cellName;
+		const std::string editorid;
+
+		bool favorite = false;
+		const RE::TESFile* mod;
+
+		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
+		[[nodiscard]] inline std::string_view GetSpace() const { return space; }
+		[[nodiscard]] inline std::string_view GetZone() const { return zone; }
+		[[nodiscard]] inline std::string_view GetCellName() const { return cellName; }
+		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
+		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
+
+		Cell(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, bool favorite, const RE::TESFile* mod = nullptr) :
+			filename(filename), space(space), zone(zone), cellName(cellName), editorid(editorid), favorite(favorite), mod(mod) {}
 	};
 }

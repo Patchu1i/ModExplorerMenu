@@ -125,17 +125,17 @@ namespace ModExplorerMenu
 
 					ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
 					float col = item->favorite ? 1.0f : 0.5f;
-					bool clickToAct = b_AddToInventory || b_PlaceOnGround || b_AddToFavorites;
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##AddItemWindow::FavoriteButton", clickToAct, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!clickToAct) {
+						if (ImGui::DisabledImageButton("##AddItemWindow::FavoriteButton", b_AddToFavorites, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!b_AddToFavorites) {
 								item->favorite = !item->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
 							}
 						}
 					} else {
-						ImGui::DisabledCheckbox("##AddItemWindow::FavoriteCheckbox", clickToAct, item->favorite);
+						ImGui::DisabledCheckbox("##AddItemWindow::FavoriteCheckbox", b_AddToFavorites, item->favorite);
 					}
 
 					ImGui::PopStyleColor(3);

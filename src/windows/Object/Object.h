@@ -3,6 +3,7 @@
 #include "Data.h"
 #include "Settings.h"
 #include "Windows/Columns.h"
+#include "Windows/Frame.h"
 
 namespace ModExplorerMenu
 {
@@ -35,6 +36,7 @@ namespace ModExplorerMenu
 		// Searching
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
 		static inline char inputBuffer[256] = "";
+		static inline char modListBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
 

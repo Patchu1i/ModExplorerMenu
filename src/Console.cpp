@@ -154,6 +154,7 @@ namespace ModExplorerMenu
 				script->SetCommand(cmd);
 				script->CompileAndRun(consoleRef.get());
 				queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kHide, nullptr);
+				logger::info("Executed {}", cmd);
 			} else {
 				stl::report_and_fail("Failed to get UIMessageQueue singleton");
 			}
@@ -228,6 +229,7 @@ namespace ModExplorerMenu
 				std::lock_guard<std::mutex> lock(m_Task);
 				taskQueue.push([cmd]() {
 					Console::SendConsoleCommand(cmd->first);
+					logger::info("Processing command: {}", cmd->first);
 				});
 			}
 		});
@@ -244,6 +246,7 @@ namespace ModExplorerMenu
 	{
 		std::lock_guard<std::mutex> lock(m_Process);
 		commandQueue.push_back(std::make_pair(a_cmd, a_delay));
+		logger::info("Added command to queue: {}", a_cmd);
 	}
 
 	// Add a console command to the front of the command queue.

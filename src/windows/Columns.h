@@ -71,44 +71,50 @@ namespace ModExplorerMenu
     class TeleportColumns : public BaseColumnList
     {
     public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
         TeleportColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultHide, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "Space", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Space });
-            columns.push_back({ "Zone", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Zone });
-            columns.push_back({ "CellName", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::CellName });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "Space", flag, 0.0f, false, BaseColumn::ID::Space });
+            columns.push_back({ "Zone", flag, 0.0f, false, BaseColumn::ID::Zone });
+            columns.push_back({ "CellName", flag, 0.0f, false, BaseColumn::ID::CellName });
+            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
     class ObjectColumns : public BaseColumnList
     {
     public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
         ObjectColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_WidthStretch, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Type });
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::FormID });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "Type", flag, 0.0f, false, BaseColumn::ID::Type });
+            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
     class NPCColumns : public BaseColumnList
     {
     public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
         NPCColumns()
         {
-            columns.push_back({ "*", ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "FormID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::FormID });
-            columns.push_back({ "Name", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::Name });
-            columns.push_back({ "EditorID", ImGuiTableColumnFlags_None, 0.0f, false, BaseColumn::ID::EditorID });
-            columns.push_back({ "Health", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Health });
-            columns.push_back({ "Magicka", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Magicka });
-            columns.push_back({ "Stamina", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::Stamina });
-            columns.push_back({ "CarryWeight", ImGuiTableColumnFlags_WidthFixed, 30.0f, false, BaseColumn::ID::CarryWeight });
+            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ "Name", flag, 0.0f, false, BaseColumn::ID::Name });
+            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ "Health", flag, 30.0f, false, BaseColumn::ID::Health });
+            columns.push_back({ "Magicka", flag, 30.0f, false, BaseColumn::ID::Magicka });
+            columns.push_back({ "Stamina", flag, 30.0f, false, BaseColumn::ID::Stamina });
+            columns.push_back({ "CarryWeight", flag, 30.0f, false, BaseColumn::ID::CarryWeight });
         }
     };
     
@@ -119,7 +125,7 @@ namespace ModExplorerMenu
 
         AddItemColumns()
         {
-            columns.push_back({ ICON_RPG_HEART, flag, 0.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ "Type", flag, 0.0f, false, BaseColumn::ID::Type});
             columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID});

@@ -195,18 +195,6 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::SameLine();
-
-			const auto addAllItems = []() {
-				for (auto& item : Data::GetItemList()) {
-					if (item.GetPluginName() == selectedMod) {
-						Console::AddItem(item.GetFormID());
-					}
-				}
-
-				Console::StartProcessThread();
-			};
-
 			ImGui::Unindent();
 			ImGui::NewLine();
 		}

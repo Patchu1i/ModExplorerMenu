@@ -1,5 +1,6 @@
 #include "Data.h"
 #include "Utils/Worldspace.h"
+#include "Windows/Persistent.h"
 
 // Saving this for later:
 // 		auto forms = RE::TESForm::GetAllForms();
@@ -20,28 +21,37 @@ namespace ModExplorerMenu
 		return {};
 	}
 
-	NPC* Data::CreateCachedNPC(RE::TESNPC* a_npc)
+	Data::CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc)
 	{
-		auto form = a_npc->As<RE::TESForm>();
-		return new NPC({ form,
-			form->GetFormID(),
-			form->GetFile() });
+		RE::TESForm* form = a_npc;
+		return new Data::CachedNPC({ .form = form,
+			.plugin = form->GetFile()->fileName,
+			.name = a_npc->GetFullName(),
+			.formid = fmt::format("{:08x}", form->GetFormID()),
+			.editorid = GetEditorID(form->GetFormID()),
+			.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
+			.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
+			.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
+			.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
+			.skills = a_npc->playerSkills,
+			.favorite = false });
 	}
 
 	template <class T>
 	void Data::CacheNPCs(RE::TESDataHandler* a_data)
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			RE::TESNPC* npc = form->As<RE::TESNPC>();
-			RE::TESFile* mod = form->GetFile();
-
 			RE::FormID formid = form->GetFormID();
+			RE::TESFile* mod = form->GetFile();
+			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
+
+			RE::TESNPC* npc = form->As<RE::TESNPC>();
 
 			if (npc->IsPlayerRef()) {
 				continue;
 			}
 
-			_npcCache.push_back({ form, formid, mod });
+			_npcCache.push_back(ModExplorerMenu::NPC{ form, formid, mod, favorite });
 
 			//Add mod file to list.
 			if (!_npcModList.contains(mod)) {
@@ -56,9 +66,9 @@ namespace ModExplorerMenu
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
+			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
 
-			_cache.push_back(ModExplorerMenu::Item{ form, formid, mod });
-			//_cache.push_back({ name, formid, form, editorid, formType, typeName, goldValue, mod, weight, non_playable });
+			_cache.push_back(ModExplorerMenu::Item{ form, formid, mod, favorite });
 
 			//Add mod file to list.
 			if (!_itemModList.contains(mod)) {
@@ -81,8 +91,9 @@ namespace ModExplorerMenu
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
+			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
 
-			_staticCache.push_back(ModExplorerMenu::StaticObject{ form, formid, mod });
+			_staticCache.push_back(ModExplorerMenu::StaticObject{ form, formid, mod, favorite });
 
 			if (!_staticModList.contains(mod)) {
 				_staticModList.insert(mod);
@@ -189,12 +200,13 @@ namespace ModExplorerMenu
 			std::string plugin = _plugin + ".esm";
 			const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
 			RE::TESFile* modFile = const_cast<RE::TESFile*>(mod);
+			bool favorite = PersistentData::m_favorites[editorid];
 
 			if (!_cellModList.contains(modFile)) {
 				_cellModList.insert(modFile);
 			}
 
-			_cellCache.push_back(Cell(plugin, space, place, name, editorid, mod));
+			_cellCache.push_back(Cell(plugin, space, place, name, editorid, favorite, mod));
 		}
 
 		// Overwrite _cellCache with Baka changes

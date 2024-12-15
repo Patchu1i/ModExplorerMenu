@@ -7,9 +7,11 @@
 namespace ModExplorerMenu
 {
 
-	std::vector<std::string> PersistentData::LoadFromFile()
+	std::unordered_map<std::string, bool> PersistentData::m_favorites;
+
+	void PersistentData::LoadFromFile()
 	{
-		std::ifstream file(std::wstring(json_favorite_path) + L"favorites.json");
+		std::ifstream file(std::wstring(json_favorite_path) + L"userdata.json");
 		if (!file.is_open()) {
 			stl::report_and_fail("Unable to open file for writing JSON");
 		}
@@ -18,6 +20,13 @@ namespace ModExplorerMenu
 		file >> json;
 		file.close();
 
-		return json["favorites"].get<std::vector<std::string>>();
+		for (auto& [filename, list] : json["Favorite"].items()) {
+			for (auto& [editorid, favorite] : list.items()) {
+				logger::info("Editor ID: {}", editorid);
+				m_favorites[editorid] = favorite;
+			}
+		}
+
+		// return json["favorites"].get<std::vector<std::string>>();
 	}
 }

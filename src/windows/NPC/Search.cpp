@@ -9,17 +9,6 @@ namespace ModExplorerMenu
 	// TODO: Find alternatives to C style comparison and copying.
 	void NPCWindow::ApplyFilters()
 	{
-		// Since these are manually allocated, we need to delete them.
-		if (b_ShowSpawnedNPC || b_ShowNearbyNPC) {
-			for (auto& npc : npcList) {
-				delete npc;
-			}
-		}
-
-		b_ShowAllNPC = true;
-		b_ShowNearbyNPC = false;
-		b_ShowSpawnedNPC = false;
-
 		npcList.clear();
 		selectedNPC = nullptr;
 
@@ -32,12 +21,6 @@ namespace ModExplorerMenu
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
-				continue;
-
-			if (item.GetName() == "")  // skip empty names
-				continue;
-
 			switch (searchKey) {
 			case BaseColumn::ID::Name:
 				compare = item.GetName();
@@ -53,9 +36,28 @@ namespace ModExplorerMenu
 				break;
 			}
 
-			// Will probably need to revisit this during localization. :(
 			std::transform(compare.begin(), compare.end(), compare.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			// If the input is wrapped in quotes, we do an exact match across all parameters.
+			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+				std::string match = input.substr(1, input.size() - 2);
+
+				if (compare == match) {
+					npcList.push_back(&item);
+				}
+				continue;
+			}
+
+			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+				continue;
+			}
+
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod)
+				continue;
+
+			if (item.GetName() == "")
+				continue;
 
 			if (compare.find(input) != std::string::npos) {
 				npcList.push_back(&item);
@@ -104,23 +106,48 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::Checkbox("Click to Place", &b_clickToPlace);
-			ImGui::SameLine();
-			ImGui::Checkbox("Place Frozen", &b_placeFrozen);
-			ImGui::SameLine();
-			ImGui::Checkbox("Place Naked", &b_placeNaked);
-
 			ImGui::NewLine();
 
-			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
+			ImGui::InputTextWithHint("##NPCWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
+				IM_ARRAYSIZE(modListBuffer),
+				Frame::INPUT_FLAGS);
+
+			if (ImGui::BeginCombo("##NPCWindow::FilterByMod", selectedMod.c_str())) {
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
+
+				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					if (std::strlen(modListBuffer) > 0) {
+						std::string compare = modName;
+						std::string input = modListBuffer;
+
+						std::transform(input.begin(), input.end(), input.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						std::transform(compare.begin(), compare.end(), compare.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						if (compare.find(input) != std::string::npos) {
+							// Do nothing?
+						} else {
+							continue;
+						}
+					}
+
 					if (ImGui::Selectable(modName, is_selected)) {
 						selectedMod = modName;
 						ApplyFilters();
@@ -130,34 +157,6 @@ namespace ModExplorerMenu
 				}
 				ImGui::EndCombo();
 			}
-
-			ImGui::NewLine();
-
-			auto spawnAllNPCS = []() {
-				for (auto& npc : npcList) {
-					Console::PlaceAtMe(npc->GetFormID(), 1);
-					Console::PridLast();
-
-					if (b_placeFrozen)
-						Console::Freeze();
-
-					if (b_placeNaked)
-						Console::UnEquip();
-				}
-
-				Console::StartProcessThread();
-			};
-
-			if (ImGui::Button("Place All NPCs from Selected Mod")) {
-				if (selectedMod != "All Mods") {
-					if (npcList.size() > 50) {
-						ImGui::OpenPopup("Large Query Detected");
-					} else {
-						spawnAllNPCS();
-					}
-				}
-			}
-			ImGui::ShowWarningPopup("Large Query Detected", spawnAllNPCS);
 
 			ImGui::Unindent();
 			ImGui::NewLine();

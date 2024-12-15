@@ -72,7 +72,7 @@ namespace ModExplorerMenu
 			CELL_MOD_LIST
 		};
 
-		static NPC* CreateCachedNPC(RE::TESNPC* a_npc);
+		static CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc);
 
 		// [[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
 		// {
