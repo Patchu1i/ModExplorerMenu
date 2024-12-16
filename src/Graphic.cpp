@@ -160,14 +160,11 @@ namespace ModExplorerMenu
 	void GraphicManager::Init()
 	{
 		image_library["None"] = Image();
-		font_library["Default"].tiny = ImGui::GetIO().Fonts->AddFontDefault();
-		font_library["Default"].medium = font_library["Default"].tiny;
-		font_library["Default"].large = font_library["Default"].medium;
-
-		MergeIconFont(ImGui::GetIO());
 
 		GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
 		GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library);
+
+		font_library["Default"] = font_library["coolvetica"];
 
 		// Otherwise assets won't be loaded in time.
 		Menu::initialized.store(true);
