@@ -31,11 +31,13 @@ namespace ModExplorerMenu
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
 
 		// Actions
-		static inline bool b_clickToTele = false;
+		static inline bool b_ClickToTeleport = false;
+		static inline bool b_ClickToFavorite = true;
 
 		// Searching
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
 		static inline char inputBuffer[256] = "";
+		static inline char modListBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
 

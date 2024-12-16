@@ -20,12 +20,6 @@ namespace ModExplorerMenu
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
-				continue;
-
-			// if (item.GetName() == "")  // skip empty names
-			// 	continue;
-
 			switch (searchKey) {
 			case BaseColumn::ID::Plugin:
 				compare = item.GetPluginName();
@@ -47,9 +41,26 @@ namespace ModExplorerMenu
 				break;
 			}
 
-			// Will probably need to revisit this during localization. :(
 			std::transform(compare.begin(), compare.end(), compare.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			// If the input is wrapped in quotes, we do an exact match across all parameters.
+			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+				std::string match = input.substr(1, input.size() - 2);
+
+				if (compare == match) {
+					cellList.push_back(&item);
+				}
+				continue;
+			}
+
+			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+				continue;
+			}
+
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
+				continue;
+			}
 
 			if (compare.find(input) != std::string::npos) {
 				cellList.push_back(&item);
@@ -69,7 +80,9 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 			ImGui::Indent();
 
-			if (ImGui::InputTextWithHint("##TeleportWindow::InputField", "Enter text to filter results by...", inputBuffer,
+			ImGui::Text("Search results by:");
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.5f);
+			if (ImGui::InputTextWithHint("##TeleportWindow::InputField", "(Click to begin typing..)", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					ImGuiInputTextFlags_EscapeClearsAll)) {
 				ApplyFilters();
@@ -79,7 +92,7 @@ namespace ModExplorerMenu
 
 			auto searchByValue = InputSearchMap.at(searchKey);
 			auto combo_flags = ImGuiComboFlags_WidthFitPreview;
-			if (ImGui::BeginCombo("##AddItemWindow::InputFilter", searchByValue, combo_flags)) {
+			if (ImGui::BeginCombo("##TeleportWindow::InputFilter", searchByValue, combo_flags)) {
 				for (auto& item : InputSearchMap) {
 					auto searchBy = item.first;
 					auto _searchByValue = item.second;
@@ -98,60 +111,69 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			// ImGui::Checkbox("Click to Place", &b_clickToPlace);
-			// ImGui::SameLine();
-			// ImGui::Checkbox("Place Frozen", &b_placeFrozen);
-			// ImGui::SameLine();
-			// ImGui::Checkbox("Place Naked", &b_placeNaked);
-
 			ImGui::NewLine();
 
+			ImGui::Text("Filter modlist by:");
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.5f);
+			ImGui::InputTextWithHint("##TeleportWindow::ModField", "(Click to begin typing..)", modListBuffer,
+				IM_ARRAYSIZE(modListBuffer),
+				Frame::INPUT_FLAGS);
+
+			auto min = ImVec2(0.0f, 0.0f);
+			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
+			ImGui::SetNextWindowSizeConstraints(min, max);
 			if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedMod.c_str())) {
+				ImGui::PushFont(a_style.font.large);
 				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
+
+				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				for (int i = 0; i < 20; i++) {
+					ImGui::Selectable("Mod Name", false);
+				}
+				ImGui::PopFont();
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				for (auto& mod : Data::GetModList(Data::CELL_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					if (std::strlen(modListBuffer) > 0) {
+						std::string compare = modName;
+						std::string input = modListBuffer;
+
+						std::transform(input.begin(), input.end(), input.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						std::transform(compare.begin(), compare.end(), compare.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+						if (compare.find(input) != std::string::npos) {
+							// Do nothing?
+						} else {
+							continue;
+						}
+					}
+
 					if (ImGui::Selectable(modName, is_selected)) {
 						selectedMod = modName;
 						ApplyFilters();
 					}
+
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
 			}
-
-			ImGui::NewLine();
-
-			// auto spawnAllNPCS = []() {
-			// 	for (auto& npc : npcList) {
-			// 		Console::PlaceAtMe(npc->GetFormID(), 1);
-			// 		Console::PridLast();
-
-			// 		if (b_placeFrozen)
-			// 			Console::Freeze();
-
-			// 		if (b_placeNaked)
-			// 			Console::UnEquip();
-			// 	}
-
-			// 	Console::StartProcessThread();
-			// };
-
-			// if (ImGui::Button("Place All NPCs from Selected Mod")) {
-			// 	if (selectedMod != "All Mods") {
-			// 		if (npcList.size() > 50) {
-			// 			ImGui::OpenPopup("Large Query Detected");
-			// 		} else {
-			// 			spawnAllNPCS();
-			// 		}
-			// 	}
-			// }
-			// ImGui::ShowWarningPopup("Large Query Detected", spawnAllNPCS);
 
 			ImGui::Unindent();
 			ImGui::NewLine();

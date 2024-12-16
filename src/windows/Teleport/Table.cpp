@@ -118,14 +118,14 @@ namespace ModExplorerMenu
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_clickToTele, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!b_clickToTele) {
+						if (ImGui::DisabledImageButton("##TeleportWindow::FavoriteButton", b_ClickToFavorite, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!b_ClickToFavorite) {
 								cell->favorite = !cell->favorite;
 								PersistentData::GetSingleton()->UpdatePersistentData<Cell*>(cell);
 							}
 						}
 					} else {
-						ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_clickToTele, cell->favorite);
+						ImGui::DisabledCheckbox("##TeleportWindow::FavoriteCheckbox", b_ClickToFavorite, cell->favorite);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -164,12 +164,17 @@ namespace ModExplorerMenu
 							_itemSelected = true;
 							selectedCell = cell;
 
-							if (b_clickToTele) {
+							if (b_ClickToTeleport) {
 								Console::Teleport(cell->editorid);
 								Console::StartProcessThread();
 
 								_itemSelected = false;
 								selectedCell = nullptr;
+							}
+
+							if (b_ClickToFavorite) {
+								cell->favorite = !cell->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<Cell*>(cell);
 							}
 						}
 
