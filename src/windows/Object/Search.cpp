@@ -63,6 +63,7 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 			ImGui::Indent();
 
+			ImGui::Text("Search results by:");
 			if (ImGui::InputTextWithHint("##ObjectWindow::InputField", "Enter text to filter results by...", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					ImGuiInputTextFlags_EscapeClearsAll)) {
@@ -97,6 +98,7 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
+			ImGui::Text("Filter modlist by:");
 			ImGui::InputTextWithHint("##ObjectWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
