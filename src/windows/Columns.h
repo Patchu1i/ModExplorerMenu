@@ -21,7 +21,7 @@ namespace ModExplorerMenu
 			Favorite, Plugin, Type, FormID, Name, EditorID, Health,
             Magicka, Stamina, CarryWeight, GoldValue, BaseDamage,
             ArmorRating, Speed, CritDamage, Skill, Weight, DPS,
-            Space, Zone, CellName
+            Space, Zone, CellName, ReferenceID
 		};
 
         ID key;
@@ -109,6 +109,7 @@ namespace ModExplorerMenu
             columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ "ReferenceID", flag, 0.0f, false, BaseColumn::ID::ReferenceID });
             columns.push_back({ "Name", flag, 0.0f, false, BaseColumn::ID::Name });
             columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
             columns.push_back({ "Health", flag, 30.0f, false, BaseColumn::ID::Health });
@@ -226,6 +227,11 @@ namespace ModExplorerMenu
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
                 else delta = (lhs->FormID < rhs->FormID) ? -1 : (lhs->FormID > rhs->FormID) ? 1 : 0;
+                    break;
+            case BaseColumn::ID::ReferenceID:
+                if constexpr (!std::is_base_of<BaseObject, Object>::value)
+                    break;
+                else delta = (lhs->refID < rhs->refID) ? -1 : (lhs->refID > rhs->refID) ? 1 : 0;
                     break;
             case BaseColumn::ID::Name:
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
