@@ -45,7 +45,7 @@
 #define ICON_RPG_PLAYER "\xee\xa9\xaf"        // U+EA6F
 #define ICON_RPG_LOAD "\xee\xaa\x8d"          // U+EA8D
 #define ICON_RPG_SCROLL "\xee\xaa\x8f"        // U+EA8F
-#define ICON_RPG_HEART "\xee\xab\x9a"         // U+EADA
+#define ICON_RPG_HEART "\xee\xa6\x80"         // U+E980
 #define ICON_RPG_HEALTH_CROSS "\xee\xa7\xb5"  // U+E9F5
 #define ICON_RPG_ARMOR "\xee\xa5\xb6"         // U+E976
 #define ICON_RPG_CRITICAL "\xee\xa9\x9e"      // U+EA5E
@@ -55,3 +55,4 @@
 #define ICON_RPG_VALUE "\xee\xa7\xa0"         // U+EA40
 #define ICON_RPG_SPAWNED_NPC "\xee\xa9\xad"   // U+EA6D
 #define ICON_RPG_MULTI_NPC "\xee\xa6\x9e"     // U+E9AE
+#define ICON_RPG_WRENCH "\xee\xab\xaa"        // U+EAEA

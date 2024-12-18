@@ -20,9 +20,6 @@ namespace ModExplorerMenu
 
 		// TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod)  // inactive mods
-				continue;
-
 			switch (searchKey) {
 			case BaseColumn::ID::Plugin:
 				compare = item.GetPluginName();
@@ -41,9 +38,26 @@ namespace ModExplorerMenu
 				break;
 			}
 
-			// Will probably need to revisit this during localization. :(
 			std::transform(compare.begin(), compare.end(), compare.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			// If the input is wrapped in quotes, we do an exact match across all parameters.
+			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+				std::string match = input.substr(1, input.size() - 2);
+
+				if (compare == match) {
+					objectList.push_back(&item);
+				}
+				continue;
+			}
+
+			if (selectedMod == ICON_RPG_HEART " Favorite" && !item.IsFavorite()) {
+				continue;
+			}
+
+			if (selectedMod != ICON_RPG_WRENCH " All Mods" && selectedMod != ICON_RPG_HEART " Favorite" && item.GetPluginName() != selectedMod) {
+				continue;
+			}
 
 			if (compare.find(input) != std::string::npos) {
 				objectList.push_back(&item);
@@ -64,9 +78,15 @@ namespace ModExplorerMenu
 			ImGui::Indent();
 
 			ImGui::Text("Search results by:");
-			if (ImGui::InputTextWithHint("##ObjectWindow::InputField", "Enter text to filter results by...", inputBuffer,
+
+			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
+			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
+			auto totalWidth = inputTextWidth + filterWidth;
+
+			ImGui::SetNextItemWidth(inputTextWidth);
+			if (ImGui::InputTextWithHint("##ObjectWindow::InputField", "(Click to begin typing..)", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
-					ImGuiInputTextFlags_EscapeClearsAll)) {
+					Frame::INPUT_FLAGS)) {
 				ApplyFilters();
 			}
 
@@ -74,6 +94,8 @@ namespace ModExplorerMenu
 
 			auto searchByValue = InputSearchMap.at(searchKey);
 			auto combo_flags = ImGuiComboFlags_WidthFitPreview;
+			ImGui::SetNextItemWidth(filterWidth);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
 			if (ImGui::BeginCombo("##ObjectWindow::InputFilter", searchByValue, combo_flags)) {
 				for (auto& item : InputSearchMap) {
 					auto searchBy = item.first;
@@ -93,25 +115,31 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::Checkbox("Click to Place", &b_clickToPlace);
-			ImGui::SameLine();
+			// TO-DO: Move to actions
+			// ImGui::Checkbox("Click to Place", &b_clickToPlace);
+			// ImGui::SameLine();
 
 			ImGui::NewLine();
 
 			ImGui::Text("Filter modlist by:");
-			ImGui::InputTextWithHint("##ObjectWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::InputTextWithHint("##ObjectWindow::ModField", "(Click to begin typing..)", modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
 
+			auto min = ImVec2(0.0f, 0.0f);
+			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::SetNextWindowSizeConstraints(min, max);
 			if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedMod.c_str())) {
-				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
-					selectedMod = "All Mods";
+				if (ImGui::Selectable(ICON_RPG_WRENCH " All Mods", selectedMod == ICON_RPG_WRENCH " All Mods")) {
+					selectedMod = ICON_RPG_WRENCH " All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
-					selectedMod = "Favorite";
+				if (ImGui::Selectable(ICON_RPG_HEART " Favorite", selectedMod == ICON_RPG_HEART " Favorite")) {
+					selectedMod = ICON_RPG_HEART " Favorite";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
@@ -139,7 +167,7 @@ namespace ModExplorerMenu
 						}
 					}
 
-					if (ImGui::Selectable(modName, is_selected)) {
+					if (ImGui::Selectable(modName, selectedMod == modName)) {
 						selectedMod = modName;
 						ApplyFilters();
 					}
@@ -148,9 +176,6 @@ namespace ModExplorerMenu
 				}
 				ImGui::EndCombo();
 			}
-
-			ImGui::NewLine();
-
 			ImGui::Unindent();
 			ImGui::NewLine();
 		}

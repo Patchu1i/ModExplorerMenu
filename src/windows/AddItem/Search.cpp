@@ -45,11 +45,11 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+			if (selectedMod == ICON_RPG_HEART " Favorite" && !item.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != ICON_RPG_WRENCH " All Mods" && selectedMod != ICON_RPG_HEART " Favorite" && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
@@ -84,7 +84,13 @@ namespace ModExplorerMenu
 			ImGui::Indent();
 
 			ImGui::Text("Search results by:");
-			if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "Enter text to filter results by...", inputBuffer,
+
+			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
+			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
+			auto totalWidth = inputTextWidth + filterWidth;
+
+			ImGui::SetNextItemWidth(inputTextWidth);
+			if (ImGui::InputTextWithHint("##AddItemWindow::InputField", "(Click to begin typing..)", inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					Frame::INPUT_FLAGS)) {
 				ApplyFilters();
@@ -93,7 +99,9 @@ namespace ModExplorerMenu
 			ImGui::SameLine();
 
 			auto searchByValue = InputSearchMap.at(searchKey);
-			auto combo_flags = ImGuiComboFlags_WidthFitPreview;
+			auto combo_flags = ImGuiComboFlags_None;
+			ImGui::SetNextItemWidth(filterWidth);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
 			if (ImGui::BeginCombo("##AddItemWindow::InputFilter", searchByValue, combo_flags)) {
 				for (auto& item : InputSearchMap) {
 					auto searchBy = item.first;
@@ -113,12 +121,12 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			ImGui::NewLine();
-			ImGui::NewLine();
-
-			bool _change = false;
-
 			// Filter checkboxes up top.
+			ImGui::NewLine();
+			ImGui::Text("Filter by item type:");
+			ImGui::NewLine();
+			ImGui::Unindent();
+			bool _change = false;
 			for (auto& item : AddItemWindow::filterMap) {
 				auto first = std::get<0>(item);
 				const auto third = std::get<2>(item);
@@ -145,22 +153,28 @@ namespace ModExplorerMenu
 				dirty = true;
 			}
 
+			ImGui::Indent();
 			ImGui::NewLine();
 
 			ImGui::Text("Filter modlist by:");
-			ImGui::InputTextWithHint("##AddItemWindow::ModField", "Enter text to filter mod list by...", modListBuffer,
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::InputTextWithHint("##AddItemWindow::ModField", "(Click to begin typing..)", modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
 
+			auto min = ImVec2(0.0f, 0.0f);
+			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::SetNextWindowSizeConstraints(min, max);
 			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedMod.c_str())) {
-				if (ImGui::Selectable("All Mods", selectedMod == "All Mods")) {
-					selectedMod = "All Mods";
+				if (ImGui::Selectable(ICON_RPG_WRENCH " All Mods", selectedMod == ICON_RPG_WRENCH " All Mods")) {
+					selectedMod = ICON_RPG_WRENCH " All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable("Favorite", selectedMod == "Favorite")) {
-					selectedMod = "Favorite";
+				if (ImGui::Selectable(ICON_RPG_HEART " Favorite", selectedMod == ICON_RPG_HEART " Favorite")) {
+					selectedMod = ICON_RPG_HEART " Favorite";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
@@ -188,7 +202,7 @@ namespace ModExplorerMenu
 						}
 					}
 
-					if (ImGui::Selectable(modName, is_selected)) {
+					if (ImGui::Selectable(modName, selectedMod == modName)) {
 						selectedMod = modName;
 						ApplyFilters();
 					}

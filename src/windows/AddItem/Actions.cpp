@@ -88,7 +88,7 @@ namespace ModExplorerMenu
 
 		// Show Favorites
 		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
-			selectedMod = "Favorite";
+			selectedMod = ICON_RPG_HEART " Favorite";
 			ApplyFilters();
 		}
 

@@ -42,7 +42,7 @@ namespace ModExplorerMenu
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = "All Mods";
+		static inline std::string selectedMod = ICON_RPG_WRENCH " All Mods";
 		static inline bool dirty = true;
 
 		// Sorting & Filtering
