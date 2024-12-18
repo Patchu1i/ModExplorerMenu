@@ -1,4 +1,5 @@
 #include "Console.h"
+#include "Data.h"
 #include "Menu.h"
 #include "NPC.h"
 #include "Utils/Util.h"
@@ -54,8 +55,12 @@ namespace ModExplorerMenu
 		ImGui::PopStyleColor(1);
 
 		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
-			selectedMod = "Favorite";
+			selectedMod = ICON_RPG_HEART " Favorite";
 			ApplyFilters();
+		}
+
+		if (ImGui::Button("Print Refs", ImVec2(button_width, button_height))) {
+			Data::GetSingleton()->CacheNPCRefIds();
 		}
 
 		if (selectedNPC == nullptr && hoveredNPC == nullptr) {

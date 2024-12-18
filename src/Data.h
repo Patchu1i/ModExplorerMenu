@@ -13,6 +13,9 @@ namespace ModExplorerMenu
 	class Data
 	{
 	public:
+		void CacheNPCRefIds();
+		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
+
 		struct CachedItem  // Removed ItemType (formType), should source from RE::FormType::
 		{
 			const char* name;
@@ -129,6 +132,7 @@ namespace ModExplorerMenu
 		static inline std::vector<Item> _cache;
 		static inline std::vector<Cell> _cellCache;
 		static inline std::vector<NPC> _npcCache;
+		static inline std::vector<RE::TESObjectREFR*> _npcRefIds;
 		static inline std::vector<StaticObject> _staticCache;
 		static inline std::unordered_set<RE::TESFile*> _modList;
 
@@ -195,6 +199,11 @@ namespace ModExplorerMenu
 		[[nodiscard]] static inline std::vector<NPC>& GetNPCList()
 		{
 			return _npcCache;
+		}
+
+		[[nodiscard]] static inline std::vector<RE::TESObjectREFR*>& GetNPCRefIds()
+		{
+			return _npcRefIds;
 		}
 
 		[[nodiscard]] static inline std::vector<StaticObject>& GetObjectList()

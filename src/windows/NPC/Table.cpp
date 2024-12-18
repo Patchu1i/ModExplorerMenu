@@ -140,6 +140,14 @@ namespace ModExplorerMenu
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetFormID().c_str());
 
+					// Reference ID
+					ImGui::TableNextColumn();
+					if (npc->refID == 0) {
+						ImGui::Text("Unknown");
+					} else {
+						ImGui::Text(std::format("{:08x}", npc->refID).c_str());
+					}
+
 					// Item Name
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetName().data());

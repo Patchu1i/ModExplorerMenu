@@ -53,11 +53,90 @@ namespace ModExplorerMenu
 
 			_npcCache.push_back(ModExplorerMenu::NPC{ form, formid, mod, favorite });
 
-			//Add mod file to list.
 			if (!_npcModList.contains(mod)) {
 				_npcModList.insert(mod);
 			}
 		}
+	}
+
+	// Merge NPC Reference IDs into the NPC cache list.
+	void Data::MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map)
+	{
+		if (npc_ref_map->empty()) {
+			logger::warn("No NPC references found.");
+		} else {
+			for (auto& npc : _npcCache) {
+				auto it = npc_ref_map->find(npc.FormID);
+				if (it != npc_ref_map->end()) {
+					npc.refID = it->second;
+				}
+			}
+		}
+	}
+
+	// Best I can currently do to cache NPC references for the time being.
+	// Some unique NPCs are not captured until their cell (or world) is loaded.
+	// Hroki in Markarth Silverblood-inn is an example of this.
+	void Data::CacheNPCRefIds()
+	{
+		auto npc_ref_map = std::make_shared<std::unordered_map<RE::FormID, RE::FormID>>();
+		auto data = this->GetSingleton();
+
+		SKSE::GetTaskInterface()->AddTask([npc_ref_map, &data]() {
+			auto process = RE::ProcessLists::GetSingleton();
+
+			// Captures most NPCs in the game.
+			for (auto& handle : process->lowActorHandles) {
+				if (!handle.get() || !handle.get().get()) {
+					continue;
+				}
+
+				auto actor = handle.get().get();
+				RE::FormID base = actor->GetBaseObject()->GetFormID();
+				RE::FormID ref = actor->GetFormID();
+
+				npc_ref_map->insert_or_assign(base, ref);
+			}
+
+			// Captures some unloaded NPCs based on cell.
+			for (auto& handle : process->middleLowActorHandles) {
+				if (!handle.get() || !handle.get().get()) {
+					continue;
+				}
+
+				auto actor = handle.get().get();
+				RE::FormID base = actor->GetBaseObject()->GetFormID();
+				RE::FormID ref = actor->GetFormID();
+
+				if (npc_ref_map->find(base) != npc_ref_map->end()) {
+					logger::warn("Duplicate NPC reference found (middleLow): {}", actor->GetName());
+				} else {
+					logger::info("Adding NPC reference (middleLow): {}", actor->GetName());
+					npc_ref_map->insert_or_assign(base, ref);
+				}
+			}
+
+			// Same as above.
+			for (auto& handle : process->highActorHandles) {
+				if (!handle.get() || !handle.get().get()) {
+					continue;
+				}
+
+				auto actor = handle.get().get();
+				RE::FormID base = actor->GetBaseObject()->GetFormID();
+				RE::FormID ref = actor->GetFormID();
+
+				if (npc_ref_map->find(base) != npc_ref_map->end()) {
+					logger::warn("Duplicate NPC reference found (highActorHandle): {}", actor->GetName());
+				} else {
+					logger::info("Adding NPC reference (high): {}", actor->GetName());
+					npc_ref_map->insert_or_assign(base, ref);
+				}
+			}
+
+			// Callback to Data to merge with master list.
+			data->MergeNPCRefIds(npc_ref_map);
+		});
 	}
 
 	template <class T>
@@ -185,6 +264,7 @@ namespace ModExplorerMenu
 		CacheItems<RE::TESKey>(dataHandler);
 
 		CacheNPCs<RE::TESNPC>(dataHandler);
+		CacheNPCRefIds();
 
 		// TODO: Did I miss any?
 		CacheStaticObjects<RE::TESObjectTREE>(dataHandler);

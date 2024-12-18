@@ -29,6 +29,8 @@ namespace ModExplorerMenu
 
 		bool selected = false;
 
+		RE::FormID refID = 0;
+
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
 		[[nodiscard]] inline std::string_view GetName() const { return name; }
 		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
