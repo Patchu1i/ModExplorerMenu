@@ -1,5 +1,6 @@
 #include "UserSettings.h"
 #include "Data.h"
+#include "Language.h"
 #include "Menu.h"
 #include "Settings.h"
 #include "Utils/Anim.h"
@@ -18,9 +19,9 @@ namespace ModExplorerMenu
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar;
-		auto id = "##ColorPicker" + std::string(a_text);
+		auto id = "##ColorPicker" + std::string(_T(a_text));
 		auto width = ImGui::GetFontSize();
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(50.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
@@ -42,7 +43,7 @@ namespace ModExplorerMenu
 			ImGui::HelpMarker(help);
 		}
 
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::SetNextItemWidth(width);
 		if (ImGui::SliderFloat(id.c_str(), &a_valRef, a_min, a_max)) {
@@ -57,7 +58,7 @@ namespace ModExplorerMenu
 		auto id = "##DualSlider" + std::string(a_text);
 		auto width = 200.0f;
 		float new_size[] = { a_valRef_a, a_valRef_b };
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::SetNextItemWidth(width);
 		if (ImGui::SliderFloat2(id.c_str(), new_size, a_min, a_max, "%.1f")) {
@@ -74,7 +75,7 @@ namespace ModExplorerMenu
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Modifier" + std::string(a_text);
 		auto width = 200.0f;
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::SetNextItemWidth(width);
 		if (ImGui::Button(std::to_string(a_modifier).c_str())) {
@@ -120,9 +121,9 @@ namespace ModExplorerMenu
 				}
 			}
 
-			ImGui::Text("Press a key to set the modifier.");
+			ImGui::Text(_T("CONFIG_MODIFIER_SET"));
 			ImGui::NewLine();
-			ImGui::Text("Press (ESC) to cancel.");
+			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
 		}
@@ -134,7 +135,7 @@ namespace ModExplorerMenu
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Keybind" + std::string(a_text);
 		auto width = 200.0f;
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::SetNextItemWidth(width);
 		if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind))) {
@@ -180,9 +181,9 @@ namespace ModExplorerMenu
 				}
 			}
 
-			ImGui::Text("Press a key to set the keybind.");
+			ImGui::Text(_T("CONFIG_HOTKEY_SET"));
 			ImGui::NewLine();
-			ImGui::Text("Press (ESC) to cancel.");
+			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
 		}
@@ -204,7 +205,7 @@ namespace ModExplorerMenu
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Checkbox" + std::string(a_text);
 		auto width = ImGui::GetFontSize();
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		if (ImGui::Checkbox(id.c_str(), &a_boolRef)) {
 			SettingsWindow::changes.store(true);
@@ -217,12 +218,12 @@ namespace ModExplorerMenu
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##SelectionDropdown" + std::string(a_text);
 		auto width = 200.0f;
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
-		if (ImGui::BeginCombo(id.c_str(), a_items[a_selection].c_str())) {
+		if (ImGui::BeginCombo(id.c_str(), _T(a_items[a_selection]))) {
 			for (int i = 0; i < a_items.size(); ++i) {
-				if (ImGui::Selectable(a_items[i].c_str())) {
+				if (ImGui::Selectable(_T(a_items[i]))) {
 					a_selection = i;
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
@@ -240,7 +241,7 @@ namespace ModExplorerMenu
 		auto imageName = GraphicManager::GetImageName(*a_imageRef);
 		auto width = 200.0f;
 		constexpr auto flags = ImGuiComboFlags_None;
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 		if (ImGui::BeginCombo(id.c_str(), imageName.c_str(), flags)) {
@@ -266,7 +267,7 @@ namespace ModExplorerMenu
 		auto fontName = GraphicManager::GetFontName(*a_fontRef);
 		auto width = 200.0f;
 		constexpr auto flags = ImGuiComboFlags_None;
-		ImGui::Text(a_text);
+		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 		if (ImGui::BeginCombo(id.c_str(), fontName.c_str(), flags)) {
@@ -307,12 +308,12 @@ namespace ModExplorerMenu
 	void SettingsWindow::DrawPopped()
 	{
 		constexpr auto window_flags = ImGuiWindowFlags_NoCollapse;
-		if (ImGui::Begin("Settings Popup Window - Click to Drag me!", nullptr, window_flags)) {
+		if (ImGui::Begin(_T("THEME_POPUP_TITLE"), nullptr, window_flags)) {
 			DrawThemeSelector();
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
-			if (ImGui::Button("- Close Popup Window -", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
+			if (ImGui::Button(_T("THEME_POPUP_CLOSE"), ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
 				Menu::is_settings_popped = false;
 			}
 			ImGui::PopStyleColor(1);
@@ -331,11 +332,37 @@ namespace ModExplorerMenu
 			changes.store(false);
 		}
 
-		AddKeybind("Toggle Menu Keybind", config.showMenuKey, 211);
-		AddModifier("Toggle Menu (Modifier)", config.showMenuModifier, 0);
+		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211);
+		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0);
 
-		std::vector<std::string> sorts = { "Alphabetical", "Install Date" };
-		AddSelectionDropdown("Mod List Sorting", config.modListSort, sorts);
+		// std::vector<std::string> languages = { "English", "Russian", "Chinese", "Japanese", "Korean", "French", "German", "Spanish", "Italian" };
+		// if (AddSelectionStringDropdown("Language", config.language, languages)) {
+		// 	GraphicManager::SetLanguage(config.language);
+		// 	changes.store(true);
+		// }
+
+		auto width = 200.0f;
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::Text((std::string(_T("Language")) + ":").c_str());
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::PushItemWidth(width);
+
+		auto languages = Language::GetSupportedLanguageList();
+
+		if (ImGui::BeginCombo("##LanguageSelection", Language::GetLanguageName(config.language).c_str())) {
+			for (int i = 0; i < languages.size(); ++i) {
+				if (ImGui::Selectable(languages[i].c_str())) {
+					config.language = Language::Locale(i);
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_RECENT" };
+		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
 	}
 
 	void SettingsWindow::DrawThemeSelector()
@@ -349,11 +376,11 @@ namespace ModExplorerMenu
 			changes.store(false);
 		}
 
-		if (ImGui::CollapsingHeader("Theme Preset", color_flags | ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::SeparatorText("Select a theme from a list of presets:");
+		if (ImGui::CollapsingHeader(_T("THEME_PRESET"), color_flags | ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::SeparatorText((std::string(_T("THEME_PRESET_SELECT")) + ":").c_str());
 
 			constexpr auto combo_flags = ImGuiComboFlags_HeightLarge;
-			ImGui::HelpMarker("Choose a theme from the dropdown box below.\nThemes are a collection of colors and styles that can be applied to the menu.\n\nYou can start with a theme, and modify it further below.\n\n(WARNING): This will overwrite any modified values below.");
+			ImGui::HelpMarker(_T("THEME_HELP_CHOICE"));
 			if (ImGui::BeginCombo("##Settings::PresetDropdown", config.theme.c_str(), combo_flags)) {
 				std::vector<std::string> themes = Settings::GetListOfThemes();
 
@@ -376,7 +403,7 @@ namespace ModExplorerMenu
 				bAlpha = ImGuiAnim::pulse(2.5f, 0.5f, 1.0f);
 			}
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(style.button.x, style.button.y, style.button.z, bAlpha));
-			if (ImGui::Button("Create New Theme")) {
+			if (ImGui::Button(_T("THEME_PRESET_CREATE"))) {
 				ImGui::OpenPopup("new_theme");
 			}
 			ImGui::PopStyleColor(1);
@@ -384,8 +411,8 @@ namespace ModExplorerMenu
 			if (ImGui::BeginPopup("new_theme")) {
 				constexpr auto input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 				char newTheme[128] = { 0 };
-				ImGui::HelpMarker("Create a new theme by entering a name\nThis will create a new .ini file with the name provided.\n\nYou can not use the name 'Default'");
-				if (ImGui::InputTextWithHint("##InputThemeName", "Enter Theme Name..", newTheme, IM_ARRAYSIZE(newTheme), input_flags)) {
+				ImGui::HelpMarker(_T("THEME_HELP_CREATE"));
+				if (ImGui::InputTextWithHint("##InputThemeName", _T("THEME_NAME_INPUT"), newTheme, IM_ARRAYSIZE(newTheme), input_flags)) {
 					if (strcmp(newTheme, "Default") == 0) {
 						ImGui::EndPopup();
 						return;
@@ -399,34 +426,44 @@ namespace ModExplorerMenu
 			}
 
 			if (config.theme == "Default") {
-				ImGui::SeparatorText("Note:");
+				// ImGui::SeparatorText("Note:");
+				// ImGui::Text("You are currently using the Default theme, which cannot be modified.");
+				// ImGui::NewLine();
+				// ImGui::Text("Please select a different theme from the dropdown above.");
+				// ImGui::NewLine();
+				// ImGui::Text("Or create a new theme by pressing 'Create New Theme'");
 
-				ImGui::Text("You are currently using the Default theme, which cannot be modified.");
+				ImGui::SeparatorText((std::string(_T("Note")) + ":").c_str());
+
+				ImGui::Text(_T("THEME_NOTE_1"));
 				ImGui::NewLine();
-				ImGui::Text("Please select a different theme from the dropdown above.");
+				ImGui::Text(_T("THEME_NOTE_2"));
 				ImGui::NewLine();
-				ImGui::Text("Or create a new theme by pressing 'Create New Theme'");
+				ImGui::Text(_T("THEME_NOTE_3"));
 				return;
 			}
 
-			ImGui::SeparatorText("Save, Reset, or Export changes:");
+			ImGui::SeparatorText((std::string(_T("THEME_CHANGES")) + ":").c_str());
 
-			ImGui::HelpMarker("Resets the current theme/style configuration to defaults\nThis will not write changes to currently selected theme.\nThis will also not impact settings outside of this category.");
-			if (ImGui::Button("Reset to Default", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
+			ImGui::HelpMarker(_T("THEME_HELP_RESET"));
+			if (ImGui::Button(_T("THEME_RESET"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
 				std::string _default = "Default";
 				Settings::SetThemeFromIni(_default);
 				changes.store(true);
 			}
 
-			ImGui::HelpMarker("Export your current theme configuration to a .ini file\n(Warning): This will overwrite any existing file with the same name!");
-			if (ImGui::Button("Export to File", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
+			ImGui::HelpMarker(_T("THEME_HELP_EXPORT"));
+			if (ImGui::Button(_T("THEME_EXPORT"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
 				ImGui::OpenPopup("save_to_file");
 			}
 
 			if (ImGui::BeginPopup("save_to_file")) {
-				ImGui::Text("Save to .ini File");
+				ImGui::Text(_T("THEME_SAVE"));
 				constexpr auto input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-				if (ImGui::InputTextWithHint("##InputFilename", "Enter Filename..", savePath, IM_ARRAYSIZE(savePath), input_flags)) {
+				if (ImGui::InputTextWithHint("##InputFilename", _T("THEME_NAME_INPUT"),
+						savePath,
+						IM_ARRAYSIZE(savePath),
+						input_flags)) {
 					SaveThemeToFile(savePath, style);
 					ImGui::CloseCurrentPopup();
 				}
@@ -437,8 +474,8 @@ namespace ModExplorerMenu
 				ImGui::EndPopup();
 			}
 
-			ImGui::HelpMarker("Pop this window out so that you can navigate the explorer\nand change settings on the fly. Useful for when you want to see changes made.");
-			if (ImGui::Button("Pop Window", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
+			ImGui::HelpMarker("THEME_HELP_POP_WINDOW");
+			if (ImGui::Button(_T("THEME_POPUP"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
 				Menu::is_settings_popped = !Menu::is_settings_popped;
 			}
 		}
@@ -447,92 +484,90 @@ namespace ModExplorerMenu
 			return;
 		};
 
-		if (ImGui::CollapsingHeader("Window Style", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_WINDOW_STYLE"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Window Color:", style.windowBg);
-			AddSliderPicker("Window Alpha:", style.alpha, 0.1f, 1.0f);
-			AddDualSlider("Window Padding:", style.windowPadding.x, style.windowPadding.y, 0.1f, 25.0f);
-			AddColorPicker("Border Color:", style.border);
-			AddColorPicker("Border Shadow Color:", style.borderShadow);
-			AddSliderPicker("Window Rounding:", style.windowRounding, 0.1f, 15.0f);
-			AddSliderPicker("Window Border Size:", style.windowBorderSize, 0.1f, 15.0f);
-			AddDualSlider("Item Spacing:", style.itemSpacing.x, style.itemSpacing.y, 0.1f, 20.0f);
-			AddDualSlider("Item Inner Spacing:", style.itemInnerSpacing.x, style.itemInnerSpacing.y, 0.1f, 20.0f);
-			AddSliderPicker("Indent Spacing:", style.indentSpacing, 0.1f, 35.0f);
-			AddImageDropdown("Splash Image:", &style.splashImage);
+			AddColorPicker("THEME_WINDOW_COLOR", style.windowBg);
+			AddSliderPicker("THEME_WINDOW_ALPHA", style.alpha, 0.1f, 1.0f);
+			AddDualSlider("THEME_WINDOW_PADDING", style.windowPadding.x, style.windowPadding.y, 0.1f, 25.0f);
+			AddColorPicker("THEME_BORDER_COLOR", style.border);
+			AddColorPicker("THEME_BORDER_SHADOW_COLOR", style.borderShadow);
+			AddSliderPicker("THEME_WINDOW_ROUNDING", style.windowRounding, 0.1f, 15.0f);
+			AddSliderPicker("THEME_WINDOW_BORDER_SIZE", style.windowBorderSize, 0.1f, 15.0f);
+			AddDualSlider("THEME_ITEM_SPACING", style.itemSpacing.x, style.itemSpacing.y, 0.1f, 20.0f);
+			AddDualSlider("THEME_ITEM_INNER_SPACING", style.itemInnerSpacing.x, style.itemInnerSpacing.y, 0.1f, 20.0f);
+			AddSliderPicker("THEME_INDENT_SPACING", style.indentSpacing, 0.1f, 35.0f);
+			AddImageDropdown("THEME_SPLASH_IMAGE", &style.splashImage);
 			ImGui::Unindent();
 		}
 
-		if (ImGui::CollapsingHeader("Frame Style", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_FRAME_STYLE"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Frame BG Color:", style.frameBg);
-			AddColorPicker("Frame BG Hover Color:", style.frameBgHovered);
-			AddColorPicker("Frame BG Active Color:", style.frameBgActive);
-			AddSliderPicker("Frame Rounding:", style.frameRounding, 0.1f, 15.0f);
-			AddSliderPicker("Frame Border Size:", style.frameBorderSize, 0.1f, 15.0f);
-			AddDualSlider("Frame Padding:", style.framePadding.x, style.framePadding.y, 0.1f, 25.0f);
+			AddColorPicker("THEME_FRAME_BG_COLOR", style.frameBg);
+			AddColorPicker("THEME_FRAME_BG_HOVER_COLOR", style.frameBgHovered);
+			AddColorPicker("THEME_FRAME_BG_ACTIVE_COLOR", style.frameBgActive);
+			AddSliderPicker("THEME_FRAME_ROUNDING", style.frameRounding, 0.1f, 15.0f);
+			AddSliderPicker("THEME_FRAME_BORDER_SIZE", style.frameBorderSize, 0.1f, 15.0f);
+			AddDualSlider("THEME_FRAME_PADDING", style.framePadding.x, style.framePadding.y, 0.1f, 25.0f);
 			ImGui::Unindent();
 		}
 
-		if (ImGui::CollapsingHeader("Child & Popup Style", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_CHILD_POPUP_STYLE"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Child Window Color:", style.childBg);
-			AddSliderPicker("Child Border Size:", style.childBorderSize, 0.1f, 15.0f);
-			AddSliderPicker("Child Rounding:", style.childRounding, 0.1f, 15.0f);
-			AddColorPicker("Popup BG Color:", style.popupBg);
-			AddSliderPicker("Popup Border Size:", style.popupBorderSize, 0.1f, 15.0f);
-			AddSliderPicker("Popup Rounding:", style.popupRounding, 0.1f, 15.0f);
+			AddColorPicker("THEME_CHILD_WINDOW_COLOR", style.childBg);
+			AddSliderPicker("THEME_CHILD_BORDER_SIZE", style.childBorderSize, 0.1f, 15.0f);
+			AddSliderPicker("THEME_CHILD_ROUNDING", style.childRounding, 0.1f, 15.0f);
+			AddColorPicker("THEME_POPUP_BG_COLOR", style.popupBg);
+			AddSliderPicker("THEME_POPUP_BORDER_SIZE", style.popupBorderSize, 0.1f, 15.0f);
+			AddSliderPicker("THEME_POPUP_ROUNDING", style.popupRounding, 0.1f, 15.0f);
 			ImGui::Unindent();
 		}
 
-		if (ImGui::CollapsingHeader("Text & Fonts", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_TEXT_FONTS"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Text Color:", style.text);
-			AddColorPicker("Text Disabled Color:", style.textDisabled);
-			AddColorPicker("Text Selected BG Color:", style.textSelectedBg);
-			AddFontDropdown("Font", &style.font);
-			AddSliderPicker("Font Size:", style.globalFontSize, 0.5f, 3.0f);
+			AddColorPicker("THEME_TEXT_COLOR", style.text);
+			AddColorPicker("THEME_TEXT_DISABLED_COLOR", style.textDisabled);
+			AddColorPicker("THEME_TEXT_SELECTED_BG_COLOR", style.textSelectedBg);
+			AddFontDropdown("THEME_TEXT_FONT", &style.font);
+			AddSliderPicker("THEME_TEXT_FONT_SIZE", style.globalFontSize, 0.5f, 3.0f);
 			ImGui::Unindent();
 		}
 
-		if (ImGui::CollapsingHeader("Table & Column Style", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_TABLE_COLUMN_STYLE"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Header Color", style.header);
-			AddColorPicker("Header Hovered Color", style.headerHovered);
-			AddColorPicker("Header Active Color", style.headerActive);
-			AddDualSlider("Cell Padding:", style.cellPadding.x, style.cellPadding.y, 0.1f, 20.0f);
-			AddSliderPicker("Columns Min Spacing", style.columnsMinSpacing, 0.1f, 20.0f);
-			AddColorPicker("Table Header BG Color", style.tableHeaderBg);
-			AddColorPicker("Table Border Strong Color", style.tableBorderStrong);
-			AddColorPicker("Table Border Light Color", style.tableBorderLight);
-			AddColorPicker("Table Row BG Color", style.tableRowBg);
-			AddCheckbox("Table Row Alternating BG", style.showTableRowBG);
-			AddImageDropdown("Favorite Icon (Enabled)", &style.favoriteIconEnabled);
-			AddImageDropdown("Favorite Icon (Disabled)", &style.favoriteIconDisabled);
+			AddColorPicker("THEME_HEADER_COLOR", style.header);
+			AddColorPicker("THEME_HEADER_HOVER_COLOR", style.headerHovered);
+			AddColorPicker("THEME_HEADER_ACTIVE_COLOR", style.headerActive);
+			AddDualSlider("THEME_CELL_PADDING", style.cellPadding.x, style.cellPadding.y, 0.1f, 20.0f);
+			AddSliderPicker("THEME_COLUMNS_MIN_SPACING", style.columnsMinSpacing, 0.1f, 20.0f);
+			AddColorPicker("THEME_TABLE_HEADER_BG_COLOR", style.tableHeaderBg);
+			AddColorPicker("THEME_TABLE_BORDER_STRONG_COLOR", style.tableBorderStrong);
+			AddColorPicker("THEME_TABLE_BORDER_LIGHT_COLOR", style.tableBorderLight);
+			AddColorPicker("THEME_TABLE_ROW_BG_COLOR", style.tableRowBg);
+			AddCheckbox("THEME_TABLE_ROW_ALTERNATING_BG", style.showTableRowBG);
 			ImGui::Unindent();
 		}
 
-		if (ImGui::CollapsingHeader("Buttons & Widget Style", color_flags)) {
+		if (ImGui::CollapsingHeader(_T("THEME_BUTTONS_WIDGET_STYLE"), color_flags)) {
 			ImGui::Indent();
-			AddColorPicker("Checkmark Color", style.checkMark);
-			AddColorPicker("Button Color", style.button);
-			AddColorPicker("Button Hovered Color", style.buttonHovered);
-			AddColorPicker("Button Active Color", style.buttonActive);
-			AddColorPicker("Scrollbar BG Color", style.scrollbarBg);
-			AddColorPicker("Scrollbar Grab Color", style.scrollbarGrab);
-			AddColorPicker("Scrollbar Grab Hovered Color", style.scrollbarGrabHovered);
-			AddColorPicker("Scrollbar Grab Active Color", style.scrollbarGrabActive);
-			AddSliderPicker("Scrollbar Grab Rounding", style.scrollbarRounding, 0.1f, 35.0f);
-			AddSliderPicker("Scrollbar Size", style.scrollbarSize, 0.1f, 50.0f);
-			AddSliderPicker("Grabber Min Size", style.grabMinSize, 0.1f, 20.0f);
-			AddSliderPicker("Grabber Rounding", style.grabRounding, 0.1f, 20.0f);
-			AddColorPicker("Slider Grab Color", style.sliderGrab);
-			AddColorPicker("Slider Grab Active Color", style.sliderGrabActive);
-			AddColorPicker("Separator Color", style.separator);
-			AddColorPicker("Separator Hovered Color", style.separatorHovered);
-			AddColorPicker("Separator Active Color", style.separatorActive);
-			AddImageDropdown("Favorite Icon (Enabled)", &style.favoriteIconEnabled);
-			AddImageDropdown("Favorite Icon (Disabled)", &style.favoriteIconDisabled);
+			AddColorPicker("THEME_CHECKMARK_COLOR", style.checkMark);
+			AddColorPicker("THEME_BUTTON_COLOR", style.button);
+			AddColorPicker("THEME_BUTTON_HOVER_COLOR", style.buttonHovered);
+			AddColorPicker("THEME_BUTTON_ACTIVE_COLOR", style.buttonActive);
+			AddColorPicker("THEME_SCROLLBAR_BG_COLOR", style.scrollbarBg);
+			AddColorPicker("THEME_SCROLLBAR_GRAB_COLOR", style.scrollbarGrab);
+			AddColorPicker("THEME_SCROLLBAR_GRAB_HOVER_COLOR", style.scrollbarGrabHovered);
+			AddColorPicker("THEME_SCROLLBAR_GRAB_ACTIVE_COLOR", style.scrollbarGrabActive);
+			AddSliderPicker("THEME_SCROLLBAR_ROUNDING", style.scrollbarRounding, 0.1f, 35.0f);
+			AddSliderPicker("THEME_SCROLLBAR_SIZE", style.scrollbarSize, 0.1f, 50.0f);
+			AddSliderPicker("THEME_GRABBER_MIN_SIZE", style.grabMinSize, 0.1f, 20.0f);
+			AddSliderPicker("THEME_GRABBER_ROUNDING", style.grabRounding, 0.1f, 20.0f);
+			AddColorPicker("THEME_SLIDER_GRAB_COLOR", style.sliderGrab);
+			AddColorPicker("THEME_SLIDER_GRAB_ACTIVE_COLOR", style.sliderGrabActive);
+			AddColorPicker("THEME_SEPARATOR_COLOR", style.separator);
+			AddColorPicker("THEME_SEPARATOR_HOVER_COLOR", style.separatorHovered);
+			AddColorPicker("THEME_SEPARATOR_ACTIVE_COLOR", style.separatorActive);
+			AddImageDropdown("THEME_FAVORITE_ICON_ENABLED", &style.favoriteIconEnabled);
+			AddImageDropdown("THEME_FAVORITE_ICON_DISABLED", &style.favoriteIconDisabled);
 			ImGui::Unindent();
 		}
 
@@ -541,17 +576,17 @@ namespace ModExplorerMenu
 
 	void SettingsWindow::Draw()
 	{
-		ImGui::Text("Welcome to the Settings Window!");
+		ImGui::Text(_T("THEME_WELCOME"));
 
 		constexpr auto child_flags = ImGuiChildFlags_Border;
 		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {
-			if (ImGui::CollapsingHeader("General Configuration", ImGuiTreeNodeFlags_Framed)) {
+			if (ImGui::CollapsingHeader(_T("THEME_GENERAL"), ImGuiTreeNodeFlags_Framed)) {
 				ImGui::Indent();
 				DrawGeneralSettings();
 				ImGui::Unindent();
 			}
 
-			if (ImGui::CollapsingHeader("Theme Configuration", ImGuiTreeNodeFlags_Framed)) {
+			if (ImGui::CollapsingHeader(_T("THEME_THEME"), ImGuiTreeNodeFlags_Framed)) {
 				ImGui::Indent();
 				DrawThemeSelector();
 				ImGui::Unindent();
@@ -564,9 +599,9 @@ namespace ModExplorerMenu
 
 		if (SettingsWindow::file_changes.load()) {
 			float alpha = ImGuiAnim::pulse(3.0f, 0.7f, 1.0f);
-			ImGui::HelpMarker("Save changes made to the current theme configuration\nThis will overwrite the current theme ini with the new settings.");
+			ImGui::HelpMarker(_T("THEME_HELP_SAVE"));
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
-			if (ImGui::Button("Save Changes", ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Button(_T("THEME_SAVE_CHANGES"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {
 				SaveThemeToFile(config.theme, style);
 				SettingsWindow::file_changes.store(false);
 			}

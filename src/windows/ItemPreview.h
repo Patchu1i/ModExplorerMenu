@@ -84,10 +84,10 @@ namespace ModExplorerMenu
 				return;
 			}
 
-			InlineBar("Health:", a_object->GetHealth(), 100);
-			InlineBar("Magicka:", a_object->GetMagicka(), 100);
-			InlineBar("Stamina:", a_object->GetStamina(), 100);
-			InlineBar("Carry Weight:", a_object->GetCarryWeight(), 100);
+			InlineBar(_T("Health") + ":", a_object->GetHealth(), 100);
+			InlineBar(_T("Magicka") + ":", a_object->GetMagicka(), 100);
+			InlineBar(_T("Stamina") + ":", a_object->GetStamina(), 100);
+			InlineBar(_T("Carry Weight") + ":", a_object->GetCarryWeight(), 100);
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		}
@@ -109,14 +109,14 @@ namespace ModExplorerMenu
 
 				if (armorRating == 0) {
 					// InlineText("Armor Rating:", "None");
-					InlineText(ICON_RPG_ARMOR " Rating:", "None");
+					InlineText((std::string(_TICON(ICON_RPG_ARMOR, "Rating")) + ":").c_str(), _T("None"));
 				} else {
 					// InlineBar("Armor Rating:", armorRating, armorRatingMax);
-					InlineBar(ICON_RPG_ARMOR " Rating:", armorRating, armorRatingMax);
+					InlineBar((std::string(_TICON(ICON_RPG_ARMOR, "Rating")) + ":").c_str(), armorRating, armorRatingMax);
 				}
 
-				InlineText(ICON_RPG_ARMOR " Type:", armorType);
-				InlineText(ICON_RPG_ARMOR " Slot:", equipSlot);
+				InlineText((std::string(_TICON(ICON_RPG_ARMOR, "Type")) + ":").c_str(), _T(armorType));
+				InlineText((std::string(_TICON(ICON_RPG_ARMOR, "Slot")) + ":").c_str(), _T(equipSlot));
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {
@@ -127,16 +127,16 @@ namespace ModExplorerMenu
 				}
 
 				const char* weaponTypes[] = {
-					"Hand to Hand",
-					"One Hand Sword",
-					"One Hand Dagger",
-					"One Hand Axe",
-					"One Hand Mace",
-					"Two Hand Sword",
-					"Two Hand Axe",
-					"Bow",
-					"Staff",
-					"Crossbow"
+					_T("Hand to Hand"),
+					_T("One Handed Sword"),
+					_T("One Handed Dagger"),
+					_T("One Handed Axe"),
+					_T("One Handed Mace"),
+					_T("Two Handed Greatsword"),
+					_T("Two Handed Battleaxe"),
+					_T("Bow"),
+					_T("Staff"),
+					_T("Crossbow")
 				};
 
 				const float damage = Utils::CalcBaseDamage(weapon);
@@ -151,37 +151,37 @@ namespace ModExplorerMenu
 					// InlineText("Base Damage:", "N/A");
 					InlineText(ICON_RPG_ATTACK, "N/A");
 				} else if (weapon->IsBow() || weapon->IsCrossbow()) {
-					InlineBar(ICON_RPG_ATTACK " DMG:", damage, max_damage);
-					InlineBar(ICON_RPG_ATTACK " Speed:", speed, 1.5f);
-					InlineInt(ICON_RPG_ATTACK " DPS:", dps);
+					InlineBar((std::string(_TICON(ICON_RPG_ATTACK, "DMG")) + ":").c_str(), damage, max_damage);
+					InlineBar((std::string(_TICON(ICON_RPG_ATTACK, "Speed")) + ":").c_str(), speed, 1.5f);
+					InlineInt((std::string(_TICON(ICON_RPG_ATTACK, "DPS")) + ":").c_str(), dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineInt(ICON_RPG_CRITICAL " DMG:", critDamage);
-					InlineText(ICON_RPG_SKILL " Skill:", std::to_string(skill).c_str());
+					InlineInt((std::string(_TICON(ICON_RPG_ATTACK, "DMG")) + ":").c_str(), critDamage);
+					InlineText((std::string(_TICON(ICON_RPG_SKILL, "Skill")) + ":").c_str(), _T(std::to_string(skill).c_str()));
 				} else {
 					const float reach = (float)(weapon->weaponData.reach);
 					const float stagger = weapon->weaponData.staggerValue;
-					InlineBar(ICON_RPG_ATTACK " DMG:", damage, max_damage);
-					InlineBar(ICON_RPG_ATTACK " Speed:", speed, 1.5f);
-					InlineInt(ICON_RPG_ATTACK " DPS:", dps);
+					InlineBar((std::string(_TICON(ICON_RPG_ATTACK, "DMG")) + ":").c_str(), damage, max_damage);
+					InlineBar((std::string(_TICON(ICON_RPG_ATTACK, "Speed")) + ":").c_str(), speed, 1.5f);
+					InlineInt((std::string(_TICON(ICON_RPG_ATTACK, "DPS")) + ":").c_str(), dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineInt(ICON_RPG_CRITICAL " DMG:", critDamage);
-					InlineText(ICON_RPG_SKILL " Skill:", std::to_string(skill).c_str());
-					InlineBar(ICON_RPG_WEAPON " Reach:", reach, 1.5f);
-					InlineBar(ICON_RPG_WEAPON " Stagger:", stagger, 2.0f);
+					InlineInt((std::string(_TICON(ICON_RPG_ATTACK, "DMG")) + ":").c_str(), critDamage);
+					InlineText((std::string(_TICON(ICON_RPG_SKILL, "Skill")) + ":").c_str(), _T(std::to_string(skill).c_str()));
+					InlineBar((std::string(_TICON(ICON_RPG_WEAPON, "Reach")) + ":").c_str(), reach, 1.5f);
+					InlineBar((std::string(_TICON(ICON_RPG_WEAPON, "Stagger")) + ":").c_str(), stagger, 2.0f);
 				}
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				InlineText(ICON_RPG_WEAPON_TYPE " Type:", type);
+				InlineText((std::string(_TICON(ICON_RPG_WEAPON_TYPE, "Type")) + ":").c_str(), _T(type));
 			}
 
 			InlineInt(ICON_RPG_WEIGHT " WT:", (int)a_object->GetWeight());
-			InlineInt(ICON_RPG_VALUE " Value:", a_object->GetValue());
+			InlineInt((std::string(_TICON(ICON_RPG_VALUE, "Value")) + ":").c_str(), a_object->GetValue());
 
 			const std::string desc = Utils::GetItemDescription(a_object->TESForm, g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Description"));
-				ImGui::Text("Description");
+				ImGui::Text(_T("Description"));
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::PushTextWrapPos(maxWidth);
 				ImGui::TextWrapped(desc.c_str());

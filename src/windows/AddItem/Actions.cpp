@@ -17,7 +17,7 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText("Behavior:");
+		ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
 
 		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
@@ -25,46 +25,44 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
 		// Add To Inventory Toggle.
-		if (ImGui::Selectable(ICON_RPG_HAND " Add to Inventory", &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_HAND, "AIM_ADD"), &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
 			b_AddToFavorites = false;
 		};
-		ImGui::SetDelayedTooltip("Quickly add item(s) to your inventory by left clicking.");
+		ImGui::SetDelayedTooltip(_T("AIM_ADD_HELP"));
 
 		// Place On Ground Toggle.
-		if (ImGui::Selectable(ICON_RPG_GRASS " Place on Ground", &b_PlaceOnGround, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_GRASS, "AIM_PLACE"), &b_PlaceOnGround, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_AddToFavorites = false;
 		}
-		ImGui::SetDelayedTooltip("Place item(s) on the ground by left clicking.");
+		ImGui::SetDelayedTooltip(_T("AIM_PLACE_HELP"));
 
 		// Add To Favorites Toggle.
-		if (ImGui::Selectable(ICON_RPG_HEART " Add to Favorites", &b_AddToFavorites, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), &b_AddToFavorites, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_PlaceOnGround = false;
 		}
-		ImGui::SetDelayedTooltip("Quickly favorite items by left clicking.");
+		ImGui::SetDelayedTooltip(_T("AIM_FAVORITE_HELP"));
 
 		ImGui::PopStyleColor(3);
-		ImGui::SeparatorText("Shortcuts:");
+		ImGui::SeparatorText((std::string(_T("Shortcuts")) + ":").c_str());
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
 		// Add All From Table Shortcut.
-		if (ImGui::Button("Add All From Table", ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("AIM_ADD_ALL"), ImVec2(button_width, button_height))) {
 			for (auto& item : itemList) {
 				Console::AddItem(item->GetFormID());
 			}
 
 			Console::StartProcessThread();
 		}
-		ImGui::SetDelayedTooltip(
-			"Add all items from the table to your inventory.\n\n"
-			"Warning: This may add a lot of items!");
+		ImGui::SetDelayedTooltip(_T("AIM_ADD_ALL_HELP"));
 
 		// Place All from Table Shortcut.
-		if (ImGui::Button("Place All From Table", ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("AIM_PLACE_ALL"), ImVec2(button_width, button_height))) {
 			if (itemList.size() > 30) {
-				ImGui::OpenPopup("Warning: Large Query Detected");
+				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
 			} else {
 				for (auto& item : itemList) {
 					Console::PlaceAtMe(item->GetFormID());
@@ -73,29 +71,26 @@ namespace ModExplorerMenu
 
 			Console::StartProcessThread();
 		}
-		ImGui::SetDelayedTooltip(
-			"Place all items from the table on the ground.\n\n"
-			"Warning: This may place a lot of items!\n"
-			"Use at your own risk.");
+		ImGui::SetDelayedTooltip(_T("AIM_PLACE_ALL_HELP"));
 
 		ImGui::PopStyleColor(1);
 
-		ImGui::ShowWarningPopup("Warning: Large Query Detected", [&]() {
+		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
 			for (auto& item : itemList) {
 				Console::PlaceAtMe(item->GetFormID());
 			}
 		});
 
 		// Show Favorites
-		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
-			selectedMod = ICON_RPG_HEART " Favorite";
+		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
+			selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
 			ApplyFilters();
 		}
 
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
-		ImGui::SeparatorText("Preview:");
+		ImGui::SeparatorText((std::string(_T("Preview")) + ":").c_str());
 		ShowItemPreview<Item>(itemPreview);
 
 		ImGui::EndChild();

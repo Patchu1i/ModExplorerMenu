@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Data.h"
+#include "Language.h"
 #include "Settings.h"
 
 namespace ModExplorerMenu

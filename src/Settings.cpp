@@ -62,6 +62,8 @@ namespace ModExplorerMenu
 			return GraphicManager::GetFont(value);
 		} else if constexpr (std::is_same_v<T, GraphicManager::Image>) {
 			return GraphicManager::GetImage(value);
+		} else if constexpr (std::is_same_v<T, Language::Locale>) {
+			return Language::GetLanguage(value);
 		} else {
 			stl::report_and_fail("Unhandled type passed to GET_VALUE in Menu.cpp!");
 			return a_default;
@@ -97,6 +99,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Theme", "Default");
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", "211");
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", "0");
+			a_ini.SetValue(rSections[Main], "Language", "English");
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
 		});
 	}
@@ -131,6 +134,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(Settings::GetSingleton()->user.config.showMenuKey).c_str());
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
+			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language, false).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 		});
 	}
@@ -143,6 +147,7 @@ namespace ModExplorerMenu
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
 		user.config.showMenuKey = GET_VALUE<int>(rSections[Main], "ShowMenuKey", 211, a_ini);
 		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", 0, a_ini);
+		user.config.language = GET_VALUE<Language::Locale>(rSections[Main], "Language", Language::Locale::English, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
 	}
 

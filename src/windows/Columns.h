@@ -76,11 +76,11 @@ namespace ModExplorerMenu
         TeleportColumns()
         {
             columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "Space", flag, 0.0f, false, BaseColumn::ID::Space });
-            columns.push_back({ "Zone", flag, 0.0f, false, BaseColumn::ID::Zone });
-            columns.push_back({ "CellName", flag, 0.0f, false, BaseColumn::ID::CellName });
-            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("Space"), flag, 0.0f, false, BaseColumn::ID::Space });
+            columns.push_back({ _T("Zone"), flag, 0.0f, false, BaseColumn::ID::Zone });
+            columns.push_back({ _T("CellName"), flag, 0.0f, false, BaseColumn::ID::CellName });
+            columns.push_back({ _T(_T("EditorID")), flag, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
@@ -92,10 +92,10 @@ namespace ModExplorerMenu
         ObjectColumns()
         {
             columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", flag, 0.0f, false, BaseColumn::ID::Type });
-            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID });
-            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("Type"), flag, 0.0f, false, BaseColumn::ID::Type });
+            columns.push_back({ _T("FormID"), flag, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ _T("EditorID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
         }
     };
 
@@ -107,15 +107,15 @@ namespace ModExplorerMenu
         NPCColumns()
         {
             columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID });
-            columns.push_back({ "ReferenceID", flag, 0.0f, false, BaseColumn::ID::ReferenceID });
-            columns.push_back({ "Name", flag, 0.0f, false, BaseColumn::ID::Name });
-            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID });
-            columns.push_back({ "Health", flag, 30.0f, false, BaseColumn::ID::Health });
-            columns.push_back({ "Magicka", flag, 30.0f, false, BaseColumn::ID::Magicka });
-            columns.push_back({ "Stamina", flag, 30.0f, false, BaseColumn::ID::Stamina });
-            columns.push_back({ "CarryWeight", flag, 30.0f, false, BaseColumn::ID::CarryWeight });
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("FormID"), flag, 0.0f, false, BaseColumn::ID::FormID });
+            columns.push_back({ _T("ReferenceID"), flag, 0.0f, false, BaseColumn::ID::ReferenceID });
+            columns.push_back({ _T("Name"), flag, 0.0f, false, BaseColumn::ID::Name });
+            columns.push_back({ _T("EditorID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ _T("Health"), flag, 30.0f, false, BaseColumn::ID::Health });
+            columns.push_back({ _T("Magicka"), flag, 30.0f, false, BaseColumn::ID::Magicka });
+            columns.push_back({ _T("Stamina"), flag, 30.0f, false, BaseColumn::ID::Stamina });
+            columns.push_back({ _T("Carry Weight"), flag, 30.0f, false, BaseColumn::ID::CarryWeight });
         }
     };
     
@@ -127,19 +127,19 @@ namespace ModExplorerMenu
         AddItemColumns()
         {
             columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
-            columns.push_back({ "Plugin", flag, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ "Type", flag, 0.0f, false, BaseColumn::ID::Type});
-            columns.push_back({ "FormID", flag, 0.0f, false, BaseColumn::ID::FormID});
-            columns.push_back({ "Name", flag, 0.0f, false, BaseColumn::ID::Name});
-            columns.push_back({ "EditorID", flag, 0.0f, false, BaseColumn::ID::EditorID});
-            columns.push_back({ "GoldValue", flag, 0.0f, false, BaseColumn::ID::GoldValue});
-            columns.push_back({ "BaseDamage", flag, 0.0f, false, BaseColumn::ID::BaseDamage});
-            columns.push_back({ "ArmorRating", flag, 0.0f, false, BaseColumn::ID::ArmorRating});
-            columns.push_back({ "Speed", flag, 0.0f, false, BaseColumn::ID::Speed});
-            columns.push_back({ "Crit", flag, 0.0f, false, BaseColumn::ID::CritDamage});
-            columns.push_back({ "Skill", flag, 0.0f, false, BaseColumn::ID::Skill});
-            columns.push_back({ "Weight", flag, 0.0f, false, BaseColumn::ID::Weight});
-            columns.push_back({ "DPS", flag, 0.0f, false, BaseColumn::ID::DPS});
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("Type"), flag, 0.0f, false, BaseColumn::ID::Type});
+            columns.push_back({ _T("FormID"), flag, 0.0f, false, BaseColumn::ID::FormID});
+            columns.push_back({ _T("Name"), flag, 0.0f, false, BaseColumn::ID::Name});
+            columns.push_back({ _T("EditorID"), flag, 0.0f, false, BaseColumn::ID::EditorID});
+            columns.push_back({ _T("GoldValue"), flag, 0.0f, false, BaseColumn::ID::GoldValue});
+            columns.push_back({ _T("BaseDamage"), flag, 0.0f, false, BaseColumn::ID::BaseDamage});
+            columns.push_back({ _T("ArmorRating"), flag, 0.0f, false, BaseColumn::ID::ArmorRating});
+            columns.push_back({ _T("Speed"), flag, 0.0f, false, BaseColumn::ID::Speed});
+            columns.push_back({ _T("Crit"), flag, 0.0f, false, BaseColumn::ID::CritDamage});
+            columns.push_back({ _T("Skill"), flag, 0.0f, false, BaseColumn::ID::Skill});
+            columns.push_back({ _T("Weight"), flag, 0.0f, false, BaseColumn::ID::Weight});
+            columns.push_back({ _T("DPS"), flag, 0.0f, false, BaseColumn::ID::DPS});
         }
 	};
 

@@ -11,21 +11,21 @@ namespace ModExplorerMenu
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
-		if (ImGui::Selectable("Copy Form ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_item.GetFormID().c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable("Copy Name", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_NAME"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_item.GetName().data());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable("Copy Editor ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_item.GetEditorID().data());
 			ImGui::LogFinish();
@@ -34,7 +34,7 @@ namespace ModExplorerMenu
 
 		if (a_item.GetFormType() == RE::FormType::Book) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-			if (ImGui::Selectable("Read Me!")) {
+			if (ImGui::Selectable(_T("GENERAL_READ_ME"))) {
 				openBook = &a_item;
 			}
 		}
@@ -47,7 +47,7 @@ namespace ModExplorerMenu
 	{
 		(void)a_config;
 
-		auto results = std::string("Results (") + std::to_string(itemList.size()) + std::string(")");
+		auto results = std::string(_T("Results")) + std::string(" (") + std::to_string(itemList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;

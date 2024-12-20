@@ -62,10 +62,10 @@ namespace ModExplorerMenu
 		static inline std::unordered_set<RE::FormType> itemFilters;
 		static inline std::vector<Item*> itemList;
 		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
-			{ &b_Alchemy, RE::FormType::AlchemyItem, "ALCH" }, { &b_Ingredient, RE::FormType::Ingredient, "INGR" },
-			{ &b_Ammo, RE::FormType::Ammo, "AMMO" }, { &b_Key, RE::FormType::KeyMaster, "KEYS" },
-			{ &b_Misc, RE::FormType::Misc, "MISC" }, { &b_Armor, RE::FormType::Armor, "ARMO" },
-			{ &b_Book, RE::FormType::Book, "BOOK" }, { &b_Weapon, RE::FormType::Weapon, "WEAP" }
+			{ &b_Alchemy, RE::FormType::AlchemyItem, "Alchemy" }, { &b_Ingredient, RE::FormType::Ingredient, "Ingredient" },
+			{ &b_Ammo, RE::FormType::Ammo, "Ammunition" }, { &b_Key, RE::FormType::KeyMaster, "Keys" },
+			{ &b_Misc, RE::FormType::Misc, "Miscellaneous" }, { &b_Armor, RE::FormType::Armor, "Armor" },
+			{ &b_Book, RE::FormType::Book, "Book" }, { &b_Weapon, RE::FormType::Weapon, "Weapon" }
 		};
 
 		// Description Framework API.
@@ -75,7 +75,7 @@ namespace ModExplorerMenu
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = ICON_RPG_WRENCH " All Mods";
+		static inline std::string selectedMod = _TICON(ICON_RPG_WRENCH, "All Mods");
 		static inline bool dirty = true;
 		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Name, "Name" },

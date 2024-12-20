@@ -17,6 +17,7 @@ namespace ModExplorerMenu
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
+
 		ImGui::NewFrame();
 
 		if (IsEnabled()) {
@@ -26,8 +27,10 @@ namespace ModExplorerMenu
 		}
 
 		Frame::Draw(is_settings_popped);
+		//ImGui::ShowDemoWindow();
 
 		ImGui::EndFrame();
+
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}

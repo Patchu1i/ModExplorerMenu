@@ -48,7 +48,7 @@ namespace ModExplorerMenu
 	{
 		(void)a_config;
 
-		auto results = std::string("Results (") + std::to_string(npcList.size()) + std::string(")");
+		auto results = std::string(_T("Results")) + std::string(" (") + std::to_string(npcList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;

@@ -65,39 +65,39 @@ namespace ModExplorerMenu
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-			if (ImGui::Selectable("Home", &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Home;
 				ResetSelectable();
 			}
 
-			if (ImGui::Selectable("Add Item", &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::AddItem;
 				ResetSelectable();
 			}
 
-			if (ImGui::Selectable("Object", &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Object;
 				ResetSelectable();
 			}
 
-			if (ImGui::Selectable("NPC", &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::NPC;
 				ResetSelectable();
 			}
 
-			if (ImGui::Selectable("Teleport", &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Teleport;
 				ResetSelectable();
 			}
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-			if (ImGui::Selectable("Settings", &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Settings"), &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				_activeWindow = ActiveWindow::Settings;
 				ResetSelectable();
 			}
 
-			if (ImGui::Selectable("Exit", false, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+			if (ImGui::Selectable(_T("Exit"), false, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 				Menu::GetSingleton()->Toggle();
 			}
 

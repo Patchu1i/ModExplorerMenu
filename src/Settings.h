@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphic.h"
+#include "Language.h"
 
 // Current process of loading settings::
 // Start by loading the user Config and getting the Theme string.
@@ -80,6 +81,7 @@ namespace ModExplorerMenu
 			std::string theme = "Default";
 			int showMenuKey;
 			int showMenuModifier;
+			Language::Locale language = Language::Locale::English;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
 		};
 
@@ -183,6 +185,8 @@ namespace ModExplorerMenu
 				return GraphicManager::GetFontName(a_style);
 			} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
 				return GraphicManager::GetImageName(a_style);
+			} else if constexpr (std::is_same_v<Language::Locale, T>) {
+				return Language::GetLanguageName(a_style);
 			} else if constexpr (std::is_same_v<float, T>) {
 				return std::format("{:.3f}", a_style);
 			} else if constexpr (std::is_same_v<bool, T>) {

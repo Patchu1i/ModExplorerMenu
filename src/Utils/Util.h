@@ -11,6 +11,53 @@ namespace ImGui
 		       ImGui::CalcTextSize(text).x / 2;
 	};
 
+	inline static void ShowLanguagePopup()
+	{
+		auto& style = ModExplorerMenu::Settings::GetSingleton()->GetStyle();
+
+		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
+		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
+		const float center_x = ImGui::GetMainViewport()->Size.x * 0.5f;
+		const float center_y = ImGui::GetMainViewport()->Size.y * 0.5f;
+
+		const float pos_x = center_x - (width * 0.5f);
+		const float pos_y = center_y - (height * 0.5f);
+
+		const float buttonHeight = ImGui::GetFontSize() * 1.5f;
+
+		ImGui::SetNextWindowSize(ImVec2(width, height));
+		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
+		if (ImGui::BeginPopupModal("Non-latin Alphabetical Language", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
+			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Non-latin Alphabetical Language"));
+			ImGui::PushFont(style.font.medium);
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+			ImGui::Text("Non-latin Alphabetical Language");
+			ImGui::PopStyleColor(1);
+			ImGui::PopFont();
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			ImGui::TextWrapped(
+				"You have selected a non-latin alphabetical language. As a result, you"
+				" may need to restart the game for the changes to take effect.");
+
+			ImGui::NewLine();
+			ImGui::Text("Do you understand, and wish to proceed?");
+			ImGui::NewLine();
+
+			ImGui::SetCursorPosY(ImGui::GetWindowSize().y - (buttonHeight * 2) - 20.0f);  // subtract button size * 2 + separator
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			if (ImGui::Button("Yes, I understand", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::Button("No, take me back!", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
+
 	// TODO: Implement more use cases for this.
 	// Call ImGui::OpenPopup(<popup_name>) inside a user event.
 	// Call ImGui::ShowWarningPopup(<popup_name>, <callback>) outside of conditional logic.

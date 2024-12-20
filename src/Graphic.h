@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Language.h"
 #include "Utils/IconRpgAwesome.h"
 #include "d3d11.h"
 
@@ -41,7 +42,8 @@ namespace ModExplorerMenu
 
 		static void DrawImage(Image& a_texture, ImVec2 a_center);
 		static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
-		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct);
+		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::Locale a_language);
+		static void SetupLanguageFont(Language::Locale a_language);
 
 		static void Init();
 
@@ -50,15 +52,6 @@ namespace ModExplorerMenu
 
 		[[nodiscard]] static Font GetFont(std::string a_font)
 		{
-			// switch (a_size) {
-			// case FontSize::Tiny:
-			// 	return font_library[a_font].tiny;
-			// case FontSize::Medium:
-			// 	return font_library[a_font].medium;
-			// case FontSize::Large:
-			// 	return font_library[a_font].large;
-			// }
-
 			auto found = font_library.find(a_font);
 			if (found != font_library.end()) {
 				return found->second;

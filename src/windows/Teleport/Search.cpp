@@ -54,11 +54,11 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			if (selectedMod == ICON_RPG_HEART " Favorite" && !item.IsFavorite()) {
+			if (selectedMod == _TICON(ICON_RPG_HEART, "Favorite") && !item.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != ICON_RPG_WRENCH " All Mods" && selectedMod != ICON_RPG_HEART " Favorite" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != _TICON(ICON_RPG_WRENCH, "All Mods") && selectedMod != _TICON(ICON_RPG_HEART, "Favorite") && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
@@ -76,18 +76,18 @@ namespace ModExplorerMenu
 	{
 		(void)a_style;
 
-		if (ImGui::CollapsingHeader("Refine your search:", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader((std::string(_T("GENERAL_REFINE_SEARCH")) + ":").c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::NewLine();
 			ImGui::Indent();
 
-			ImGui::Text("Search results by:");
+			ImGui::Text((std::string(_T("GENERAL_SEARCH_RESULTS")) + ":").c_str());
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
 			auto totalWidth = inputTextWidth + filterWidth;
 
 			ImGui::SetNextItemWidth(inputTextWidth);
-			if (ImGui::InputTextWithHint("##TeleportWindow::InputField", "(Click to begin typing..)", inputBuffer,
+			if (ImGui::InputTextWithHint("##TeleportWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					ImGuiInputTextFlags_EscapeClearsAll)) {
 				ApplyFilters();
@@ -99,13 +99,13 @@ namespace ModExplorerMenu
 			auto combo_flags = ImGuiComboFlags_WidthFitPreview;
 			ImGui::SetNextItemWidth(filterWidth);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##TeleportWindow::InputFilter", searchByValue, combo_flags)) {
+			if (ImGui::BeginCombo("##TeleportWindow::InputFilter", _T(searchByValue), combo_flags)) {
 				for (auto& item : InputSearchMap) {
 					auto searchBy = item.first;
 					auto _searchByValue = item.second;
 					bool is_selected = (searchKey == searchBy);
 
-					if (ImGui::Selectable(_searchByValue, is_selected)) {
+					if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
 						searchKey = searchBy;
 						ApplyFilters();
 					}
@@ -120,9 +120,9 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
-			ImGui::Text("Filter modlist by:");
+			ImGui::Text((std::string(_T("GENERAL_FILTER_MODLIST")) + ":").c_str());
 			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::InputTextWithHint("##TeleportWindow::ModField", "(Click to begin typing..)", modListBuffer,
+			ImGui::InputTextWithHint("##TeleportWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
 
@@ -130,15 +130,15 @@ namespace ModExplorerMenu
 			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
-			if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedMod.c_str())) {
-				if (ImGui::Selectable(ICON_RPG_WRENCH " All Mods", selectedMod == ICON_RPG_WRENCH " All Mods")) {
-					selectedMod = ICON_RPG_WRENCH " All Mods";
+			if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", _T(selectedMod))) {
+				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == _TICON(ICON_RPG_WRENCH, "All Mods"))) {
+					selectedMod = _TICON(ICON_RPG_WRENCH, "All Mods");
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable(ICON_RPG_HEART " Favorite", selectedMod == ICON_RPG_HEART " Favorite")) {
-					selectedMod = ICON_RPG_HEART " Favorite";
+				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == _TICON(ICON_RPG_HEART, "Favorite"))) {
+					selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}

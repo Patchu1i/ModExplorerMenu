@@ -38,7 +38,7 @@ namespace ModExplorerMenu
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
 		static inline char inputBuffer[256] = "";
 		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = ICON_RPG_WRENCH " All Mods";
+		static inline std::string selectedMod = _TICON(ICON_RPG_WRENCH, "All Mods");
 		static inline bool dirty = true;
 
 		// Sorting & Filtering
@@ -46,7 +46,7 @@ namespace ModExplorerMenu
 			{ BaseColumn::ID::Plugin, "Plugin" },
 			{ BaseColumn::ID::Space, "Worldspace" },
 			{ BaseColumn::ID::Zone, "Zone" },
-			{ BaseColumn::ID::CellName, "Cell Name" },
+			{ BaseColumn::ID::CellName, "Cell" },
 			{ BaseColumn::ID::EditorID, "Editor ID" }
 		};
 

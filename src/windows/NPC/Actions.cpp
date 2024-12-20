@@ -16,35 +16,35 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText("Shortcuts:");
+		ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
 
 		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
-		if (ImGui::Selectable(ICON_RPG_MULTI_NPC " Click to Select", &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_MULTI_NPC, "NPC_CLICK_TO_SELECT"), &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::Selectable(ICON_RPG_SPAWNED_NPC " Click to Favorite", &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "NPC_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToSelect = false;
 		}
 
 		ImGui::PopStyleColor(3);
 
-		ImGui::SeparatorText("Actions:");
+		ImGui::SeparatorText((std::string(_T("Actions")) + ":").c_str());
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
-		if (ImGui::Button("Place Selected NPC", ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("NPC_PLACE_SELECTED"), ImVec2(button_width, button_height))) {
 			if (selectedNPC != nullptr) {
 				Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
 				Console::StartProcessThread();
 			}
 		}
 
-		if (ImGui::Button("Place All From Table", ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("NPC_PLACE_ALL"), ImVec2(button_width, button_height))) {
 			for (auto& npc : npcList) {
 				Console::PlaceAtMe(npc->GetFormID(), 1);
 			}
@@ -54,11 +54,10 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(1);
 
-		if (ImGui::Button("Goto Favorite", ImVec2(button_width, button_height))) {
-			selectedMod = ICON_RPG_HEART " Favorite";
+		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
+			selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
 			ApplyFilters();
 		}
-
 		if (ImGui::Button("Print Refs", ImVec2(button_width, button_height))) {
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
@@ -69,7 +68,7 @@ namespace ModExplorerMenu
 			return;
 		}
 
-		ImGui::SeparatorText("Info:");
+		ImGui::SeparatorText((std::string(_T("Info")) + ":").c_str());
 
 		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
 		float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
@@ -130,7 +129,7 @@ namespace ModExplorerMenu
 		ImGui::Text(name);
 		ImGui::NewLine();
 
-		if (ImGui::CollapsingHeader("NPC Skills", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_T("NPC_SKILLS"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			RE::TESNPC::Skills skills;
 
 			if (hoveredNPC != nullptr) {
@@ -148,7 +147,7 @@ namespace ModExplorerMenu
 			}
 		}
 
-		if (ImGui::CollapsingHeader("NPC Spells", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_T("NPC_SPELLS"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			auto* spellData = npc->GetSpellList();
 
 			if (spellData == nullptr) {
@@ -171,11 +170,11 @@ namespace ModExplorerMenu
 					float costPercent = cost / npc->GetBaseActorValue(RE::ActorValue::kMagicka) * 100.0f;
 					std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
-					InlineText("Cast Type:", castType);
-					InlineText("Spell Type:", spellType);
-					InlineText("Delivery Type:", delType);
-					InlineText("Cost:", std::format("{:.0f}", cost).c_str());
-					InlineText("Cost %%:", costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
+					InlineText((std::string(_T("NPC_CAST_TYPE")) + ":").c_str(), castType);
+					InlineText((std::string(_T("NPC_SPELL_TYPE")) + ":").c_str(), spellType);
+					InlineText((std::string(_T("NPC_DELIVERY_TYPE")) + ":").c_str(), delType);
+					InlineText((std::string(_T("Cost")) + ":").c_str(), std::format("{:.0f}", cost).c_str());
+					InlineText((std::string(_T("Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
 
 					ImGui::TreePop();
 				}
