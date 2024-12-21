@@ -141,6 +141,19 @@ namespace ModExplorerMenu
 		static inline std::unordered_set<RE::TESFile*> _staticModList;
 		static inline std::unordered_set<RE::TESFile*> _cellModList;
 
+		struct ModFileItemFlags
+		{
+			bool alchemy = false;
+			bool ingredient = false;
+			bool ammo = false;
+			bool key = false;
+			bool misc = false;
+			bool armor = false;
+			bool book = false;
+			bool weapon = false;
+		};
+
+		static inline std::unordered_map<RE::TESFile*, ModFileItemFlags> _itemListModFormTypeMap;
 		static inline std::unordered_map<RE::TESFile*, std::time_t> _modListLastModified;
 
 		void CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_map);
@@ -194,6 +207,11 @@ namespace ModExplorerMenu
 		[[nodiscard]] static inline std::vector<Item>& GetItemList()
 		{
 			return _cache;
+		}
+
+		[[nodiscard]] static std::unordered_map<RE::TESFile*, ModFileItemFlags> GetModFormTypeMap()
+		{
+			return _itemListModFormTypeMap;
 		}
 
 		[[nodiscard]] static inline std::vector<NPC>& GetNPCList()

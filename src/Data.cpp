@@ -161,6 +161,37 @@ namespace ModExplorerMenu
 					logger::info("File does not exist: {}", path.string());
 				}
 			}
+
+			if (_itemModList.contains(mod)) {
+				// Check if the mod is already in the map
+				auto it = _itemListModFormTypeMap.find(mod);
+				if (it == _itemListModFormTypeMap.end())
+					_itemListModFormTypeMap[mod] = ModFileItemFlags();
+
+				if (_itemListModFormTypeMap[mod].armor == false)
+					_itemListModFormTypeMap[mod].armor = form->GetFormType() == RE::FormType::Armor;
+
+				if (_itemListModFormTypeMap[mod].book == false)
+					_itemListModFormTypeMap[mod].book = form->GetFormType() == RE::FormType::Book;
+
+				if (_itemListModFormTypeMap[mod].weapon == false)
+					_itemListModFormTypeMap[mod].weapon = form->GetFormType() == RE::FormType::Weapon;
+
+				if (_itemListModFormTypeMap[mod].misc == false)
+					_itemListModFormTypeMap[mod].misc = form->GetFormType() == RE::FormType::Misc;
+
+				if (_itemListModFormTypeMap[mod].key == false)
+					_itemListModFormTypeMap[mod].key = form->GetFormType() == RE::FormType::KeyMaster;
+
+				if (_itemListModFormTypeMap[mod].ammo == false)
+					_itemListModFormTypeMap[mod].ammo = form->GetFormType() == RE::FormType::Ammo;
+
+				if (_itemListModFormTypeMap[mod].alchemy == false)
+					_itemListModFormTypeMap[mod].alchemy = form->GetFormType() == RE::FormType::AlchemyItem;
+
+				if (_itemListModFormTypeMap[mod].ingredient == false)
+					_itemListModFormTypeMap[mod].ingredient = form->GetFormType() == RE::FormType::Ingredient;
+			}
 		}
 	}
 

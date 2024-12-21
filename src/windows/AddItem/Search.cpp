@@ -186,9 +186,77 @@ namespace ModExplorerMenu
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+				auto mapped_mods = Data::GetModFormTypeMap();
 				for (auto& mod : Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					auto found = false;
+					for (auto& mapped_mod : mapped_mods) {
+						if (mod == mapped_mod.first) {
+							for (auto& filter : filterMap) {
+								auto isEnabled = *std::get<0>(filter);
+								auto formType = std::get<1>(filter);
+
+								if (!isEnabled) {
+									continue;
+								}
+
+								if (found) {
+									continue;
+								}
+
+								switch (formType) {
+								case RE::FormType::Armor:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Book:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Weapon:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Misc:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::KeyMaster:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Ammo:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::AlchemyItem:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Ingredient:
+									if (mapped_mod.second.armor) {
+										found = true;
+									}
+									break;
+								default:
+									break;
+								}
+							}
+						}
+					}
+
+					if (!found) {
+						continue;
+					}
 
 					if (std::strlen(modListBuffer) > 0) {
 						std::string compare = modName;
