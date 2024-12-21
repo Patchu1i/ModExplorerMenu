@@ -1,5 +1,6 @@
 #pragma once
 #include "PCH.h"
+#include "Utils/IconRpgAwesome.h"
 
 namespace ModExplorerMenu
 {
@@ -23,7 +24,7 @@ namespace ModExplorerMenu
 
 			std::ifstream file(std::wstring(json_lang_path) + std::wstring(a_path.begin(), a_path.end()) + L".json");
 			if (!file.is_open()) {
-				stl::report_and_fail("Unable to open file for reading JSON");
+				stl::report_and_fail("[JSON] Unable to open language file for reading.");
 			}
 
 			nlohmann::json json;
@@ -33,6 +34,8 @@ namespace ModExplorerMenu
 			for (auto& [key, value] : json.items()) {
 				lang[key] = value;
 			}
+
+			logger::info("Loaded language: {}", a_path);
 		}
 
 		const char* GetTranslation(const std::string& key) const
@@ -41,7 +44,6 @@ namespace ModExplorerMenu
 			if (it != lang.end()) {
 				return it->second.c_str();
 			} else {
-				// std::cerr << "[Translation Error] Key not found: " << key << std::endl;
 				logger::info("[Translation Error] Key not found: {}", key);
 				return key.c_str();  // Return the key itself as a fallback
 			}
@@ -57,7 +59,9 @@ namespace ModExplorerMenu
 	};
 
 #define _T(key) Translate::GetSingleton()->GetTranslation(key)
+#define _TFM(key, suffix) (std::string(_T(key)) + suffix).c_str()
 #define _TICON(icon, key) (std::string(icon) + _T(key)).c_str()
+#define _TICONM(icon, key, suffix) (std::string(icon) + _T(key) + suffix).c_str()
 
 	class Language
 	{

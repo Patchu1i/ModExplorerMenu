@@ -26,7 +26,5 @@ namespace ModExplorerMenu
 				m_favorites[editorid] = favorite;
 			}
 		}
-
-		// return json["favorites"].get<std::vector<std::string>>();
 	}
 }

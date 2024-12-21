@@ -16,7 +16,7 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
 		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
@@ -33,7 +33,7 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(3);
 
-		ImGui::SeparatorText((std::string(_T("Actions")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Actions", ":"));
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
@@ -55,7 +55,7 @@ namespace ModExplorerMenu
 		ImGui::PopStyleColor(1);
 
 		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
-			selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
+			selectedMod = "Favorite";
 			ApplyFilters();
 		}
 		if (ImGui::Button("Print Refs", ImVec2(button_width, button_height))) {
@@ -68,7 +68,7 @@ namespace ModExplorerMenu
 			return;
 		}
 
-		ImGui::SeparatorText((std::string(_T("Info")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Info", ":"));
 
 		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
 		float popWidth = ImGui::GetContentRegionAvail().x + 10.0f;
@@ -170,10 +170,10 @@ namespace ModExplorerMenu
 					float costPercent = cost / npc->GetBaseActorValue(RE::ActorValue::kMagicka) * 100.0f;
 					std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
-					InlineText((std::string(_T("NPC_CAST_TYPE")) + ":").c_str(), castType);
-					InlineText((std::string(_T("NPC_SPELL_TYPE")) + ":").c_str(), spellType);
-					InlineText((std::string(_T("NPC_DELIVERY_TYPE")) + ":").c_str(), delType);
-					InlineText((std::string(_T("Cost")) + ":").c_str(), std::format("{:.0f}", cost).c_str());
+					InlineText(_TFM("NPC_CAST_TYPE", ":"), castType);
+					InlineText(_TFM("NPC_SPELL_TYPE", ":"), spellType);
+					InlineText(_TFM("NPC_DELIVERY_TYPE", ":"), delType);
+					InlineText(_TFM("Cost", ":"), std::format("{:.0f}", cost).c_str());
 					InlineText((std::string(_T("Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
 
 					ImGui::TreePop();

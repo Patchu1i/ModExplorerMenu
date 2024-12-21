@@ -17,7 +17,8 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
+		// ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
 		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
@@ -46,7 +47,7 @@ namespace ModExplorerMenu
 		ImGui::SetDelayedTooltip(_T("AIM_FAVORITE_HELP"));
 
 		ImGui::PopStyleColor(3);
-		ImGui::SeparatorText((std::string(_T("Shortcuts")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Shortcuts", ":"));
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
 		// Add All From Table Shortcut.
@@ -83,14 +84,14 @@ namespace ModExplorerMenu
 
 		// Show Favorites
 		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
-			selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
+			selectedMod = "Favorite";
 			ApplyFilters();
 		}
 
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
-		ImGui::SeparatorText((std::string(_T("Preview")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Preview", ":"));
 		ShowItemPreview<Item>(itemPreview);
 
 		ImGui::EndChild();

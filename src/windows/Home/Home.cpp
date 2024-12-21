@@ -7,7 +7,7 @@ namespace ModExplorerMenu
 	void HomeWindow::Draw()
 	{
 		if (ImGui::Button("Test")) {
-			Translate::GetSingleton()->LoadLanguage("chinese");
+			Translate::GetSingleton()->LoadLanguage("English");
 		}
 	}
 	void HomeWindow::Init()

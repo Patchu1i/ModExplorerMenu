@@ -132,14 +132,14 @@ namespace ModExplorerMenu
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
 			if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedMod.c_str())) {
-				if (ImGui::Selectable(ICON_RPG_WRENCH " All Mods", selectedMod == ICON_RPG_WRENCH " All Mods")) {
-					selectedMod = ICON_RPG_WRENCH " All Mods";
+				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
+					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable(ICON_RPG_HEART " Favorite", selectedMod == ICON_RPG_HEART " Favorite")) {
-					selectedMod = ICON_RPG_HEART " Favorite";
+				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}

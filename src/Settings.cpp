@@ -119,6 +119,10 @@ namespace ModExplorerMenu
 			Settings::GetSingleton()->LoadMasterIni(a_ini);
 		});
 
+		// Language
+		auto lang = Language::GetLanguageName(user.config.language);
+		Translate::GetSingleton()->LoadLanguage(lang);
+
 		// Theme
 		InstantiateDefaultTheme(def.style);
 		Settings::GetSingleton()->SetThemeFromIni(user.config.theme);

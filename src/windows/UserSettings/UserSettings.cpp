@@ -343,7 +343,7 @@ namespace ModExplorerMenu
 
 		auto width = 200.0f;
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		ImGui::Text((std::string(_T("Language")) + ":").c_str());
+		ImGui::Text(_TFM("Language", ":"));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 
@@ -377,7 +377,7 @@ namespace ModExplorerMenu
 		}
 
 		if (ImGui::CollapsingHeader(_T("THEME_PRESET"), color_flags | ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::SeparatorText((std::string(_T("THEME_PRESET_SELECT")) + ":").c_str());
+			ImGui::SeparatorText(_TFM("THEME_PRESET_SELECT", ":"));
 
 			constexpr auto combo_flags = ImGuiComboFlags_HeightLarge;
 			ImGui::HelpMarker(_T("THEME_HELP_CHOICE"));
@@ -433,7 +433,7 @@ namespace ModExplorerMenu
 				// ImGui::NewLine();
 				// ImGui::Text("Or create a new theme by pressing 'Create New Theme'");
 
-				ImGui::SeparatorText((std::string(_T("Note")) + ":").c_str());
+				ImGui::SeparatorText(_TFM("Note", ":"));
 
 				ImGui::Text(_T("THEME_NOTE_1"));
 				ImGui::NewLine();
@@ -443,7 +443,7 @@ namespace ModExplorerMenu
 				return;
 			}
 
-			ImGui::SeparatorText((std::string(_T("THEME_CHANGES")) + ":").c_str());
+			ImGui::SeparatorText(_TFM("THEME_CHANGES", +":"));
 
 			ImGui::HelpMarker(_T("THEME_HELP_RESET"));
 			if (ImGui::Button(_T("THEME_RESET"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, ImGui::GetFontSize() * 1.5f))) {

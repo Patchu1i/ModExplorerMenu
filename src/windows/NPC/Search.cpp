@@ -49,11 +49,11 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			if (selectedMod == _TICON(ICON_RPG_HEART, "Favorite") && !item.IsFavorite()) {
+			if (selectedMod == "Favorite" && !item.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != _TICON(ICON_RPG_WRENCH, "All Mods") && selectedMod != _TICON(ICON_RPG_HEART, "Favorite") && item.GetPluginName() != selectedMod) {
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
@@ -74,11 +74,11 @@ namespace ModExplorerMenu
 	{
 		(void)a_style;
 
-		if (ImGui::CollapsingHeader((std::string(_T("GENERAL_REFINE_SEARCH")) + ":").c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::NewLine();
 			ImGui::Indent();
 
-			ImGui::Text((std::string(_T("GENERAL_SEARCH_RESULTS")) + ":").c_str());
+			ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
@@ -118,7 +118,7 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
-			ImGui::Text((std::string(_T("GENERAL_FILTER_MODLIST")) + ":").c_str());
+			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::InputTextWithHint("##NPCWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
@@ -128,15 +128,20 @@ namespace ModExplorerMenu
 			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
-			if (ImGui::BeginCombo("##NPCWindow::FilterByMod", _T(selectedMod))) {
-				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == _TICON(ICON_RPG_WRENCH, "All Mods"))) {
-					selectedMod = _TICON(ICON_RPG_WRENCH, "All Mods");
+
+			std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+			                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+			                                                          selectedMod;
+
+			if (ImGui::BeginCombo("##NPCWindow::FilterByMod", selectedModName.c_str())) {
+				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
+					selectedMod = "All Mods";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == _TICON(ICON_RPG_HEART, "Favorite"))) {
-					selectedMod = _TICON(ICON_RPG_HEART, "Favorite");
+				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
+					selectedMod = "Favorite";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
 				}

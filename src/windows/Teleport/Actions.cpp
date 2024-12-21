@@ -13,7 +13,7 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
 		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
@@ -32,7 +32,7 @@ namespace ModExplorerMenu
 		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
-		ImGui::SeparatorText((std::string(_T("Favorite")) + ":").c_str());
+		ImGui::SeparatorText(_TFM("Favorite", ":"));
 		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 
 		const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f);

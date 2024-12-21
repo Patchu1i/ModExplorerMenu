@@ -3,6 +3,7 @@
 #include "Console.h"
 #include "Data.h"
 #include "Hooks.h"
+#include "Language.h"
 #include "Settings.h"
 #include "Windows/Frame.h"
 #include "Windows/Persistent.h"
