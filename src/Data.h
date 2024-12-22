@@ -151,6 +151,13 @@ namespace ModExplorerMenu
 			bool armor = false;
 			bool book = false;
 			bool weapon = false;
+			bool npc = false;
+			bool staticObject = false;
+			bool tree = false;
+			bool activator = false;
+			bool container = false;
+			bool door = false;
+			bool light = false;
 		};
 
 		static inline std::unordered_map<RE::TESFile*, ModFileItemFlags> _itemListModFormTypeMap;
@@ -172,13 +179,13 @@ namespace ModExplorerMenu
 		{
 			HANDLE hFile = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 			if (hFile == INVALID_HANDLE_VALUE) {
-				std::cerr << "Unable to open file: " << path << std::endl;
+				logger::warn("[Modex] Unable to open file: {}", path.string());
 				return std::time_t{};
 			}
 
 			FILETIME creationTime;
 			if (!GetFileTime(hFile, &creationTime, NULL, NULL)) {
-				std::cerr << "Unable to get file creation time: " << path << std::endl;
+				logger::warn("[Modex] Unable to get file time: {}", path.string());
 				CloseHandle(hFile);
 				return std::time_t{};
 			}

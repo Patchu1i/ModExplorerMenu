@@ -55,7 +55,7 @@ namespace ModExplorerMenu
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), TeleportTableFlags | rowBG, table_size)) {
+		if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, table_size)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
@@ -118,20 +118,18 @@ namespace ModExplorerMenu
 
 					if (favorite_state != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##ObjectWindow::FavoriteButton", b_clickToPlace, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!b_clickToPlace) {
+						if (ImGui::DisabledImageButton("##ObjectWindow::FavoriteButton", b_ClickToFavorite, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+							if (!b_ClickToFavorite) {
 								object->favorite = !object->favorite;
 								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(object);
 							}
 						}
 					} else {
-						ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_clickToPlace, object->favorite);
+						ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, object->favorite);
 					}
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);
-
-					bool _itemSelected = false;
 
 					//	Plugin
 					ImGui::TableNextColumn();
@@ -150,45 +148,20 @@ namespace ModExplorerMenu
 					ImGui::Text(object->GetEditorID().data());
 
 					// Input Handlers
+					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						ImGui::PushFont(a_style.font.tiny);
-						// ShowItemCard<Cell>(object); // Item cards for Cells?
-						ImGui::PopFont();
+						hoveredObject = object;
 
 						if (ImGui::IsMouseClicked(0)) {
-							_itemSelected = true;
-							selectedObject = object;
-
-							if (b_clickToPlace) {
-								Console::PlaceAtMe(object->GetFormID().data());
-								Console::StartProcessThread();
-
-								_itemSelected = false;
-								selectedObject = nullptr;
+							if (b_ClickToSelect) {
+								selectedObject = object;
+							} else if (b_ClickToFavorite) {
+								object->favorite = !object->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(object);
 							}
 						}
-
-						// if (ImGui::IsMouseClicked(1, true)) {
-						// 	ImGui::OpenPopup("TestItemPopupMenu");
-						// }
 					}
-
-					// if (ImGui::BeginPopup("TestItemPopupMenu")) {
-					// 	ShowItemListContextMenu(*item);
-					// 	ImGui::EndPopup();
-					// }
-
-					// Shortcut Handlers
-					// if (b_ClickToAdd && _itemSelected) {
-					// 	ConsoleCommand::AddItem(item->formid.c_str(), clickToAddCount);
-					// } else if (b_ClickToPlace && _itemSelected) {
-					// 	ConsoleCommand::PlaceAtMe(item->formid.c_str(), clickToPlaceCount);
-					// } else if (b_ClickToFavorite && _itemSelected) {
-					// 	item->favorite = !item->favorite;
-					// } else if (!b_ClickToAdd && _itemSelected) {
-					// 	item->selected = true;
-					// }
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
 					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.

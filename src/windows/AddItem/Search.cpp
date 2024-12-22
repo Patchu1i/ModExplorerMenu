@@ -123,7 +123,7 @@ namespace ModExplorerMenu
 
 			// Filter checkboxes up top.
 			ImGui::NewLine();
-			ImGui::Text(_TFM("AIM_FILTER_ITEM_TYPE", ":"));
+			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
 			ImGui::NewLine();
 			ImGui::Unindent();
 			bool _change = false;
@@ -194,6 +194,7 @@ namespace ModExplorerMenu
 					auto found = false;
 					for (auto& mapped_mod : mapped_mods) {
 						if (mod == mapped_mod.first) {
+							auto count = 0;
 							for (auto& filter : filterMap) {
 								auto isEnabled = *std::get<0>(filter);
 								auto formType = std::get<1>(filter);
@@ -201,6 +202,8 @@ namespace ModExplorerMenu
 								if (!isEnabled) {
 									continue;
 								}
+
+								count++;
 
 								if (found) {
 									continue;
@@ -250,6 +253,10 @@ namespace ModExplorerMenu
 								default:
 									break;
 								}
+							}
+
+							if (count == 0) {
+								found = true;
 							}
 						}
 					}

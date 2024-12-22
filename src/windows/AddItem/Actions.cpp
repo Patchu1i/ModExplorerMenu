@@ -61,7 +61,7 @@ namespace ModExplorerMenu
 		ImGui::SetDelayedTooltip(_T("AIM_ADD_ALL_HELP"));
 
 		// Place All from Table Shortcut.
-		if (ImGui::Button(_T("AIM_PLACE_ALL"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, button_height))) {
 			if (itemList.size() > 30) {
 				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
 			} else {

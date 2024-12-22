@@ -56,6 +56,15 @@ namespace ModExplorerMenu
 			if (!_npcModList.contains(mod)) {
 				_npcModList.insert(mod);
 			}
+
+			if (_npcModList.contains(mod)) {
+				auto it = _itemListModFormTypeMap.find(mod);
+				if (it == _itemListModFormTypeMap.end()) {
+					_itemListModFormTypeMap[mod] = ModFileItemFlags();
+				}
+
+				_itemListModFormTypeMap[mod].npc = true;
+			}
 		}
 	}
 
@@ -207,6 +216,31 @@ namespace ModExplorerMenu
 
 			if (!_staticModList.contains(mod)) {
 				_staticModList.insert(mod);
+			}
+
+			if (_staticModList.contains(mod)) {
+				auto it = _itemListModFormTypeMap.find(mod);
+				if (it == _itemListModFormTypeMap.end()) {
+					_itemListModFormTypeMap[mod] = ModFileItemFlags();
+				}
+
+				if (_itemListModFormTypeMap[mod].tree == false)
+					_itemListModFormTypeMap[mod].tree = form->GetFormType() == RE::FormType::Tree;
+
+				if (_itemListModFormTypeMap[mod].activator == false)
+					_itemListModFormTypeMap[mod].activator = form->GetFormType() == RE::FormType::Activator;
+
+				if (_itemListModFormTypeMap[mod].container == false)
+					_itemListModFormTypeMap[mod].container = form->GetFormType() == RE::FormType::Container;
+
+				if (_itemListModFormTypeMap[mod].door == false)
+					_itemListModFormTypeMap[mod].door = form->GetFormType() == RE::FormType::Door;
+
+				if (_itemListModFormTypeMap[mod].light == false)
+					_itemListModFormTypeMap[mod].light = form->GetFormType() == RE::FormType::Light;
+
+				if (_itemListModFormTypeMap[mod].staticObject == false)
+					_itemListModFormTypeMap[mod].staticObject = form->GetFormType() == RE::FormType::Static;
 			}
 		}
 	}

@@ -23,11 +23,11 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_MULTI_NPC, "NPC_CLICK_TO_SELECT"), &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "NPC_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToSelect = false;
 		}
 
@@ -44,7 +44,7 @@ namespace ModExplorerMenu
 			}
 		}
 
-		if (ImGui::Button(_T("NPC_PLACE_ALL"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, button_height))) {
 			for (auto& npc : npcList) {
 				Console::PlaceAtMe(npc->GetFormID(), 1);
 			}
@@ -58,7 +58,7 @@ namespace ModExplorerMenu
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}
-		if (ImGui::Button("Print Refs", ImVec2(button_width, button_height))) {
+		if (ImGui::Button("NPC_UPDATE_REFERENCES", ImVec2(button_width, button_height))) {
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
 
@@ -150,33 +150,37 @@ namespace ModExplorerMenu
 		if (ImGui::CollapsingHeader(_T("NPC_SPELLS"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			auto* spellData = npc->GetSpellList();
 
-			if (spellData == nullptr) {
-				return;
-			}
+			if (spellData != nullptr) {
+				for (uint32_t i = 0; i < spellData->numSpells; i++) {
+					if (spellData->spells[i] == nullptr)
+						continue;
 
-			for (uint32_t i = 0; i < spellData->numSpells; i++) {
-				if (spellData->spells[i] == nullptr)
-					continue;
+					const auto* spell = spellData->spells[i];
 
-				const auto* spell = spellData->spells[i];
-				const auto spellName = spell->GetFullName();
+					if (spell == nullptr) {
+						continue;
+					}
 
-				if (ImGui::TreeNode(spellName)) {
-					auto castType = Utils::GetCastingType(spell->data.castingType);
-					auto spellType = Utils::GetSpellType(spell->data.spellType);
-					auto delType = Utils::GetDeliveryType(spell->data.delivery);
-					auto cost = spell->CalculateMagickaCost(npc->As<RE::Actor>());
+					const auto spellName = spell->GetFullName();
 
-					float costPercent = cost / npc->GetBaseActorValue(RE::ActorValue::kMagicka) * 100.0f;
-					std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
+					// Weird bug here where the spell name is empty.
+					if (ImGui::TreeNode((std::string(spellName) + "##SpellName").c_str())) {
+						auto castType = Utils::GetCastingType(spell->data.castingType);
+						auto spellType = Utils::GetSpellType(spell->data.spellType);
+						auto delType = Utils::GetDeliveryType(spell->data.delivery);
+						auto cost = spell->CalculateMagickaCost(npc->As<RE::Actor>());
 
-					InlineText(_TFM("NPC_CAST_TYPE", ":"), castType);
-					InlineText(_TFM("NPC_SPELL_TYPE", ":"), spellType);
-					InlineText(_TFM("NPC_DELIVERY_TYPE", ":"), delType);
-					InlineText(_TFM("Cost", ":"), std::format("{:.0f}", cost).c_str());
-					InlineText((std::string(_T("Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
+						float costPercent = cost / npc->GetBaseActorValue(RE::ActorValue::kMagicka) * 100.0f;
+						std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
-					ImGui::TreePop();
+						InlineText(_TFM("NPC_CAST_TYPE", ":"), castType);
+						InlineText(_TFM("NPC_SPELL_TYPE", ":"), spellType);
+						InlineText(_TFM("NPC_DELIVERY_TYPE", ":"), delType);
+						InlineText(_TFM("Cost", ":"), std::format("{:.0f}", cost).c_str());
+						InlineText((std::string(_T("Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
+
+						ImGui::TreePop();
+					}
 				}
 			}
 		}

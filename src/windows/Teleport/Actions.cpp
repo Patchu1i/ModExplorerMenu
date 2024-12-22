@@ -24,7 +24,7 @@ namespace ModExplorerMenu
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "TELE_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToTeleport = false;
 		}
 

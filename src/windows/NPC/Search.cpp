@@ -148,9 +148,21 @@ namespace ModExplorerMenu
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+				auto mapped_mods = Data::GetModFormTypeMap();
 				for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					auto found = false;
+					for (auto& mapped_mod : mapped_mods) {
+						if (mod == mapped_mod.first && mapped_mod.second.npc) {
+							found = true;
+						}
+					}
+
+					if (!found) {
+						continue;
+					}
 
 					if (std::strlen(modListBuffer) > 0) {
 						std::string compare = modName;

@@ -10,34 +10,48 @@ namespace ModExplorerMenu
 	class ObjectWindow : private ISortable
 	{
 	private:
+		static void ApplyFilters();
+		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+
 		static inline std::vector<StaticObject*> objectList;
 		static inline ObjectColumns columnList;
-		static inline StaticObject* selectedObject;
+
+		// Actions
+		static inline bool b_ClickToSelect = true;
+		static inline bool b_ClickToFavorite = false;
+
+		static inline bool _itemHovered = false;
+		static inline bool _itemSelected = false;
+		static inline StaticObject* hoveredObject = nullptr;
+		static inline StaticObject* selectedObject = nullptr;
+
+		static inline bool b_Tree = false;
+		static inline bool b_Static = false;
+		static inline bool b_Container = false;
+		static inline bool b_Furniture = false;
+		static inline bool b_Activator = false;
+		static inline bool b_Light = false;
+		static inline bool b_Door = false;
+
+		static inline std::unordered_set<RE::FormType> objectFilters;
+		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
+			{ &b_Tree, RE::FormType::Tree, "Tree" }, { &b_Static, RE::FormType::Static, "Static" },
+			{ &b_Container, RE::FormType::Container, "Container" }, { &b_Activator, RE::FormType::Activator, "Activator" },
+			{ &b_Light, RE::FormType::Light, "Light" }, { &b_Door, RE::FormType::Door, "Door" }
+		};
 
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
 		static void Init();
 
 	private:
-		static void ApplyFilters();
-		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-
-		static inline constexpr auto TeleportTableFlags =
-			ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
-			ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
-			ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
-			ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
-
-		// Actions
-		static inline bool b_clickToPlace = false;
-
 		// Searching
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
 		static inline char inputBuffer[256] = "";
 		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = ICON_RPG_WRENCH " All Mods";
+		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
 
 		// Sorting & Filtering
@@ -47,8 +61,5 @@ namespace ModExplorerMenu
 			{ BaseColumn::ID::FormID, "Form ID" },
 			{ BaseColumn::ID::EditorID, "Editor ID" }
 		};
-
-		//static const int column_count = 6;
-		//static inline std::map<std::string, Data::CachedCell*> cellMap;
 	};
 }

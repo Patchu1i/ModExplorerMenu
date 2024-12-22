@@ -51,12 +51,18 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			if (selectedMod == ICON_RPG_HEART " Favorite" && !item.IsFavorite()) {
+			if (selectedMod == "Favorite" && !item.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != ICON_RPG_WRENCH " All Mods" && selectedMod != ICON_RPG_HEART " Favorite" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
 				continue;
+			}
+
+			if (objectFilters.size() > 0) {
+				if (objectFilters.find(item.GetFormType()) == objectFilters.end()) {
+					continue;
+				}
 			}
 
 			if (compare.find(input) != std::string::npos) {
@@ -73,18 +79,18 @@ namespace ModExplorerMenu
 	{
 		(void)a_style;
 
-		if (ImGui::CollapsingHeader("Refine your search:", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::NewLine();
 			ImGui::Indent();
 
-			ImGui::Text("Search results by:");
+			ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
 			auto totalWidth = inputTextWidth + filterWidth;
 
 			ImGui::SetNextItemWidth(inputTextWidth);
-			if (ImGui::InputTextWithHint("##ObjectWindow::InputField", "(Click to begin typing..)", inputBuffer,
+			if (ImGui::InputTextWithHint("##ObjectWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 					IM_ARRAYSIZE(inputBuffer),
 					Frame::INPUT_FLAGS)) {
 				ApplyFilters();
@@ -93,16 +99,16 @@ namespace ModExplorerMenu
 			ImGui::SameLine();
 
 			auto searchByValue = InputSearchMap.at(searchKey);
-			auto combo_flags = ImGuiComboFlags_WidthFitPreview;
+			auto combo_flags = ImGuiComboFlags_None;
 			ImGui::SetNextItemWidth(filterWidth);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##ObjectWindow::InputFilter", searchByValue, combo_flags)) {
+			if (ImGui::BeginCombo("##ObjectWindow::InputFilter", _T(searchByValue), combo_flags)) {
 				for (auto& item : InputSearchMap) {
 					auto searchBy = item.first;
 					auto _searchByValue = item.second;
 					bool is_selected = (searchKey == searchBy);
 
-					if (ImGui::Selectable(_searchByValue, is_selected)) {
+					if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
 						searchKey = searchBy;
 						ApplyFilters();
 					}
@@ -115,15 +121,44 @@ namespace ModExplorerMenu
 				ImGui::EndCombo();
 			}
 
-			// TO-DO: Move to actions
-			// ImGui::Checkbox("Click to Place", &b_clickToPlace);
-			// ImGui::SameLine();
+			// Filter checkboxes up top.
+			ImGui::NewLine();
+			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
+			ImGui::NewLine();
+			ImGui::Unindent();
+			bool _change = false;
+			for (auto& item : filterMap) {
+				auto first = std::get<0>(item);
+				const auto third = std::get<2>(item);
 
+				ImGui::SameLine();
+				if (ImGui::Checkbox(_T(third), first)) {
+					_change = true;
+				}
+			}
+
+			if (_change) {
+				objectFilters.clear();
+
+				for (auto& item : filterMap) {
+					auto first = *std::get<0>(item);
+					const auto second = std::get<1>(item);
+
+					if (first) {
+						objectFilters.insert(second);
+					}
+				}
+
+				ApplyFilters();
+				dirty = true;
+			}
+
+			ImGui::Indent();
 			ImGui::NewLine();
 
-			ImGui::Text("Filter modlist by:");
+			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::InputTextWithHint("##ObjectWindow::ModField", "(Click to begin typing..)", modListBuffer,
+			ImGui::InputTextWithHint("##ObjectWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
 
@@ -131,7 +166,12 @@ namespace ModExplorerMenu
 			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
-			if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedMod.c_str())) {
+
+			std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+			                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+			                                                          selectedMod;
+
+			if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedModName.c_str())) {
 				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
 					selectedMod = "All Mods";
 					ApplyFilters();
@@ -146,9 +186,74 @@ namespace ModExplorerMenu
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+				auto mapped_mods = Data::GetModFormTypeMap();
 				for (auto& mod : Data::GetModList(Data::STATIC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
 					bool is_selected = false;
+
+					auto found = false;
+					for (auto& mapped_mod : mapped_mods) {
+						if (mod == mapped_mod.first) {
+							auto count = 0;
+							for (auto& filter : filterMap) {
+								auto isEnabled = *std::get<0>(filter);
+								auto formType = std::get<1>(filter);
+
+								if (!isEnabled) {
+									continue;
+								}
+
+								count++;
+
+								if (found) {
+									continue;
+								}
+
+								switch (formType) {
+								case RE::FormType::Tree:
+									if (mapped_mod.second.tree) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Static:
+									if (mapped_mod.second.staticObject) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Container:
+									if (mapped_mod.second.container) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Light:
+									if (mapped_mod.second.light) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Door:
+									if (mapped_mod.second.door) {
+										found = true;
+									}
+									break;
+								case RE::FormType::Activator:
+									if (mapped_mod.second.activator) {
+										found = true;
+									}
+									break;
+								default:
+									break;
+								}
+							}
+
+							if (count == 0) {
+								found = true;
+							}
+						}
+					}
+
+					if (!found) {
+						continue;
+					}
 
 					if (std::strlen(modListBuffer) > 0) {
 						std::string compare = modName;
@@ -171,11 +276,13 @@ namespace ModExplorerMenu
 						selectedMod = modName;
 						ApplyFilters();
 					}
+
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
 			}
+
 			ImGui::Unindent();
 			ImGui::NewLine();
 		}
