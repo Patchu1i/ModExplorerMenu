@@ -1,4 +1,5 @@
 #include "Data.h"
+#include "Settings.h"
 #include "Utils/Worldspace.h"
 #include "Windows/Persistent.h"
 
@@ -149,6 +150,8 @@ namespace ModExplorerMenu
 	template <class T>
 	void Data::CacheItems(RE::TESDataHandler* a_data)
 	{
+		auto dataPath = Settings::GetSingleton()->GetConfig().dataPath;
+
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
@@ -160,7 +163,9 @@ namespace ModExplorerMenu
 			if (!_itemModList.contains(mod)) {
 				_itemModList.insert(mod);
 
-				std::filesystem::path path = std::string("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data\\") + mod->fileName;
+				// std::filesystem::path path = std::string("C:\\Program Files (x86)\\Steam\\steamapps\\al Edition\\Data\\") + mod->fileName;
+
+				std::filesystem::path path = dataPath + "\\" + mod->fileName;
 				if (std::filesystem::exists(path)) {
 					std::time_t creationTime = GetFileCreationTime(path);
 					_modListLastModified[mod] = creationTime;

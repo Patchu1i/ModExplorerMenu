@@ -44,7 +44,7 @@ namespace ModExplorerMenu
 			if (it != lang.end()) {
 				return it->second.c_str();
 			} else {
-				logger::info("[Translation Error] Key not found: {}", key);
+				// logger::info("[Translation Error] Key not found: {}", key);
 				return key.c_str();  // Return the key itself as a fallback
 			}
 		}

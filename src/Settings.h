@@ -85,6 +85,7 @@ namespace ModExplorerMenu
 			int uiScale;      // 80, 90, 100, 110, 120
 			int defaultShow;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
 			bool hideHomeMenu;
+			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
 		};
 
 		ImGuiStyle test;

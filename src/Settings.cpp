@@ -104,6 +104,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "UI Scale", "100");
 			a_ini.SetValue(rSections[Main], "DefaultShow", "0");
 			a_ini.SetValue(rSections[Main], "HideHomeMenu", "false");
+			a_ini.SetValue(rSections[Main], "DataPath", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data");
 		});
 	}
 
@@ -146,6 +147,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
 			a_ini.SetValue(rSections[Main], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
 			a_ini.SetValue(rSections[Main], "HideHomeMenu", ToString(Settings::GetSingleton()->user.config.hideHomeMenu, false).c_str());
+			a_ini.SetValue(rSections[Main], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
 	}
 
@@ -162,6 +164,7 @@ namespace ModExplorerMenu
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
 		user.config.defaultShow = GET_VALUE<int>(rSections[Main], "DefaultShow", 0, a_ini);
 		user.config.hideHomeMenu = GET_VALUE<bool>(rSections[Main], "HideHomeMenu", false, a_ini);
+		user.config.dataPath = GET_VALUE<std::string>(rSections[Main], "DataPath", "", a_ini);
 	}
 
 	void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
