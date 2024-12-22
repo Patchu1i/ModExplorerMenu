@@ -204,7 +204,7 @@ namespace ModExplorerMenu
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Checkbox" + std::string(a_text);
-		auto width = ImGui::GetFontSize();
+		auto width = ImGui::GetFontSize() * 1.5f;
 		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		if (ImGui::Checkbox(id.c_str(), &a_boolRef)) {
@@ -369,7 +369,8 @@ namespace ModExplorerMenu
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 
-		std::vector<std::string> scales = { "50", "75", "100", "125", "150" };
+		// TODO: No reason this can't be a slider, but it's not a priority.
+		std::vector<std::string> scales = { "80", "90", "100", "110", "120" };
 		if (ImGui::BeginCombo("##UIScaleSelection", (std::to_string(config.uiScale) + "%").c_str())) {
 			for (int i = 0; i < scales.size(); ++i) {
 				if (ImGui::Selectable((std::string(scales[i] + "%").c_str()))) {
@@ -381,6 +382,9 @@ namespace ModExplorerMenu
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
+
+		AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" });
+		AddCheckbox("SETTING_HIDE_HOME", config.hideHomeMenu);
 	}
 
 	void SettingsWindow::DrawThemeSelector()
@@ -597,14 +601,15 @@ namespace ModExplorerMenu
 		ImGui::Text(_T("THEME_WELCOME"));
 
 		constexpr auto child_flags = ImGuiChildFlags_Border;
+		constexpr auto header_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
 		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {
-			if (ImGui::CollapsingHeader(_T("THEME_GENERAL"), ImGuiTreeNodeFlags_Framed)) {
+			if (ImGui::CollapsingHeader(_T("THEME_GENERAL"), header_flags)) {
 				ImGui::Indent();
 				DrawGeneralSettings();
 				ImGui::Unindent();
 			}
 
-			if (ImGui::CollapsingHeader(_T("THEME_THEME"), ImGuiTreeNodeFlags_Framed)) {
+			if (ImGui::CollapsingHeader(_T("THEME_THEME"), header_flags)) {
 				ImGui::Indent();
 				DrawThemeSelector();
 				ImGui::Unindent();

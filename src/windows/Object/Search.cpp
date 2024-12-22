@@ -125,27 +125,52 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
 			ImGui::NewLine();
-			ImGui::Unindent();
-			bool _change = false;
-			for (auto& item : filterMap) {
-				auto first = std::get<0>(item);
-				const auto third = std::get<2>(item);
 
-				ImGui::SameLine();
-				if (ImGui::Checkbox(_T(third), first)) {
-					_change = true;
+			auto column = 0;
+			bool _change = false;
+			auto start_x = ImGui::GetCursorPosX();
+			auto width = ImGui::GetContentRegionAvail().x / 8.0f;
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+			for (auto& filter : filterMap) {
+				auto isEnabled = std::get<0>(filter);
+				const auto name = std::get<2>(filter);
+				column++;
+
+				if (column == 5) {
+					ImGui::SetCursorPosX(start_x + 5.0f);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
+				} else {
+					ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
 				}
+
+				if (column == 1) {
+					ImGui::SetCursorPosX(start_x + 5.0f);
+				}
+
+				if (*isEnabled == true) {
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w));
+				} else {
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w - 0.2f));
+				}
+
+				if (ImGui::Selectable(_T(name), true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
+					_change = true;
+					*isEnabled = !*isEnabled;
+				}
+
+				ImGui::PopStyleColor();
 			}
+			ImGui::PopStyleVar();
 
 			if (_change) {
 				objectFilters.clear();
 
 				for (auto& item : filterMap) {
-					auto first = *std::get<0>(item);
-					const auto second = std::get<1>(item);
+					auto isEnabled = *std::get<0>(item);
+					const auto formType = std::get<1>(item);
 
-					if (first) {
-						objectFilters.insert(second);
+					if (isEnabled) {
+						objectFilters.insert(formType);
 					}
 				}
 
@@ -153,9 +178,7 @@ namespace ModExplorerMenu
 				dirty = true;
 			}
 
-			ImGui::Indent();
 			ImGui::NewLine();
-
 			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::InputTextWithHint("##ObjectWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,

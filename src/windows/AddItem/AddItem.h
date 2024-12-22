@@ -64,7 +64,7 @@ namespace ModExplorerMenu
 		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
 			{ &b_Alchemy, RE::FormType::AlchemyItem, "Alchemy" }, { &b_Ingredient, RE::FormType::Ingredient, "Ingredient" },
 			{ &b_Ammo, RE::FormType::Ammo, "Ammunition" }, { &b_Key, RE::FormType::KeyMaster, "Keys" },
-			{ &b_Misc, RE::FormType::Misc, "Miscellaneous" }, { &b_Armor, RE::FormType::Armor, "Armor" },
+			{ &b_Misc, RE::FormType::Misc, "Misc" }, { &b_Armor, RE::FormType::Armor, "Armor" },
 			{ &b_Book, RE::FormType::Book, "Book" }, { &b_Weapon, RE::FormType::Weapon, "Weapon" }
 		};
 

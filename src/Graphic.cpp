@@ -98,6 +98,7 @@ namespace ModExplorerMenu
 		ImFontConfig config;
 		config.MergeMode = true;
 		config.GlyphMinAdvanceX = 10.0f;
+		config.GlyphExtraSpacing.x = 5.0f;
 		config.GlyphOffset.y = 1.0f;
 		config.GlyphOffset.x = 1.0f;
 		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };

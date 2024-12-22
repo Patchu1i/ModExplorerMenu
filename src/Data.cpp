@@ -120,7 +120,6 @@ namespace ModExplorerMenu
 				if (npc_ref_map->find(base) != npc_ref_map->end()) {
 					logger::warn("Duplicate NPC reference found (middleLow): {}", actor->GetName());
 				} else {
-					logger::info("Adding NPC reference (middleLow): {}", actor->GetName());
 					npc_ref_map->insert_or_assign(base, ref);
 				}
 			}
@@ -138,7 +137,6 @@ namespace ModExplorerMenu
 				if (npc_ref_map->find(base) != npc_ref_map->end()) {
 					logger::warn("Duplicate NPC reference found (highActorHandle): {}", actor->GetName());
 				} else {
-					logger::info("Adding NPC reference (high): {}", actor->GetName());
 					npc_ref_map->insert_or_assign(base, ref);
 				}
 			}
@@ -167,7 +165,7 @@ namespace ModExplorerMenu
 					std::time_t creationTime = GetFileCreationTime(path);
 					_modListLastModified[mod] = creationTime;
 				} else {
-					logger::info("File does not exist: {}", path.string());
+					logger::warn("File does not exist: {}", path.string());
 				}
 			}
 
@@ -183,8 +181,9 @@ namespace ModExplorerMenu
 				if (_itemListModFormTypeMap[mod].book == false)
 					_itemListModFormTypeMap[mod].book = form->GetFormType() == RE::FormType::Book;
 
-				if (_itemListModFormTypeMap[mod].weapon == false)
+				if (_itemListModFormTypeMap[mod].weapon == false) {
 					_itemListModFormTypeMap[mod].weapon = form->GetFormType() == RE::FormType::Weapon;
+				}
 
 				if (_itemListModFormTypeMap[mod].misc == false)
 					_itemListModFormTypeMap[mod].misc = form->GetFormType() == RE::FormType::Misc;

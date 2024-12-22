@@ -35,7 +35,7 @@ namespace ModExplorerMenu
 				lang[key] = value;
 			}
 
-			logger::info("Loaded language: {}", a_path);
+			logger::info("[Translation] Loaded language: {}", a_path);
 		}
 
 		const char* GetTranslation(const std::string& key) const
@@ -68,7 +68,7 @@ namespace ModExplorerMenu
 	public:
 		enum class Locale
 		{
-			BR_Portuguese,
+			PortugueseBR,
 			Chinese,
 			English,
 			French,
@@ -82,7 +82,7 @@ namespace ModExplorerMenu
 		static const std::vector<std::string> GetSupportedLanguageList()
 		{
 			return {
-				"BR-Portuguese",
+				"Portuguese-BR",
 				"Chinese",
 				"English",
 				"French",
@@ -113,8 +113,8 @@ namespace ModExplorerMenu
 		[[nodiscard]] static std::string GetLanguageName(Locale a_language)
 		{
 			switch (a_language) {
-			case Locale::BR_Portuguese:
-				return "BR-Portuguese";
+			case Locale::PortugueseBR:
+				return "Portuguese-BR";
 			case Locale::Chinese:
 				return "Chinese";
 			case Locale::English:
@@ -138,8 +138,8 @@ namespace ModExplorerMenu
 
 		[[nodiscard]] static Locale GetLanguage(std::string a_language)
 		{
-			if (a_language == "BR-Portuguese") {
-				return Locale::BR_Portuguese;
+			if (a_language == "Portuguese-BR") {
+				return Locale::PortugueseBR;
 			} else if (a_language == "Chinese") {
 				return Locale::Chinese;
 			} else if (a_language == "English") {

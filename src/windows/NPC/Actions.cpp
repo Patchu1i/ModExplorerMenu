@@ -58,7 +58,7 @@ namespace ModExplorerMenu
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}
-		if (ImGui::Button("NPC_UPDATE_REFERENCES", ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("NPC_UPDATE_REFERENCES"), ImVec2(button_width, button_height))) {
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
 

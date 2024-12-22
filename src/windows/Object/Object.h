@@ -27,13 +27,12 @@ namespace ModExplorerMenu
 		static inline StaticObject* hoveredObject = nullptr;
 		static inline StaticObject* selectedObject = nullptr;
 
-		static inline bool b_Tree = false;
-		static inline bool b_Static = false;
-		static inline bool b_Container = false;
-		static inline bool b_Furniture = false;
-		static inline bool b_Activator = false;
-		static inline bool b_Light = false;
-		static inline bool b_Door = false;
+		static inline bool b_Tree = true;
+		static inline bool b_Static = true;
+		static inline bool b_Container = true;
+		static inline bool b_Activator = true;
+		static inline bool b_Light = true;
+		static inline bool b_Door = true;
 
 		static inline std::unordered_set<RE::FormType> objectFilters;
 		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {

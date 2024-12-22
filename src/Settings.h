@@ -77,13 +77,14 @@ namespace ModExplorerMenu
 
 		struct Config
 		{
-			// Main
 			std::string theme = "Default";
 			int showMenuKey;
 			int showMenuModifier;
 			Language::Locale language = Language::Locale::English;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
-			int uiScale;
+			int uiScale;      // 80, 90, 100, 110, 120
+			int defaultShow;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
+			bool hideHomeMenu;
 		};
 
 		ImGuiStyle test;

@@ -77,8 +77,6 @@ namespace ModExplorerMenu
 	// Draw search bar for filtering items.
 	void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
-		(void)a_style;
-
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::NewLine();
 			ImGui::Indent();
@@ -125,27 +123,52 @@ namespace ModExplorerMenu
 			ImGui::NewLine();
 			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
 			ImGui::NewLine();
-			ImGui::Unindent();
-			bool _change = false;
-			for (auto& item : AddItemWindow::filterMap) {
-				auto first = std::get<0>(item);
-				const auto third = std::get<2>(item);
 
-				ImGui::SameLine();
-				if (ImGui::Checkbox(_T(third), first)) {
-					_change = true;
+			auto column = 0;
+			bool _change = false;
+			auto start_x = ImGui::GetCursorPosX();
+			auto width = ImGui::GetContentRegionAvail().x / 8.0f;
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+			for (auto& filter : filterMap) {
+				auto isEnabled = std::get<0>(filter);
+				const auto name = std::get<2>(filter);
+				column++;
+
+				if (column == 5) {
+					ImGui::SetCursorPosX(start_x + 5.0f);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
+				} else {
+					ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
 				}
+
+				if (column == 1) {
+					ImGui::SetCursorPosX(start_x + 5.0f);
+				}
+
+				if (*isEnabled == true) {
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w));
+				} else {
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w - 0.2f));
+				}
+
+				if (ImGui::Selectable(_T(name), true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
+					_change = true;
+					*isEnabled = !*isEnabled;
+				}
+
+				ImGui::PopStyleColor();
 			}
+			ImGui::PopStyleVar();
 
 			if (_change) {
 				itemFilters.clear();
 
-				for (auto& item : filterMap) {
-					auto first = *std::get<0>(item);
-					const auto second = std::get<1>(item);
+				for (auto& filter : filterMap) {
+					auto isEnabled = *std::get<0>(filter);
+					const auto formType = std::get<1>(filter);
 
-					if (first) {
-						itemFilters.insert(second);
+					if (isEnabled) {
+						itemFilters.insert(formType);
 					}
 				}
 
@@ -153,9 +176,7 @@ namespace ModExplorerMenu
 				dirty = true;
 			}
 
-			ImGui::Indent();
 			ImGui::NewLine();
-
 			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::InputTextWithHint("##AddItemWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
@@ -216,37 +237,37 @@ namespace ModExplorerMenu
 									}
 									break;
 								case RE::FormType::Book:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.book) {
 										found = true;
 									}
 									break;
 								case RE::FormType::Weapon:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.weapon) {
 										found = true;
 									}
 									break;
 								case RE::FormType::Misc:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.misc) {
 										found = true;
 									}
 									break;
 								case RE::FormType::KeyMaster:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.key) {
 										found = true;
 									}
 									break;
 								case RE::FormType::Ammo:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.ammo) {
 										found = true;
 									}
 									break;
 								case RE::FormType::AlchemyItem:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.alchemy) {
 										found = true;
 									}
 									break;
 								case RE::FormType::Ingredient:
-									if (mapped_mod.second.armor) {
+									if (mapped_mod.second.ingredient) {
 										found = true;
 									}
 									break;

@@ -10,7 +10,7 @@
 
 namespace ModExplorerMenu
 {
-	Frame::ActiveWindow Frame::_activeWindow = Frame::ActiveWindow::Home;
+	// Frame::ActiveWindow Frame::_activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
 
 	struct Properties
 	{
@@ -71,9 +71,11 @@ namespace ModExplorerMenu
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-			if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Home;
-				ResetSelectable();
+			if (!config.hideHomeMenu) {
+				if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::Home;
+					ResetSelectable();
+				}
 			}
 
 			if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
@@ -150,6 +152,9 @@ namespace ModExplorerMenu
 
 	void Frame::Install()
 	{
+		Frame::_activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
+		ResetSelectable();
+
 		// Initalize elements
 		GraphicManager::Init();
 		AddItemWindow::Init();

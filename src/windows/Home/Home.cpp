@@ -6,12 +6,12 @@ namespace ModExplorerMenu
 
 	void HomeWindow::Draw()
 	{
-		if (ImGui::Button("Test")) {
-			Translate::GetSingleton()->LoadLanguage("English");
-		}
+		ImGui::Text("I had planned on utilizing this page, but for time sake, I'm going to leave it blank for now.");
+		ImGui::NewLine();
+		ImGui::Text("Check back on future updates!");
 	}
 	void HomeWindow::Init()
 	{
-		// Open = true;
+		// Nothing for now.
 	}
 }

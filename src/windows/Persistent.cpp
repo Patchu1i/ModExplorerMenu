@@ -22,7 +22,6 @@ namespace ModExplorerMenu
 
 		for (auto& [filename, list] : json["Favorite"].items()) {
 			for (auto& [editorid, favorite] : list.items()) {
-				logger::info("Editor ID: {}", editorid);
 				m_favorites[editorid] = favorite;
 			}
 		}

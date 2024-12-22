@@ -36,7 +36,7 @@ namespace ModExplorerMenu
 		static inline bool b_Settings = false;
 		static inline bool b_Teleport = false;
 
-		static ActiveWindow _activeWindow;
+		static inline ActiveWindow _activeWindow = ActiveWindow::Home;
 		static void ResetSelectable()
 		{
 			b_Home = (_activeWindow == Home);

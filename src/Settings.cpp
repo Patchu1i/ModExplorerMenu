@@ -102,6 +102,8 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Language", "English");
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
 			a_ini.SetValue(rSections[Main], "UI Scale", "100");
+			a_ini.SetValue(rSections[Main], "DefaultShow", "0");
+			a_ini.SetValue(rSections[Main], "HideHomeMenu", "false");
 		});
 	}
 
@@ -142,6 +144,8 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language, false).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
+			a_ini.SetValue(rSections[Main], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
+			a_ini.SetValue(rSections[Main], "HideHomeMenu", ToString(Settings::GetSingleton()->user.config.hideHomeMenu, false).c_str());
 		});
 	}
 
@@ -156,6 +160,8 @@ namespace ModExplorerMenu
 		user.config.language = GET_VALUE<Language::Locale>(rSections[Main], "Language", Language::Locale::English, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
+		user.config.defaultShow = GET_VALUE<int>(rSections[Main], "DefaultShow", 0, a_ini);
+		user.config.hideHomeMenu = GET_VALUE<bool>(rSections[Main], "HideHomeMenu", false, a_ini);
 	}
 
 	void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
