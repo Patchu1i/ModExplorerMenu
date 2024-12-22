@@ -40,6 +40,12 @@ namespace ModExplorerMenu
 		}
 
 		Properties window;
+
+		window.panel_w = window.panel_w * (config.uiScale / 100.0f);
+		window.panel_h = window.panel_h * (config.uiScale / 100.0f);
+		window.sidebar_w = window.sidebar_w * (config.uiScale / 100.0f);
+		window.sidebar_h = window.sidebar_h * (config.uiScale / 100.0f);
+
 		const float center_x = window.screenSize.x * 0.5f;
 		const float center_y = (window.screenSize.y * 0.5f) - (window.panel_h * 0.5f);
 		const float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f);

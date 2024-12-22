@@ -83,6 +83,7 @@ namespace ModExplorerMenu
 			int showMenuModifier;
 			Language::Locale language = Language::Locale::English;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
+			int uiScale;
 		};
 
 		ImGuiStyle test;

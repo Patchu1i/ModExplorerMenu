@@ -101,6 +101,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", "0");
 			a_ini.SetValue(rSections[Main], "Language", "English");
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
+			a_ini.SetValue(rSections[Main], "UI Scale", "100");
 		});
 	}
 
@@ -140,6 +141,7 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language, false).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
+			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
 		});
 	}
 
@@ -153,6 +155,7 @@ namespace ModExplorerMenu
 		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", 0, a_ini);
 		user.config.language = GET_VALUE<Language::Locale>(rSections[Main], "Language", Language::Locale::English, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
+		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
 	}
 
 	void Settings::InstantiateDefaultTheme(Settings::Style& a_out)

@@ -343,7 +343,7 @@ namespace ModExplorerMenu
 
 		auto width = 200.0f;
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		ImGui::Text(_TFM("Language", ":"));
+		ImGui::Text(_T("Language"));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 
@@ -363,6 +363,24 @@ namespace ModExplorerMenu
 
 		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_RECENT" };
 		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::Text(_T("SETTING_UI_SCALE"));
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::PushItemWidth(width);
+
+		std::vector<std::string> scales = { "50", "75", "100", "125", "150" };
+		if (ImGui::BeginCombo("##UIScaleSelection", (std::to_string(config.uiScale) + "%").c_str())) {
+			for (int i = 0; i < scales.size(); ++i) {
+				if (ImGui::Selectable((std::string(scales[i] + "%").c_str()))) {
+					config.uiScale = std::stoi(scales[i]);
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
 	}
 
 	void SettingsWindow::DrawThemeSelector()
