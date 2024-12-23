@@ -331,6 +331,7 @@ namespace ModExplorerMenu
 		CacheItems<RE::AlchemyItem>(dataHandler);
 		CacheItems<RE::IngredientItem>(dataHandler);
 		CacheItems<RE::TESKey>(dataHandler);
+		CacheItems<RE::ScrollItem>(dataHandler);
 
 		CacheNPCs<RE::TESNPC>(dataHandler);
 		CacheNPCRefIds();
