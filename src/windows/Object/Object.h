@@ -36,13 +36,14 @@ namespace ModExplorerMenu
 		static inline bool b_Activator = true;
 		static inline bool b_Light = true;
 		static inline bool b_Door = true;
+		static inline bool b_Furniture = true;
 
 		// Filtering State Variables.
 		static inline std::unordered_set<RE::FormType> objectFilters;
 		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
 			{ &b_Tree, RE::FormType::Tree, "Tree" }, { &b_Static, RE::FormType::Static, "Static" },
 			{ &b_Container, RE::FormType::Container, "Container" }, { &b_Activator, RE::FormType::Activator, "Activator" },
-			{ &b_Light, RE::FormType::Light, "Light" }, { &b_Door, RE::FormType::Door, "Door" }
+			{ &b_Light, RE::FormType::Light, "Light" }, { &b_Door, RE::FormType::Door, "Door" }, { &b_Furniture, RE::FormType::Furniture, "Furniture" }
 		};
 
 	public:

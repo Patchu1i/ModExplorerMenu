@@ -151,6 +151,7 @@ namespace ModExplorerMenu
 			bool armor = false;
 			bool book = false;
 			bool weapon = false;
+			bool scroll = false;
 			bool npc = false;
 			bool staticObject = false;
 			bool tree = false;
@@ -158,6 +159,7 @@ namespace ModExplorerMenu
 			bool container = false;
 			bool door = false;
 			bool light = false;
+			bool furniture = false;
 		};
 
 		static inline std::unordered_map<RE::TESFile*, ModFileItemFlags> _itemListModFormTypeMap;

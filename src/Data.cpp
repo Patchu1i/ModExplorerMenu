@@ -193,6 +193,9 @@ namespace ModExplorerMenu
 				if (_itemListModFormTypeMap[mod].misc == false)
 					_itemListModFormTypeMap[mod].misc = form->GetFormType() == RE::FormType::Misc;
 
+				if (_itemListModFormTypeMap[mod].misc == false)
+					_itemListModFormTypeMap[mod].misc = form->GetFormType() == RE::FormType::SoulGem;
+
 				if (_itemListModFormTypeMap[mod].key == false)
 					_itemListModFormTypeMap[mod].key = form->GetFormType() == RE::FormType::KeyMaster;
 
@@ -204,6 +207,9 @@ namespace ModExplorerMenu
 
 				if (_itemListModFormTypeMap[mod].ingredient == false)
 					_itemListModFormTypeMap[mod].ingredient = form->GetFormType() == RE::FormType::Ingredient;
+
+				if (_itemListModFormTypeMap[mod].scroll == false)
+					_itemListModFormTypeMap[mod].scroll = form->GetFormType() == RE::FormType::Scroll;
 			}
 		}
 	}
@@ -245,6 +251,9 @@ namespace ModExplorerMenu
 
 				if (_itemListModFormTypeMap[mod].staticObject == false)
 					_itemListModFormTypeMap[mod].staticObject = form->GetFormType() == RE::FormType::Static;
+
+				if (_itemListModFormTypeMap[mod].furniture == false)
+					_itemListModFormTypeMap[mod].furniture = form->GetFormType() == RE::FormType::Furniture;
 			}
 		}
 	}
@@ -332,6 +341,7 @@ namespace ModExplorerMenu
 		CacheItems<RE::IngredientItem>(dataHandler);
 		CacheItems<RE::TESKey>(dataHandler);
 		CacheItems<RE::ScrollItem>(dataHandler);
+		CacheItems<RE::TESSoulGem>(dataHandler);
 
 		CacheNPCs<RE::TESNPC>(dataHandler);
 		CacheNPCRefIds();
@@ -343,6 +353,7 @@ namespace ModExplorerMenu
 		CacheStaticObjects<RE::TESObjectSTAT>(dataHandler);
 		CacheStaticObjects<RE::TESObjectCONT>(dataHandler);
 		CacheStaticObjects<RE::TESObjectLIGH>(dataHandler);
+		CacheStaticObjects<RE::TESFurniture>(dataHandler);
 
 		WorldspaceCells cells;
 		for (const auto& cell : cells.table) {

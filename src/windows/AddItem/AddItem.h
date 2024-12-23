@@ -58,6 +58,7 @@ namespace ModExplorerMenu
 		static inline bool b_Armor = true;
 		static inline bool b_Book = true;
 		static inline bool b_Weapon = true;
+		static inline bool b_Scroll = true;
 
 		// Filtering State Variables.
 		static inline std::unordered_set<RE::FormType> itemFilters;
@@ -66,7 +67,8 @@ namespace ModExplorerMenu
 			{ &b_Alchemy, RE::FormType::AlchemyItem, "Alchemy" }, { &b_Ingredient, RE::FormType::Ingredient, "Ingredient" },
 			{ &b_Ammo, RE::FormType::Ammo, "Ammunition" }, { &b_Key, RE::FormType::KeyMaster, "Keys" },
 			{ &b_Misc, RE::FormType::Misc, "Misc" }, { &b_Armor, RE::FormType::Armor, "Armor" },
-			{ &b_Book, RE::FormType::Book, "Book" }, { &b_Weapon, RE::FormType::Weapon, "Weapon" }
+			{ &b_Book, RE::FormType::Book, "Book" }, { &b_Weapon, RE::FormType::Weapon, "Weapon" },
+			{ &b_Scroll, RE::FormType::Scroll, "Scroll" }
 		};
 
 		// Description Framework API.

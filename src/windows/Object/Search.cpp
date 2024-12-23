@@ -264,6 +264,10 @@ namespace ModExplorerMenu
 										match = true;
 									}
 									break;
+								case RE::FormType::Furniture:
+									if (modMap.second.furniture) {
+										match = true;
+									}
 								default:
 									break;
 								}

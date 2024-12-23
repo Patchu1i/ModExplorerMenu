@@ -31,12 +31,22 @@ namespace ModExplorerMenu
 
 		RE::FormID refID = 0;
 
+		// Correct exceptions for items that fall outside traditional categories.
+		// This function acts as an accessor to route the correct form type.
+		[[nodiscard]] inline RE::FormType GetFormType() const
+		{
+			if (TESForm->GetFormType() == RE::FormType::SoulGem) {
+				return RE::FormType::Misc;
+			} else {
+				return TESForm->GetFormType();
+			}
+		}
+
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
 		[[nodiscard]] inline std::string_view GetName() const { return name; }
 		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
 		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
 		[[nodiscard]] inline RE::FormID GetBaseForm() const { return FormID; }
-		[[nodiscard]] inline RE::FormType GetFormType() const { return TESForm->GetFormType(); }
 		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
 		[[nodiscard]] inline bool IsSelected() const { return selected; }
 

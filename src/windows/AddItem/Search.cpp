@@ -135,7 +135,7 @@ namespace ModExplorerMenu
 				const auto name = std::get<2>(filter);
 				numOfFilter++;
 
-				if (numOfFilter == 5) {
+				if (numOfFilter % 5 == 0) {
 					ImGui::SetCursorPosX(sx + 5.0f);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
 				} else {
@@ -269,6 +269,11 @@ namespace ModExplorerMenu
 									break;
 								case RE::FormType::Ingredient:
 									if (modMap.second.ingredient) {
+										match = true;
+									}
+									break;
+								case RE::FormType::Scroll:
+									if (modMap.second.scroll) {
 										match = true;
 									}
 									break;
