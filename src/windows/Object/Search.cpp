@@ -11,62 +11,62 @@ namespace ModExplorerMenu
 		objectList.clear();
 		selectedObject = nullptr;
 
-		auto& cached_item_list = Data::GetObjectList();
+		auto& cachedObjectList = Data::GetObjectList();
 
-		std::string compare;
-		std::string input = inputBuffer;
-		std::transform(input.begin(), input.end(), input.begin(),
+		std::string compareString;
+		std::string inputString = inputBuffer;
+		std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 		// TODO: Implement additional columns
-		for (auto& item : cached_item_list) {
+		for (auto& obj : cachedObjectList) {
 			switch (searchKey) {
 			case BaseColumn::ID::Plugin:
-				compare = item.GetPluginName();
+				compareString = obj.GetPluginName();
 				break;
 			case BaseColumn::ID::Type:
-				compare = item.GetTypeName();
+				compareString = obj.GetTypeName();
 				break;
 			case BaseColumn::ID::FormID:
-				compare = item.GetFormID();
+				compareString = obj.GetFormID();
 				break;
 			case BaseColumn::ID::EditorID:
-				compare = item.GetEditorID();
+				compareString = obj.GetEditorID();
 				break;
 			default:
-				compare = item.GetEditorID();
+				compareString = obj.GetEditorID();
 				break;
 			}
 
-			std::transform(compare.begin(), compare.end(), compare.begin(),
+			std::transform(compareString.begin(), compareString.end(), compareString.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 			// If the input is wrapped in quotes, we do an exact match across all parameters.
-			if (!input.empty() && input.front() == '"' && input.back() == '"') {
-				std::string match = input.substr(1, input.size() - 2);
+			if (!inputString.empty() && inputString.front() == '"' && inputString.back() == '"') {
+				std::string match = inputString.substr(1, inputString.size() - 2);
 
-				if (compare == match) {
-					objectList.push_back(&item);
+				if (compareString == match) {
+					objectList.push_back(&obj);
 				}
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+			if (selectedMod == "Favorite" && !obj.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && obj.GetPluginName() != selectedMod) {
 				continue;
 			}
 
 			if (objectFilters.size() > 0) {
-				if (objectFilters.find(item.GetFormType()) == objectFilters.end()) {
+				if (objectFilters.find(obj.GetFormType()) == objectFilters.end()) {
 					continue;
 				}
 			}
 
-			if (compare.find(input) != std::string::npos) {
-				objectList.push_back(&item);
+			if (compareString.find(inputString) != std::string::npos) {
+				objectList.push_back(&obj);
 				continue;
 			}
 		}
@@ -98,18 +98,19 @@ namespace ModExplorerMenu
 
 			ImGui::SameLine();
 
-			auto searchByValue = InputSearchMap.at(searchKey);
+			// TODO: Candidate for template function.
+			auto currentFilter = InputSearchMap.at(searchKey);
 			auto combo_flags = ImGuiComboFlags_None;
 			ImGui::SetNextItemWidth(filterWidth);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##ObjectWindow::InputFilter", _T(searchByValue), combo_flags)) {
-				for (auto& item : InputSearchMap) {
-					auto searchBy = item.first;
-					auto _searchByValue = item.second;
-					bool is_selected = (searchKey == searchBy);
+			if (ImGui::BeginCombo("##AddItemWindow::InputFilter", _T(currentFilter), combo_flags)) {
+				for (auto& compare : InputSearchMap) {
+					BaseColumn::ID searchID = compare.first;
+					const char* searchValue = compare.second;
+					bool is_selected = (searchKey == searchID);
 
-					if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
-						searchKey = searchBy;
+					if (ImGui::Selectable(_T(searchValue), is_selected)) {
+						searchKey = searchID;
 						ApplyFilters();
 					}
 
@@ -126,25 +127,25 @@ namespace ModExplorerMenu
 			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
 			ImGui::NewLine();
 
-			auto column = 0;
-			bool _change = false;
-			auto start_x = ImGui::GetCursorPosX();
+			auto numOfFilter = 0;
+			bool isDirty = false;
+			auto sx = ImGui::GetCursorPosX();
 			auto width = ImGui::GetContentRegionAvail().x / 8.0f;
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			for (auto& filter : filterMap) {
 				auto isEnabled = std::get<0>(filter);
 				const auto name = std::get<2>(filter);
-				column++;
+				numOfFilter++;
 
-				if (column == 5) {
-					ImGui::SetCursorPosX(start_x + 5.0f);
+				if (numOfFilter == 5) {
+					ImGui::SetCursorPosX(sx + 5.0f);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
 				} else {
 					ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
 				}
 
-				if (column == 1) {
-					ImGui::SetCursorPosX(start_x + 5.0f);
+				if (numOfFilter == 1) {
+					ImGui::SetCursorPosX(sx + 5.0f);
 				}
 
 				if (*isEnabled == true) {
@@ -154,7 +155,7 @@ namespace ModExplorerMenu
 				}
 
 				if (ImGui::Selectable(_T(name), true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
-					_change = true;
+					isDirty = true;
 					*isEnabled = !*isEnabled;
 				}
 
@@ -162,7 +163,7 @@ namespace ModExplorerMenu
 			}
 			ImGui::PopStyleVar();
 
-			if (_change) {
+			if (isDirty) {
 				objectFilters.clear();
 
 				for (auto& item : filterMap) {
@@ -209,15 +210,15 @@ namespace ModExplorerMenu
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				auto mapped_mods = Data::GetModFormTypeMap();
+				auto modFormTypeMap = Data::GetModFormTypeMap();
 				for (auto& mod : Data::GetModList(Data::STATIC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
-					bool is_selected = false;
+					bool bSelected = false;
 
-					auto found = false;
-					for (auto& mapped_mod : mapped_mods) {
-						if (mod == mapped_mod.first) {
-							auto count = 0;
+					auto match = false;
+					for (auto& modMap : modFormTypeMap) {
+						if (mod == modMap.first) {
+							numOfFilter = 0;
 							for (auto& filter : filterMap) {
 								auto isEnabled = *std::get<0>(filter);
 								auto formType = std::get<1>(filter);
@@ -226,41 +227,41 @@ namespace ModExplorerMenu
 									continue;
 								}
 
-								count++;
+								numOfFilter++;
 
-								if (found) {
+								if (match) {
 									continue;
 								}
 
 								switch (formType) {
 								case RE::FormType::Tree:
-									if (mapped_mod.second.tree) {
-										found = true;
+									if (modMap.second.tree) {
+										match = true;
 									}
 									break;
 								case RE::FormType::Static:
-									if (mapped_mod.second.staticObject) {
-										found = true;
+									if (modMap.second.staticObject) {
+										match = true;
 									}
 									break;
 								case RE::FormType::Container:
-									if (mapped_mod.second.container) {
-										found = true;
+									if (modMap.second.container) {
+										match = true;
 									}
 									break;
 								case RE::FormType::Light:
-									if (mapped_mod.second.light) {
-										found = true;
+									if (modMap.second.light) {
+										match = true;
 									}
 									break;
 								case RE::FormType::Door:
-									if (mapped_mod.second.door) {
-										found = true;
+									if (modMap.second.door) {
+										match = true;
 									}
 									break;
 								case RE::FormType::Activator:
-									if (mapped_mod.second.activator) {
-										found = true;
+									if (modMap.second.activator) {
+										match = true;
 									}
 									break;
 								default:
@@ -268,27 +269,27 @@ namespace ModExplorerMenu
 								}
 							}
 
-							if (count == 0) {
-								found = true;
+							if (numOfFilter == 0) {
+								match = true;
 							}
 						}
 					}
 
-					if (!found) {
+					if (!match) {
 						continue;
 					}
 
 					if (std::strlen(modListBuffer) > 0) {
-						std::string compare = modName;
-						std::string input = modListBuffer;
+						std::string compareString = modName;
+						std::string inputString = modListBuffer;
 
-						std::transform(input.begin(), input.end(), input.begin(),
+						std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-						std::transform(compare.begin(), compare.end(), compare.begin(),
+						std::transform(compareString.begin(), compareString.end(), compareString.begin(),
 							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-						if (compare.find(input) != std::string::npos) {
+						if (compareString.find(inputString) != std::string::npos) {
 							// Do nothing?
 						} else {
 							continue;
@@ -300,7 +301,7 @@ namespace ModExplorerMenu
 						ApplyFilters();
 					}
 
-					if (is_selected)
+					if (bSelected)
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();

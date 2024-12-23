@@ -14,6 +14,7 @@ namespace ModExplorerMenu
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowNPCListContextMenu(NPC& a_npc);
 		static void ApplyFilters();
 
 		static inline std::vector<NPC*> npcList;
@@ -35,9 +36,6 @@ namespace ModExplorerMenu
 		static void Init();
 
 	private:
-		// NPC Spawning & Actions
-		// static inline std::shared_ptr<std::vector<RE::FormID>> localRefIDs = nullptr;
-
 		// Search Input Field.
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";

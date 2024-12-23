@@ -61,7 +61,6 @@ namespace ModExplorerMenu
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
 			}
 
-			ImGui::PushFont(a_style.font.medium);
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 			int column_n = 0;
 			for (auto& column : columnList.columns) {
@@ -74,7 +73,6 @@ namespace ModExplorerMenu
 				// ImGui::TableSetColumnEnabled(column_n, *column.enabled);
 				column_n++;
 			}
-			ImGui::PopFont();
 
 			if (dirty) {
 				ImGui::TableGetSortSpecs()->SpecsDirty = true;
@@ -156,9 +154,7 @@ namespace ModExplorerMenu
 					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						ImGui::PushFont(a_style.font.tiny);
 						// ShowItemCard<Cell>(cell); // Item cards for Cells?
-						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {
 							_itemSelected = true;

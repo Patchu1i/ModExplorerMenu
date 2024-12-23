@@ -59,7 +59,6 @@ namespace ModExplorerMenu
 
 		// ImGui::GetFontSize() * 1.5f
 
-		ImGui::PushFont(style.font.large);
 		ImGui::PushStyleColor(ImGuiCol_Header, style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.buttonHovered);
@@ -111,7 +110,6 @@ namespace ModExplorerMenu
 
 			ImGui::End();
 		}
-		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(1);
 
@@ -120,7 +118,6 @@ namespace ModExplorerMenu
 		ImGui::SetNextWindowSize(ImVec2(window.panel_w, window.panel_h));
 		ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
-		ImGui::PushFont(style.font.nano);
 		if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus + ImGuiWindowFlags_NoScrollbar + ImGuiWindowFlags_NoScrollWithMouse)) {
 			switch (_activeWindow) {
 			case ActiveWindow::Home:
@@ -145,7 +142,6 @@ namespace ModExplorerMenu
 
 			ImGui::End();
 		}
-		ImGui::PopFont();
 
 		GraphicManager::DrawImage(style.splashImage, ImVec2(window.screenSize.x * 0.5f, window.screenSize.y * 0.5f));
 	}

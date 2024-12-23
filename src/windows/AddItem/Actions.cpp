@@ -17,10 +17,8 @@ namespace ModExplorerMenu
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		// ImGui::SeparatorText((std::string(_T("Behavior")) + ":").c_str());
 		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
-		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
@@ -74,7 +72,7 @@ namespace ModExplorerMenu
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_PLACE_ALL_HELP"));
 
-		ImGui::PopStyleColor(1);
+		ImGui::PopStyleColor(1);  // End of Green Buttons
 
 		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
 			for (auto& item : itemList) {
@@ -88,8 +86,7 @@ namespace ModExplorerMenu
 			ApplyFilters();
 		}
 
-		ImGui::PopFont();
-		ImGui::PopStyleVar(2);
+		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
 		ImGui::SeparatorText(_TFM("Preview", ":"));
 		ShowItemPreview<Item>(itemPreview);

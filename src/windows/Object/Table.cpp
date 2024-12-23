@@ -5,45 +5,38 @@
 #include "Windows/Persistent.h"
 // #include "Windows/ItemCards.h"
 
-// Draws a Copy to Clipboard button on Context popup.
-// void NPCWindow::ShowItemListContextMenu(Data::CachedItem& a_item)
-// {
-// 	constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
-// 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-
-// 	if (ImGui::Selectable("Copy Form ID", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.formid.c_str());
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (ImGui::Selectable("Copy Name", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.name);
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (ImGui::Selectable("Copy Editor ID", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.editorid.c_str());
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (a_item.formType == RE::FormType::Book) {
-// 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-// 		if (ImGui::Selectable("Read Me!")) {
-// 			openBook = &a_item;
-// 		}
-// 	}
-
-// 	ImGui::PopStyleVar(1);
-// }
-
 namespace ModExplorerMenu
 {
+	// Draws a Copy to Clipboard button on Context popup.
+	void ObjectWindow::ShowObjectListContextMenu(StaticObject& a_object)
+	{
+		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::Selectable("Copy Form ID", false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_object.GetFormID().c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable("Copy Name", false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_object.name.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable("Copy Editor ID", false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_object.editorid.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::PopStyleVar(1);
+	}
+
 	// Draw the table of items
 	void ObjectWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{
@@ -54,27 +47,26 @@ namespace ModExplorerMenu
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
-		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, table_size)) {
+		ImVec2 tableSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+		if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, tableSize)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
+
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
 			}
 
-			ImGui::PushFont(a_style.font.medium);
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-			int column_n = 0;
+
+			int numOfColumn = 0;
 			for (auto& column : columnList.columns) {
-				ImGui::TableSetColumnIndex(column_n);
+				ImGui::TableSetColumnIndex(numOfColumn);
 				ImGui::PushID(column.key + 10);
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
 				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
 
-				// ImGui::TableSetColumnEnabled(column_n, *column.enabled);
-				column_n++;
+				numOfColumn++;
 			}
-			ImGui::PopFont();
 
 			if (dirty) {
 				ImGui::TableGetSortSpecs()->SpecsDirty = true;
@@ -93,14 +85,14 @@ namespace ModExplorerMenu
 			ImGuiContext& g = *ImGui::GetCurrentContext();
 			ImGuiTable* table = g.CurrentTable;
 
-			int count = 0;
+			int numOfRow = 0;
 			clipper.Begin(static_cast<int>(objectList.size()), ImGui::GetTextLineHeightWithSpacing());
 			while (clipper.Step()) {
 				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-					auto& object = objectList[row];
+					auto& obj = objectList[row];
 
-					count++;
-					auto table_id = std::string("##ObjectWindow::TableIndex-") + std::to_string(count);
+					numOfRow++;
+					auto table_id = std::string("##ObjectWindow::TableIndex-") + std::to_string(numOfRow);
 					ImGui::PushID(table_id.c_str());
 
 					ImGui::TableNextRow();
@@ -113,19 +105,19 @@ namespace ModExplorerMenu
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					ImTextureID favorite_state = object->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
-					float col = object->favorite ? 1.0f : 0.5f;
+					ImTextureID favoriteTexture = obj->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
+					float col = obj->favorite ? 1.0f : 0.5f;
 
-					if (favorite_state != nullptr) {
+					if (favoriteTexture != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##ObjectWindow::FavoriteButton", b_ClickToFavorite, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+						if (ImGui::DisabledImageButton("##ObjectWindow::FavoriteButton", b_ClickToFavorite, favoriteTexture, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 							if (!b_ClickToFavorite) {
-								object->favorite = !object->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(object);
+								obj->favorite = !obj->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);
 							}
 						}
 					} else {
-						ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, object->favorite);
+						ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, obj->favorite);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -133,34 +125,43 @@ namespace ModExplorerMenu
 
 					//	Plugin
 					ImGui::TableNextColumn();
-					ImGui::Text(object->GetPluginName().data());
+					ImGui::Text(obj->GetPluginName().data());
 
 					// Type
 					ImGui::TableNextColumn();
-					ImGui::Text(object->GetTypeName().data());
+					ImGui::Text(obj->GetTypeName().data());
 
 					// FormID
 					ImGui::TableNextColumn();
-					ImGui::Text(object->GetFormID().data());
+					ImGui::Text(obj->GetFormID().data());
 
 					// EditorID
 					ImGui::TableNextColumn();
-					ImGui::Text(object->GetEditorID().data());
+					ImGui::Text(obj->GetEditorID().data());
 
 					// Input Handlers
 					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						hoveredObject = object;
+						hoveredObject = obj;
 
 						if (ImGui::IsMouseClicked(0)) {
 							if (b_ClickToSelect) {
-								selectedObject = object;
+								selectedObject = obj;
 							} else if (b_ClickToFavorite) {
-								object->favorite = !object->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(object);
+								obj->favorite = !obj->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);
 							}
 						}
+
+						if (ImGui::IsMouseClicked(1, true)) {
+							ImGui::OpenPopup("ShowObjectContextMenu");
+						}
+					}
+
+					if (ImGui::BeginPopup("ShowObjectContextMenu")) {
+						ShowObjectListContextMenu(*obj);
+						ImGui::EndPopup();
 					}
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
@@ -177,7 +178,7 @@ namespace ModExplorerMenu
 						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
 						!ImGui::IsAnyItemHovered();  // optional
 
-					if (bHover || selectedObject == object) {
+					if (bHover || selectedObject == obj) {
 						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 					}
 

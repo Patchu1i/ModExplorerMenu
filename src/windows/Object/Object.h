@@ -14,19 +14,22 @@ namespace ModExplorerMenu
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowObjectListContextMenu(StaticObject& a_object);
 
 		static inline std::vector<StaticObject*> objectList;
 		static inline ObjectColumns columnList;
 
-		// Actions
+		// Actions / Behavior
 		static inline bool b_ClickToSelect = true;
 		static inline bool b_ClickToFavorite = false;
 
+		// Local State Variables.
 		static inline bool _itemHovered = false;
 		static inline bool _itemSelected = false;
 		static inline StaticObject* hoveredObject = nullptr;
 		static inline StaticObject* selectedObject = nullptr;
 
+		// Filter Buttons.
 		static inline bool b_Tree = true;
 		static inline bool b_Static = true;
 		static inline bool b_Container = true;
@@ -34,6 +37,7 @@ namespace ModExplorerMenu
 		static inline bool b_Light = true;
 		static inline bool b_Door = true;
 
+		// Filtering State Variables.
 		static inline std::unordered_set<RE::FormType> objectFilters;
 		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
 			{ &b_Tree, RE::FormType::Tree, "Tree" }, { &b_Static, RE::FormType::Static, "Static" },
@@ -52,8 +56,6 @@ namespace ModExplorerMenu
 		static inline char modListBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
-
-		// Sorting & Filtering
 		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Plugin, "Plugin" },
 			{ BaseColumn::ID::Type, "Type" },

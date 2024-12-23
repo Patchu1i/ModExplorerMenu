@@ -15,7 +15,6 @@ namespace ModExplorerMenu
 
 		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
-		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
@@ -29,7 +28,6 @@ namespace ModExplorerMenu
 		}
 
 		ImGui::PopStyleColor(3);
-		ImGui::PopFont();
 		ImGui::PopStyleVar(2);
 
 		ImGui::SeparatorText(_TFM("Favorite", ":"));

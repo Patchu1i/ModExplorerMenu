@@ -12,56 +12,56 @@ namespace ModExplorerMenu
 		npcList.clear();
 		selectedNPC = nullptr;
 
-		auto& cached_item_list = Data::GetNPCList();
+		auto& cachedNPCList = Data::GetNPCList();
 
-		std::string compare;
-		std::string input = inputBuffer;
-		std::transform(input.begin(), input.end(), input.begin(),
+		std::string compareString;
+		std::string inputString = inputBuffer;
+		std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 		// TODO: Implement additional columns
-		for (auto& item : cached_item_list) {
+		for (auto& npc : cachedNPCList) {
 			switch (searchKey) {
 			case BaseColumn::ID::Name:
-				compare = item.GetName();
+				compareString = npc.GetName();
 				break;
 			case BaseColumn::ID::FormID:
-				compare = item.GetFormID();
+				compareString = npc.GetFormID();
 				break;
 			case BaseColumn::ID::EditorID:
-				compare = item.GetEditorID();
+				compareString = npc.GetEditorID();
 				break;
 			default:
-				compare = item.GetName();
+				compareString = npc.GetName();
 				break;
 			}
 
-			std::transform(compare.begin(), compare.end(), compare.begin(),
+			std::transform(compareString.begin(), compareString.end(), compareString.begin(),
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 			// If the input is wrapped in quotes, we do an exact match across all parameters.
-			if (!input.empty() && input.front() == '"' && input.back() == '"') {
-				std::string match = input.substr(1, input.size() - 2);
+			if (!inputString.empty() && inputString.front() == '"' && inputString.back() == '"') {
+				std::string match = inputString.substr(1, inputString.size() - 2);
 
-				if (compare == match) {
-					npcList.push_back(&item);
+				if (compareString == match) {
+					npcList.push_back(&npc);
 				}
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+			if (selectedMod == "Favorite" && !npc.IsFavorite()) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != "All Mods" && selectedMod != "Favorite" && npc.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (item.GetName() == "")
+			if (npc.GetName() == "")
 				continue;
 
-			if (compare.find(input) != std::string::npos) {
-				npcList.push_back(&item);
+			if (compareString.find(inputString) != std::string::npos) {
+				npcList.push_back(&npc);
 				continue;
 			}
 		}
@@ -93,18 +93,19 @@ namespace ModExplorerMenu
 
 			ImGui::SameLine();
 
-			auto searchByValue = InputSearchMap.at(searchKey);
+			// TODO: Candidate for template function.
+			auto currentFilter = InputSearchMap.at(searchKey);
 			auto combo_flags = ImGuiComboFlags_None;
 			ImGui::SetNextItemWidth(filterWidth);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##NPCWindow::InputFilter", _T(searchByValue), combo_flags)) {
-				for (auto& item : InputSearchMap) {
-					auto searchBy = item.first;
-					auto _searchByValue = item.second;
-					bool is_selected = (searchKey == searchBy);
+			if (ImGui::BeginCombo("##NPCWindow::InputFilter", _T(currentFilter), combo_flags)) {
+				for (auto& compare : InputSearchMap) {
+					BaseColumn::ID searchID = compare.first;
+					const char* searchValue = compare.second;
+					bool is_selected = (searchKey == searchID);
 
-					if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
-						searchKey = searchBy;
+					if (ImGui::Selectable(_T(searchValue), is_selected)) {
+						searchKey = searchID;
 						ApplyFilters();
 					}
 
@@ -148,33 +149,33 @@ namespace ModExplorerMenu
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				auto mapped_mods = Data::GetModFormTypeMap();
+				auto modFormTypeMap = Data::GetModFormTypeMap();
 				for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
 					const char* modName = mod->GetFilename().data();
-					bool is_selected = false;
+					bool bSelected = false;
 
-					auto found = false;
-					for (auto& mapped_mod : mapped_mods) {
-						if (mod == mapped_mod.first && mapped_mod.second.npc) {
-							found = true;
+					auto match = false;
+					for (auto& modMap : modFormTypeMap) {
+						if (mod == modMap.first && modMap.second.npc) {
+							match = true;
 						}
 					}
 
-					if (!found) {
+					if (!match) {
 						continue;
 					}
 
 					if (std::strlen(modListBuffer) > 0) {
-						std::string compare = modName;
-						std::string input = modListBuffer;
+						std::string compareString = modName;
+						std::string inputString = modListBuffer;
 
-						std::transform(input.begin(), input.end(), input.begin(),
+						std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-						std::transform(compare.begin(), compare.end(), compare.begin(),
+						std::transform(compareString.begin(), compareString.end(), compareString.begin(),
 							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-						if (compare.find(input) != std::string::npos) {
+						if (compareString.find(inputString) != std::string::npos) {
 							// Do nothing?
 						} else {
 							continue;
@@ -185,7 +186,7 @@ namespace ModExplorerMenu
 						selectedMod = modName;
 						ApplyFilters();
 					}
-					if (is_selected)
+					if (bSelected)
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();

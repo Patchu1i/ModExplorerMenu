@@ -51,18 +51,18 @@ namespace ModExplorerMenu
 		ImGui::SeparatorText(results.c_str());
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
-		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, table_size, table_size.x)) {
+		ImVec2 tableSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+		if (ImGui::BeginTable("##AddItemWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, tableSize, tableSize.x)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
+
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
 			}
 
-			ImGui::PushFont(a_style.font.medium);
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-			int column_n = 0;
+			int numOfColumn = 0;
 			for (auto& column : columnList.columns) {
-				ImGui::TableSetColumnIndex(column_n);
+				ImGui::TableSetColumnIndex(numOfColumn);
 				ImGui::PushID(column.key);
 				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);  // (?)
 
@@ -73,18 +73,8 @@ namespace ModExplorerMenu
 				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
 
-				column_n++;
-
-				// Saving for later if I need to refer to column state.
-				// if (ImGui::TableGetColumnFlags(column_n) & ImGuiTableColumnFlags_IsEnabled) {
-				// 	logger::info("Column {} is enabled", column.name);
-				// }
-
-				// This works, but disables context functionality. Would have to create
-				// explicit header buttons to enable/disable columns.
-				//ImGui::TableSetColumnEnabled(column_n, *column.enabled);
+				numOfColumn++;
 			}
-			ImGui::PopFont();
 
 			if (dirty) {
 				ImGui::TableGetSortSpecs()->SpecsDirty = true;
@@ -103,15 +93,15 @@ namespace ModExplorerMenu
 			ImGuiContext& g = *ImGui::GetCurrentContext();
 			ImGuiTable* table = g.CurrentTable;
 
-			int count = 0;
+			int numOfRow = 0;
 			clipper.Begin(static_cast<int>(itemList.size()), ImGui::GetTextLineHeightWithSpacing());
 			while (clipper.Step()) {
 				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
 					auto& item = itemList[row];
 
-					count++;
-					auto table_id = std::string("##AddItemMenu::TableIndex-") + std::to_string(count);
-					ImGui::PushID(table_id.c_str());
+					numOfRow++;
+					auto tableID = std::string("##AddItemMenu::TableIndex-") + std::to_string(numOfRow);
+					ImGui::PushID(tableID.c_str());
 
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
@@ -123,12 +113,12 @@ namespace ModExplorerMenu
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					ImTextureID favorite_state = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
+					ImTextureID favoriteTexture = item->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
 					float col = item->favorite ? 1.0f : 0.5f;
 
-					if (favorite_state != nullptr) {
+					if (favoriteTexture != nullptr) {
 						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##AddItemWindow::FavoriteButton", b_AddToFavorites, favorite_state, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
+						if (ImGui::DisabledImageButton("##AddItemWindow::FavoriteButton", b_AddToFavorites, favoriteTexture, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
 							if (!b_AddToFavorites) {
 								item->favorite = !item->favorite;
 								PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
@@ -176,7 +166,7 @@ namespace ModExplorerMenu
 						char buffer[12];
 						snprintf(buffer, sizeof(buffer), "%.0f", baseDamage);
 						ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(buffer));
-						ImGui::Text(buffer);  // Base Damage
+						ImGui::Text(buffer);
 					}
 
 					// Armor Rating
@@ -241,9 +231,7 @@ namespace ModExplorerMenu
 					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						ImGui::PushFont(a_style.font.tiny);
 						itemPreview = item;
-						ImGui::PopFont();
 
 						if (ImGui::IsMouseClicked(0)) {
 							if (b_AddToInventory) {

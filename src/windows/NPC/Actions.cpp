@@ -18,7 +18,6 @@ namespace ModExplorerMenu
 
 		ImGui::SeparatorText(_TFM("Behavior", ":"));
 
-		ImGui::PushFont(a_style.font.medium);
 		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
@@ -32,9 +31,7 @@ namespace ModExplorerMenu
 		}
 
 		ImGui::PopStyleColor(3);
-
 		ImGui::SeparatorText(_TFM("Actions", ":"));
-
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
 
 		if (ImGui::Button(_T("NPC_PLACE_SELECTED"), ImVec2(button_width, button_height))) {
@@ -52,7 +49,7 @@ namespace ModExplorerMenu
 			Console::StartProcessThread();
 		}
 
-		ImGui::PopStyleColor(1);
+		ImGui::PopStyleColor(1);  // End of Green Buttons
 
 		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
 			selectedMod = "Favorite";
@@ -63,8 +60,7 @@ namespace ModExplorerMenu
 		}
 
 		if (selectedNPC == nullptr && hoveredNPC == nullptr) {
-			ImGui::PopFont();
-			ImGui::PopStyleVar(2);
+			ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 			return;
 		}
 
@@ -109,21 +105,19 @@ namespace ModExplorerMenu
 		}
 
 		if (npc == nullptr) {
-			ImGui::PopFont();
-			ImGui::PopStyleVar(2);
+			ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 			return;
 		}
 
 		// Name Bar
-		const auto name = npc->GetName();
-
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		const auto cursor = ImGui::GetCursorScreenPos();
 		const auto size = ImGui::GetContentRegionAvail();
 		const auto color = ImGui::GetStyleColorVec4(ImGuiCol_Border);
-		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
-		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
+		drawList->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
+		drawList->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
 
+		const auto name = npc->GetName();
 		ImGui::NewLine();
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
 		ImGui::Text(name);
@@ -163,7 +157,7 @@ namespace ModExplorerMenu
 
 					const auto spellName = spell->GetFullName();
 
-					// Weird bug here where the spell name is empty.
+					// Weird bug here where the spell name is empty. Patched with ##.
 					if (ImGui::TreeNode((std::string(spellName) + "##SpellName").c_str())) {
 						auto castType = Utils::GetCastingType(spell->data.castingType);
 						auto spellType = Utils::GetSpellType(spell->data.spellType);
@@ -185,7 +179,6 @@ namespace ModExplorerMenu
 			}
 		}
 
-		ImGui::PopFont();
-		ImGui::PopStyleVar(2);
+		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 	}
 }

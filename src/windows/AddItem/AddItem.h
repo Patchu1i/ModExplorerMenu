@@ -49,6 +49,7 @@ namespace ModExplorerMenu
 		static inline int clickToPlaceCount = 1;
 		static inline bool b_AddToFavorites = false;
 
+		// Filter Buttons.
 		static inline bool b_Alchemy = true;
 		static inline bool b_Ingredient = true;
 		static inline bool b_Ammo = true;
