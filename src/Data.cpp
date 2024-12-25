@@ -273,41 +273,28 @@ namespace ModExplorerMenu
 				char edid[512]{ '\0' };
 				bool gotEDID{ false };
 
-				std::uint16_t data{ 0 };
-				bool gotDATA{ false };
-
-				std::uint32_t cidx{ 0 };
-				cidx += a_file->compileIndex << 24;
-				cidx += a_file->smallFileCompileIndex << 12;
+				char luff[512]{ '\0' };
+				bool gotLUFF{ false };
 
 				do {
 					switch (a_file->GetCurrentSubRecordType()) {
 					case 'DIDE':
 						gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
-						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
-
-							if (!_cellModList.contains(a_file)) {
-								_cellModList.insert(a_file);
-							}
-
-							continue;
-						}
 						break;
-
-					case 'ATAD':
-						gotDATA = a_file->ReadData(&data, a_file->actualChunkSize);
-						if (gotEDID && gotDATA && ((data & 1) == 0)) {
-							a_cellMap.push_back(Cell(a_file->fileName, "", "", "", edid, a_file));
-
-							if (!_cellModList.contains(a_file)) {
-								_cellModList.insert(a_file);
-							}
-							continue;
-						}
+					case 'LLUF':
+						gotLUFF = a_file->ReadData(luff, a_file->actualChunkSize);
 						break;
-
 					default:
+						break;
+					}
+
+					if (gotEDID && gotLUFF) {
+						a_cellMap.push_back(Cell(a_file->fileName, "Unknown", "Unknown", luff, edid, a_file));
+
+						if (!_cellModList.contains(a_file)) {
+							_cellModList.insert(a_file);
+						}
+
 						break;
 					}
 				} while (a_file->SeekNextSubrecord());
@@ -370,9 +357,14 @@ namespace ModExplorerMenu
 			_cellCache.push_back(Cell(plugin, space, place, name, editorid, favorite, mod));
 		}
 
-		// Overwrite _cellCache with Baka changes
-		for (const auto& file : _modList) {
-			CacheCells(file, _cellCache);
+		for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
+			RE::TESFile* mod = form->GetFile();
+
+			if (!_cellModList.contains(mod)) {
+				logger::info("Caching cells for: {}", mod->fileName);
+				CacheCells(mod, _cellCache);
+				_cellModList.insert(mod);
+			}
 		}
 	}
 }
