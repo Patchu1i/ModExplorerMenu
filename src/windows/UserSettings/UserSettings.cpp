@@ -1,5 +1,6 @@
 #include "UserSettings.h"
 #include "Data.h"
+#include "Graphic.h"
 #include "Language.h"
 #include "Menu.h"
 #include "Settings.h"
@@ -69,26 +70,68 @@ namespace ModExplorerMenu
 		}
 	}
 
+	// ASyncKeyState is so fast that I store the new keybind in the below variable
+	// and check if the key is still pressed in the next frame.
 	static int newModifier = 0;
-	void AddModifier(const char* a_text, int& a_modifier, int defaultKey)
+
+	// I have separated the AddModifier and AddKeybind functions into two separate functions
+	// because the AddModifier function requires a different implementation than the AddKeybind function.
+	// More specifically, the behavior for checking valid modifier keys and confirmation.
+	void AddModifier(const char* a_text, int& a_modifier, int defaultKey, ImVec4& a_hover)
 	{
+		Settings::Config& config = Settings::GetSingleton()->GetConfig();
+
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Modifier" + std::string(a_text);
-		auto width = 200.0f;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 		ImGui::Text(_T(a_text));
-		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
-		ImGui::SetNextItemWidth(width);
-		if (ImGui::Button(std::to_string(a_modifier).c_str())) {
-			ImGui::OpenPopup("##ModifierPopup");
-			newModifier = 0;
-		}
 
-		ImGui::SameLine();
+		if (GraphicManager::imgui_library.empty()) {
+			const float width = ImGui::GetFontSize() * 8.0f;
+			const float height = ((config.uiScale / 100) * 20.0f) + 10.0f;
 
-		if (ImGui::Button("Reset##ResetModifier")) {
-			a_modifier = defaultKey;
-			SettingsWindow::changes.store(true);
-			SettingsWindow::file_changes.store(true);
+			ImGui::SameLine(ImGui::GetContentRegionAvail().x - width + 20.0f);   // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);  // Center Align
+
+			ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+			if (ImGui::Button(ImGui::SkyrimKeymap.at(a_modifier), ImVec2(width, height + 5.0f))) {
+				ImGui::OpenPopup("##ModifierPopup");
+				newModifier = 0;
+			}
+			ImGui::PopStyleVar();
+		} else {
+			const ImVec2& uv0 = ImVec2(0, 0);
+			const ImVec2& uv1 = ImVec2(1, 1);
+			const ImVec4& bg_col = ImVec4(0, 0, 0, 0);
+			const float alpha = 1.0f;
+
+			GraphicManager::Image img = GraphicManager::imgui_library[ImGui::ImGuiKeymap.at(a_modifier)];
+
+			float scale = config.uiScale / 100.0f;
+			const float imageWidth = ((float)img.width * 0.5f) * scale;
+			const float imageHeight = ((float)img.height * 0.5f) * scale;
+			const ImVec2& size = ImVec2(imageWidth, imageHeight);
+
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f);     // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
+
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+			if (ImGui::ImageButton("##ImGuiHotkeyModifier", img.texture, size, uv0, uv1, bg_col, a_hover)) {
+				ImGui::OpenPopup("##ModifierPopup");
+				newModifier = 0;
+			}
+
+			if (ImGui::IsItemHovered()) {
+				a_hover = ImVec4(1.f, 1.f, 1.f, 1.f);
+			} else {
+				a_hover = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
+			}
+
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor(2);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
@@ -98,23 +141,28 @@ namespace ModExplorerMenu
 		if (ImGui::BeginPopup("##ModifierPopup", flags)) {
 			if (newModifier > 0) {
 				if (ImGui::IsModifierKey(newModifier) && GetAsyncKeyState(newModifier)) {
-					a_modifier = ImGui::GetSkyrimKeyCode(newModifier);
+					a_modifier = ImGui::VirtualKeyToSkyrim(newModifier);
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 					ImGui::CloseCurrentPopup();
-				} else {
-					newModifier = 0;
 				}
 			}
 
 			if (newModifier == 0) {
-				for (auto& Key : ImGui::KeyCodes) {
-					if (GetAsyncKeyState(Key)) {
-						if (ImGui::IsModifierKey(Key)) {
-							newModifier = Key;
+				for (int key = 0x0; key <= 255; key++) {
+					if (GetAsyncKeyState(key)) {
+						if (ImGui::IsModifierKey(key)) {
+							newModifier = key;
 						}
 
-						if (Key == VK_ESCAPE) {
+						if (key == 0x54) {  // "T" Key
+							a_modifier = defaultKey;
+							SettingsWindow::changes.store(true);
+							SettingsWindow::file_changes.store(true);
+							ImGui::CloseCurrentPopup();
+						}
+
+						if (key == VK_ESCAPE) {
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -123,6 +171,8 @@ namespace ModExplorerMenu
 
 			ImGui::Text(_T("CONFIG_MODIFIER_SET"));
 			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_RESET"));
+			ImGui::NewLine();
 			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
@@ -130,25 +180,61 @@ namespace ModExplorerMenu
 	}
 
 	static int newKeybind = 0;
-	void AddKeybind(const char* a_text, int& a_keybind, int defaultKey)
+	void AddKeybind(const char* a_text, int& a_keybind, int defaultKey, ImVec4& a_hover)
 	{
+		Settings::Config& config = Settings::GetSingleton()->GetConfig();
+
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Keybind" + std::string(a_text);
-		auto width = 200.0f;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 		ImGui::Text(_T(a_text));
-		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
-		ImGui::SetNextItemWidth(width);
-		if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind))) {
-			ImGui::OpenPopup("##KeybindPopup");
-			newKeybind = 0;
-		}
 
-		ImGui::SameLine();
+		if (GraphicManager::imgui_library.empty()) {
+			const float width = ImGui::GetFontSize() * 8.0f;
+			const float height = ((config.uiScale / 100) * 20.0f) + 10.0f;
 
-		if (ImGui::Button("Reset##ResetKeybind")) {
-			a_keybind = defaultKey;
-			SettingsWindow::changes.store(true);
-			SettingsWindow::file_changes.store(true);
+			ImGui::SameLine(ImGui::GetContentRegionAvail().x - width + 20.0f);   // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);  // Center Align
+
+			ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+			if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind), ImVec2(width, height + 5.0f))) {
+				ImGui::OpenPopup("##KeybindPopup");
+				newKeybind = 0;
+			}
+			ImGui::PopStyleVar();
+		} else {
+			const ImVec2& uv0 = ImVec2(0, 0);
+			const ImVec2& uv1 = ImVec2(1, 1);
+			const ImVec4& bg_col = ImVec4(0, 0, 0, 0);
+			const float alpha = 1.0f;
+
+			GraphicManager::Image img = GraphicManager::imgui_library[ImGui::ImGuiKeymap.at(a_keybind)];
+
+			float scale = config.uiScale / 100.0f;
+			const float imageWidth = ((float)img.width * 0.5f) * scale;
+			const float imageHeight = ((float)img.height * 0.5f) * scale;
+			const ImVec2& size = ImVec2(imageWidth, imageHeight);
+
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f);     // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
+
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+			if (ImGui::ImageButton("##ImGuiHotkey", img.texture, size, uv0, uv1, bg_col, a_hover)) {
+				ImGui::OpenPopup("##KeybindPopup");
+				newModifier = 0;
+			}
+
+			if (ImGui::IsItemHovered()) {
+				a_hover = ImVec4(1.f, 1.f, 1.f, 1.f);
+			} else {
+				a_hover = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
+			}
+
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor(2);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
@@ -158,7 +244,7 @@ namespace ModExplorerMenu
 		if (ImGui::BeginPopup("##KeybindPopup", flags)) {
 			if (newKeybind > 0) {
 				if (ImGui::IsKeyboardWhitelist(newKeybind) && GetAsyncKeyState(newKeybind)) {
-					a_keybind = ImGui::GetSkyrimKeyCode(newKeybind);
+					a_keybind = ImGui::VirtualKeyToSkyrim(newKeybind);
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 					ImGui::CloseCurrentPopup();
@@ -168,36 +254,53 @@ namespace ModExplorerMenu
 			}
 
 			if (newKeybind == 0) {
-				for (auto& Key : ImGui::KeyCodes) {
-					if (GetAsyncKeyState(Key)) {
-						if (ImGui::IsKeyboardWhitelist(Key)) {
-							newKeybind = Key;
+				for (int key = 0x0; key <= 255; key++) {
+					if (GetAsyncKeyState(key)) {
+						if (ImGui::IsKeyboardWhitelist(key)) {
+							newKeybind = key;
 						}
 
-						if (Key == VK_ESCAPE) {
+						if (key == 0x54) {  // "T" Key
+							a_keybind = defaultKey;
+							SettingsWindow::changes.store(true);
+							SettingsWindow::file_changes.store(true);
+							ImGui::CloseCurrentPopup();
+						}
+
+						if (key == VK_ESCAPE) {
 							ImGui::CloseCurrentPopup();
 						}
 					}
 				}
+				// for (auto& Key : ImGui::KeyCodes) {
+				// 	if (GetAsyncKeyState(Key)) {
+				// 		logger::info("Key: {}", Key);
+				// 		if (ImGui::IsKeyboardWhitelist(Key)) {
+				// 			newKeybind = Key;
+				// 		}
+
+				// 		if (Key == 0x54) {  // "T" Key
+				// 			a_keybind = defaultKey;
+				// 			SettingsWindow::changes.store(true);
+				// 			SettingsWindow::file_changes.store(true);
+				// 			ImGui::CloseCurrentPopup();
+				// 		}
+
+				// 		if (Key == VK_ESCAPE) {
+				// 			ImGui::CloseCurrentPopup();
+				// 		}
+				// 	}
+				// }
 			}
 
 			ImGui::Text(_T("CONFIG_HOTKEY_SET"));
+			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_RESET"));
 			ImGui::NewLine();
 			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
 		}
-
-		// for (auto& key : ImGui::KeyCodes) {
-		// 	if (GetAsyncKeyState(key)) {
-		// 		a_keybind = (uint32_t)key;
-		// 		SettingsWindow::changes.store(true);
-		// 		SettingsWindow::file_changes.store(true);
-		// 		ImGui::CloseCurrentPopup();
-		// 		logger::info("Keybind set to: {}", a_keybind);
-		// 		break;
-		// 	}
-		// }
 	}
 
 	void AddCheckbox(const char* a_text, bool& a_boolRef)
@@ -322,6 +425,8 @@ namespace ModExplorerMenu
 		ImGui::End();
 	}
 
+	static inline ImVec4 keyHoverTintColor = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
+	static inline ImVec4 modifierHoverTint = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
 	void SettingsWindow::DrawGeneralSettings()
 	{
 		//Settings::Style& style = Settings::GetSingleton()->GetStyle();
@@ -332,8 +437,8 @@ namespace ModExplorerMenu
 			changes.store(false);
 		}
 
-		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211);
-		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0);
+		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
+		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, modifierHoverTint);
 
 		// std::vector<std::string> languages = { "English", "Russian", "Chinese", "Japanese", "Korean", "French", "German", "Spanish", "Italian" };
 		// if (AddSelectionStringDropdown("Language", config.language, languages)) {
