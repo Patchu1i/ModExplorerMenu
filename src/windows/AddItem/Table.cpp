@@ -34,6 +34,8 @@ namespace ModExplorerMenu
 
 		if (a_item.GetFormType() == RE::FormType::Book) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			if (ImGui::Selectable(_T("GENERAL_READ_ME"))) {
 				openBook = &a_item;
 			}

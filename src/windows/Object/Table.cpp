@@ -13,25 +13,33 @@ namespace ModExplorerMenu
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
-		if (ImGui::Selectable("Copy Form ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_object.GetFormID().c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable("Copy Name", false, flags)) {
-			ImGui::LogToClipboard();
-			ImGui::LogText(a_object.name.c_str());
-			ImGui::LogFinish();
-			ImGui::CloseCurrentPopup();
-		}
-
-		if (ImGui::Selectable("Copy Editor ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_object.editorid.c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		if (ImGui::Selectable(_T("GENERAL_COPY_MODEL_PATH"), false, flags)) {
+			RE::TESModel* model = a_object.TESForm->As<RE::TESModel>();
+
+			if (model != nullptr) {
+				std::string modelFullPath = model->GetModel();
+
+				ImGui::LogToClipboard();
+				ImGui::LogText(modelFullPath.c_str());
+				ImGui::LogFinish();
+				ImGui::CloseCurrentPopup();
+			}
 		}
 
 		ImGui::PopStyleVar(1);

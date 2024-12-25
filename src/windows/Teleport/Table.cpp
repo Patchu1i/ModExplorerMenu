@@ -5,45 +5,45 @@
 #include "Windows/Persistent.h"
 // #include "Windows/ItemCards.h"
 
-// Draws a Copy to Clipboard button on Context popup.
-// void NPCWindow::ShowItemListContextMenu(Data::CachedItem& a_item)
-// {
-// 	constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
-// 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-
-// 	if (ImGui::Selectable("Copy Form ID", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.formid.c_str());
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (ImGui::Selectable("Copy Name", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.name);
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (ImGui::Selectable("Copy Editor ID", false, flags)) {
-// 		ImGui::LogToClipboard();
-// 		ImGui::LogText(a_item.editorid.c_str());
-// 		ImGui::LogFinish();
-// 		ImGui::CloseCurrentPopup();
-// 	}
-
-// 	if (a_item.formType == RE::FormType::Book) {
-// 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-// 		if (ImGui::Selectable("Read Me!")) {
-// 			openBook = &a_item;
-// 		}
-// 	}
-
-// 	ImGui::PopStyleVar(1);
-// }
-
 namespace ModExplorerMenu
 {
+	// Draws a Copy to Clipboard button on Context popup.
+	void TeleportWindow::ShowTeleportContextMenu(Cell& a_cell)
+	{
+		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::Selectable(_T("GENERAL_COPY_WORLDSPACE_NAME"), false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_cell.space.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("GENERAL_COPY_ZONE_NAME"), false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_cell.zone.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("GENERAL_COPY_CELL_NAME"), false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_cell.cellName.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
+			ImGui::LogToClipboard();
+			ImGui::LogText(a_cell.editorid.c_str());
+			ImGui::LogFinish();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::PopStyleVar(1);
+	}
+
 	// Draw the table of items
 	void TeleportWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
 	{
@@ -137,11 +137,11 @@ namespace ModExplorerMenu
 
 					// Space
 					ImGui::TableNextColumn();
-					ImGui::Text(cell->GetZone().data());
+					ImGui::Text(cell->GetSpace().data());
 
 					// Zone
 					ImGui::TableNextColumn();
-					ImGui::Text(cell->GetSpace().data());
+					ImGui::Text(cell->GetZone().data());
 
 					// CellName
 					ImGui::TableNextColumn();
@@ -154,8 +154,6 @@ namespace ModExplorerMenu
 					// Input Handlers
 					auto curRow = ImGui::TableGetHoveredRow();
 					if (curRow == ImGui::TableGetRowIndex()) {
-						// ShowItemCard<Cell>(cell); // Item cards for Cells?
-
 						if (ImGui::IsMouseClicked(0)) {
 							_itemSelected = true;
 							selectedCell = cell;
@@ -174,26 +172,15 @@ namespace ModExplorerMenu
 							}
 						}
 
-						// if (ImGui::IsMouseClicked(1, true)) {
-						// 	ImGui::OpenPopup("TestItemPopupMenu");
-						// }
+						if (ImGui::IsMouseClicked(1, true)) {
+							ImGui::OpenPopup("ShowTeleportContextMenu");
+						}
 					}
 
-					// if (ImGui::BeginPopup("TestItemPopupMenu")) {
-					// 	ShowItemListContextMenu(*item);
-					// 	ImGui::EndPopup();
-					// }
-
-					// Shortcut Handlers
-					// if (b_ClickToAdd && _itemSelected) {
-					// 	ConsoleCommand::AddItem(item->formid.c_str(), clickToAddCount);
-					// } else if (b_ClickToPlace && _itemSelected) {
-					// 	ConsoleCommand::PlaceAtMe(item->formid.c_str(), clickToPlaceCount);
-					// } else if (b_ClickToFavorite && _itemSelected) {
-					// 	item->favorite = !item->favorite;
-					// } else if (!b_ClickToAdd && _itemSelected) {
-					// 	item->selected = true;
-					// }
+					if (ImGui::BeginPopup("ShowTeleportContextMenu")) {
+						ShowTeleportContextMenu(*cell);
+						ImGui::EndPopup();
+					}
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
 					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.

@@ -12,25 +12,36 @@ namespace ModExplorerMenu
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
-		if (ImGui::Selectable("Copy Form ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(std::format("{:08x}", a_npc.FormID).c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable("Copy Name", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_NAME"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_npc.GetName().data());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable("Copy Editor ID", false, flags)) {
+		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_npc.editorid.c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
+		}
+
+		if (a_npc.refID != 0) {
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			if (ImGui::Selectable(_T("GENERAL_COPY_REFERENCE_ID"), false, flags)) {
+				ImGui::LogToClipboard();
+				ImGui::LogText(std::format("{:08x}", a_npc.refID).c_str());
+				ImGui::LogFinish();
+				ImGui::CloseCurrentPopup();
+			}
 		}
 
 		ImGui::PopStyleVar(1);
@@ -188,6 +199,7 @@ namespace ModExplorerMenu
 
 					if (ImGui::BeginPopup("ShowNPCContextMenu")) {
 						ShowNPCListContextMenu(*npc);
+						ImGui::EndPopup();
 					}
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774

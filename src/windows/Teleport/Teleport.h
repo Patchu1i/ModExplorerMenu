@@ -23,6 +23,7 @@ namespace ModExplorerMenu
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+		static void ShowTeleportContextMenu(Cell& a_cell);
 
 		static inline constexpr auto TeleportTableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
