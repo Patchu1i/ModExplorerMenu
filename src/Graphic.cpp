@@ -254,6 +254,13 @@ namespace ModExplorerMenu
 			break;
 		}
 
+		// Detect ImGui Icons mod and load it if it exists.
+		if (std::filesystem::exists("Data/Interface/ImGuiIcons")) {
+			GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ImGuiIcons/Icons"), GraphicManager::imgui_library);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ImGuiIcons/Fonts"), GraphicManager::font_library, Language::Locale::English);
+			logger::info("Successfully found and loaded ImGui Icons.");
+		}
+
 		// Queue other assets to load.
 		Menu::initialized.store(true);
 	}

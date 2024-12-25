@@ -37,6 +37,7 @@ namespace ModExplorerMenu
 		};
 
 		static inline std::map<std::string, GraphicManager::Image> image_library;
+		static inline std::map<std::string, GraphicManager::Image> imgui_library;
 		static inline std::map<std::string, Font> font_library;
 		static inline std::map<std::string, Font> icon_library;
 
