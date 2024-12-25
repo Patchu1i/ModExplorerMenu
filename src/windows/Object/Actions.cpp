@@ -89,5 +89,54 @@ namespace ModExplorerMenu
 		ImGui::NewLine();
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
+
+		auto SplitString = [](std::string a_string, std::string a_delimiter) -> std::vector<std::string> {
+			std::vector<std::string> strings;
+			std::stringstream ss(a_string);
+			std::string string;
+
+			while (std::getline(ss, string, a_delimiter[0])) {
+				strings.push_back(string);
+			}
+
+			return strings;
+		};
+
+		if (obj->editorid.empty()) {
+			return;
+		}
+
+		ImGui::NewLine();
+
+		RE::TESModel* model = obj->TESForm->As<RE::TESModel>();
+
+		if (model != nullptr) {
+			std::string modelFullPath = model->GetModel();
+
+			if (modelFullPath.empty()) {
+				return;
+			}
+
+			std::vector<std::string> modelPath = SplitString(modelFullPath, "\\");
+
+			if (ImGui::TreeNodeEx(_TFM("Model Path", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				for (size_t i = 0; i < modelPath.size(); ++i) {
+					if (i < modelPath.size() - 1) {
+						ImGui::Text("%s/", modelPath[i].c_str());
+						ImGui::Indent(5.0f);
+					} else {
+						ImGui::Text("%s", modelPath[i].c_str());
+					}
+				}
+
+				for (size_t i = 0; i < modelPath.size() - 1; ++i) {
+					ImGui::Unindent(5.0f);
+				}
+
+				ImGui::TreePop();
+			}
+		}
+
+		ImGui::NewLine();
 	}
 }
