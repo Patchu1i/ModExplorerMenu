@@ -149,17 +149,19 @@ namespace ModExplorerMenu
 				}
 
 				if (*isEnabled == true) {
-					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w));
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
 				} else {
-					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.header.x, a_style.header.y, a_style.header.z, a_style.header.w - 0.2f));
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.2f));
 				}
+
+				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
 
 				if (ImGui::Selectable(_T(name), true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
 					isDirty = true;
 					*isEnabled = !*isEnabled;
 				}
 
-				ImGui::PopStyleColor();
+				ImGui::PopStyleColor(2);
 			}
 			ImGui::PopStyleVar();
 

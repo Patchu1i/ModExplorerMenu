@@ -85,7 +85,6 @@ namespace ModExplorerMenu
 	{
 		a_ini.SetValue(rSections[Window], NULL, NULL, GetComment(iComment::ThemeConfigHeader));
 		a_ini.SetValue(rSections[Frame], NULL, NULL, GetComment(iComment::ThemeFrameHeader));
-		a_ini.SetValue(rSections[Child], NULL, NULL, GetComment(iComment::ThemeChildHeader));
 		a_ini.SetValue(rSections[Text], NULL, NULL, GetComment(iComment::ThemeTextHeader));
 		a_ini.SetValue(rSections[Table], NULL, NULL, GetComment(iComment::ThemeTableHeader));
 		a_ini.SetValue(rSections[Widgets], NULL, NULL, GetComment(iComment::ThemeWidgetsHeader));
@@ -173,13 +172,10 @@ namespace ModExplorerMenu
 		a_out.text = style.Colors[ImGuiCol_Text];
 		a_out.textDisabled = style.Colors[ImGuiCol_TextDisabled];
 		a_out.windowBg = style.Colors[ImGuiCol_WindowBg];
-		a_out.childBg = style.Colors[ImGuiCol_ChildBg];
-		a_out.popupBg = style.Colors[ImGuiCol_PopupBg];
 		a_out.border = style.Colors[ImGuiCol_Border];
-		a_out.borderShadow = style.Colors[ImGuiCol_BorderShadow];
-		a_out.frameBg = style.Colors[ImGuiCol_FrameBg];
-		a_out.frameBgHovered = style.Colors[ImGuiCol_FrameBgHovered];
-		a_out.frameBgActive = style.Colors[ImGuiCol_FrameBgActive];
+		a_out.widgetBg = style.Colors[ImGuiCol_FrameBg];
+		a_out.widgetHovered = style.Colors[ImGuiCol_FrameBgHovered];
+		a_out.widgetActive = style.Colors[ImGuiCol_FrameBgActive];
 		a_out.scrollbarBg = style.Colors[ImGuiCol_ScrollbarBg];
 		a_out.scrollbarGrab = style.Colors[ImGuiCol_ScrollbarGrab];
 		a_out.scrollbarGrabHovered = style.Colors[ImGuiCol_ScrollbarGrabHovered];
@@ -190,6 +186,9 @@ namespace ModExplorerMenu
 		a_out.button = style.Colors[ImGuiCol_Button];
 		a_out.buttonHovered = style.Colors[ImGuiCol_ButtonHovered];
 		a_out.buttonActive = style.Colors[ImGuiCol_ButtonActive];
+		a_out.secondaryButton = def.style.secondaryButton;
+		a_out.secondaryButtonActive = def.style.secondaryButtonActive;
+		a_out.secondaryButtonHovered = def.style.secondaryButtonHovered;
 		a_out.header = style.Colors[ImGuiCol_Header];
 		a_out.headerHovered = style.Colors[ImGuiCol_HeaderHovered];
 		a_out.headerActive = style.Colors[ImGuiCol_HeaderActive];
@@ -206,26 +205,22 @@ namespace ModExplorerMenu
 		a_out.textSelectedBg = style.Colors[ImGuiCol_TextSelectedBg];
 
 		a_out.windowPadding = style.WindowPadding;
-		a_out.framePadding = style.FramePadding;
+		a_out.widgetPadding = style.FramePadding;
 		a_out.cellPadding = style.CellPadding;
 		a_out.itemSpacing = style.ItemSpacing;
 		a_out.itemInnerSpacing = style.ItemInnerSpacing;
 
-		a_out.alpha = style.Alpha;
+		a_out.sidebarSpacing = def.style.sidebarSpacing;
 		a_out.windowRounding = style.WindowRounding;
 		a_out.windowBorderSize = style.WindowBorderSize;
-		a_out.childBorderSize = style.ChildBorderSize;
-		a_out.childRounding = style.ChildRounding;
-		a_out.frameBorderSize = style.FrameBorderSize;
-		a_out.frameRounding = style.FrameRounding;
+		a_out.widgetBorderSize = style.FrameBorderSize;
+		a_out.widgetRounding = style.FrameRounding;
 		a_out.indentSpacing = style.IndentSpacing;
 		a_out.columnsMinSpacing = style.ColumnsMinSpacing;
 		a_out.scrollbarRounding = style.ScrollbarRounding;
 		a_out.scrollbarSize = style.ScrollbarSize;
 		a_out.grabMinSize = style.GrabMinSize;
 		a_out.grabRounding = style.GrabRounding;
-		a_out.popupBorderSize = style.PopupBorderSize;
-		a_out.popupRounding = style.PopupRounding;
 
 		a_out.showTableRowBG = true;
 
@@ -247,13 +242,10 @@ namespace ModExplorerMenu
 		user.style.text = GET_VALUE<ImVec4>(rSections[Text], "TextColor", def.style.text, a_ini);
 		user.style.textDisabled = GET_VALUE<ImVec4>(rSections[Text], "TextDisabledColor", def.style.textDisabled, a_ini);
 		user.style.windowBg = GET_VALUE<ImVec4>(rSections[Window], "WindowBGColor", def.style.windowBg, a_ini);
-		user.style.childBg = GET_VALUE<ImVec4>(rSections[Child], "ChildBGColor", def.style.childBg, a_ini);
-		user.style.popupBg = GET_VALUE<ImVec4>(rSections[Child], "PopupBGColor", def.style.popupBg, a_ini);
 		user.style.border = GET_VALUE<ImVec4>(rSections[Window], "BorderColor", def.style.border, a_ini);
-		user.style.borderShadow = GET_VALUE<ImVec4>(rSections[Window], "BorderShadowColor", def.style.borderShadow, a_ini);
-		user.style.frameBg = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGColor", def.style.frameBg, a_ini);
-		user.style.frameBgHovered = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGHoveredColor", def.style.frameBgHovered, a_ini);
-		user.style.frameBgActive = GET_VALUE<ImVec4>(rSections[Frame], "FrameBGActiveColor", def.style.frameBgActive, a_ini);
+		user.style.widgetBg = GET_VALUE<ImVec4>(rSections[Widgets], "WidgeteBGColor", def.style.widgetBg, a_ini);
+		user.style.widgetHovered = GET_VALUE<ImVec4>(rSections[Widgets], "WidgetHoveredColor", def.style.widgetHovered, a_ini);
+		user.style.widgetActive = GET_VALUE<ImVec4>(rSections[Widgets], "WidgetActiveColor", def.style.widgetActive, a_ini);
 		user.style.scrollbarBg = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarBGColor", def.style.scrollbarBg, a_ini);
 		user.style.scrollbarGrab = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabColor", def.style.scrollbarGrab, a_ini);
 		user.style.scrollbarGrabHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ScrollbarGrabHoveredColor", def.style.scrollbarGrabHovered, a_ini);
@@ -264,6 +256,9 @@ namespace ModExplorerMenu
 		user.style.button = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonColor", def.style.button, a_ini);
 		user.style.buttonHovered = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonHoveredColor", def.style.buttonHovered, a_ini);
 		user.style.buttonActive = GET_VALUE<ImVec4>(rSections[Widgets], "ButtonActiveColor", def.style.buttonActive, a_ini);
+		user.style.secondaryButton = GET_VALUE<ImVec4>(rSections[Widgets], "SecondaryButtonColor", def.style.secondaryButton, a_ini);
+		user.style.secondaryButtonHovered = GET_VALUE<ImVec4>(rSections[Widgets], "SecondaryButtonHoveredColor", def.style.secondaryButtonHovered, a_ini);
+		user.style.secondaryButtonActive = GET_VALUE<ImVec4>(rSections[Widgets], "SecondaryButtonActiveColor", def.style.secondaryButtonActive, a_ini);
 		user.style.header = GET_VALUE<ImVec4>(rSections[Table], "HeaderColor", def.style.header, a_ini);
 		user.style.headerHovered = GET_VALUE<ImVec4>(rSections[Table], "HeaderHoveredColor", def.style.headerHovered, a_ini);
 		user.style.headerActive = GET_VALUE<ImVec4>(rSections[Table], "HeaderActiveColor", def.style.headerActive, a_ini);
@@ -279,27 +274,23 @@ namespace ModExplorerMenu
 		user.style.tableRowBg = GET_VALUE<ImVec4>(rSections[Table], "TableRowBGColor", def.style.tableRowBg, a_ini);
 		user.style.textSelectedBg = GET_VALUE<ImVec4>(rSections[Text], "TextSelectedBGColor", def.style.textSelectedBg, a_ini);
 
+		user.style.sidebarSpacing = GET_VALUE<float>(rSections[Window], "SidebarSpacing", def.style.sidebarSpacing, a_ini);
 		user.style.windowPadding = GET_VALUE<ImVec2>(rSections[Window], "WindowPadding", def.style.windowPadding, a_ini);
-		user.style.framePadding = GET_VALUE<ImVec2>(rSections[Frame], "FramePadding", def.style.framePadding, a_ini);
+		user.style.widgetPadding = GET_VALUE<ImVec2>(rSections[Widgets], "WidgetPadding", def.style.widgetPadding, a_ini);
 		user.style.cellPadding = GET_VALUE<ImVec2>(rSections[Table], "CellPadding", def.style.cellPadding, a_ini);
 		user.style.itemSpacing = GET_VALUE<ImVec2>(rSections[Window], "ItemSpacing", def.style.itemSpacing, a_ini);
 		user.style.itemInnerSpacing = GET_VALUE<ImVec2>(rSections[Window], "ItemInnerSpacing", def.style.itemInnerSpacing, a_ini);
 
-		user.style.alpha = GET_VALUE<float>(rSections[Window], "Alpha", def.style.alpha, a_ini);
 		user.style.windowRounding = GET_VALUE<float>(rSections[Window], "WindowRounding", def.style.windowRounding, a_ini);
 		user.style.windowBorderSize = GET_VALUE<float>(rSections[Window], "WindowBorderSize", def.style.windowBorderSize, a_ini);
-		user.style.childBorderSize = GET_VALUE<float>(rSections[Child], "ChildBorderSize", def.style.childBorderSize, a_ini);
-		user.style.childRounding = GET_VALUE<float>(rSections[Child], "ChildRounding", def.style.childRounding, a_ini);
-		user.style.frameBorderSize = GET_VALUE<float>(rSections[Frame], "FrameBorderSize", def.style.frameBorderSize, a_ini);
-		user.style.frameRounding = GET_VALUE<float>(rSections[Frame], "FrameRounding", def.style.frameRounding, a_ini);
+		user.style.widgetBorderSize = GET_VALUE<float>(rSections[Widgets], "WidgetBorderSize", def.style.widgetBorderSize, a_ini);
+		user.style.widgetRounding = GET_VALUE<float>(rSections[Widgets], "WidgetRounding", def.style.widgetRounding, a_ini);
 		user.style.indentSpacing = GET_VALUE<float>(rSections[Window], "IndentSpacing", def.style.indentSpacing, a_ini);
 		user.style.columnsMinSpacing = GET_VALUE<float>(rSections[Table], "ColumnMinSpacing", def.style.columnsMinSpacing, a_ini);
 		user.style.scrollbarRounding = GET_VALUE<float>(rSections[Widgets], "ScrollbarRounding", def.style.scrollbarRounding, a_ini);
 		user.style.scrollbarSize = GET_VALUE<float>(rSections[Widgets], "ScrollbarSize", def.style.scrollbarSize, a_ini);
 		user.style.grabMinSize = GET_VALUE<float>(rSections[Widgets], "GrabMinSize", def.style.grabMinSize, a_ini);
 		user.style.grabRounding = GET_VALUE<float>(rSections[Widgets], "GrabRounding", def.style.grabRounding, a_ini);
-		user.style.popupBorderSize = GET_VALUE<float>(rSections[Child], "PopupBorderSize", def.style.popupBorderSize, a_ini);
-		user.style.popupRounding = GET_VALUE<float>(rSections[Child], "PopupRounding", def.style.popupRounding, a_ini);
 
 		user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
@@ -321,13 +312,10 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Text], "TextColor", Settings::ToString(a_user.text, false).c_str());
 			a_ini.SetValue(rSections[Text], "TextDisabledColor", Settings::ToString(a_user.textDisabled, false).c_str());
 			a_ini.SetValue(rSections[Window], "WindowBGColor", Settings::ToString(a_user.windowBg, false).c_str());
-			a_ini.SetValue(rSections[Child], "ChildBGColor", Settings::ToString(a_user.childBg, false).c_str());
-			a_ini.SetValue(rSections[Child], "PopupBGColor", Settings::ToString(a_user.popupBg, false).c_str());
 			a_ini.SetValue(rSections[Window], "BorderColor", Settings::ToString(a_user.border, false).c_str());
-			a_ini.SetValue(rSections[Window], "BorderShadowColor", Settings::ToString(a_user.borderShadow, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FrameBGColor", Settings::ToString(a_user.frameBg, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FrameBGHoveredColor", Settings::ToString(a_user.frameBgHovered, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FrameBGActiveColor", Settings::ToString(a_user.frameBgActive, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetColor", Settings::ToString(a_user.widgetBg, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetHoveredColor", Settings::ToString(a_user.widgetHovered, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetActiveColor", Settings::ToString(a_user.widgetActive, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ScrollbarBGColor", Settings::ToString(a_user.scrollbarBg, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ScrollbarGrabColor", Settings::ToString(a_user.scrollbarGrab, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ScrollbarGrabHoveredColor", Settings::ToString(a_user.scrollbarGrabHovered, false).c_str());
@@ -338,6 +326,9 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Widgets], "ButtonColor", Settings::ToString(a_user.button, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ButtonHoveredColor", Settings::ToString(a_user.buttonHovered, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ButtonActiveColor", Settings::ToString(a_user.buttonActive, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "SecondaryButtonColor", Settings::ToString(a_user.secondaryButton, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "SecondaryButtonHoveredColor", Settings::ToString(a_user.secondaryButtonHovered, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "SecondaryButtonActiveColor", Settings::ToString(a_user.secondaryButtonActive, false).c_str());
 			a_ini.SetValue(rSections[Table], "HeaderColor", Settings::ToString(a_user.header, false).c_str());
 			a_ini.SetValue(rSections[Table], "HeaderHoveredColor", Settings::ToString(a_user.headerHovered, false).c_str());
 			a_ini.SetValue(rSections[Table], "HeaderActiveColor", Settings::ToString(a_user.headerActive, false).c_str());
@@ -353,27 +344,23 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Table], "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
 			a_ini.SetValue(rSections[Text], "TextSelectedBGColor", Settings::ToString(a_user.textSelectedBg, false).c_str());
 
+			a_ini.SetValue(rSections[Window], "SidebarSpacing", Settings::ToString(a_user.sidebarSpacing, false).c_str());
 			a_ini.SetValue(rSections[Window], "WindowPadding", Settings::ToString(a_user.windowPadding, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FramePadding", Settings::ToString(a_user.framePadding, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetPadding", Settings::ToString(a_user.widgetPadding, false).c_str());
 			a_ini.SetValue(rSections[Table], "CellPadding", Settings::ToString(a_user.cellPadding, false).c_str());
 			a_ini.SetValue(rSections[Window], "ItemSpacing", Settings::ToString(a_user.itemSpacing, false).c_str());
 			a_ini.SetValue(rSections[Window], "ItemInnerSpacing", Settings::ToString(a_user.itemInnerSpacing, false).c_str());
 
-			a_ini.SetValue(rSections[Window], "Alpha", Settings::ToString(a_user.alpha, false).c_str());
 			a_ini.SetValue(rSections[Window], "WindowRounding", Settings::ToString(a_user.windowRounding, false).c_str());
 			a_ini.SetValue(rSections[Window], "WindowBorderSize", Settings::ToString(a_user.windowBorderSize, false).c_str());
-			a_ini.SetValue(rSections[Child], "ChildBorderSize", Settings::ToString(a_user.childBorderSize, false).c_str());
-			a_ini.SetValue(rSections[Child], "ChildRounding", Settings::ToString(a_user.childRounding, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FrameBorderSize", Settings::ToString(a_user.frameBorderSize, false).c_str());
-			a_ini.SetValue(rSections[Frame], "FrameRounding", Settings::ToString(a_user.frameRounding, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetBorderSize", Settings::ToString(a_user.widgetBorderSize, false).c_str());
+			a_ini.SetValue(rSections[Widgets], "WidgetRounding", Settings::ToString(a_user.widgetRounding, false).c_str());
 			a_ini.SetValue(rSections[Window], "IndentSpacing", Settings::ToString(a_user.indentSpacing, false).c_str());
 			a_ini.SetValue(rSections[Table], "ColumnMinSpacing", Settings::ToString(a_user.columnsMinSpacing, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ScrollbarRounding", Settings::ToString(a_user.scrollbarRounding, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "ScrollbarSize", Settings::ToString(a_user.scrollbarSize, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
-			a_ini.SetValue(rSections[Child], "PopupBorderSize", Settings::ToString(a_user.popupBorderSize, false).c_str());
-			a_ini.SetValue(rSections[Child], "PopupRounding", Settings::ToString(a_user.popupRounding, false).c_str());
 
 			a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 

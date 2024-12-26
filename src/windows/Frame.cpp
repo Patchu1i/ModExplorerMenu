@@ -48,16 +48,14 @@ namespace ModExplorerMenu
 
 		const float center_x = window.screenSize.x * 0.5f;
 		const float center_y = (window.screenSize.y * 0.5f) - (window.panel_h * 0.5f);
-		const float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f);
-		const float sidebar_x = panel_x - (window.sidebar_w);
+		const float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f) + (style.sidebarSpacing / 2);
+		const float sidebar_x = panel_x - (window.sidebar_w) - (style.sidebarSpacing);
 
 		// Draw Sidebar Frame
 		static constexpr ImGuiWindowFlags sidebar_flag = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
 		auto noFocus = is_settings_popped ? ImGuiWindowFlags_NoBringToFrontOnFocus : 0;
 		ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
 		ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
-
-		// ImGui::GetFontSize() * 1.5f
 
 		ImGui::PushStyleColor(ImGuiCol_Header, style.button);
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
@@ -113,7 +111,7 @@ namespace ModExplorerMenu
 		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(1);
 
-		// Draw Panel Frame conditionally
+		// Draw Panel Frame
 		static constexpr ImGuiWindowFlags panel_flag = sidebar_flag;
 		ImGui::SetNextWindowSize(ImVec2(window.panel_w, window.panel_h));
 		ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));

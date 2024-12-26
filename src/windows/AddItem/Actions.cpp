@@ -46,10 +46,12 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(3);
 		ImGui::SeparatorText(_TFM("Shortcuts", ":"));
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		// Add All From Table Shortcut.
-		if (ImGui::Button(_T("AIM_ADD_ALL"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("AIM_ADD_ALL"), ImVec2(button_width, 0))) {
 			for (auto& item : itemList) {
 				Console::AddItem(item->GetFormID());
 			}
@@ -59,7 +61,7 @@ namespace ModExplorerMenu
 		ImGui::SetDelayedTooltip(_T("AIM_ADD_ALL_HELP"));
 
 		// Place All from Table Shortcut.
-		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
 			if (itemList.size() > 30) {
 				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
 			} else {
@@ -72,7 +74,7 @@ namespace ModExplorerMenu
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_PLACE_ALL_HELP"));
 
-		ImGui::PopStyleColor(1);  // End of Green Buttons
+		ImGui::PopStyleColor(3);  // End of Secondary Buttons
 
 		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
 			for (auto& item : itemList) {
@@ -81,7 +83,7 @@ namespace ModExplorerMenu
 		});
 
 		// Show Favorites
-		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}

@@ -42,7 +42,6 @@ namespace ModExplorerMenu
 		{
 			Window,
 			Frame,
-			Child,
 			Text,
 			Table,
 			Widgets,
@@ -60,7 +59,6 @@ namespace ModExplorerMenu
 		static inline std::map<SECTION, const char*> rSections = {
 			{ Window, "Window" },
 			{ Frame, "Frame" },
-			{ Child, "Child" },
 			{ Text, "Text" },
 			{ Table, "Table" },
 			{ Widgets, "Widgets" },
@@ -95,13 +93,7 @@ namespace ModExplorerMenu
 			ImVec4 text = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 			ImVec4 textDisabled = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 			ImVec4 windowBg = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
-			ImVec4 childBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-			ImVec4 popupBg = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
 			ImVec4 border = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
-			ImVec4 borderShadow = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-			ImVec4 frameBg = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
-			ImVec4 frameBgHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-			ImVec4 frameBgActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 			ImVec4 scrollbarBg = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
 			ImVec4 scrollbarGrab = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
 			ImVec4 scrollbarGrabHovered = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
@@ -109,9 +101,15 @@ namespace ModExplorerMenu
 			ImVec4 checkMark = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 			ImVec4 sliderGrab = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
 			ImVec4 sliderGrabActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+			ImVec4 widgetBg = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
+			ImVec4 widgetHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+			ImVec4 widgetActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 			ImVec4 button = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 			ImVec4 buttonHovered = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
 			ImVec4 buttonActive = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+			ImVec4 secondaryButton = ImVec4(0.07f, 0.71f, 0.36f, 0.75f);
+			ImVec4 secondaryButtonHovered = ImVec4(0.39f, 0.75f, 0.48f, 1.0f);
+			ImVec4 secondaryButtonActive = ImVec4(0.39f, 0.75f, 0.48f, 1.0f);
 			ImVec4 header = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
 			ImVec4 headerHovered = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 			ImVec4 headerActive = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
@@ -128,26 +126,22 @@ namespace ModExplorerMenu
 			ImVec4 textSelectedBg = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 
 			ImVec2 windowPadding = ImVec2(8.00f, 8.00f);
-			ImVec2 framePadding = ImVec2(4.00f, 3.00f);
+			ImVec2 widgetPadding = ImVec2(4.00f, 3.00f);
 			ImVec2 cellPadding = ImVec2(6.00f, 6.00f);
 			ImVec2 itemSpacing = ImVec2(6.00f, 6.00f);
 			ImVec2 itemInnerSpacing = ImVec2(6.00f, 6.00f);
 
-			float alpha = 1.0f;
+			float sidebarSpacing = 0;
 			float windowRounding = 9;
 			float windowBorderSize = 1;
-			float childBorderSize = 1;
-			float childRounding = 0;
-			float frameBorderSize = 1;
-			float frameRounding = 3;
+			float widgetBorderSize = 1;
+			float widgetRounding = 3;
 			float indentSpacing = 21;
 			float columnsMinSpacing = 50;
 			float scrollbarRounding = 9;
 			float scrollbarSize = 14;
 			float grabMinSize = 10;
 			float grabRounding = 3;
-			float popupBorderSize = 1;
-			float popupRounding = 3;
 			float globalFontSize = 1.0;
 
 			bool showTableRowBG = true;

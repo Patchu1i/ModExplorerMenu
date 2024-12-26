@@ -29,16 +29,18 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(3);
 		ImGui::SeparatorText(_TFM("Actions", ":"));
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y + 0.3f, a_style.button.y, a_style.button.w));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
-		if (ImGui::Button(_T("OBJECT_PLACE_SELECTED"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("OBJECT_PLACE_SELECTED"), ImVec2(button_width, 0))) {
 			if (selectedObject != nullptr) {
 				Console::PlaceAtMe(selectedObject->GetFormID(), 1);
 				Console::StartProcessThread();
 			}
 		}
 
-		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
 			for (auto& obj : objectList) {
 				Console::PlaceAtMe(obj->GetFormID(), 1);
 			}
@@ -46,9 +48,9 @@ namespace ModExplorerMenu
 			Console::StartProcessThread();
 		}
 
-		ImGui::PopStyleColor(1);  // End of Green Buttons
+		ImGui::PopStyleColor(3);  // End of Green Buttons
 
-		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, button_height))) {
+		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}
