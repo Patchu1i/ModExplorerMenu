@@ -16,6 +16,14 @@ namespace ModExplorerMenu
 			stl::report_and_fail("Unable to open file for writing JSON");
 		}
 
+		// TODO: Check if the file is empty.
+		// This causes a crash if the file is not empty.?.
+		// file.seekg(0, std::ios::end);
+		// if (file.tellg() == 0) {
+		// 	file.close();
+		// 	return;
+		// }
+
 		nlohmann::json json;
 		file >> json;
 		file.close();

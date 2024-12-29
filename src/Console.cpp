@@ -306,8 +306,7 @@ namespace ModExplorerMenu
 	void Console::MoveREFRToPlayer(std::string a_targetRefID)
 	{
 		if (IsPlayerLoaded()) [[likely]] {
-			AddToQueue("prid " + a_targetRefID);
-			AddToQueue("moveto player");
+			AddToQueue("moveto player " + a_targetRefID);
 		}
 	}
 

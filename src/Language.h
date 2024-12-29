@@ -44,7 +44,6 @@ namespace ModExplorerMenu
 			if (it != lang.end()) {
 				return it->second.c_str();
 			} else {
-				// logger::info("[Translation Error] Key not found: {}", key);
 				return key.c_str();  // Return the key itself as a fallback
 			}
 		}
@@ -60,8 +59,10 @@ namespace ModExplorerMenu
 
 #define _T(key) Translate::GetSingleton()->GetTranslation(key)
 #define _TFM(key, suffix) (std::string(_T(key)) + suffix).c_str()
-#define _TICON(icon, key) (std::string(icon) + _T(key)).c_str()
-#define _TICONM(icon, key, suffix) (std::string(icon) + _T(key) + suffix).c_str()
+// #define _TICON(icon, key) (std::string(icon) + _T(key)).c_str()
+#define _TICON(icon, key) (Settings::GetSingleton()->GetStyle().noIconText ? _T(key) : (std::string(icon) + _T(key)).c_str())
+// #define _TICONM(icon, key, suffix) (std::string(icon) + _T(key) + suffix).c_str()
+#define _TICONM(icon, key, suffix) (Settings::GetSingleton()->GetStyle().noIconText ? _TFM(key, suffix) : (std::string(icon) + _T(key) + suffix).c_str())
 
 	class Language
 	{
