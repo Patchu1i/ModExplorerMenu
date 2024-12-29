@@ -74,6 +74,11 @@ namespace ModExplorerMenu
 		dirty = true;
 	}
 
+	void ObjectWindow::Refresh()
+	{
+		ApplyFilters();
+	}
+
 	// Draw search bar for filtering items.
 	void ObjectWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{

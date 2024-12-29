@@ -19,11 +19,11 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "TELE_CLICK_TO_TELEPORT"), &b_ClickToTeleport, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "TELE_CLICK_TO_TELEPORT"), b_ClickToTeleport, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToTeleport = false;
 		}
 
@@ -33,16 +33,24 @@ namespace ModExplorerMenu
 		ImGui::SeparatorText(_TFM("Favorite", ":"));
 		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 
-		const ImVec2 button_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f);
+		auto constexpr flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration |
+		                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+
 		auto tempList = Data::GetCellMap();
-		for (auto& cell : tempList) {
-			if (cell.favorite) {
-				if (ImGui::Button(cell.GetEditorID().data(), button_size)) {
-					Console::Teleport(cell.GetEditorID().data());
-					Console::StartProcessThread();
-					break;
+		if (ImGui::BeginChild("##TeleportFavoriteScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 10), false, flags)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+			for (auto& cell : tempList) {
+				if (cell.favorite) {
+					if (ImGui::m_Button(cell.GetEditorID().data(), a_style, ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+						Console::Teleport(cell.GetEditorID().data());
+						Console::StartProcessThread();
+						break;
+					}
 				}
 			}
+
+			ImGui::PopStyleVar(1);
+			ImGui::EndChild();
 		}
 
 		ImGui::PopStyleVar(1);

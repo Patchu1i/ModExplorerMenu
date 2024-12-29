@@ -7,6 +7,9 @@
 #include "Utils/Keycode.h"
 #include "Utils/Util.h"
 #include "Windows/AddItem/AddItem.h"
+#include "Windows/NPC/NPC.h"
+#include "Windows/Object/Object.h"
+#include "Windows/Teleport/Teleport.h"
 #include <codecvt>
 
 namespace ModExplorerMenu
@@ -112,7 +115,7 @@ namespace ModExplorerMenu
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f);     // Right Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 12.0f);     // Right Align
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
@@ -217,7 +220,7 @@ namespace ModExplorerMenu
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f);     // Right Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 12.0f);     // Right Align
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
@@ -287,19 +290,37 @@ namespace ModExplorerMenu
 		}
 	}
 
-	void AddCheckbox(const char* a_text, bool& a_boolRef)
+	// Instead of trying to painfully align a checkbox element, I'm using a selectable element.
+	// For the love of god, I do not know why I have to use 6.0f and 7.0f for pixel perfect alignment.
+	// In the width calculations. It may be due to external padding or something.
+	bool AddCheckbox(const char* a_text, bool& a_boolRef)
 	{
-		Settings::Style& style = Settings::GetSingleton()->GetStyle();
-
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##Checkbox" + std::string(a_text);
-		auto width = ImGui::GetFontSize() * 1.5f;
+		auto width = 200.0f;
 		ImGui::Text(_T(a_text));
-		ImGui::SameLine(ImGui::GetContentRegionAvail().x - width + style.indentSpacing + 1.0f);  // One pixel off...
-		if (ImGui::Checkbox(id.c_str(), &a_boolRef)) {
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 6.0f);  // 6.0f is the magic number. Don't ask me why.
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+
+		if (a_boolRef == true) {
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.8f, 0.5f, 0.65f));
+		} else {
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.8f, 0.2f, 0.2f, 0.65f));
+		}
+
+		if (ImGui::Selectable(a_boolRef ? "Enabled" : "Disabled", true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width - 7.0f, 0))) {
+			a_boolRef = !a_boolRef;
 			SettingsWindow::changes.store(true);
 			SettingsWindow::file_changes.store(true);
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
+
+			return a_boolRef;
 		}
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+
+		return false;
 	}
 
 	void AddSelectionDropdown(const char* a_text, int& a_selection, const std::vector<std::string>& a_items)
@@ -353,7 +374,7 @@ namespace ModExplorerMenu
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##FontDropdown" + std::string(a_text);
-		auto fontName = GraphicManager::GetFontName(*a_fontRef);
+		auto fontName = a_fontRef->name;
 		auto width = 200.0f;
 		constexpr auto flags = ImGuiComboFlags_None;
 		ImGui::Text(_T(a_text));
@@ -365,6 +386,7 @@ namespace ModExplorerMenu
 			for (const auto& font : fonts) {
 				if (ImGui::Selectable(font.first.c_str())) {
 					*a_fontRef = font.second;
+					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 				}
 			}
@@ -423,6 +445,10 @@ namespace ModExplorerMenu
 			changes.store(false);
 		}
 
+		ImGui::Unindent();
+		ImGui::SeparatorText("SETTING_GENERAL");
+		ImGui::Indent();
+
 		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
 		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, modifierHoverTint);
 
@@ -468,8 +494,41 @@ namespace ModExplorerMenu
 		}
 		ImGui::PopItemWidth();
 
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::Unindent();
+		ImGui::SeparatorText("SETTING_MODULES");
+		ImGui::Indent();
+
 		AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" });
-		AddCheckbox("SETTING_HIDE_HOME", config.hideHomeMenu);
+		AddCheckbox("SETTING_SHOW_HOME", config.showHomeMenu);
+
+		if (AddCheckbox("SETTING_SHOW_ADDITEM", config.showAddItemMenu)) {
+			if (Data::GetSingleton()->GetItemList().empty()) {
+				Data::GetSingleton()->GenerateItemList();
+				AddItemWindow::Refresh();
+			}
+		}
+
+		if (AddCheckbox("SETTING_SHOW_OBJECT", config.showObjectMenu)) {
+			if (Data::GetSingleton()->GetObjectList().empty()) {
+				Data::GetSingleton()->GenerateObjectList();
+				ObjectWindow::Refresh();
+			}
+		}
+
+		if (AddCheckbox("SETTING_SHOW_NPC", config.showNPCMenu)) {
+			if (Data::GetSingleton()->GetNPCList().empty()) {
+				Data::GetSingleton()->GenerateNPCList();
+				NPCWindow::Refresh();
+			}
+		}
+
+		if (AddCheckbox("SETTING_SHOW_TELEPORT", config.showTeleportMenu)) {
+			if (Data::GetSingleton()->GetCellMap().empty()) {
+				Data::GetSingleton()->GenerateCellList();
+				TeleportWindow::Refresh();
+			}
+		}
 	}
 
 	void SettingsWindow::DrawThemeSelector()
@@ -604,7 +663,9 @@ namespace ModExplorerMenu
 			AddColorPicker("THEME_TEXT_COLOR", style.text);
 			AddColorPicker("THEME_TEXT_DISABLED_COLOR", style.textDisabled);
 			AddColorPicker("THEME_TEXT_SELECTED_BG_COLOR", style.textSelectedBg);
+			AddCheckbox("THEME_DISABLE_ICON_TEXT", style.noIconText);
 			AddFontDropdown("THEME_TEXT_FONT", &style.font);
+			AddFontDropdown("THEME_BUTTON_FONT", &style.buttonFont);
 			AddSliderPicker("THEME_TEXT_FONT_SIZE", style.globalFontSize, 0.5f, 3.0f);
 			ImGui::Unindent();
 		}
@@ -647,8 +708,6 @@ namespace ModExplorerMenu
 			AddColorPicker("THEME_SLIDER_GRAB_COLOR", style.sliderGrab);
 			AddColorPicker("THEME_SLIDER_GRAB_ACTIVE_COLOR", style.sliderGrabActive);
 			AddColorPicker("THEME_SEPARATOR_COLOR", style.separator);
-			AddImageDropdown("THEME_FAVORITE_ICON_ENABLED", &style.favoriteIconEnabled);
-			AddImageDropdown("THEME_FAVORITE_ICON_DISABLED", &style.favoriteIconDisabled);
 			ImGui::Unindent();
 		}
 

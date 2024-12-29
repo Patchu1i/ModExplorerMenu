@@ -113,20 +113,7 @@ namespace ModExplorerMenu
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					ImTextureID favoriteTexture = obj->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
-					float col = obj->favorite ? 1.0f : 0.5f;
-
-					if (favoriteTexture != nullptr) {
-						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##ObjectWindow::FavoriteButton", b_ClickToFavorite, favoriteTexture, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!b_ClickToFavorite) {
-								obj->favorite = !obj->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);
-							}
-						}
-					} else {
-						ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, obj->favorite);
-					}
+					ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, obj->favorite);
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);

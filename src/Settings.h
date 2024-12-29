@@ -19,6 +19,7 @@ namespace ModExplorerMenu
 
 		void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 		void LoadSettings(const wchar_t* a_path);
+		void LoadFont();
 		void SaveSettings();
 		void LoadMasterIni(CSimpleIniA& a_ini);
 		void LoadThemeFromIni(CSimpleIniA& a_ini);
@@ -81,8 +82,14 @@ namespace ModExplorerMenu
 			Language::Locale language = Language::Locale::English;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
 			int uiScale;      // 80, 90, 100, 110, 120
+
 			int defaultShow;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
-			bool hideHomeMenu;
+			bool showHomeMenu;
+			bool showAddItemMenu;
+			bool showObjectMenu;
+			bool showNPCMenu;
+			bool showTeleportMenu;
+
 			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
 		};
 
@@ -145,12 +152,12 @@ namespace ModExplorerMenu
 			float globalFontSize = 1.0;
 
 			bool showTableRowBG = true;
+			bool noIconText = false;
 
 			GraphicManager::Font font;
+			GraphicManager::Font buttonFont;
 
 			GraphicManager::Image splashImage;
-			GraphicManager::Image favoriteIconEnabled;
-			GraphicManager::Image favoriteIconDisabled;
 		};
 
 		struct Setting
@@ -179,7 +186,7 @@ namespace ModExplorerMenu
 			} else if constexpr (std::is_same_v<std::string, T>) {
 				return a_style;
 			} else if constexpr (std::is_same_v<GraphicManager::Font, T>) {
-				return GraphicManager::GetFontName(a_style);
+				return a_style.name;
 			} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
 				return GraphicManager::GetImageName(a_style);
 			} else if constexpr (std::is_same_v<Language::Locale, T>) {
@@ -281,13 +288,18 @@ namespace ModExplorerMenu
 			return themes;
 		}
 
+		static std::wstring GetThemePath(std::string& a_str)
+		{
+			std::wstring path(ini_theme_path);
+			return path + std::wstring(a_str.begin(), a_str.end()) + L".ini";
+		}
+
 		// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
 		// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
 		static std::pair<std::string, bool> SetThemeFromIni(std::string& a_str)
 		{
 			std::vector<std::string> themes = GetListOfThemes();
-			std::wstring path(ini_theme_path);
-			std::wstring full_path = path + std::wstring(a_str.begin(), a_str.end()) + L".ini";
+			std::wstring full_path = GetThemePath(a_str);
 
 			for (const auto& entry : themes) {
 				if (entry == a_str) {

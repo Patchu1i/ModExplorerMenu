@@ -24,21 +24,21 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
 		// Add To Inventory Toggle.
-		if (ImGui::Selectable(_TICON(ICON_RPG_HAND, "AIM_ADD"), &b_AddToInventory, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_HAND, "AIM_ADD"), b_AddToInventory, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
 			b_AddToFavorites = false;
 		};
 		ImGui::SetDelayedTooltip(_T("AIM_ADD_HELP"));
 
 		// Place On Ground Toggle.
-		if (ImGui::Selectable(_TICON(ICON_RPG_GRASS, "AIM_PLACE"), &b_PlaceOnGround, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_GRASS, "AIM_PLACE"), b_PlaceOnGround, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_AddToFavorites = false;
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_PLACE_HELP"));
 
 		// Add To Favorites Toggle.
-		if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), &b_AddToFavorites, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), b_AddToFavorites, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_PlaceOnGround = false;
 		}
@@ -51,7 +51,7 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		// Add All From Table Shortcut.
-		if (ImGui::Button(_T("AIM_ADD_ALL"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("AIM_ADD_ALL"), a_style, ImVec2(button_width, 0))) {
 			for (auto& item : itemList) {
 				Console::AddItem(item->GetFormID());
 			}
@@ -61,7 +61,7 @@ namespace ModExplorerMenu
 		ImGui::SetDelayedTooltip(_T("AIM_ADD_ALL_HELP"));
 
 		// Place All from Table Shortcut.
-		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("GENERAL_PLACE_ALL"), a_style, ImVec2(button_width, 0))) {
 			if (itemList.size() > 30) {
 				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
 			} else {
@@ -83,7 +83,7 @@ namespace ModExplorerMenu
 		});
 
 		// Show Favorites
-		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}

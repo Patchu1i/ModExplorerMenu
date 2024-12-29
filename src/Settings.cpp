@@ -101,8 +101,14 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Language", "English");
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
 			a_ini.SetValue(rSections[Main], "UI Scale", "100");
+
 			a_ini.SetValue(rSections[Main], "DefaultShow", "0");
-			a_ini.SetValue(rSections[Main], "HideHomeMenu", "false");
+			a_ini.SetValue(rSections[Main], "ShowHomeMenu", "false");
+			a_ini.SetValue(rSections[Main], "ShowAddItemMenu", "true");
+			a_ini.SetValue(rSections[Main], "ShowObjectMenu", "true");
+			a_ini.SetValue(rSections[Main], "ShowNPCMenu", "true");
+			a_ini.SetValue(rSections[Main], "ShowTeleportMenu", "true");
+
 			a_ini.SetValue(rSections[Main], "DataPath", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data");
 		});
 	}
@@ -133,6 +139,17 @@ namespace ModExplorerMenu
 		Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 	}
 
+	// Load font separately to allow GraphicManager to read language config first.
+	// Also need the settings to be loaded first to load proper fonts.
+	void Settings::LoadFont()
+	{
+		std::wstring fullPath = GetThemePath(user.config.theme);
+		GetIni(fullPath.c_str(), [](CSimpleIniA& a_ini) {
+			Settings::GetSingleton()->user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "Font", Settings::GetSingleton()->def.style.font, a_ini);
+			Settings::GetSingleton()->user.style.buttonFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "ButtonFont", Settings::GetSingleton()->def.style.buttonFont, a_ini);
+		});
+	}
+
 	void Settings::SaveSettings()
 	{
 		GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
@@ -144,8 +161,14 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language, false).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
+
 			a_ini.SetValue(rSections[Main], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
-			a_ini.SetValue(rSections[Main], "HideHomeMenu", ToString(Settings::GetSingleton()->user.config.hideHomeMenu, false).c_str());
+			a_ini.SetValue(rSections[Main], "ShowHomeMenu", ToString(Settings::GetSingleton()->user.config.showHomeMenu, false).c_str());
+			a_ini.SetValue(rSections[Main], "ShowAddItemMenu", ToString(Settings::GetSingleton()->user.config.showAddItemMenu, true).c_str());
+			a_ini.SetValue(rSections[Main], "ShowObjectMenu", ToString(Settings::GetSingleton()->user.config.showObjectMenu, true).c_str());
+			a_ini.SetValue(rSections[Main], "ShowNPCMenu", ToString(Settings::GetSingleton()->user.config.showNPCMenu, true).c_str());
+			a_ini.SetValue(rSections[Main], "ShowTeleportMenu", ToString(Settings::GetSingleton()->user.config.showTeleportMenu, true).c_str());
+
 			a_ini.SetValue(rSections[Main], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
 	}
@@ -161,8 +184,14 @@ namespace ModExplorerMenu
 		user.config.language = GET_VALUE<Language::Locale>(rSections[Main], "Language", Language::Locale::English, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
+
 		user.config.defaultShow = GET_VALUE<int>(rSections[Main], "DefaultShow", 0, a_ini);
-		user.config.hideHomeMenu = GET_VALUE<bool>(rSections[Main], "HideHomeMenu", false, a_ini);
+		user.config.showHomeMenu = GET_VALUE<bool>(rSections[Main], "ShowHomeMenu", false, a_ini);
+		user.config.showAddItemMenu = GET_VALUE<bool>(rSections[Main], "ShowAddItemMenu", true, a_ini);
+		user.config.showObjectMenu = GET_VALUE<bool>(rSections[Main], "ShowObjectMenu", true, a_ini);
+		user.config.showNPCMenu = GET_VALUE<bool>(rSections[Main], "ShowNPCMenu", true, a_ini);
+		user.config.showTeleportMenu = GET_VALUE<bool>(rSections[Main], "ShowTeleportMenu", true, a_ini);
+
 		user.config.dataPath = GET_VALUE<std::string>(rSections[Main], "DataPath", "", a_ini);
 	}
 
@@ -222,17 +251,14 @@ namespace ModExplorerMenu
 		a_out.grabMinSize = style.GrabMinSize;
 		a_out.grabRounding = style.GrabRounding;
 
+		a_out.noIconText = false;
 		a_out.showTableRowBG = true;
 
-		a_out.font;
+		a_out.font = GraphicManager::font_library["Default"];
+		a_out.buttonFont = GraphicManager::font_library["Default"];
 		a_out.globalFontSize;
 
 		a_out.splashImage;
-		a_out.favoriteIconEnabled;
-		a_out.favoriteIconDisabled;
-
-		// TODO: Font stuff
-		// TODO: Image stuff
 	}
 
 	// Call inside GetIni() to load the theme from the ini file into the user values.
@@ -292,14 +318,12 @@ namespace ModExplorerMenu
 		user.style.grabMinSize = GET_VALUE<float>(rSections[Widgets], "GrabMinSize", def.style.grabMinSize, a_ini);
 		user.style.grabRounding = GET_VALUE<float>(rSections[Widgets], "GrabRounding", def.style.grabRounding, a_ini);
 
+		user.style.noIconText = GET_VALUE<bool>(rSections[Text], "NoIconText", def.style.noIconText, a_ini);
 		user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
-		user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "TextFont", def.style.font, a_ini);
 		user.style.globalFontSize = GET_VALUE<float>(rSections[Fonts], "GlobalFontSize", def.style.globalFontSize, a_ini);
 
 		user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
-		user.style.favoriteIconEnabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconEnabled", def.style.favoriteIconEnabled, a_ini);
-		user.style.favoriteIconDisabled = GET_VALUE<GraphicManager::Image>(rSections[Images], "FavoriteIconDisabled", def.style.favoriteIconDisabled, a_ini);
 	}
 
 	// Export theme and style values to a standalone ini file.
@@ -362,14 +386,14 @@ namespace ModExplorerMenu
 			a_ini.SetValue(rSections[Widgets], "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
 
+			a_ini.SetValue(rSections[Text], "NoIconText", Settings::ToString(a_user.noIconText, false).c_str());
 			a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 
 			a_ini.SetValue(rSections[Fonts], "Font", Settings::ToString(a_user.font, false).c_str());
+			a_ini.SetValue(rSections[Fonts], "ButtonFont", Settings::ToString(a_user.buttonFont, false).c_str());
 			a_ini.SetValue(rSections[Fonts], "GlobalFontSize", Settings::ToString(a_user.globalFontSize, false).c_str());
 
 			a_ini.SetValue(rSections[Images], "SplashImage", Settings::ToString(a_user.splashImage, false).c_str());
-			a_ini.SetValue(rSections[Images], "FavoriteIconEnabled", Settings::ToString(a_user.favoriteIconEnabled, false).c_str());
-			a_ini.SetValue(rSections[Images], "FavoriteIconDisabled", Settings::ToString(a_user.favoriteIconDisabled, false).c_str());
 		});
 	};
 }

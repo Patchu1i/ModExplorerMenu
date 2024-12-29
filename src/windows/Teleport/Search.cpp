@@ -71,6 +71,11 @@ namespace ModExplorerMenu
 		dirty = true;
 	}
 
+	void TeleportWindow::Refresh()
+	{
+		ApplyFilters();
+	}
+
 	// Draw search bar for filtering items.
 	void TeleportWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{

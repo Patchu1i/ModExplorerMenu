@@ -49,6 +49,7 @@ namespace ModExplorerMenu
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
 		static void Init();
+		static void Refresh();
 
 	private:
 		// Searching

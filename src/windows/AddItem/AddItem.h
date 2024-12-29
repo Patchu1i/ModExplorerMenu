@@ -22,6 +22,7 @@ namespace ModExplorerMenu
 		static void ShowItemListContextMenu(Item& a_item);
 		static void ShowBookPreview();
 		static void ApplyFilters();
+		static void Refresh();
 		static void Init();
 
 		enum FilterType
