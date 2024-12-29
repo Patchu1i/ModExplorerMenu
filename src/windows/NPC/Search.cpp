@@ -31,6 +31,8 @@ namespace ModExplorerMenu
 			case BaseColumn::ID::EditorID:
 				compareString = npc.GetEditorID();
 				break;
+			case BaseColumn::ID::Race:
+				compareString = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
 			default:
 				compareString = npc.GetName();
 				break;
@@ -60,6 +62,41 @@ namespace ModExplorerMenu
 			if (npc.GetName() == "")
 				continue;
 
+			for (auto& filter : filterMap) {
+				bool isEnabled = *std::get<0>(filter);
+
+				if (isEnabled) {
+					if (std::get<2>(filter) == "Class") {
+						auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
+						logger::info("NPC Class: {}, Filter {}", npcClass, secondaryFilter);
+						if (npcClass == secondaryFilter) {
+							npcList.push_back(&npc);
+						}
+					}
+
+					if (std::get<2>(filter) == "Race") {
+						auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
+						if (npcRace == secondaryFilter) {
+							npcList.push_back(&npc);
+						}
+					}
+
+					if (std::get<2>(filter) == "Faction") {
+						auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
+						for (auto& faction : npcFaction) {
+							std::string factionName = faction.faction->GetFullName();
+							if (factionName == secondaryFilter) {
+								npcList.push_back(&npc);
+							}
+						}
+					}
+				}
+			}
+
+			if (selectedFilter != "None" && secondaryFilter != "Show All") {
+				continue;
+			}
+
 			if (compareString.find(inputString) != std::string::npos) {
 				npcList.push_back(&npc);
 				continue;
@@ -67,6 +104,11 @@ namespace ModExplorerMenu
 		}
 
 		dirty = true;
+	}
+
+	void NPCWindow::Refresh()
+	{
+		ApplyFilters();
 	}
 
 	// Draw search bar for filtering items.
@@ -83,6 +125,8 @@ namespace ModExplorerMenu
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
 			auto totalWidth = inputTextWidth + filterWidth;
+			auto min = ImVec2(0.0f, 0.0f);
+			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 
 			ImGui::SetNextItemWidth(inputTextWidth);
 			if (ImGui::InputTextWithHint("##NPCWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
@@ -119,14 +163,111 @@ namespace ModExplorerMenu
 
 			ImGui::NewLine();
 
+			ImGui::Text(_TFM("GENERAL_FILTER_SEARCH", ":"));
+
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::SetNextWindowSizeConstraints(min, max);
+			if (ImGui::BeginCombo("##NPCWindow::PrimaryFilter", selectedFilter.c_str())) {
+				if (ImGui::Selectable("None", selectedFilter == "None")) {
+					selectedFilter = "None";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				for (auto& filter : filterMap) {
+					auto& isEnabled = *std::get<0>(filter);
+					auto func = std::get<1>(filter);
+					auto name = std::get<2>(filter);
+
+					if (ImGui::Selectable(name.c_str(), selectedFilter == name)) {
+						selectedFilter = name;
+						isEnabled = !isEnabled;
+						secondaryFilter = "Show All";  // Reset just in case.
+
+						func();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::SetNextItemWidth(totalWidth);
+			ImGui::SetNextWindowSizeConstraints(min, ImVec2(0, ImGui::GetWindowSize().y / 2));
+			if (selectedFilter != "None") {
+				if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
+					if (ImGui::Selectable("Show Searchbar", &b_ShowSearchbar)) {
+						secondaryFilterBuffer[0] = '\0';
+						ImGui::SetItemDefaultFocus();
+					}
+
+					if (ImGui::Selectable("Show All", secondaryFilter == "Show All")) {
+						secondaryFilter = "Show All";
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+					for (auto& filter : secondaryFilterMap) {
+						if (filter.second == selectedFilter) {
+							auto list = filter.first();
+
+							for (auto& item : list) {
+								if (item.empty()) {
+									continue;
+								}
+
+								if (b_ShowSearchbar) {
+									if (std::strlen(secondaryFilterBuffer) > 0) {
+										std::string compareString = item;
+										std::string inputString = secondaryFilterBuffer;
+
+										std::transform(inputString.begin(), inputString.end(), inputString.begin(),
+											[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+										std::transform(compareString.begin(), compareString.end(), compareString.begin(),
+											[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+										if (compareString.find(inputString) != std::string::npos) {
+											// Do nothing?
+										} else {
+											continue;
+										}
+									}
+								}
+
+								if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
+									secondaryFilter = item;
+
+									ApplyFilters();
+									ImGui::SetItemDefaultFocus();
+								}
+							}
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				if (b_ShowSearchbar) {
+					ImGui::NewLine();
+					ImGui::Text("Refine Filter List results:");
+					ImGui::SetNextItemWidth(inputTextWidth + filterWidth);
+					if (ImGui::InputTextWithHint("##NPCWindow::SecondaryFilterSearch", _T("GENERAL_CLICK_TO_TYPE"), secondaryFilterBuffer,
+							IM_ARRAYSIZE(secondaryFilterBuffer),
+							ImGuiInputTextFlags_EscapeClearsAll)) {
+						// ApplyFilters(); text input callback
+					}
+				} else {
+					secondaryFilterBuffer[0] = '\0';
+				}
+			}
+
+			ImGui::NewLine();
+
 			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::InputTextWithHint("##NPCWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
 				IM_ARRAYSIZE(modListBuffer),
 				Frame::INPUT_FLAGS);
 
-			auto min = ImVec2(0.0f, 0.0f);
-			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
 

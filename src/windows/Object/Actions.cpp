@@ -19,11 +19,11 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), &b_ClickToSelect, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), b_ClickToSelect, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), &b_ClickToFavorite, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToSelect = false;
 		}
 
@@ -33,14 +33,14 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
-		if (ImGui::Button(_T("OBJECT_PLACE_SELECTED"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("OBJECT_PLACE_SELECTED"), a_style, ImVec2(button_width, 0))) {
 			if (selectedObject != nullptr) {
 				Console::PlaceAtMe(selectedObject->GetFormID(), 1);
 				Console::StartProcessThread();
 			}
 		}
 
-		if (ImGui::Button(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("GENERAL_PLACE_ALL"), a_style, ImVec2(button_width, 0))) {
 			for (auto& obj : objectList) {
 				Console::PlaceAtMe(obj->GetFormID(), 1);
 			}
@@ -50,7 +50,7 @@ namespace ModExplorerMenu
 
 		ImGui::PopStyleColor(3);  // End of Green Buttons
 
-		if (ImGui::Button(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
+		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {
 			selectedMod = "Favorite";
 			ApplyFilters();
 		}

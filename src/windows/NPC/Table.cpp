@@ -116,20 +116,7 @@ namespace ModExplorerMenu
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					ImTextureID favoriteTexture = npc->favorite ? a_style.favoriteIconEnabled.texture : a_style.favoriteIconDisabled.texture;
-					float col = npc->favorite ? 1.0f : 0.5f;
-
-					if (favoriteTexture != nullptr) {
-						const auto imageSize = ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize());
-						if (ImGui::DisabledImageButton("##NPCWindow::FavoriteButton", b_ClickToFavorite, favoriteTexture, imageSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(col, col, col, col))) {
-							if (!b_ClickToFavorite) {
-								npc->favorite = !npc->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
-							}
-						}
-					} else {
-						ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite);
-					}
+					ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite);
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);
@@ -157,6 +144,24 @@ namespace ModExplorerMenu
 					// Editor ID
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetEditorID().data());
+
+					auto tesNPC = npc->TESForm->As<RE::TESNPC>();
+
+					// Gender
+					ImGui::TableNextColumn();
+					ImGui::Text(tesNPC->race->GetFullName());
+
+					// Race
+					ImGui::TableNextColumn();
+					ImGui::Text(tesNPC->IsFemale() ? _T("Female") : _T("Male"));
+
+					// Class
+					ImGui::TableNextColumn();
+					ImGui::Text(tesNPC->npcClass->GetFullName());
+
+					// Level
+					ImGui::TableNextColumn();
+					ImGui::Text(std::to_string(tesNPC->GetLevel()).c_str());
 
 					// Health
 					ImGui::TableNextColumn();

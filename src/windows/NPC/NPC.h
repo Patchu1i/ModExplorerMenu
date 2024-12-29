@@ -31,8 +31,30 @@ namespace ModExplorerMenu
 		static inline NPC* selectedNPC = nullptr;
 		static inline NPC* hoveredNPC = nullptr;
 
+		// Filtering
+		static inline bool b_ShowSearchbar = false;
+		static inline bool b_Class = false;
+		static inline bool b_Race = false;
+		static inline bool b_Faction = false;
+
+		static inline std::vector<std::tuple<bool*, std::function<void()>, std::string>> filterMap = {
+			{ &b_Class, Data::GenerateNPCClassList, "Class" },
+			{ &b_Race, Data::GenerateNPCRaceList, "Race" },
+			{ &b_Faction, Data::GenerateNPCFactionList, "Faction" }
+		};
+
+		static inline std::vector<std::pair<std::function<std::set<std::string>()>, std::string>> secondaryFilterMap = {
+			{ Data::GetNPCClassList, "Class" },
+			{ Data::GetNPCRaceList, "Race" },
+			{ Data::GetNPCFactionList, "Faction" }
+		};
+
+		static inline std::string selectedFilter = "None";
+		static inline std::string secondaryFilter = "Show All";
+
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
+		static void Refresh();
 		static void Init();
 
 	private:
@@ -40,6 +62,7 @@ namespace ModExplorerMenu
 		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
 		static inline char inputBuffer[256] = "";
 		static inline char modListBuffer[256] = "";
+		static inline char secondaryFilterBuffer[256] = "";
 		static inline std::string selectedMod = "All Mods";
 		static inline bool dirty = true;
 
@@ -47,7 +70,8 @@ namespace ModExplorerMenu
 		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Name, "Name" },
 			{ BaseColumn::ID::EditorID, "Editor ID" },
-			{ BaseColumn::ID::FormID, "Form ID" }
+			{ BaseColumn::ID::FormID, "Form ID" },
+			{ BaseColumn::ID::Race, "Race" }
 		};
 
 		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;

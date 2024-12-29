@@ -21,7 +21,7 @@ namespace ModExplorerMenu
 			Favorite, Plugin, Type, FormID, Name, EditorID, Health,
             Magicka, Stamina, CarryWeight, GoldValue, BaseDamage,
             ArmorRating, Speed, CritDamage, Skill, Weight, DPS,
-            Space, Zone, CellName, ReferenceID
+            Space, Zone, CellName, ReferenceID, Race, Gender, Class, Level
 		};
 
         ID key;
@@ -112,6 +112,10 @@ namespace ModExplorerMenu
             columns.push_back({ _T("Reference ID"), flag, 0.0f, false, BaseColumn::ID::ReferenceID });
             columns.push_back({ _T("Name"), flag, 0.0f, false, BaseColumn::ID::Name });
             columns.push_back({ _T("Editor ID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
+            columns.push_back({ _T("Race"), flag, 0.0f, false, BaseColumn::Race});
+            columns.push_back({ _T("Gender"), flag, 0.0f, false, BaseColumn::Gender});
+            columns.push_back({ _T("Class"), flag, 0.0f, false, BaseColumn::Class});
+            columns.push_back({ _T("Level"), flag, 0.0f, false, BaseColumn::Level});
             columns.push_back({ _T("Health"), flag, 30.0f, false, BaseColumn::ID::Health });
             columns.push_back({ _T("Magicka"), flag, 30.0f, false, BaseColumn::ID::Magicka });
             columns.push_back({ _T("Stamina"), flag, 30.0f, false, BaseColumn::ID::Stamina });
@@ -238,6 +242,52 @@ namespace ModExplorerMenu
                     break;
                 else delta = lhs->name.compare(rhs->name);
                     break;
+            case BaseColumn::ID::Class:
+                if constexpr (!std::is_same<Object, NPC>::value) {
+                    break;
+                } else {
+                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
+                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
+                    std::string lhsClass = lhsTesNPC->npcClass->GetFullName();
+                    std::string rhsClass = rhsTesNPC->npcClass->GetFullName();
+
+                    delta = lhsClass.compare(rhsClass);
+                    break;
+                }
+            case BaseColumn::ID::Gender:
+                if constexpr (!std::is_same<Object, NPC>::value) {
+                    break;
+                } else {
+                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
+                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
+                    bool lhsGender = lhsTesNPC->IsFemale();
+                    bool rhsGender = rhsTesNPC->IsFemale();
+                    
+                    delta = (lhsGender < rhsGender) ? -1 : (lhsGender > rhsGender) ? 1 : 0;
+                    break;
+                }
+            case BaseColumn::ID::Race:
+                if constexpr (!std::is_same<Object, NPC>::value) {
+                    break;
+                } else {
+                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
+                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
+                    std::string lhsRace = lhsTesNPC->race->GetFullName();
+                    std::string rhsRace = rhsTesNPC->race->GetFullName();
+
+                    delta = lhsRace.compare(rhsRace);
+                    break;
+                }
+            case BaseColumn::ID::Level:
+                if constexpr (!std::is_same<Object, NPC>::value) {
+                    break;
+                } else {
+                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
+                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
+
+                    delta = (lhsTesNPC->GetLevel() < rhsTesNPC->GetLevel()) ? -1 : (lhsTesNPC->GetLevel() > rhsTesNPC->GetLevel()) ? 1 : 0;
+                    break;
+                }
             case BaseColumn::ID::Health:
                 if constexpr (!std::is_same<Object, NPC>::value)
                     break;
