@@ -22,10 +22,14 @@ namespace ModExplorerMenu
 
 		struct Font
 		{
-			ImFont* nano = nullptr;
-			ImFont* tiny = nullptr;
-			ImFont* medium = nullptr;
+			std::string name = "Default";
+			ImFont* normal = nullptr;
 			ImFont* large = nullptr;
+
+			bool operator==(const Font& other) const
+			{
+				return name.compare(other.name) == 0;
+			}
 		};
 
 		enum FontSize
@@ -60,18 +64,6 @@ namespace ModExplorerMenu
 
 			logger::warn("Font Reference not found: {}", a_font);
 			return Font();
-		}
-
-		[[nodiscard]] static std::string GetFontName(Font a_font)
-		{
-			// Note to self: return font_library[key] adds key value if not valid.
-			for (const auto& [key, value] : font_library) {
-				if (value.medium == a_font.medium) {
-					return key;
-				}
-			}
-
-			return "Default";
 		}
 
 		[[nodiscard]] static Image GetImage(std::string a_name)

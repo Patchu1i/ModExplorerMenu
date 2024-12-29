@@ -99,7 +99,7 @@ namespace ModExplorerMenu
 		config.MergeMode = true;
 		config.GlyphMinAdvanceX = 10.0f;
 		config.GlyphExtraSpacing.x = 5.0f;
-		config.GlyphOffset.y = 1.0f;
+		config.GlyphOffset.y = 3.0f;
 		config.GlyphOffset.x = 1.0f;
 		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
 		io.Fonts->AddFontFromFileTTF("Data/Interface/ModExplorerMenu/fonts/icons/rpgawesome-webfont.ttf", size - 1.0f, &config, icon_ranges);
@@ -126,14 +126,13 @@ namespace ModExplorerMenu
 			auto index = entry.path().filename().stem().string();
 
 			ImGuiIO& io = ImGui::GetIO();
-			out_struct[index].nano = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 16.0f, NULL, glyph_ranges);
-			MergeIconFont(io, 16.0f);
-			out_struct[index].tiny = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 18.0f, NULL, glyph_ranges);
+			out_struct[index].normal = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 18.0f, NULL, glyph_ranges);
 			MergeIconFont(io, 18.0f);
-			out_struct[index].medium = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f, NULL, glyph_ranges);
+			out_struct[index].large = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 20.0f, NULL, glyph_ranges);
 			MergeIconFont(io, 20.0f);
-			out_struct[index].large = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.0f, NULL, glyph_ranges);
-			MergeIconFont(io, 24.0f);
+			out_struct[index].name = index;
+
+			logger::info("Font Index Names: {}", index);
 		}
 	}
 
@@ -144,54 +143,36 @@ namespace ModExplorerMenu
 
 		switch (a_language) {
 		case Language::Locale::Chinese:
-			font_library["Default"].nano = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 16.0f, NULL, glyph_range);
-			MergeIconFont(io, 16.0f);
-			font_library["Default"].tiny = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 18.0f, NULL, glyph_range);
+			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
-			font_library["Default"].medium = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 20.0f, NULL, glyph_range);
+			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
-			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 24.0f, NULL, glyph_range);
-			MergeIconFont(io, 24.0f);
 			break;
 		case Language::Locale::Japanese:
-			font_library["Default"].nano = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 16.0f, NULL, glyph_range);
-			MergeIconFont(io, 16.0f);
-			font_library["Default"].tiny = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0f, NULL, glyph_range);
+			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
-			font_library["Default"].medium = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 20.0f, NULL, glyph_range);
+			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
-			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 24.0f, NULL, glyph_range);
-			MergeIconFont(io, 24.0f);
 			break;
 		case Language::Locale::Korean:
-			font_library["Default"].nano = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 16.0f, NULL, glyph_range);
-			MergeIconFont(io, 16.0f);
-			font_library["Default"].tiny = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 18.0f, NULL, glyph_range);
+			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
-			font_library["Default"].medium = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 20.0f, NULL, glyph_range);
+			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
-			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 24.0f, NULL, glyph_range);
-			MergeIconFont(io, 24.0f);
 			break;
 		case Language::Locale::Russian:
-			font_library["Default"].nano = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 16.0f, NULL, glyph_range);
-			MergeIconFont(io, 16.0f);
-			font_library["Default"].tiny = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 18.0f, NULL, glyph_range);
+			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
-			font_library["Default"].medium = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 20.0f, NULL, glyph_range);
+			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
-			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 24.0f, NULL, glyph_range);
-			MergeIconFont(io, 24.0f);
 			break;
 		default:
-			font_library["Default"].nano = io.Fonts->AddFontDefault();
-			MergeIconFont(io, 16.0f);
-			font_library["Default"].tiny = io.Fonts->AddFontDefault();
+			ImFontConfig config;
+			config.SizePixels = 20.0f;
+			font_library["Default"].normal = io.Fonts->AddFontDefault();
 			MergeIconFont(io, 18.0f);
-			font_library["Default"].medium = io.Fonts->AddFontDefault();
+			font_library["Default"].large = io.Fonts->AddFontDefault(&config);
 			MergeIconFont(io, 20.0f);
-			font_library["Default"].large = io.Fonts->AddFontDefault();
-			MergeIconFont(io, 24.0f);
 		}
 	}
 

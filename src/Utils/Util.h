@@ -29,7 +29,7 @@ namespace ImGui
 		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
 		if (ImGui::BeginPopupModal("Non-latin Alphabetical Language", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
 			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Non-latin Alphabetical Language"));
-			ImGui::PushFont(style.font.medium);
+			ImGui::PushFont(style.font.normal);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
 			ImGui::Text("Non-latin Alphabetical Language");
 			ImGui::PopStyleColor(1);
@@ -79,7 +79,7 @@ namespace ImGui
 		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
 		if (ImGui::BeginPopupModal(warning, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
 			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(warning));
-			ImGui::PushFont(style.font.medium);
+			ImGui::PushFont(style.font.normal);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
 			ImGui::Text(warning);
 			ImGui::PopStyleColor(1);
@@ -109,6 +109,35 @@ namespace ImGui
 			ImGui::EndPopup();
 		}
 	}
+
+	//
+	// ImGui Replacements specifically for theme integration.
+	//
+
+	inline static bool m_Button(const char* label, ModExplorerMenu::Settings::Style& style, const ImVec2& size = ImVec2(0, 0))
+	{
+		ImGui::PushFont(style.buttonFont.normal);
+		auto result = ImGui::Button(label, size);
+		ImGui::PopFont();
+		return result;
+	}
+
+	inline static bool m_Selectable(
+		const char* label,
+		bool& selected,
+		ModExplorerMenu::Settings::Style& style,
+		ImGuiSelectableFlags flag = ImGuiSelectableFlags_None,
+		const ImVec2& size = ImVec2(0, 0))
+	{
+		ImGui::PushFont(style.buttonFont.normal);
+		auto result = ImGui::Selectable(label, &selected, flag, size);
+		ImGui::PopFont();
+		return result;
+	}
+
+	//
+	// End of ImGui Replacements.
+	//
 
 	inline static bool DisabledButton(const char* label, bool& disabled, const ImVec2& size = ImVec2(0, 0))
 	{
@@ -215,6 +244,13 @@ namespace Utils
 			"Smithing",
 			"Heavy Armor"
 		};
+	}
+
+	inline static std::string RemoveQuotesInPath(const std::string& path)
+	{
+		std::string newPath = path;
+		newPath.erase(std::remove(newPath.begin(), newPath.end(), '\"'), newPath.end());
+		return newPath;
 	}
 
 	inline static void RemoveHTMLTags(std::string& a_string)

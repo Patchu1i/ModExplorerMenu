@@ -56,8 +56,10 @@ namespace
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
 			ModExplorerMenu::PersistentData::LoadFromFile();
-			ModExplorerMenu::Data::GetSingleton()->Run();
 			ModExplorerMenu::Settings::GetSingleton()->LoadSettings(ModExplorerMenu::Settings::ini_mem_path);
+			ModExplorerMenu::GraphicManager::Init();
+			ModExplorerMenu::Settings::GetSingleton()->LoadFont();
+			ModExplorerMenu::Data::GetSingleton()->Run();
 			ModExplorerMenu::Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:

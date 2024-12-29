@@ -27,7 +27,12 @@ namespace ModExplorerMenu
 			ImGui::GetIO().MouseDrawCursor = false;
 		}
 
+		Settings::Style& style = Settings::GetSingleton()->GetStyle();
+
+		ImGui::PushFont(style.font.normal);
 		Frame::Draw(is_settings_popped);
+		ImGui::PopFont();
+
 		//ImGui::ShowDemoWindow();
 
 		ImGui::EndFrame();

@@ -1,6 +1,7 @@
 #include "Frame.h"
 #include "Graphic.h"
 #include "Menu.h"
+#include "Utils/Util.h"
 #include "Windows/AddItem/AddItem.h"
 #include "Windows/Home/Home.h"
 #include "Windows/NPC/NPC.h"
@@ -61,6 +62,7 @@ namespace ModExplorerMenu
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.buttonHovered);
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		ImGui::PushFont(style.buttonFont.normal);
 		if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
 			auto iWidth = ImGui::GetContentRegionAvail().x;
 			auto iHeight = ImGui::GetWindowSize().y / 12;
@@ -68,31 +70,39 @@ namespace ModExplorerMenu
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-			if (!config.hideHomeMenu) {
+			if (config.showHomeMenu) {
 				if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::Home;
 					ResetSelectable();
 				}
 			}
 
-			if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::AddItem;
-				ResetSelectable();
+			if (config.showAddItemMenu) {
+				if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::AddItem;
+					ResetSelectable();
+				}
 			}
 
-			if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Object;
-				ResetSelectable();
+			if (config.showObjectMenu) {
+				if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::Object;
+					ResetSelectable();
+				}
 			}
 
-			if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::NPC;
-				ResetSelectable();
+			if (config.showNPCMenu) {
+				if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::NPC;
+					ResetSelectable();
+				}
 			}
 
-			if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Teleport;
-				ResetSelectable();
+			if (config.showTeleportMenu) {
+				if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::Teleport;
+					ResetSelectable();
+				}
 			}
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -108,6 +118,7 @@ namespace ModExplorerMenu
 
 			ImGui::End();
 		}
+		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(1);
 
@@ -150,7 +161,6 @@ namespace ModExplorerMenu
 		ResetSelectable();
 
 		// Initalize elements
-		GraphicManager::Init();
 		AddItemWindow::Init();
 		HomeWindow::Init();
 		NPCWindow::Init();
