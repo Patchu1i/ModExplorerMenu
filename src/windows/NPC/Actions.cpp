@@ -185,7 +185,7 @@ namespace ModExplorerMenu
 		                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
 
 		if (ImGui::BeginChild("##NPCInfoScroll", ImVec2(ImGui::GetContentRegionAvail().x, 0), false, flags)) {
-			if (ImGui::TreeNode(_T("NPC_INFO"))) {
+			if (ImGui::TreeNode(_T("Info"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				auto npcClass = npc->npcClass;
 				auto npcRace = npc->race;
@@ -201,16 +201,16 @@ namespace ModExplorerMenu
 				InlineText(_TFM("Gender", ":"), npcGender ? "Female" : "Male");
 				InlineBar(_TFM("Level", ":"), npcLevel, 100.0f);
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				InlineBar(_TFM("NPC_HEALTH", ":"), npcHealth, 100.0f);
-				InlineBar(_TFM("NPC_MAGICKA", ":"), npcMagicka, 100.0f);
-				InlineBar(_TFM("NPC_STAMINA", ":"), npcStamina, 100.0f);
+				InlineBar(_TFM("Health", ":"), npcHealth, 100.0f);
+				InlineBar(_TFM("Magicka", ":"), npcMagicka, 100.0f);
+				InlineBar(_TFM("Stamina", ":"), npcStamina, 100.0f);
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 				ImGui::TreePop();
 			}
 
 			// Faction
-			if (ImGui::TreeNode(_T("NPC_FACTIONS"))) {
+			if (ImGui::TreeNode(_T("Faction"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 				auto factions = npc->factions;

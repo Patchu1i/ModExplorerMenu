@@ -140,7 +140,7 @@ namespace ModExplorerMenu
 				const auto name = std::get<2>(filter);
 				numOfFilter++;
 
-				if (numOfFilter % 5 == 0) {
+				if (numOfFilter == 6) {
 					ImGui::SetCursorPosX(sx + 5.0f);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
 				} else {
@@ -159,7 +159,8 @@ namespace ModExplorerMenu
 
 				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
 
-				if (ImGui::Selectable(_T(name), true, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
+				bool alwaysTrue = true;
+				if (ImGui::m_Selectable(_T(name), alwaysTrue, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
 					isDirty = true;
 					*isEnabled = !*isEnabled;
 				}

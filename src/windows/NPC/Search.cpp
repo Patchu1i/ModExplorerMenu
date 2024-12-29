@@ -62,39 +62,41 @@ namespace ModExplorerMenu
 			if (npc.GetName() == "")
 				continue;
 
-			for (auto& filter : filterMap) {
-				bool isEnabled = *std::get<0>(filter);
+			if (b_Class || b_Race || b_Faction) {
+				for (auto& filter : filterMap) {
+					bool isEnabled = *std::get<0>(filter);
 
-				if (isEnabled) {
-					if (std::get<2>(filter) == "Class") {
-						auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
-						logger::info("NPC Class: {}, Filter {}", npcClass, secondaryFilter);
-						if (npcClass == secondaryFilter) {
-							npcList.push_back(&npc);
-						}
-					}
-
-					if (std::get<2>(filter) == "Race") {
-						auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
-						if (npcRace == secondaryFilter) {
-							npcList.push_back(&npc);
-						}
-					}
-
-					if (std::get<2>(filter) == "Faction") {
-						auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
-						for (auto& faction : npcFaction) {
-							std::string factionName = faction.faction->GetFullName();
-							if (factionName == secondaryFilter) {
+					if (isEnabled) {
+						if (std::get<2>(filter) == "Class") {
+							auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
+							logger::info("NPC Class: {}, Filter {}", npcClass, secondaryFilter);
+							if (npcClass == secondaryFilter) {
 								npcList.push_back(&npc);
+							}
+						}
+
+						if (std::get<2>(filter) == "Race") {
+							auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
+							if (npcRace == secondaryFilter) {
+								npcList.push_back(&npc);
+							}
+						}
+
+						if (std::get<2>(filter) == "Faction") {
+							auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
+							for (auto& faction : npcFaction) {
+								std::string factionName = faction.faction->GetFullName();
+								if (factionName == secondaryFilter) {
+									npcList.push_back(&npc);
+								}
 							}
 						}
 					}
 				}
-			}
 
-			if (selectedFilter != "None" && secondaryFilter != "Show All") {
-				continue;
+				if (selectedFilter != "None" && secondaryFilter != "Show All") {
+					continue;
+				}
 			}
 
 			if (compareString.find(inputString) != std::string::npos) {
@@ -168,7 +170,7 @@ namespace ModExplorerMenu
 			ImGui::SetNextItemWidth(totalWidth);
 			ImGui::SetNextWindowSizeConstraints(min, max);
 			if (ImGui::BeginCombo("##NPCWindow::PrimaryFilter", selectedFilter.c_str())) {
-				if (ImGui::Selectable("None", selectedFilter == "None")) {
+				if (ImGui::Selectable(_T("None"), selectedFilter == "None")) {
 					selectedFilter = "None";
 					ApplyFilters();
 					ImGui::SetItemDefaultFocus();
@@ -194,12 +196,12 @@ namespace ModExplorerMenu
 			ImGui::SetNextWindowSizeConstraints(min, ImVec2(0, ImGui::GetWindowSize().y / 2));
 			if (selectedFilter != "None") {
 				if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
-					if (ImGui::Selectable("Show Searchbar", &b_ShowSearchbar)) {
+					if (ImGui::Selectable(_T("GENERAL_SHOW_SEARCHBAR"), &b_ShowSearchbar)) {
 						secondaryFilterBuffer[0] = '\0';
 						ImGui::SetItemDefaultFocus();
 					}
 
-					if (ImGui::Selectable("Show All", secondaryFilter == "Show All")) {
+					if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
 						secondaryFilter = "Show All";
 						ApplyFilters();
 						ImGui::SetItemDefaultFocus();
@@ -248,12 +250,12 @@ namespace ModExplorerMenu
 
 				if (b_ShowSearchbar) {
 					ImGui::NewLine();
-					ImGui::Text("Refine Filter List results:");
+					ImGui::Text(_TFM("GENERAL_FILTER_REFINE", ":"));
 					ImGui::SetNextItemWidth(inputTextWidth + filterWidth);
 					if (ImGui::InputTextWithHint("##NPCWindow::SecondaryFilterSearch", _T("GENERAL_CLICK_TO_TYPE"), secondaryFilterBuffer,
 							IM_ARRAYSIZE(secondaryFilterBuffer),
 							ImGuiInputTextFlags_EscapeClearsAll)) {
-						// ApplyFilters(); text input callback
+						// Text Callback if we need it.
 					}
 				} else {
 					secondaryFilterBuffer[0] = '\0';
