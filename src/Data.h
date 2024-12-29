@@ -13,59 +13,8 @@ namespace ModExplorerMenu
 	class Data
 	{
 	public:
-		void CacheNPCRefIds();
-		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
-
-		struct CachedItem  // Removed ItemType (formType), should source from RE::FormType::
-		{
-			const char* name;
-			std::string formid;
-			RE::TESForm* form;
-			std::string editorid;
-			RE::FormType formType;
-			std::string typeName;
-			std::int32_t goldValue;
-			RE::TESFile* mod;
-			float weight;
-			bool nonPlayable;
-			bool favorite;
-			int quantity;
-			bool selected;
-		};
-
-		struct CachedCell
-		{
-			std::string plugin;
-			std::string space;
-			std::string zone;
-			std::string fullName;
-			std::string editorid;
-			uint32_t cellid;
-			bool favorite = false;
-			const RE::TESFile* mod;
-
-			CachedCell(std::string plugin, std::string space, std::string zone, std::string fullName, std::string editorid, const RE::TESFile* mod = nullptr) :
-				plugin(plugin), space(space), zone(zone), fullName(fullName), editorid(editorid), mod(mod) {}
-		};
-
-		struct CachedNPC
-		{
-			RE::TESForm* form;
-			RE::FormID refID;
-			std::string plugin;
-			std::string name;
-			std::string formid;
-			std::string editorid;
-
-			float health;
-			float magicka;
-			float stamina;
-			float carryweight;
-
-			RE::TESNPC::Skills skills;
-
-			bool favorite;
-		};
+		static void CacheNPCRefIds();
+		static void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
 
 		enum
 		{
@@ -74,13 +23,6 @@ namespace ModExplorerMenu
 			STATIC_MOD_LIST,
 			CELL_MOD_LIST
 		};
-
-		static CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc);
-
-		// [[nodiscard]] static inline std::unordered_set<RE::TESFile*> GetModList()
-		// {
-		// 	return _modList;
-		// }
 
 		[[nodiscard]] static inline std::vector<RE::TESFile*> SortModList(std::vector<RE::TESFile*> modList, int sort = 0)
 		{
@@ -141,6 +83,10 @@ namespace ModExplorerMenu
 		static inline std::unordered_set<RE::TESFile*> _staticModList;
 		static inline std::unordered_set<RE::TESFile*> _cellModList;
 
+		static inline std::set<std::string> _npcClassList;
+		static inline std::set<std::string> _npcRaceList;
+		static inline std::set<std::string> _npcFactionList;
+
 		struct ModFileItemFlags
 		{
 			bool alchemy = false;
@@ -165,16 +111,16 @@ namespace ModExplorerMenu
 		static inline std::unordered_map<RE::TESFile*, ModFileItemFlags> _itemListModFormTypeMap;
 		static inline std::unordered_map<RE::TESFile*, std::time_t> _modListLastModified;
 
-		void CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_map);
+		static void CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_map);
 
 		template <class T>
 		static void CacheItems(RE::TESDataHandler* a_data);
 
 		template <class T>
-		void CacheNPCs(RE::TESDataHandler* a_data);
+		static void CacheNPCs(RE::TESDataHandler* a_data);
 
 		template <class T>
-		void CacheStaticObjects(RE::TESDataHandler* a_data);
+		static void CacheStaticObjects(RE::TESDataHandler* a_data);
 
 		// Windows Specific API for File Creation Time
 		[[nodiscard]] static std::time_t GetFileCreationTime(const std::filesystem::path& path)
@@ -202,6 +148,15 @@ namespace ModExplorerMenu
 		}
 
 	public:
+		static void GenerateItemList();
+		static void GenerateNPCList();
+		static void GenerateObjectList();
+		static void GenerateCellList();
+
+		static void GenerateNPCClassList();
+		static void GenerateNPCRaceList();
+		static void GenerateNPCFactionList();
+
 		static inline Data* GetSingleton()
 		{
 			static Data singleton;
@@ -226,6 +181,21 @@ namespace ModExplorerMenu
 		[[nodiscard]] static inline std::vector<NPC>& GetNPCList()
 		{
 			return _npcCache;
+		}
+
+		[[nodiscard]] static inline std::set<std::string>& GetNPCClassList()
+		{
+			return _npcClassList;
+		}
+
+		[[nodiscard]] static inline std::set<std::string>& GetNPCRaceList()
+		{
+			return _npcRaceList;
+		}
+
+		[[nodiscard]] static inline std::set<std::string>& GetNPCFactionList()
+		{
+			return _npcFactionList;
 		}
 
 		[[nodiscard]] static inline std::vector<RE::TESObjectREFR*>& GetNPCRefIds()

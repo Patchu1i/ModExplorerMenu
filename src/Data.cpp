@@ -1,11 +1,8 @@
 #include "Data.h"
 #include "Settings.h"
+#include "Utils/Util.h"
 #include "Utils/Worldspace.h"
 #include "Windows/Persistent.h"
-
-// Saving this for later:
-// 		auto forms = RE::TESForm::GetAllForms();
-// 		for (auto iter = forms.first->begin(); iter != forms.first->end(); ++iter) {
 
 namespace ModExplorerMenu
 {
@@ -20,22 +17,6 @@ namespace ModExplorerMenu
 			return function(a_formID);
 		}
 		return {};
-	}
-
-	Data::CachedNPC* CreateCachedNPC(RE::TESNPC* a_npc)
-	{
-		RE::TESForm* form = a_npc;
-		return new Data::CachedNPC({ .form = form,
-			.plugin = form->GetFile()->fileName,
-			.name = a_npc->GetFullName(),
-			.formid = fmt::format("{:08x}", form->GetFormID()),
-			.editorid = GetEditorID(form->GetFormID()),
-			.health = a_npc->GetBaseActorValue(RE::ActorValue::kHealth),
-			.magicka = a_npc->GetBaseActorValue(RE::ActorValue::kMagicka),
-			.stamina = a_npc->GetBaseActorValue(RE::ActorValue::kStamina),
-			.carryweight = a_npc->GetBaseActorValue(RE::ActorValue::kCarryWeight),
-			.skills = a_npc->playerSkills,
-			.favorite = false });
 	}
 
 	template <class T>
@@ -90,9 +71,8 @@ namespace ModExplorerMenu
 	void Data::CacheNPCRefIds()
 	{
 		auto npc_ref_map = std::make_shared<std::unordered_map<RE::FormID, RE::FormID>>();
-		auto data = this->GetSingleton();
 
-		SKSE::GetTaskInterface()->AddTask([npc_ref_map, &data]() {
+		SKSE::GetTaskInterface()->AddTask([npc_ref_map]() {
 			auto process = RE::ProcessLists::GetSingleton();
 
 			// Captures most NPCs in the game.
@@ -143,7 +123,7 @@ namespace ModExplorerMenu
 			}
 
 			// Callback to Data to merge with master list.
-			data->MergeNPCRefIds(npc_ref_map);
+			Data::MergeNPCRefIds(npc_ref_map);
 		});
 	}
 
@@ -151,6 +131,7 @@ namespace ModExplorerMenu
 	void Data::CacheItems(RE::TESDataHandler* a_data)
 	{
 		auto dataPath = Settings::GetSingleton()->GetConfig().dataPath;
+		dataPath = Utils::RemoveQuotesInPath(dataPath);
 
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
@@ -165,7 +146,7 @@ namespace ModExplorerMenu
 
 				// std::filesystem::path path = std::string("C:\\Program Files (x86)\\Steam\\steamapps\\al Edition\\Data\\") + mod->fileName;
 
-				std::filesystem::path path = dataPath + "\\" + mod->fileName;
+				std::filesystem::path path = dataPath + "/" + mod->fileName;
 				if (std::filesystem::exists(path)) {
 					std::time_t creationTime = GetFileCreationTime(path);
 					_modListLastModified[mod] = creationTime;
@@ -260,7 +241,7 @@ namespace ModExplorerMenu
 
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
-	// Doesn't capture every cell, but it's a start.
+	// Modified to include both Interior and Exterior cells, and to also cache fullname record.
 	void Data::CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_cellMap)
 	{
 		if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
@@ -289,7 +270,9 @@ namespace ModExplorerMenu
 					}
 
 					if (gotEDID && gotLUFF) {
-						a_cellMap.push_back(Cell(a_file->fileName, "Unknown", "Unknown", luff, edid, a_file));
+						bool favorite = PersistentData::m_favorites[edid];
+
+						a_cellMap.push_back(Cell(a_file->fileName, "Unknown", "Unknown", luff, edid, favorite, a_file));
 
 						if (!_cellModList.contains(a_file)) {
 							_cellModList.insert(a_file);
@@ -306,65 +289,154 @@ namespace ModExplorerMenu
 		}
 	}
 
-	void Data::Run()
+	void Data::GenerateItemList()
 	{
 		_cache.clear();
+
+		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+			CacheItems<RE::TESObjectARMO>(dataHandler);
+			CacheItems<RE::TESObjectBOOK>(dataHandler);
+			CacheItems<RE::TESObjectWEAP>(dataHandler);
+			CacheItems<RE::TESObjectMISC>(dataHandler);
+			CacheItems<RE::TESAmmo>(dataHandler);
+			CacheItems<RE::AlchemyItem>(dataHandler);
+			CacheItems<RE::IngredientItem>(dataHandler);
+			CacheItems<RE::TESKey>(dataHandler);
+			CacheItems<RE::ScrollItem>(dataHandler);
+			CacheItems<RE::TESSoulGem>(dataHandler);
+		}
+	}
+
+	void Data::GenerateNPCList()
+	{
+		_npcCache.clear();
+
+		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+			CacheNPCs<RE::TESNPC>(dataHandler);
+			CacheNPCRefIds();
+		}
+	}
+
+	void Data::GenerateNPCClassList()
+	{
+		_npcClassList.clear();
+
+		for (auto& npc : _npcCache) {
+			if (auto className = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName()) {
+				if (className == nullptr) {
+					continue;
+				}
+
+				if (_npcClassList.find(className) == _npcClassList.end()) {
+					_npcClassList.insert(className);
+				}
+			}
+		}
+	}
+
+	void Data::GenerateNPCRaceList()
+	{
+		_npcRaceList.clear();
+
+		for (auto& npc : _npcCache) {
+			if (auto raceName = npc.TESForm->As<RE::TESNPC>()->race->GetFullName()) {
+				if (raceName == nullptr) {
+					continue;
+				}
+
+				if (_npcRaceList.find(raceName) == _npcRaceList.end()) {
+					_npcRaceList.insert(raceName);
+				}
+			}
+		}
+	}
+
+	void Data::GenerateNPCFactionList()
+	{
+		_npcFactionList.clear();
+
+		for (auto& npc : _npcCache) {
+			auto factionNames = npc.TESForm->As<RE::TESNPC>()->factions;
+			for (auto& faction : factionNames) {
+				std::string factionName = faction.faction->GetFullName();
+
+				if (factionName.empty()) {
+					continue;
+				}
+
+				if (_npcFactionList.find(factionName) == _npcFactionList.end()) {
+					_npcFactionList.insert(factionName);
+				}
+			}
+		}
+	}
+
+	void Data::GenerateObjectList()
+	{
+		_staticCache.clear();
+
+		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+			CacheStaticObjects<RE::TESObjectTREE>(dataHandler);
+			CacheStaticObjects<RE::TESObjectACTI>(dataHandler);
+			CacheStaticObjects<RE::TESObjectDOOR>(dataHandler);
+			CacheStaticObjects<RE::TESObjectSTAT>(dataHandler);
+			CacheStaticObjects<RE::TESObjectCONT>(dataHandler);
+			CacheStaticObjects<RE::TESObjectLIGH>(dataHandler);
+			CacheStaticObjects<RE::TESFurniture>(dataHandler);
+		}
+	}
+
+	void Data::GenerateCellList()
+	{
 		_cellCache.clear();
 
-		RE::TESDataHandler* dataHandler = RE::TESDataHandler::GetSingleton();
-
-		if (!dataHandler) {
-			logger::error("Failed to get data handler.");
-			return;
-		}
-
-		// AddItem Specific Forms
-		CacheItems<RE::TESObjectARMO>(dataHandler);
-		CacheItems<RE::TESObjectBOOK>(dataHandler);
-		CacheItems<RE::TESObjectWEAP>(dataHandler);
-		CacheItems<RE::TESObjectMISC>(dataHandler);
-		CacheItems<RE::TESAmmo>(dataHandler);
-		CacheItems<RE::AlchemyItem>(dataHandler);
-		CacheItems<RE::IngredientItem>(dataHandler);
-		CacheItems<RE::TESKey>(dataHandler);
-		CacheItems<RE::ScrollItem>(dataHandler);
-		CacheItems<RE::TESSoulGem>(dataHandler);
-
-		CacheNPCs<RE::TESNPC>(dataHandler);
-		CacheNPCRefIds();
-
-		// TODO: Did I miss any?
-		CacheStaticObjects<RE::TESObjectTREE>(dataHandler);
-		CacheStaticObjects<RE::TESObjectACTI>(dataHandler);
-		CacheStaticObjects<RE::TESObjectDOOR>(dataHandler);
-		CacheStaticObjects<RE::TESObjectSTAT>(dataHandler);
-		CacheStaticObjects<RE::TESObjectCONT>(dataHandler);
-		CacheStaticObjects<RE::TESObjectLIGH>(dataHandler);
-		CacheStaticObjects<RE::TESFurniture>(dataHandler);
-
 		WorldspaceCells cells;
-		for (const auto& cell : cells.table) {
-			const auto& [_plugin, space, place, name, editorid] = cell;
-			std::string plugin = _plugin + ".esm";
-			const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
-			RE::TESFile* modFile = const_cast<RE::TESFile*>(mod);
-			bool favorite = PersistentData::m_favorites[editorid];
 
-			if (!_cellModList.contains(modFile)) {
-				_cellModList.insert(modFile);
+		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+			for (const auto& cell : cells.table) {
+				const auto& [_plugin, space, place, name, editorid] = cell;
+				std::string plugin = _plugin + ".esm";
+				const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
+				RE::TESFile* modFile = const_cast<RE::TESFile*>(mod);
+				bool favorite = PersistentData::m_favorites[editorid];
+
+				if (!_cellModList.contains(modFile)) {
+					_cellModList.insert(modFile);
+				}
+
+				_cellCache.push_back(Cell(plugin, space, place, name, editorid, favorite, mod));
 			}
 
-			_cellCache.push_back(Cell(plugin, space, place, name, editorid, favorite, mod));
+			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
+				RE::TESFile* mod = form->GetFile();
+
+				if (!_cellModList.contains(mod)) {
+					logger::info("Caching cells for: {}", mod->fileName);
+					CacheCells(mod, _cellCache);
+					_cellModList.insert(mod);
+				}
+			}
+		}
+	}
+
+	void Data::Run()
+	{
+		Settings::Config& config = Settings::GetSingleton()->GetConfig();
+
+		if (config.showAddItemMenu == true) {
+			GenerateItemList();
 		}
 
-		for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
-			RE::TESFile* mod = form->GetFile();
+		if (config.showNPCMenu) {
+			GenerateNPCList();
+		}
 
-			if (!_cellModList.contains(mod)) {
-				logger::info("Caching cells for: {}", mod->fileName);
-				CacheCells(mod, _cellCache);
-				_cellModList.insert(mod);
-			}
+		if (config.showObjectMenu) {
+			GenerateObjectList();
+		}
+
+		if (config.showTeleportMenu) {
+			GenerateCellList();
 		}
 	}
 }
