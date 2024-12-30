@@ -129,8 +129,11 @@ namespace ImGui
 		ImGuiSelectableFlags flag = ImGuiSelectableFlags_None,
 		const ImVec2& size = ImVec2(0, 0))
 	{
+		auto innerPadding = style.widgetPadding.y;
+		auto newSize = ImVec2(size.x, size.y + innerPadding);
+
 		ImGui::PushFont(style.buttonFont.normal);
-		auto result = ImGui::Selectable(label, &selected, flag, size);
+		auto result = ImGui::Selectable(label, &selected, flag, newSize);
 		ImGui::PopFont();
 		return result;
 	}
