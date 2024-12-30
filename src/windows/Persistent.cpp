@@ -13,18 +13,17 @@ namespace ModExplorerMenu
 	{
 		std::ifstream file(std::wstring(json_favorite_path) + L"userdata.json");
 		if (!file.is_open()) {
-			//stl::report_and_fail("Unable to open file for writing JSON");
 			return;
 		}
 
-		// TODO: Check if the file is empty.
-		// This causes a crash if the file is not empty.?.
+		// If the file is empty, don't bother parsing it.
 		file.seekg(0, std::ios::end);
 		if (file.tellg() == 0) {
 			file.close();
 			return;
 		}
 
+		// Reset pointer to beginning.
 		file.seekg(0, std::ios::beg);
 
 		try {

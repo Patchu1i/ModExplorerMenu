@@ -176,9 +176,9 @@ namespace ModExplorerMenu
 		ImGui::NewLine();
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() / 2);
-		ImGui::PushFont(a_style.font.large);
+		// ImGui::PushFont(a_style.font.large);
 		ImGui::Text(name);
-		ImGui::PopFont();
+		// ImGui::PopFont();
 		ImGui::NewLine();
 
 		auto constexpr flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration |
@@ -211,9 +211,11 @@ namespace ModExplorerMenu
 
 			// Faction
 			if (ImGui::TreeNode(_T("Faction"))) {
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
 				auto factions = npc->factions;
+
+				if (factions.size() > 0) {
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				}
 
 				for (auto& faction : factions) {
 					const auto factionRank = faction.rank;

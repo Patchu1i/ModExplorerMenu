@@ -411,7 +411,6 @@ namespace ModExplorerMenu
 				RE::TESFile* mod = form->GetFile();
 
 				if (!_cellModList.contains(mod)) {
-					logger::info("Caching cells for: {}", mod->fileName);
 					CacheCells(mod, _cellCache);
 					_cellModList.insert(mod);
 				}

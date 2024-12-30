@@ -29,14 +29,14 @@ namespace ModExplorerMenu
 						inputFile >> json;
 					}
 				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error reading userdata file: ") + e.what());
+					stl::report_and_fail(std::string("[JSON] Error reading userdata file during Update: ") + e.what());
 				}
 				inputFile.close();
 			} else {
 				// If the file does not exist, create it
 				std::ofstream outputFile(std::wstring(json_favorite_path) + L"userdata.json");
 				if (!outputFile.is_open()) {
-					stl::report_and_fail("[JSON] Unable to create userdata file.");
+					stl::report_and_fail("[JSON] Unable to create userdata file for Favorites.");
 				}
 				outputFile.close();
 			}
@@ -60,7 +60,7 @@ namespace ModExplorerMenu
 				try {
 					outputFile << json.dump(4);
 				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error writing userdata file: ") + e.what());
+					stl::report_and_fail(std::string("[JSON] Error writing userdata file changes: ") + e.what());
 				}
 				outputFile.close();
 			} else {

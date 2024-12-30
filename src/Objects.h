@@ -86,6 +86,9 @@ namespace ModExplorerMenu
 		}
 	};
 
+	// TODO: Instead of dereferencing TESForm to retrieve NPC info, should we store it in the NPC class?
+	// I took this approach with Items, but I'm not sure if it's the best way to go about it.
+
 	class NPC : public BaseObject
 	{
 	public:
