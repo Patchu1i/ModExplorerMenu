@@ -62,41 +62,39 @@ namespace ModExplorerMenu
 			if (npc.GetName() == "")
 				continue;
 
-			if (b_Class || b_Race || b_Faction) {
-				for (auto& filter : filterMap) {
-					bool isEnabled = *std::get<0>(filter);
+			for (auto& filter : filterMap) {
+				bool isEnabled = *std::get<0>(filter);
+				auto filterName = std::get<2>(filter);
 
-					if (isEnabled) {
-						if (std::get<2>(filter) == "Class") {
-							auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
-							logger::info("NPC Class: {}, Filter {}", npcClass, secondaryFilter);
-							if (npcClass == secondaryFilter) {
-								npcList.push_back(&npc);
-							}
+				if (isEnabled && selectedFilter == filterName) {
+					if (filterName == "Class") {
+						auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
+						if (npcClass == secondaryFilter) {
+							npcList.push_back(&npc);
 						}
+					}
 
-						if (std::get<2>(filter) == "Race") {
-							auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
-							if (npcRace == secondaryFilter) {
-								npcList.push_back(&npc);
-							}
+					if (filterName == "Race") {
+						auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
+						if (npcRace == secondaryFilter) {
+							npcList.push_back(&npc);
 						}
+					}
 
-						if (std::get<2>(filter) == "Faction") {
-							auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
-							for (auto& faction : npcFaction) {
-								std::string factionName = faction.faction->GetFullName();
-								if (factionName == secondaryFilter) {
-									npcList.push_back(&npc);
-								}
+					if (filterName == "Faction") {
+						auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
+						for (auto& faction : npcFaction) {
+							std::string factionName = faction.faction->GetFullName();
+							if (factionName == secondaryFilter) {
+								npcList.push_back(&npc);
 							}
 						}
 					}
 				}
+			}
 
-				if (selectedFilter != "None" && secondaryFilter != "Show All") {
-					continue;
-				}
+			if (selectedFilter != "None" && secondaryFilter != "Show All") {
+				continue;
 			}
 
 			if (compareString.find(inputString) != std::string::npos) {
@@ -119,224 +117,232 @@ namespace ModExplorerMenu
 		(void)a_style;
 
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::NewLine();
 			ImGui::Indent();
-
-			ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
 			auto totalWidth = inputTextWidth + filterWidth;
-			auto min = ImVec2(0.0f, 0.0f);
-			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
 
-			ImGui::SetNextItemWidth(inputTextWidth);
-			if (ImGui::InputTextWithHint("##NPCWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
-					IM_ARRAYSIZE(inputBuffer),
-					ImGuiInputTextFlags_EscapeClearsAll)) {
-				ApplyFilters();
-			}
+			// Search bar for compare string.
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(inputTextWidth);
 
-			ImGui::SameLine();
-
-			// TODO: Candidate for template function.
-			auto currentFilter = InputSearchMap.at(searchKey);
-			auto combo_flags = ImGuiComboFlags_None;
-			ImGui::SetNextItemWidth(filterWidth);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##NPCWindow::InputFilter", _T(currentFilter), combo_flags)) {
-				for (auto& compare : InputSearchMap) {
-					BaseColumn::ID searchID = compare.first;
-					const char* searchValue = compare.second;
-					bool is_selected = (searchKey == searchID);
-
-					if (ImGui::Selectable(_T(searchValue), is_selected)) {
-						searchKey = searchID;
-						ApplyFilters();
-					}
-
-					if (is_selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-
-				ImGui::EndCombo();
-			}
-
-			ImGui::NewLine();
-
-			ImGui::Text(_TFM("GENERAL_FILTER_SEARCH", ":"));
-
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::SetNextWindowSizeConstraints(min, max);
-			if (ImGui::BeginCombo("##NPCWindow::PrimaryFilter", selectedFilter.c_str())) {
-				if (ImGui::Selectable(_T("None"), selectedFilter == "None")) {
-					selectedFilter = "None";
+				if (ImGui::InputTextWithHint("##NPCWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
+						IM_ARRAYSIZE(inputBuffer),
+						ImGuiInputTextFlags_EscapeClearsAll)) {
 					ApplyFilters();
-					ImGui::SetItemDefaultFocus();
 				}
 
-				for (auto& filter : filterMap) {
-					auto& isEnabled = *std::get<0>(filter);
-					auto func = std::get<1>(filter);
-					auto name = std::get<2>(filter);
+				ImGui::SameLine();
 
-					if (ImGui::Selectable(name.c_str(), selectedFilter == name)) {
-						selectedFilter = name;
-						isEnabled = !isEnabled;
-						secondaryFilter = "Show All";  // Reset just in case.
+				// TODO: Candidate for template function.
+				auto currentFilter = InputSearchMap.at(searchKey);
+				auto combo_flags = ImGuiComboFlags_None;
+				ImGui::SetNextItemWidth(filterWidth);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
+				if (ImGui::BeginCombo("##NPCWindow::InputFilter", _T(currentFilter), combo_flags)) {
+					for (auto& compare : InputSearchMap) {
+						BaseColumn::ID searchID = compare.first;
+						const char* searchValue = compare.second;
+						bool is_selected = (searchKey == searchID);
 
-						func();
+						if (ImGui::Selectable(_T(searchValue), is_selected)) {
+							searchKey = searchID;
+							ApplyFilters();
+						}
+
+						if (is_selected) {
+							ImGui::SetItemDefaultFocus();
+						}
 					}
+
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+
+				ImGui::NewLine();
+				ImGui::TreePop();
 			}
 
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::SetNextWindowSizeConstraints(min, ImVec2(0, ImGui::GetWindowSize().y / 2));
-			if (selectedFilter != "None") {
-				if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
-					if (ImGui::Selectable(_T("GENERAL_SHOW_SEARCHBAR"), &b_ShowSearchbar)) {
-						secondaryFilterBuffer[0] = '\0';
-						ImGui::SetItemDefaultFocus();
-					}
+			// Secondary drop down filter list.
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
 
-					if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
-						secondaryFilter = "Show All";
+				if (ImGui::BeginCombo("##NPCWindow::PrimaryFilter", selectedFilter.c_str())) {
+					if (ImGui::Selectable(_T("None"), selectedFilter == "None")) {
+						selectedFilter = "None";
 						ApplyFilters();
 						ImGui::SetItemDefaultFocus();
 					}
 
-					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					for (auto& filter : secondaryFilterMap) {
-						if (filter.second == selectedFilter) {
-							auto list = filter.first();
+					for (auto& filter : filterMap) {
+						auto& isEnabled = *std::get<0>(filter);
+						auto func = std::get<1>(filter);
+						auto name = std::get<2>(filter);
 
-							for (auto& item : list) {
-								if (item.empty()) {
-									continue;
-								}
+						if (ImGui::Selectable(name.c_str(), selectedFilter == name)) {
+							selectedFilter = name;
+							isEnabled = !isEnabled;
+							secondaryFilter = "Show All";  // Reset just in case.
 
-								if (b_ShowSearchbar) {
-									if (std::strlen(secondaryFilterBuffer) > 0) {
-										std::string compareString = item;
-										std::string inputString = secondaryFilterBuffer;
-
-										std::transform(inputString.begin(), inputString.end(), inputString.begin(),
-											[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-										std::transform(compareString.begin(), compareString.end(), compareString.begin(),
-											[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-										if (compareString.find(inputString) != std::string::npos) {
-											// Do nothing?
-										} else {
-											continue;
-										}
-									}
-								}
-
-								if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
-									secondaryFilter = item;
-
-									ApplyFilters();
-									ImGui::SetItemDefaultFocus();
-								}
-							}
+							func();
 						}
 					}
 					ImGui::EndCombo();
 				}
 
-				if (b_ShowSearchbar) {
-					ImGui::NewLine();
-					ImGui::Text(_TFM("GENERAL_FILTER_REFINE", ":"));
-					ImGui::SetNextItemWidth(inputTextWidth + filterWidth);
-					if (ImGui::InputTextWithHint("##NPCWindow::SecondaryFilterSearch", _T("GENERAL_CLICK_TO_TYPE"), secondaryFilterBuffer,
-							IM_ARRAYSIZE(secondaryFilterBuffer),
-							ImGuiInputTextFlags_EscapeClearsAll)) {
-						// Text Callback if we need it.
+				if (selectedFilter != "None") {
+					ImGui::SetNextItemWidth(totalWidth);
+					ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0, ImGui::GetWindowSize().y / 2));
+
+					if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
+						if (ImGui::Selectable(_T("GENERAL_SHOW_SEARCHBAR"), &b_ShowSearchbar)) {
+							secondaryFilterBuffer[0] = '\0';
+							ImGui::SetItemDefaultFocus();
+						}
+
+						if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
+							secondaryFilter = "Show All";
+							ApplyFilters();
+							ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+						for (auto& filter : secondaryFilterMap) {
+							if (filter.second == selectedFilter) {
+								auto list = filter.first();
+
+								for (auto& item : list) {
+									if (item.empty()) {
+										continue;
+									}
+
+									if (b_ShowSearchbar) {
+										if (std::strlen(secondaryFilterBuffer) > 0) {
+											std::string compareString = item;
+											std::string inputString = secondaryFilterBuffer;
+
+											std::transform(inputString.begin(), inputString.end(), inputString.begin(),
+												[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+											std::transform(compareString.begin(), compareString.end(), compareString.begin(),
+												[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+											if (compareString.find(inputString) != std::string::npos) {
+												// Do nothing?
+											} else {
+												continue;
+											}
+										}
+									}
+
+									if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
+										secondaryFilter = item;
+
+										ApplyFilters();
+										ImGui::SetItemDefaultFocus();
+									}
+								}
+							}
+						}
+						ImGui::EndCombo();
 					}
-				} else {
-					secondaryFilterBuffer[0] = '\0';
+
+					if (b_ShowSearchbar) {
+						ImGui::NewLine();
+						ImGui::Text(_TFM("GENERAL_FILTER_REFINE", ":"));
+						ImGui::SetNextItemWidth(inputTextWidth + filterWidth);
+						if (ImGui::InputTextWithHint("##NPCWindow::SecondaryFilterSearch", _T("GENERAL_CLICK_TO_TYPE"), secondaryFilterBuffer,
+								IM_ARRAYSIZE(secondaryFilterBuffer),
+								ImGuiInputTextFlags_EscapeClearsAll)) {
+							// Text Callback if we need it.
+						}
+					} else {
+						secondaryFilterBuffer[0] = '\0';
+					}
 				}
+
+				ImGui::NewLine();
+				ImGui::TreePop();
 			}
 
-			ImGui::NewLine();
+			// Mod List sort and filter.
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::InputTextWithHint("##NPCWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
+					IM_ARRAYSIZE(modListBuffer),
+					Frame::INPUT_FLAGS);
 
-			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::InputTextWithHint("##NPCWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-				IM_ARRAYSIZE(modListBuffer),
-				Frame::INPUT_FLAGS);
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
 
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::SetNextWindowSizeConstraints(min, max);
+				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+				                                                          selectedMod;
 
-			std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-			                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-			                                                          selectedMod;
+				if (ImGui::BeginCombo("##NPCWindow::FilterByMod", selectedModName.c_str())) {
+					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
+						selectedMod = "All Mods";
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
+					}
 
-			if (ImGui::BeginCombo("##NPCWindow::FilterByMod", selectedModName.c_str())) {
-				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-					selectedMod = "All Mods";
-					ApplyFilters();
-					ImGui::SetItemDefaultFocus();
-				}
+					if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
+						selectedMod = "Favorite";
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
+					}
 
-				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-					selectedMod = "Favorite";
-					ApplyFilters();
-					ImGui::SetItemDefaultFocus();
-				}
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+					auto modFormTypeMap = Data::GetModFormTypeMap();
+					for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
+						const char* modName = mod->GetFilename().data();
+						bool bSelected = false;
 
-				auto modFormTypeMap = Data::GetModFormTypeMap();
-				for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
-					const char* modName = mod->GetFilename().data();
-					bool bSelected = false;
-
-					auto match = false;
-					for (auto& modMap : modFormTypeMap) {
-						if (mod == modMap.first && modMap.second.npc) {
-							match = true;
+						auto match = false;
+						for (auto& modMap : modFormTypeMap) {
+							if (mod == modMap.first && modMap.second.npc) {
+								match = true;
+							}
 						}
-					}
 
-					if (!match) {
-						continue;
-					}
-
-					if (std::strlen(modListBuffer) > 0) {
-						std::string compareString = modName;
-						std::string inputString = modListBuffer;
-
-						std::transform(inputString.begin(), inputString.end(), inputString.begin(),
-							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-						std::transform(compareString.begin(), compareString.end(), compareString.begin(),
-							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-						if (compareString.find(inputString) != std::string::npos) {
-							// Do nothing?
-						} else {
+						if (!match) {
 							continue;
 						}
-					}
 
-					if (ImGui::Selectable(modName, selectedMod == modName)) {
-						selectedMod = modName;
-						ApplyFilters();
+						if (std::strlen(modListBuffer) > 0) {
+							std::string compareString = modName;
+							std::string inputString = modListBuffer;
+
+							std::transform(inputString.begin(), inputString.end(), inputString.begin(),
+								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+							std::transform(compareString.begin(), compareString.end(), compareString.begin(),
+								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+							if (compareString.find(inputString) != std::string::npos) {
+								// Do nothing?
+							} else {
+								continue;
+							}
+						}
+
+						if (ImGui::Selectable(modName, selectedMod == modName)) {
+							selectedMod = modName;
+							ApplyFilters();
+						}
+						if (bSelected)
+							ImGui::SetItemDefaultFocus();
 					}
-					if (bSelected)
-						ImGui::SetItemDefaultFocus();
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+
+				ImGui::NewLine();
+				ImGui::TreePop();
 			}
 
 			ImGui::Unindent();
-			ImGui::NewLine();
 		}
 	}
 }

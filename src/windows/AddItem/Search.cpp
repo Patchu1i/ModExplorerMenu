@@ -83,253 +83,264 @@ namespace ModExplorerMenu
 	void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::NewLine();
 			ImGui::Indent();
-
-			ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
 			auto totalWidth = inputTextWidth + filterWidth;
 
-			ImGui::SetNextItemWidth(inputTextWidth);
-			if (ImGui::InputTextWithHint("##AddItemWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
-					IM_ARRAYSIZE(inputBuffer),
-					Frame::INPUT_FLAGS)) {
-				ApplyFilters();
-			}
-
-			ImGui::SameLine();
-
-			// TODO: Candidate for template function.
-			auto currentFilter = InputSearchMap.at(searchKey);
-			auto combo_flags = ImGuiComboFlags_None;
-			ImGui::SetNextItemWidth(filterWidth);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-			if (ImGui::BeginCombo("##AddItemWindow::InputFilter", _T(currentFilter), combo_flags)) {
-				for (auto& compare : InputSearchMap) {
-					BaseColumn::ID searchID = compare.first;
-					const char* searchValue = compare.second;
-					bool is_selected = (searchKey == searchID);
-
-					if (ImGui::Selectable(_T(searchValue), is_selected)) {
-						searchKey = searchID;
-						ApplyFilters();
-					}
-
-					if (is_selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-
-				ImGui::EndCombo();
-			}
-
-			// Filter checkboxes up top.
-			ImGui::NewLine();
-			ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
-			ImGui::NewLine();
-
-			auto numOfFilter = 0;
-			bool isDirty = false;
-			auto sx = ImGui::GetCursorPosX();
-			auto width = ImGui::GetContentRegionAvail().x / 8.0f;
-			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-			for (auto& filter : filterMap) {
-				auto isEnabled = std::get<0>(filter);
-				const auto name = std::get<2>(filter);
-				numOfFilter++;
-
-				if (numOfFilter == 6) {
-					ImGui::SetCursorPosX(sx + 5.0f);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y);
-				} else {
-					ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
-				}
-
-				if (numOfFilter == 1) {
-					ImGui::SetCursorPosX(sx + 5.0f);
-				}
-
-				if (*isEnabled == true) {
-					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
-				} else {
-					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.2f));
-				}
-
-				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
-
-				bool alwaysTrue = true;
-				if (ImGui::m_Selectable(_T(name), alwaysTrue, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
-					isDirty = true;
-					*isEnabled = !*isEnabled;
-				}
-
-				ImGui::PopStyleColor(2);
-			}
-			ImGui::PopStyleVar();
-
-			if (isDirty) {
-				itemFilters.clear();
-
-				for (auto& filter : filterMap) {
-					auto isEnabled = *std::get<0>(filter);
-					const auto formType = std::get<1>(filter);
-
-					if (isEnabled) {
-						itemFilters.insert(formType);
-					}
-				}
-
-				ApplyFilters();
-				dirty = true;
-			}
-
-			ImGui::NewLine();
-			ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::InputTextWithHint("##AddItemWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-				IM_ARRAYSIZE(modListBuffer),
-				Frame::INPUT_FLAGS);
-
-			auto min = ImVec2(0.0f, 0.0f);
-			auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
-			ImGui::SetNextItemWidth(totalWidth);
-			ImGui::SetNextWindowSizeConstraints(min, max);
-
-			std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-			                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-			                                                          selectedMod;
-
-			if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedModName.c_str())) {
-				if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-					selectedMod = "All Mods";
+			// Search bar for compare string.
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(inputTextWidth);
+				if (ImGui::InputTextWithHint("##AddItemWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
+						IM_ARRAYSIZE(inputBuffer),
+						Frame::INPUT_FLAGS)) {
 					ApplyFilters();
-					ImGui::SetItemDefaultFocus();
 				}
 
-				if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-					selectedMod = "Favorite";
-					ApplyFilters();
-					ImGui::SetItemDefaultFocus();
-				}
+				ImGui::SameLine();
 
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				// TODO: Candidate for template function.
+				auto currentFilter = InputSearchMap.at(searchKey);
+				auto combo_flags = ImGuiComboFlags_None;
+				ImGui::SetNextItemWidth(filterWidth);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
+				if (ImGui::BeginCombo("##AddItemWindow::InputFilter", _T(currentFilter), combo_flags)) {
+					for (auto& compare : InputSearchMap) {
+						BaseColumn::ID searchID = compare.first;
+						const char* searchValue = compare.second;
+						bool is_selected = (searchKey == searchID);
 
-				auto modFormTypeMap = Data::GetModFormTypeMap();
-				for (auto& mod : Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort)) {
-					const char* modName = mod->GetFilename().data();
-					bool bSelected = false;
+						if (ImGui::Selectable(_T(searchValue), is_selected)) {
+							searchKey = searchID;
+							ApplyFilters();
+						}
 
-					auto match = false;
-					for (auto& modMap : modFormTypeMap) {
-						if (mod == modMap.first) {
-							numOfFilter = 0;
-							for (auto& filter : filterMap) {
-								auto isEnabled = *std::get<0>(filter);
-								auto formType = std::get<1>(filter);
-
-								if (!isEnabled) {
-									continue;
-								}
-
-								numOfFilter++;
-
-								if (match) {
-									continue;
-								}
-
-								switch (formType) {
-								case RE::FormType::Armor:
-									if (modMap.second.armor) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Book:
-									if (modMap.second.book) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Weapon:
-									if (modMap.second.weapon) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Misc:
-									if (modMap.second.misc) {
-										match = true;
-									}
-									break;
-								case RE::FormType::KeyMaster:
-									if (modMap.second.key) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Ammo:
-									if (modMap.second.ammo) {
-										match = true;
-									}
-									break;
-								case RE::FormType::AlchemyItem:
-									if (modMap.second.alchemy) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Ingredient:
-									if (modMap.second.ingredient) {
-										match = true;
-									}
-									break;
-								case RE::FormType::Scroll:
-									if (modMap.second.scroll) {
-										match = true;
-									}
-									break;
-								default:
-									break;
-								}
-							}
-
-							if (numOfFilter == 0) {
-								match = true;
-							}
+						if (is_selected) {
+							ImGui::SetItemDefaultFocus();
 						}
 					}
 
-					if (!match) {
-						continue;
+					ImGui::EndCombo();
+				}
+
+				ImGui::NewLine();
+				ImGui::TreePop();
+			}
+
+			// Secondary Record Type filters
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				auto numOfFilter = 0;
+				bool isDirty = false;
+				auto sx = ImGui::GetCursorPosX();
+				auto width = ImGui::GetContentRegionAvail().x / 8.0f;
+
+				ImGui::NewLine();  // Needed for below offsets.
+
+				ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+				for (auto& filter : filterMap) {
+					auto isEnabled = std::get<0>(filter);
+					const auto name = std::get<2>(filter);
+					numOfFilter++;
+
+					if (numOfFilter == 6) {
+						ImGui::SetCursorPosX(sx + 5.0f);
+						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y - 2.0f);
+					} else {
+						ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
 					}
 
-					if (std::strlen(modListBuffer) > 0) {
-						std::string compare = modName;
-						std::string input = modListBuffer;
+					if (numOfFilter == 1) {
+						ImGui::SetCursorPosX(sx + 5.0f);
+					}
 
-						std::transform(input.begin(), input.end(), input.begin(),
-							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+					if (*isEnabled == true) {
+						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
+					} else {
+						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.2f));
+					}
 
-						std::transform(compare.begin(), compare.end(), compare.begin(),
-							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+					ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
 
-						if (compare.find(input) != std::string::npos) {
-							// Do nothing?
-						} else {
+					bool alwaysTrue = true;
+					if (ImGui::m_Selectable(_T(name), alwaysTrue, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
+						isDirty = true;
+						*isEnabled = !*isEnabled;
+					}
+
+					ImGui::PopStyleColor(2);
+				}
+				ImGui::PopStyleVar();
+
+				if (isDirty) {
+					itemFilters.clear();
+
+					for (auto& filter : filterMap) {
+						auto isEnabled = *std::get<0>(filter);
+						const auto formType = std::get<1>(filter);
+
+						if (isEnabled) {
+							itemFilters.insert(formType);
+						}
+					}
+
+					ApplyFilters();
+					dirty = true;
+				}
+
+				ImGui::NewLine();
+				ImGui::TreePop();
+			}
+
+			// Mod List sort and filter.
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::InputTextWithHint("##AddItemWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
+					IM_ARRAYSIZE(modListBuffer),
+					Frame::INPUT_FLAGS);
+
+				auto min = ImVec2(0.0f, 0.0f);
+				auto max = ImVec2(0.0f, ImGui::GetWindowSize().y / 4);
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::SetNextWindowSizeConstraints(min, max);
+
+				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+				                                                          selectedMod;
+
+				auto numOfFilter = 0;
+				if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedModName.c_str())) {
+					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
+						selectedMod = "All Mods";
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
+					}
+
+					if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
+						selectedMod = "Favorite";
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+					auto modFormTypeMap = Data::GetModFormTypeMap();
+					for (auto& mod : Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort)) {
+						const char* modName = mod->GetFilename().data();
+						bool bSelected = false;
+
+						auto match = false;
+						for (auto& modMap : modFormTypeMap) {
+							if (mod == modMap.first) {
+								numOfFilter = 0;
+								for (auto& filter : filterMap) {
+									auto isEnabled = *std::get<0>(filter);
+									auto formType = std::get<1>(filter);
+
+									if (!isEnabled) {
+										continue;
+									}
+
+									numOfFilter++;
+
+									if (match) {
+										continue;
+									}
+
+									switch (formType) {
+									case RE::FormType::Armor:
+										if (modMap.second.armor) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Book:
+										if (modMap.second.book) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Weapon:
+										if (modMap.second.weapon) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Misc:
+										if (modMap.second.misc) {
+											match = true;
+										}
+										break;
+									case RE::FormType::KeyMaster:
+										if (modMap.second.key) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Ammo:
+										if (modMap.second.ammo) {
+											match = true;
+										}
+										break;
+									case RE::FormType::AlchemyItem:
+										if (modMap.second.alchemy) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Ingredient:
+										if (modMap.second.ingredient) {
+											match = true;
+										}
+										break;
+									case RE::FormType::Scroll:
+										if (modMap.second.scroll) {
+											match = true;
+										}
+										break;
+									default:
+										break;
+									}
+								}
+
+								if (numOfFilter == 0) {
+									match = true;
+								}
+							}
+						}
+
+						if (!match) {
 							continue;
 						}
-					}
 
-					if (ImGui::Selectable(modName, selectedMod == modName)) {
-						selectedMod = modName;
-						ApplyFilters();
-					}
+						if (std::strlen(modListBuffer) > 0) {
+							std::string compare = modName;
+							std::string input = modListBuffer;
 
-					if (bSelected)
-						ImGui::SetItemDefaultFocus();
+							std::transform(input.begin(), input.end(), input.begin(),
+								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+							std::transform(compare.begin(), compare.end(), compare.begin(),
+								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+							if (compare.find(input) != std::string::npos) {
+								// Do nothing?
+							} else {
+								continue;
+							}
+						}
+
+						if (ImGui::Selectable(modName, selectedMod == modName)) {
+							selectedMod = modName;
+							ApplyFilters();
+						}
+
+						if (bSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+
+				ImGui::NewLine();
+				ImGui::TreePop();
 			}
 
 			ImGui::Unindent();
-			ImGui::NewLine();
 		}
 	}
 }
