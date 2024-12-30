@@ -66,11 +66,12 @@ namespace ModExplorerMenu
 		const auto cursor = ImGui::GetCursorScreenPos();
 		const auto size = ImGui::GetContentRegionAvail();
 		const auto color = ImGui::GetStyleColorVec4(ImGuiCol_Border);
-		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
-		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
+		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
+		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(color));
 
 		ImGui::NewLine();
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.data()));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() / 2);
 		ImGui::Text(name.data());
 		ImGui::NewLine();
 
