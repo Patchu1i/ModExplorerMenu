@@ -16,6 +16,7 @@ namespace ModExplorerMenu
 			return &singleton;
 		}
 
+		// TODO: Marked as duplicate, can be refactored in with PersistentData
 		void LoadLanguage(std::string a_path)
 		{
 			if (!lang.empty()) {
@@ -24,27 +25,47 @@ namespace ModExplorerMenu
 
 			std::ifstream file(std::wstring(json_lang_path) + std::wstring(a_path.begin(), a_path.end()) + L".json");
 			if (!file.is_open()) {
-				stl::report_and_fail("[JSON] Unable to open language file for reading.");
+				return;
 			}
 
-			nlohmann::json json;
-			file >> json;
-			file.close();
-
-			for (auto& [key, value] : json.items()) {
-				lang[key] = value;
+			// If the file is empty, don't bother parsing it.
+			file.seekg(0, std::ios::end);
+			if (file.tellg() == 0) {
+				file.close();
+				return;
 			}
 
-			logger::info("[Translation] Loaded language: {}", a_path);
+			// Reset pointer to beginning.
+			file.seekg(0, std::ios::beg);
+
+			try {
+				nlohmann::json json;
+				file >> json;
+				file.close();
+
+				for (auto& [key, value] : json.items()) {
+					lang[key] = value;
+				}
+
+				logger::info("[Translation] Loaded language: {}", a_path);
+			} catch (const nlohmann::json::parse_error& e) {
+				file.close();
+				stl::report_and_fail(std::string("[JSON] Error parsing language file:\n\nValidate your JSON formatting, and try again.\n") + e.what());
+			} catch (const nlohmann::json::exception& e) {
+				file.close();
+				stl::report_and_fail(std::string("[JSON] Error Exception reading language file: ") + e.what());
+			}
 		}
 
+		// Accessor func for translations. Intentionally return the translation key
+		// if not found to offer a fallback for incorrect or missing translations.
 		const char* GetTranslation(const std::string& key) const
 		{
 			auto it = lang.find(key);
 			if (it != lang.end()) {
 				return it->second.c_str();
 			} else {
-				return key.c_str();  // Return the key itself as a fallback
+				return key.c_str();
 			}
 		}
 
@@ -59,9 +80,7 @@ namespace ModExplorerMenu
 
 #define _T(key) Translate::GetSingleton()->GetTranslation(key)
 #define _TFM(key, suffix) (std::string(_T(key)) + suffix).c_str()
-// #define _TICON(icon, key) (std::string(icon) + _T(key)).c_str()
 #define _TICON(icon, key) (Settings::GetSingleton()->GetStyle().noIconText ? _T(key) : (std::string(icon) + _T(key)).c_str())
-// #define _TICONM(icon, key, suffix) (std::string(icon) + _T(key) + suffix).c_str()
 #define _TICONM(icon, key, suffix) (Settings::GetSingleton()->GetStyle().noIconText ? _TFM(key, suffix) : (std::string(icon) + _T(key) + suffix).c_str())
 
 	class Language
