@@ -1,9 +1,9 @@
 #include "Teleport.h"
 
 #include "Console.h"
+#include "Menu.h"
 #include "Utils/Util.h"
 #include "Windows/Persistent.h"
-// #include "Windows/ItemCards.h"
 
 namespace ModExplorerMenu
 {
@@ -70,7 +70,6 @@ namespace ModExplorerMenu
 				ImGui::TableHeader(column.name.c_str());
 				ImGui::PopID();
 
-				// ImGui::TableSetColumnEnabled(column_n, *column.enabled);
 				column_n++;
 			}
 
@@ -148,6 +147,7 @@ namespace ModExplorerMenu
 							if (b_ClickToTeleport) {
 								Console::Teleport(cell->editorid);
 								Console::StartProcessThread();
+								Menu::GetSingleton()->Close();
 
 								_itemSelected = false;
 								selectedCell = nullptr;

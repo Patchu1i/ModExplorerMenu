@@ -1,4 +1,5 @@
 #include "Console.h"
+#include "Menu.h"
 #include "Teleport.h"
 
 namespace ModExplorerMenu
@@ -44,6 +45,8 @@ namespace ModExplorerMenu
 					if (ImGui::m_Button(cell.GetEditorID().data(), a_style, ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
 						Console::Teleport(cell.GetEditorID().data());
 						Console::StartProcessThread();
+
+						Menu::GetSingleton()->Close();
 						break;
 					}
 				}
