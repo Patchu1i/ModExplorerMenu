@@ -94,8 +94,6 @@ namespace ModExplorerMenu
 			ImGuiContext& g = *ImGui::GetCurrentContext();
 			ImGuiTable* table = g.CurrentTable;
 
-			hoveredNPC = nullptr;
-
 			int numOfRow = 0;
 			clipper.Begin(static_cast<int>(npcList.size()), ImGui::GetTextLineHeightWithSpacing());
 			while (clipper.Step()) {

@@ -61,13 +61,16 @@ namespace ModExplorerMenu
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
 
-		if (selectedNPC != nullptr || (selectedNPC == nullptr && hoveredNPC != nullptr)) {
-			if ((selectedNPC != nullptr && selectedNPC->refID == 0) || (hoveredNPC != nullptr && hoveredNPC->refID == 0)) {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.35f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.35f));
-			} else {
+		if (selectedNPC != nullptr || hoveredNPC != nullptr) {
+			// if ((selectedNPC != nullptr && selectedNPC->refID == 0) && (hoveredNPC != nullptr && hoveredNPC->refID == 0)) {
+			if ((selectedNPC != nullptr && hoveredNPC == nullptr && selectedNPC->refID != 0) ||
+				(selectedNPC != nullptr && hoveredNPC != nullptr && hoveredNPC->refID != 0) ||
+				(hoveredNPC != nullptr && selectedNPC == nullptr && hoveredNPC->refID != 0)) {
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
+			} else {
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.35f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.35f));
 			}
 
 			if (ImGui::m_Button(_T("NPC_GOTO_REFERENCE"), a_style, ImVec2(button_width, 0))) {
@@ -76,6 +79,7 @@ namespace ModExplorerMenu
 						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
 							if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
 								playerREF->MoveTo(ref);
+								Menu::GetSingleton()->Close();
 							}
 						}
 					}
@@ -88,6 +92,7 @@ namespace ModExplorerMenu
 						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
 							if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
 								ref->MoveTo(playerREF);
+								Menu::GetSingleton()->Close();
 							}
 						}
 					}

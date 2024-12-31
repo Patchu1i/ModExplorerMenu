@@ -16,7 +16,10 @@ namespace ModExplorerMenu
 
 		bool IsEnabled() { return enable; }
 		void SetEnabled(bool value) { enable = value; }
+
 		constexpr void Toggle() { enable = !enable; }
+		constexpr void Close() { enable = false; }
+		constexpr void Open() { enable = true; }
 
 		static inline Menu* GetSingleton()
 		{
