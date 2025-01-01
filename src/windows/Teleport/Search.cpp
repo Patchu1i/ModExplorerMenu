@@ -84,9 +84,9 @@ namespace ModExplorerMenu
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
-			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
+			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			auto totalWidth = inputTextWidth + filterWidth;
+			auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
 			// Search bar for compare string.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -100,7 +100,7 @@ namespace ModExplorerMenu
 				ImGui::SameLine();
 
 				auto searchByValue = InputSearchMap.at(searchKey);
-				auto combo_flags = ImGuiComboFlags_WidthFitPreview;
+				auto combo_flags = ImGuiComboFlags_None;
 				ImGui::SetNextItemWidth(filterWidth);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
 				if (ImGui::BeginCombo("##TeleportWindow::InputFilter", _T(searchByValue), combo_flags)) {
@@ -133,13 +133,12 @@ namespace ModExplorerMenu
 					IM_ARRAYSIZE(modListBuffer),
 					Frame::INPUT_FLAGS);
 
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
-
 				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
 				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
 				                                                          selectedMod;
 
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
 				if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedModName.c_str())) {
 					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
 						selectedMod = "All Mods";

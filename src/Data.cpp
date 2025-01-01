@@ -144,8 +144,6 @@ namespace ModExplorerMenu
 			if (!_itemModList.contains(mod)) {
 				_itemModList.insert(mod);
 
-				// std::filesystem::path path = std::string("C:\\Program Files (x86)\\Steam\\steamapps\\al Edition\\Data\\") + mod->fileName;
-
 				std::filesystem::path path = dataPath + "/" + mod->fileName;
 				if (std::filesystem::exists(path)) {
 					std::time_t creationTime = GetFileCreationTime(path);

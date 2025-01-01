@@ -12,6 +12,8 @@
 
 namespace ModExplorerMenu
 {
+	using ItemFilterType = std::pair<RE::FormType, std::string>;
+
 	class AddItemWindow : private ISortable
 	{
 	public:
@@ -50,26 +52,20 @@ namespace ModExplorerMenu
 		static inline int clickToPlaceCount = 1;
 		static inline bool b_AddToFavorites = false;
 
-		// Filter Buttons.
-		static inline bool b_Alchemy = true;
-		static inline bool b_Ingredient = true;
-		static inline bool b_Ammo = true;
-		static inline bool b_Key = true;
-		static inline bool b_Misc = true;
-		static inline bool b_Armor = true;
-		static inline bool b_Book = true;
-		static inline bool b_Weapon = true;
-		static inline bool b_Scroll = true;
-
 		// Filtering State Variables.
-		static inline std::unordered_set<RE::FormType> itemFilters;
+		static inline ItemFilterType selectedFilter = { RE::FormType::None, "None" };
 		static inline std::vector<Item*> itemList;
-		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
-			{ &b_Alchemy, RE::FormType::AlchemyItem, "Alchemy" }, { &b_Ingredient, RE::FormType::Ingredient, "Ingredient" },
-			{ &b_Ammo, RE::FormType::Ammo, "Ammunition" }, { &b_Key, RE::FormType::KeyMaster, "Keys" },
-			{ &b_Misc, RE::FormType::Misc, "Misc" }, { &b_Armor, RE::FormType::Armor, "Armor" },
-			{ &b_Book, RE::FormType::Book, "Book" }, { &b_Weapon, RE::FormType::Weapon, "Weapon" },
-			{ &b_Scroll, RE::FormType::Scroll, "Scroll" }
+
+		static inline std::vector<ItemFilterType> filterMap = {
+			{ RE::FormType::Armor, "Armor" },
+			{ RE::FormType::AlchemyItem, "Alchemy" },
+			{ RE::FormType::Ammo, "Ammunition" },
+			{ RE::FormType::Book, "Book" },
+			{ RE::FormType::Ingredient, "Ingredient" },
+			{ RE::FormType::KeyMaster, "Keys" },
+			{ RE::FormType::Misc, "Misc" },
+			{ RE::FormType::Scroll, "Scroll" },
+			{ RE::FormType::Weapon, "Weapon" },
 		};
 
 		// Description Framework API.

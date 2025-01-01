@@ -7,6 +7,9 @@
 
 namespace ModExplorerMenu
 {
+
+	using ObjectFilterType = std::pair<RE::FormType, std::string>;
+
 	class ObjectWindow : private ISortable
 	{
 	private:
@@ -30,20 +33,26 @@ namespace ModExplorerMenu
 		static inline StaticObject* selectedObject = nullptr;
 
 		// Filter Buttons.
-		static inline bool b_Tree = true;
-		static inline bool b_Static = true;
-		static inline bool b_Container = true;
-		static inline bool b_Activator = true;
-		static inline bool b_Light = true;
-		static inline bool b_Door = true;
-		static inline bool b_Furniture = true;
+		static inline bool b_Tree = false;
+		static inline bool b_Static = false;
+		static inline bool b_Container = false;
+		static inline bool b_Activator = false;
+		static inline bool b_Light = false;
+		static inline bool b_Door = false;
+		static inline bool b_Furniture = false;
 
 		// Filtering State Variables.
+		static inline ObjectFilterType selectedFilter = { RE::FormType::None, "None" };
 		static inline std::unordered_set<RE::FormType> objectFilters;
-		static inline std::vector<std::tuple<bool*, RE::FormType, std::string>> filterMap = {
-			{ &b_Tree, RE::FormType::Tree, "Tree" }, { &b_Static, RE::FormType::Static, "Static" },
-			{ &b_Container, RE::FormType::Container, "Container" }, { &b_Activator, RE::FormType::Activator, "Activator" },
-			{ &b_Light, RE::FormType::Light, "Light" }, { &b_Door, RE::FormType::Door, "Door" }, { &b_Furniture, RE::FormType::Furniture, "Furniture" }
+
+		static inline std::vector<ObjectFilterType> filterMap = {
+			{ RE::FormType::Tree, "Tree" },
+			{ RE::FormType::Static, "Static" },
+			{ RE::FormType::Container, "Container" },
+			{ RE::FormType::Activator, "Activator" },
+			{ RE::FormType::Light, "Light" },
+			{ RE::FormType::Door, "Door" },
+			{ RE::FormType::Furniture, "Furniture" }
 		};
 
 	public:

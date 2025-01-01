@@ -59,8 +59,8 @@ namespace ModExplorerMenu
 			if (item.IsNonPlayable())  // non-useable
 				continue;
 
-			if (itemFilters.size() > 0) {
-				if (itemFilters.find(item.GetFormType()) == itemFilters.end()) {
+			if (selectedFilter.second != "None") {
+				if (item.GetFormType() != selectedFilter.first) {
 					continue;
 				}
 			}
@@ -69,9 +69,9 @@ namespace ModExplorerMenu
 				itemList.push_back(&item);
 				continue;
 			}
-		}
 
-		dirty = true;
+			dirty = true;
+		}
 	}
 
 	void AddItemWindow::Refresh()
@@ -82,12 +82,14 @@ namespace ModExplorerMenu
 	// Draw search bar for filtering items.
 	void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
+		(void)a_style;
+
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
-			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
+			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			auto totalWidth = inputTextWidth + filterWidth;
+			auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
 			// Search bar for compare string.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -130,62 +132,30 @@ namespace ModExplorerMenu
 
 			// Secondary Record Type filters
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				auto numOfFilter = 0;
-				bool isDirty = false;
-				auto sx = ImGui::GetCursorPosX();
-				auto width = ImGui::GetContentRegionAvail().x / 8.0f;
-
-				ImGui::NewLine();  // Needed for below offsets.
-
-				ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-				for (auto& filter : filterMap) {
-					auto isEnabled = std::get<0>(filter);
-					const auto name = std::get<2>(filter);
-					numOfFilter++;
-
-					if (numOfFilter == 6) {
-						ImGui::SetCursorPosX(sx + 5.0f);
-						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + a_style.itemSpacing.y - 2.0f);
-					} else {
-						ImGui::SameLine(0.0f, a_style.itemSpacing.x + 2.0f);
+				ImGui::SetNextItemWidth(totalWidth);
+				if (ImGui::BeginCombo("##AddItemWindow::FilterByType", _T(selectedFilter.second), ImGuiComboFlags_HeightLarge)) {
+					if (ImGui::Selectable(_T("None"), selectedFilter.second == "None")) {
+						selectedFilter = { RE::FormType::None, "None" };
+						ApplyFilters();
+						ImGui::SetItemDefaultFocus();
 					}
-
-					if (numOfFilter == 1) {
-						ImGui::SetCursorPosX(sx + 5.0f);
-					}
-
-					if (*isEnabled == true) {
-						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
-					} else {
-						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.2f));
-					}
-
-					ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
-
-					bool alwaysTrue = true;
-					if (ImGui::m_Selectable(_T(name), alwaysTrue, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(width, ImGui::GetFontSize() * 1.5f))) {
-						isDirty = true;
-						*isEnabled = !*isEnabled;
-					}
-
-					ImGui::PopStyleColor(2);
-				}
-				ImGui::PopStyleVar();
-
-				if (isDirty) {
-					itemFilters.clear();
 
 					for (auto& filter : filterMap) {
-						auto isEnabled = *std::get<0>(filter);
-						const auto formType = std::get<1>(filter);
+						auto formName = std::get<1>(filter).data();
 
-						if (isEnabled) {
-							itemFilters.insert(formType);
+						bool isSelected = (formName == selectedFilter.second);
+
+						if (ImGui::Selectable(_T(formName), isSelected)) {
+							selectedFilter = filter;
+							ApplyFilters();
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
 						}
 					}
 
-					ApplyFilters();
-					dirty = true;
+					ImGui::EndCombo();
 				}
 
 				ImGui::NewLine();
@@ -234,8 +204,9 @@ namespace ModExplorerMenu
 							if (mod == modMap.first) {
 								numOfFilter = 0;
 								for (auto& filter : filterMap) {
-									auto isEnabled = *std::get<0>(filter);
-									auto formType = std::get<1>(filter);
+									auto formName = std::get<1>(filter);
+									auto formType = std::get<0>(filter);
+									auto isEnabled = (filter == selectedFilter);
 
 									if (!isEnabled) {
 										continue;

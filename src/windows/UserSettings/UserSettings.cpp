@@ -115,13 +115,15 @@ namespace ModExplorerMenu
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 12.0f);     // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f - style.widgetPadding.x);  // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                       // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
 
 			if (ImGui::ImageButton("##ImGuiHotkeyModifier", img.texture, size, uv0, uv1, bg_col, a_hover)) {
 				ImGui::OpenPopup("##ModifierPopup");
@@ -135,7 +137,7 @@ namespace ModExplorerMenu
 			}
 
 			ImGui::PopStyleVar();
-			ImGui::PopStyleColor(3);
+			ImGui::PopStyleColor(5);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
@@ -220,13 +222,15 @@ namespace ModExplorerMenu
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 12.0f);     // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f - style.widgetPadding.x);  // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                       // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
 
 			if (ImGui::ImageButton("##ImGuiHotkey", img.texture, size, uv0, uv1, bg_col, a_hover)) {
 				ImGui::OpenPopup("##KeybindPopup");
@@ -240,7 +244,7 @@ namespace ModExplorerMenu
 			}
 
 			ImGui::PopStyleVar();
-			ImGui::PopStyleColor(3);
+			ImGui::PopStyleColor(5);
 		}
 
 		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;

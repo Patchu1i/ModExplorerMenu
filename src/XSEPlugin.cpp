@@ -9,45 +9,6 @@
 #include "Windows/Persistent.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
-//#include "versiondb.h"
-#include "versionlibdb.h"
-
-// for SE versions
-//bool DumpSpecificVersion()
-//{
-//	VersionDb db;
-//
-//	// Try to load database of version 1.5.62.0 regardless of running executable version.
-//	if (!db.Load(1, 5, 97, 0)) {
-//		logger::info("Failed to load database for 1.5.97.0!");
-//		return false;
-//	}
-//
-//	// Write out a file called offsets-1.5.62.0.txt where each line is the ID and offset.
-//	db.Dump("offsets-1.5.97.0.txt");
-//	logger::info("Dumped offsets for 1.5.97.0");
-//	return true;
-//}
-
-//void DumpSpecificVersion()
-//{
-//VersionDb db;
-
-// Try to load database of version 1.5.62.0 regardless of running executable version.
-//if (!db.Load(1, 6, 1170, 0)) {
-//	logger::info("Failed to load database for 1.6.1170.0!");
-//	return false;
-//}
-
-// Write out a file called offsets-1.5.62.0.txt where each line is the ID and offset.
-//db.Dump("offsets-1.6.1170.txt");
-//logger::info("Dumped offsets for 1.6.1170.0");
-//return true;
-
-//void* test_address = db.FindAddressById(67315);
-
-//}
-
 namespace
 {
 	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)

@@ -119,9 +119,9 @@ namespace ModExplorerMenu
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
-			auto filterWidth = ImGui::GetContentRegionAvail().x / 10.0f;
+			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			auto totalWidth = inputTextWidth + filterWidth;
+			auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
 			// Search bar for compare string.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {

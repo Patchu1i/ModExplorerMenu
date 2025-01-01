@@ -62,7 +62,6 @@ namespace ModExplorerMenu
 		}
 
 		if (selectedNPC != nullptr || hoveredNPC != nullptr) {
-			// if ((selectedNPC != nullptr && selectedNPC->refID == 0) && (hoveredNPC != nullptr && hoveredNPC->refID == 0)) {
 			if ((selectedNPC != nullptr && hoveredNPC == nullptr && selectedNPC->refID != 0) ||
 				(selectedNPC != nullptr && hoveredNPC != nullptr && hoveredNPC->refID != 0) ||
 				(hoveredNPC != nullptr && selectedNPC == nullptr && hoveredNPC->refID != 0)) {
@@ -179,12 +178,12 @@ namespace ModExplorerMenu
 
 		const auto name = npc->GetName();
 		ImGui::NewLine();
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() / 2);
-		// ImGui::PushFont(a_style.font.large);
 		ImGui::Text(name);
-		// ImGui::PopFont();
 		ImGui::NewLine();
+		ImGui::PopStyleVar();
 
 		auto constexpr flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration |
 		                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
@@ -209,8 +208,8 @@ namespace ModExplorerMenu
 				InlineBar(_TFM("Health", ":"), npcHealth, 100.0f);
 				InlineBar(_TFM("Magicka", ":"), npcMagicka, 100.0f);
 				InlineBar(_TFM("Stamina", ":"), npcStamina, 100.0f);
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::TreePop();
 			}
 
@@ -234,9 +233,9 @@ namespace ModExplorerMenu
 					ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(std::to_string(factionRank).c_str()).x);
 					ImGui::Text(std::to_string(factionRank).c_str());
 				}
-				ImGui::TreePop();
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNode(_T("NPC_SKILLS"))) {
@@ -257,9 +256,9 @@ namespace ModExplorerMenu
 
 					InlineBar(skillName.c_str(), skillLevel, 100.0f);
 				}
-				ImGui::TreePop();
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNode(_T("NPC_SPELLS"))) {
@@ -299,6 +298,8 @@ namespace ModExplorerMenu
 						}
 					}
 				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::TreePop();
 			}
 			ImGui::EndChild();

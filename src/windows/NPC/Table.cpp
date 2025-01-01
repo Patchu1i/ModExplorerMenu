@@ -95,7 +95,7 @@ namespace ModExplorerMenu
 			ImGuiTable* table = g.CurrentTable;
 
 			int numOfRow = 0;
-			clipper.Begin(static_cast<int>(npcList.size()), ImGui::GetTextLineHeightWithSpacing());
+			clipper.Begin(static_cast<int>(npcList.size()));
 			while (clipper.Step()) {
 				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
 					auto& npc = npcList[row];
