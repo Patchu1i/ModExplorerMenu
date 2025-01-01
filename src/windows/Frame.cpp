@@ -9,7 +9,7 @@
 #include "Windows/Teleport/Teleport.h"
 #include "Windows/UserSettings/UserSettings.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// Frame::ActiveWindow Frame::_activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
 

@@ -6,7 +6,7 @@
 #include "Windows/Columns.h"
 #include "Windows/Frame.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class NPCWindow : private ISortable
 	{

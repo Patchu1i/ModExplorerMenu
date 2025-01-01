@@ -9,7 +9,7 @@
 // (If it doesn't exist, load the default theme from def values in Style struct)
 // Load the theme ini and apply the values to the user Style struct.
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	class Settings
@@ -36,8 +36,8 @@ namespace ModExplorerMenu
 			return &singleton;
 		}
 
-		constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/ModExplorerMenu/themes/";
-		constexpr inline static const wchar_t* ini_mem_path = L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini";
+		constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/Modex/themes/";
+		constexpr inline static const wchar_t* ini_mem_path = L"Data/Interface/Modex/Modex.ini";
 
 		enum SECTION
 		{
@@ -266,14 +266,14 @@ namespace ModExplorerMenu
 		static std::vector<std::string> GetListOfThemes()
 		{
 			std::vector<std::string> themes;
-			std::string path_to_themes = "Data/Interface/ModExplorerMenu/themes";
+			std::string path_to_themes = "Data/Interface/Modex/themes";
 
 			// TODO: Implement scope wide error handling.
 			if (std::filesystem::exists(path_to_themes) == false) {
 				stl::report_and_fail(
-					"ModExplorerMenu.dll] FATAL ERROR:\n\n"
-					"Could not find themes directory (\"DATA/Interface/ModExplorerMenu/themes/\")\n\n"
-					"Make sure the ModExplorerMenu mod contains this directory respective to the data folder."sv);
+					"Modex.dll] FATAL ERROR:\n\n"
+					"Could not find themes directory (\"DATA/Interface/Modex/themes/\")\n\n"
+					"Make sure the Modex mod contains this directory respective to the data folder."sv);
 			}
 
 			for (const auto& entry : std::filesystem::directory_iterator(path_to_themes)) {

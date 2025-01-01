@@ -4,7 +4,7 @@
 #include "Graphic.h"
 #include "Menu.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	bool GraphicManager::GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
 		int& out_height)
@@ -71,7 +71,7 @@ namespace ModExplorerMenu
 	void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct)
 	{
 		if (std::filesystem::exists(a_path) == false) {
-			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
+			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because Modex cannot locate the path '") + a_path + "'. Check your installation.";
 			stl::report_and_fail(warning);
 			return;
 		}
@@ -102,7 +102,7 @@ namespace ModExplorerMenu
 		config.GlyphOffset.y = 3.0f;
 		config.GlyphOffset.x = 1.0f;
 		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
-		io.Fonts->AddFontFromFileTTF("Data/Interface/ModExplorerMenu/fonts/icons/rpgawesome-webfont.ttf", size - 1.0f, &config, icon_ranges);
+		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/fonts/icons/rpgawesome-webfont.ttf", size - 1.0f, &config, icon_ranges);
 	}
 
 	// TODO: Remove the nano, small, medium, etc indices and replace with a single font size parameter.
@@ -111,7 +111,7 @@ namespace ModExplorerMenu
 	void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::Locale a_language)
 	{
 		if (std::filesystem::exists(a_path) == false) {
-			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because ModExplorerMenu cannot locate the path '") + a_path + "'. Check your installation.";
+			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because Modex cannot locate the path '") + a_path + "'. Check your installation.";
 			stl::report_and_fail(warning);
 			return;
 		}
@@ -204,7 +204,7 @@ namespace ModExplorerMenu
 	void GraphicManager::Init()
 	{
 		image_library["None"] = Image();
-		GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ModExplorerMenu/images"), GraphicManager::image_library);
+		GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/Modex/images"), GraphicManager::image_library);
 
 		// Set the default font to what the user has selected in the settings.
 		// For non-english users, this will replace the ImGui default font.
@@ -219,19 +219,19 @@ namespace ModExplorerMenu
 
 		switch (config.language) {
 		case Language::Locale::Chinese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/chinese"), GraphicManager::font_library, Language::Locale::Chinese);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/chinese"), GraphicManager::font_library, Language::Locale::Chinese);
 			break;
 		case Language::Locale::Japanese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/japanese"), GraphicManager::font_library, Language::Locale::Japanese);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/japanese"), GraphicManager::font_library, Language::Locale::Japanese);
 			break;
 		case Language::Locale::Korean:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/korean"), GraphicManager::font_library, Language::Locale::Korean);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/korean"), GraphicManager::font_library, Language::Locale::Korean);
 			break;
 		case Language::Locale::Russian:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/russian"), GraphicManager::font_library, Language::Locale::Russian);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/russian"), GraphicManager::font_library, Language::Locale::Russian);
 			break;
 		default:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ModExplorerMenu/fonts/english"), GraphicManager::font_library, Language::Locale::English);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/english"), GraphicManager::font_library, Language::Locale::English);
 			break;
 		}
 

@@ -2,7 +2,7 @@
 #include "Console.h"
 #include "Utils/Util.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void AddItemWindow::ApplyFilters()
 	{

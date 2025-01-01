@@ -2,7 +2,7 @@
 #include "PCH.h"
 #include "Utils/IconRpgAwesome.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	class Translate
@@ -70,7 +70,7 @@ namespace ModExplorerMenu
 		}
 
 	private:
-		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/ModExplorerMenu/User/Language/";
+		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/User/Language/";
 
 		Translate() = default;
 		~Translate() = default;

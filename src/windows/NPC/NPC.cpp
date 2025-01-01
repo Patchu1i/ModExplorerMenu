@@ -1,6 +1,6 @@
 #include "NPC.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void NPCWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	{

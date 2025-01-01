@@ -7,7 +7,7 @@
 
 using namespace IniHelper;
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func)
@@ -93,7 +93,7 @@ namespace ModExplorerMenu
 	// Master ini has no defaults, they're established here. Theme defaults are derived from def class.
 	void Settings::CreateDefaultMaster()
 	{
-		GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
+		GetIni(L"Data/Interface/Modex/Modex.ini", [](CSimpleIniA& a_ini) {
 			FormatMasterIni(a_ini);
 			a_ini.SetValue(rSections[Main], "Theme", "Default");
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", "211");
@@ -152,7 +152,7 @@ namespace ModExplorerMenu
 
 	void Settings::SaveSettings()
 	{
-		GetIni(L"Data/Interface/ModExplorerMenu/ModExplorerMenu.ini", [](CSimpleIniA& a_ini) {
+		GetIni(L"Data/Interface/Modex/Modex.ini", [](CSimpleIniA& a_ini) {
 			FormatMasterIni(a_ini);
 
 			a_ini.SetValue(rSections[Main], "Theme", Settings::GetSingleton()->user.config.theme.c_str());
@@ -173,9 +173,9 @@ namespace ModExplorerMenu
 		});
 	}
 
-	// This is executed within the scope of ModExplorerMenu.ini
+	// This is executed within the scope of Modex.ini
 	// Loads the preset specified in master ini. Then loads theme from there.
-	// Executed within the scope of the ModExplorerMenu.ini file.
+	// Executed within the scope of the Modex.ini file.
 	void Settings::LoadMasterIni(CSimpleIniA& a_ini)
 	{
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);

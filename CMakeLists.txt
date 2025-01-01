@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-	ModExplorerMenu
+	Modex
 	VERSION 0.0.1
 	LANGUAGES CXX
 )

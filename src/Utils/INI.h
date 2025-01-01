@@ -34,7 +34,7 @@ namespace IniHelper
 			"#\n"
 			"# Theme = <filename> (without extention)\n"
 			"#\n"
-			"# - Themes can be found in the 'Data/Interface/ModExplorerMenu/themes' directory.\n"
+			"# - Themes can be found in the 'Data/Interface/Modex/themes' directory.\n"
 			"# - If you're using Mod Organizer 2, custom themes are saved to your overwrite directory.\n"
 			"# - Downloaded themes need to be placed in the themes directory to be loaded.\n"
 			"#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n" },

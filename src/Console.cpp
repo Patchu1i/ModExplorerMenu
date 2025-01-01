@@ -1,7 +1,7 @@
 #include "Console.h"
 #include "Menu.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	std::mutex m_Process;
 	std::mutex m_Task;

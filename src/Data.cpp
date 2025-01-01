@@ -4,7 +4,7 @@
 #include "Utils/Worldspace.h"
 #include "Windows/Persistent.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
 	using _GetFormEditorID = const char* (*)(std::uint32_t);
@@ -33,7 +33,7 @@ namespace ModExplorerMenu
 				continue;
 			}
 
-			_npcCache.push_back(ModExplorerMenu::NPC{ form, formid, mod, favorite });
+			_npcCache.push_back(Modex::NPC{ form, formid, mod, favorite });
 
 			if (!_npcModList.contains(mod)) {
 				_npcModList.insert(mod);
@@ -138,7 +138,7 @@ namespace ModExplorerMenu
 			RE::TESFile* mod = form->GetFile();
 			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
 
-			_cache.push_back(ModExplorerMenu::Item{ form, formid, mod, favorite });
+			_cache.push_back(Modex::Item{ form, formid, mod, favorite });
 
 			//Add mod file to list.
 			if (!_itemModList.contains(mod)) {
@@ -201,7 +201,7 @@ namespace ModExplorerMenu
 			RE::TESFile* mod = form->GetFile();
 			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
 
-			_staticCache.push_back(ModExplorerMenu::StaticObject{ form, formid, mod, favorite });
+			_staticCache.push_back(Modex::StaticObject{ form, formid, mod, favorite });
 
 			if (!_staticModList.contains(mod)) {
 				_staticModList.insert(mod);

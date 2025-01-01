@@ -10,7 +10,7 @@
 
 // #include "Console.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	using ItemFilterType = std::pair<RE::FormType, std::string>;
 

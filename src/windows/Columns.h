@@ -4,7 +4,7 @@
 #include "Utils/Util.h"
 #include <PCH.h>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// clang-format off
 	class BaseColumn

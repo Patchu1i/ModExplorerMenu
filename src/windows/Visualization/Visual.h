@@ -5,7 +5,7 @@
 
 // #include "Console.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class VisualizationWindow
 	{

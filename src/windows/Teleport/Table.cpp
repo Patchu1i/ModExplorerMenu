@@ -5,7 +5,7 @@
 #include "Utils/Util.h"
 #include "Windows/Persistent.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
 	void TeleportWindow::ShowTeleportContextMenu(Cell& a_cell)

@@ -7,7 +7,7 @@
 // Sourced from dTry's Wheeler and Llama's Tiny Hud. Adapted to NG.
 // Huge gratitude for their public works.
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class GraphicManager
 	{

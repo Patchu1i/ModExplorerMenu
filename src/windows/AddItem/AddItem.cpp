@@ -1,7 +1,7 @@
 #include "AddItem.h"
 #include "Settings.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// Main Draw function for AddItem, called by Frame::Draw()
 	void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)

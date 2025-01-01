@@ -1,6 +1,6 @@
 #include "Visual.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void VisualizationWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	{

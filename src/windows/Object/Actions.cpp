@@ -1,7 +1,7 @@
 #include "Console.h"
 #include "Object.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void ObjectWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 	{

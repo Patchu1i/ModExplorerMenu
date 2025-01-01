@@ -1,7 +1,7 @@
 #include "Home.h"
 #include "Graphic.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	void HomeWindow::Draw()

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	std::unordered_map<std::string, bool> PersistentData::m_favorites;

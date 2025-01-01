@@ -12,7 +12,7 @@
 #include "Windows/Teleport/Teleport.h"
 #include <codecvt>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	//
 	// # Begin Helpers

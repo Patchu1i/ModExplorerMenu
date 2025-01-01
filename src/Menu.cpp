@@ -5,7 +5,7 @@
 #include "Windows/UserSettings/UserSettings.h"
 #include <dinput.h>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void Menu::Draw()
 	{

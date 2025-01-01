@@ -5,7 +5,7 @@
 #include "Windows/Columns.h"
 #include "Windows/Frame.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	using ObjectFilterType = std::pair<RE::FormType, std::string>;

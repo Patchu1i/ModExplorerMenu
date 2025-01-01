@@ -2,7 +2,7 @@
 #include "Settings.h"
 #include <regex>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class Menu
 	{

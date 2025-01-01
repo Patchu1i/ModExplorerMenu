@@ -2,7 +2,7 @@
 #include "NPC.h"
 #include "Utils/Util.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// Populate list with NPCs according to filters & search results.
 	// Will set state to `showAll` and delete any existing CachedNPC objects.

@@ -1,8 +1,7 @@
 #include "AddItem.h"
 #include "Utils/Util.h"
 
-
-namespace ModExplorerMenu
+namespace Modex
 {
 	void AddItemWindow::ShowBookPreview()
 	{

@@ -1,6 +1,6 @@
 #include "Visual.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void VisualizationWindow::ShowPlot(Settings::Style& a_style, Settings::Config& a_config)
 	{

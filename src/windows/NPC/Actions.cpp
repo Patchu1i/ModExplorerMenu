@@ -4,7 +4,7 @@
 #include "NPC.h"
 #include "Utils/Util.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void NPCWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 	{

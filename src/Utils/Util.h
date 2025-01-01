@@ -13,7 +13,7 @@ namespace ImGui
 
 	inline static void ShowLanguagePopup()
 	{
-		auto& style = ModExplorerMenu::Settings::GetSingleton()->GetStyle();
+		auto& style = Modex::Settings::GetSingleton()->GetStyle();
 
 		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
 		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
@@ -63,7 +63,7 @@ namespace ImGui
 	// Call ImGui::ShowWarningPopup(<popup_name>, <callback>) outside of conditional logic.
 	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
 	{
-		auto& style = ModExplorerMenu::Settings::GetSingleton()->GetStyle();
+		auto& style = Modex::Settings::GetSingleton()->GetStyle();
 
 		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
 		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
@@ -114,7 +114,7 @@ namespace ImGui
 	// ImGui Replacements specifically for theme integration.
 	//
 
-	inline static bool m_Button(const char* label, ModExplorerMenu::Settings::Style& style, const ImVec2& size = ImVec2(0, 0))
+	inline static bool m_Button(const char* label, Modex::Settings::Style& style, const ImVec2& size = ImVec2(0, 0))
 	{
 		ImGui::PushFont(style.buttonFont.normal);
 		auto result = ImGui::Button(label, size);
@@ -125,7 +125,7 @@ namespace ImGui
 	inline static bool m_Selectable(
 		const char* label,
 		bool& selected,
-		ModExplorerMenu::Settings::Style& style,
+		Modex::Settings::Style& style,
 		ImGuiSelectableFlags flag = ImGuiSelectableFlags_None,
 		const ImVec2& size = ImVec2(0, 0))
 	{

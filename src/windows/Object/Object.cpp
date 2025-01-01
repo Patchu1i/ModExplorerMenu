@@ -8,7 +8,7 @@
 // 	{ &_Book, AddItemWindow::Book, "BOOK" }, { &_Weapon, AddItemWindow::Weapon, "WEAP" }
 // };
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void ObjectWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
 	{

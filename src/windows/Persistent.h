@@ -3,7 +3,7 @@
 #include <PCH.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	class PersistentData
@@ -71,7 +71,7 @@ namespace ModExplorerMenu
 		static void LoadFromFile();
 		static std::unordered_map<std::string, bool> m_favorites;
 
-		constexpr inline static const wchar_t* json_favorite_path = L"Data/Interface/ModExplorerMenu/User/";
+		constexpr inline static const wchar_t* json_favorite_path = L"Data/Interface/Modex/User/";
 	};
 
 }

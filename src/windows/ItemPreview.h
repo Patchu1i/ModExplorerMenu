@@ -1,7 +1,7 @@
 #pragma once
 #include "Objects.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	template <class Object>
 	void ShowItemPreview(Object* a_object)

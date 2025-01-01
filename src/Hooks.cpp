@@ -5,7 +5,7 @@ decltype(&IDXGISwapChain::Present) ptr_IDXGISwapChain_Present;
 
 HRESULT WINAPI hk_IDXGISwapChain_Present(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
 {
-	ModExplorerMenu::Menu::GetSingleton()->Draw();
+	Modex::Menu::GetSingleton()->Draw();
 	return (This->*ptr_IDXGISwapChain_Present)(SyncInterval, Flags);
 }
 
@@ -56,7 +56,7 @@ static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;  // 
 void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events)
 {
 	static RE::InputEvent* dummy[] = { nullptr };
-	auto menu = ModExplorerMenu::Menu::GetSingleton();
+	auto menu = Modex::Menu::GetSingleton();
 
 	if (!a_events) {
 		_InputHandler(a_dispatcher, a_events);
@@ -88,7 +88,7 @@ namespace Hooks
 			auto swapchain = reinterpret_cast<IDXGISwapChain*>(manager->GetRuntimeData().renderWindows->swapChain);
 			auto device = reinterpret_cast<ID3D11Device*>(manager->GetRuntimeData().forwarder);
 
-			ModExplorerMenu::Menu::GetSingleton()->Init(swapchain, device, context);
+			Modex::Menu::GetSingleton()->Init(swapchain, device, context);
 		}
 
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -127,7 +127,7 @@ namespace Hooks
 		{
 			func(a_p1);
 
-			ModExplorerMenu::Menu::GetSingleton()->Draw();
+			Modex::Menu::GetSingleton()->Draw();
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};

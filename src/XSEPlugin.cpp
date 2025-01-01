@@ -16,12 +16,12 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
-			ModExplorerMenu::PersistentData::LoadFromFile();
-			ModExplorerMenu::Settings::GetSingleton()->LoadSettings(ModExplorerMenu::Settings::ini_mem_path);
-			ModExplorerMenu::GraphicManager::Init();
-			ModExplorerMenu::Settings::GetSingleton()->LoadFont();
-			ModExplorerMenu::Data::GetSingleton()->Run();
-			ModExplorerMenu::Frame::Install();
+			Modex::PersistentData::LoadFromFile();
+			Modex::Settings::GetSingleton()->LoadSettings(Modex::Settings::ini_mem_path);
+			Modex::GraphicManager::Init();
+			Modex::Settings::GetSingleton()->LoadFont();
+			Modex::Data::GetSingleton()->Run();
+			Modex::Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
 			logger::info("kPostLoad");
@@ -63,7 +63,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		return false;
 	}
 
-	ModExplorerMenu::Console::Register();
+	Modex::Console::Register();
 	//DumpSpecificVersion();
 
 	return true;

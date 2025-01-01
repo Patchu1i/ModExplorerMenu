@@ -5,7 +5,7 @@
 #include "Windows/Persistent.h"
 // #include "Windows/ItemCards.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
 	void ObjectWindow::ShowObjectListContextMenu(StaticObject& a_object)

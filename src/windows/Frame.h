@@ -3,7 +3,7 @@
 #include "Settings.h"
 #include <PCH.h>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class Frame
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	// https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
 	using _GetFormEditorID = const char* (*)(std::uint32_t);

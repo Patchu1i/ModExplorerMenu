@@ -2,7 +2,7 @@
 
 #include <PCH.h>
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class Console
 	{

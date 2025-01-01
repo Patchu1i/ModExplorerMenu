@@ -2,7 +2,7 @@
 #include "Menu.h"
 #include "Teleport.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	void TeleportWindow::ShowActions(Settings::Style& a_style, Settings::Config& a_config)
 	{

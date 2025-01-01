@@ -4,7 +4,7 @@
 #include "Language.h"
 #include "Settings.h"
 
-namespace ModExplorerMenu
+namespace Modex
 {
 	class HomeWindow
 	{

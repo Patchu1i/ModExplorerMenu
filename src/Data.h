@@ -7,7 +7,7 @@
 
 using MEMMap = std::multimap<std::string, std::multimap<std::string, std::multimap<std::string, std::pair<std::string, uint32_t>>>>;
 
-namespace ModExplorerMenu
+namespace Modex
 {
 
 	class Data
