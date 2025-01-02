@@ -450,24 +450,47 @@ namespace Modex
 		}
 
 		ImGui::Unindent();
-		ImGui::SeparatorText("SETTING_GENERAL");
+		ImGui::SeparatorText(_TFM("SETTING_GENERAL", ":"));
 		ImGui::Indent();
 
 		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
 		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, modifierHoverTint);
 
+		// Language Dropdown
 		auto width = 200.0f;
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::Text(_T("Language"));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
 
-		auto languages = Language::GetSupportedLanguageList();
+		auto languages = Language::GetLanguages();
 
-		if (ImGui::BeginCombo("##LanguageSelection", Language::GetLanguageName(config.language).c_str())) {
-			for (int i = 0; i < languages.size(); ++i) {
-				if (ImGui::Selectable(languages[i].c_str())) {
-					config.language = Language::Locale(i);
+		if (ImGui::BeginCombo("##LanguageSelection", config.language.c_str())) {
+			for (auto& language : languages) {
+				if (ImGui::Selectable(language.c_str())) {
+					config.language = language;
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+					Translate::GetSingleton()->RefreshLanguage(config.language);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+		// Glpyh Dropdown
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::Text("Language Glyph Range (Requires restart).");
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
+		ImGui::PushItemWidth(width);
+
+		auto glyphs = Language::GetListOfGlyphNames();
+		auto currentGlyph = Language::GetGlyphName(config.glyphRange);
+
+		if (ImGui::BeginCombo("##GlpyhSelection", currentGlyph.data())) {
+			for (auto& glyph : glyphs) {
+				if (ImGui::Selectable(glyph.data())) {
+					config.glyphRange = Language::GetGlyphRange(glyph);
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 				}
@@ -500,7 +523,7 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::Unindent();
-		ImGui::SeparatorText("SETTING_MODULES");
+		ImGui::SeparatorText(_TFM("SETTING_MODULE", ":"));
 		ImGui::Indent();
 
 		AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" });
