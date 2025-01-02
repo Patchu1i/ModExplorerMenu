@@ -6,15 +6,6 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 	unsigned debugFlags, const char* file, int line);
 
 #pragma warning(push)
-#if defined(FALLOUT4)
-#	include "F4SE/F4SE.h"
-#	include "RE/Fallout.h"
-#	define SKSE F4SE
-#	define SKSEAPI F4SEAPI
-#	define SKSEPlugin_Load F4SEPlugin_Load
-#	define SKSEPlugin_Query F4SEPlugin_Query
-#else
-#	define SKSE_SUPPORT_XBYAK
 #	include "RE/Skyrim.h"
 #	include "SKSE/SKSE.h"
 #	include <xbyak/xbyak.h>
@@ -27,8 +18,6 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 
 #	include "implot.h"
 #	include "implot_internal.h"
-
-#endif
 
 #ifdef NDEBUG
 #	include <spdlog/sinks/basic_file_sink.h>
@@ -95,7 +84,6 @@ namespace stl
 }
 
 namespace logger = SKSE::log;
-namespace WinAPI = SKSE::WinAPI;
 
 namespace util
 {
