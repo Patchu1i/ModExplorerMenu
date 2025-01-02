@@ -104,6 +104,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", "true");
 			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", "true");
 			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", "true");
+			a_ini.SetValue(rSections[Modules], "ShowQuestMenu", "true");
 
 			a_ini.SetValue(rSections[Modules], "DataPath", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data");
 		});
@@ -170,6 +171,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(Settings::GetSingleton()->user.config.showObjectMenu, true).c_str());
 			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(Settings::GetSingleton()->user.config.showNPCMenu, true).c_str());
 			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(Settings::GetSingleton()->user.config.showTeleportMenu, true).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowQuestMenu", ToString(Settings::GetSingleton()->user.config.showQuestMenu, true).c_str());
 
 			a_ini.SetValue(rSections[Modules], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
@@ -194,6 +196,7 @@ namespace Modex
 		user.config.showObjectMenu = GET_VALUE<bool>(rSections[Modules], "ShowObjectMenu", true, a_ini);
 		user.config.showNPCMenu = GET_VALUE<bool>(rSections[Modules], "ShowNPCMenu", true, a_ini);
 		user.config.showTeleportMenu = GET_VALUE<bool>(rSections[Modules], "ShowTeleportMenu", true, a_ini);
+		user.config.showQuestMenu = GET_VALUE<bool>(rSections[Modules], "ShowQuestMenu", true, a_ini);
 
 		user.config.dataPath = GET_VALUE<std::string>(rSections[Modules], "DataPath", "", a_ini);
 	}

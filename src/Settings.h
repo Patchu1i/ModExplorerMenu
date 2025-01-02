@@ -87,6 +87,7 @@ namespace Modex
 			bool showObjectMenu = true;
 			bool showNPCMenu = true;
 			bool showTeleportMenu = true;
+			bool showQuestMenu = true;
 
 			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
 		};

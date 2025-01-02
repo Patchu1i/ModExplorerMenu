@@ -416,6 +416,27 @@ namespace Modex
 		}
 	}
 
+	void Data::GenerateQuestList()
+	{
+		_questCache.clear();
+
+		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+			for (RE::TESForm* form : dataHandler->GetFormArray<RE::TESQuest>()) {
+				RE::FormID formid = form->GetFormID();
+				RE::TESFile* mod = form->GetFile();
+				bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
+
+				_questCache.push_back(Modex::Quest{ form, formid, mod, favorite });
+
+				logger::info("Quest: {}, Mod: {}", form->GetName(), mod->fileName);
+
+				if (!_questModList.contains(mod)) {
+					_questModList.insert(mod);
+				}
+			}
+		}
+	}
+
 	void Data::Run()
 	{
 		Settings::Config& config = Settings::GetSingleton()->GetConfig();
@@ -434,6 +455,10 @@ namespace Modex
 
 		if (config.showTeleportMenu) {
 			GenerateCellList();
+		}
+
+		if (config.showQuestMenu) {
+			GenerateQuestList();
 		}
 	}
 }

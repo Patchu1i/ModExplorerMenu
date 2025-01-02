@@ -76,12 +76,14 @@ namespace Modex
 		static inline std::vector<NPC> _npcCache;
 		static inline std::vector<RE::TESObjectREFR*> _npcRefIds;
 		static inline std::vector<StaticObject> _staticCache;
+		static inline std::vector<Quest> _questCache;
 		static inline std::unordered_set<RE::TESFile*> _modList;
 
 		static inline std::unordered_set<RE::TESFile*> _itemModList;
 		static inline std::unordered_set<RE::TESFile*> _npcModList;
 		static inline std::unordered_set<RE::TESFile*> _staticModList;
 		static inline std::unordered_set<RE::TESFile*> _cellModList;
+		static inline std::unordered_set<RE::TESFile*> _questModList;
 
 		static inline std::set<std::string> _npcClassList;
 		static inline std::set<std::string> _npcRaceList;
@@ -152,6 +154,7 @@ namespace Modex
 		static void GenerateNPCList();
 		static void GenerateObjectList();
 		static void GenerateCellList();
+		static void GenerateQuestList();
 
 		static void GenerateNPCClassList();
 		static void GenerateNPCRaceList();
@@ -206,6 +209,11 @@ namespace Modex
 		[[nodiscard]] static inline std::vector<StaticObject>& GetObjectList()
 		{
 			return _staticCache;
+		}
+
+		[[nodiscard]] static inline std::vector<Quest>& GetQuestList()
+		{
+			return _questCache;
 		}
 
 		void Run();

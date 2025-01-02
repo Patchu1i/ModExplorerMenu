@@ -9,6 +9,7 @@
 #include "Windows/AddItem/AddItem.h"
 #include "Windows/NPC/NPC.h"
 #include "Windows/Object/Object.h"
+#include "Windows/Quest/Quest.h"
 #include "Windows/Teleport/Teleport.h"
 #include <codecvt>
 
@@ -554,6 +555,13 @@ namespace Modex
 			if (Data::GetSingleton()->GetCellMap().empty()) {
 				Data::GetSingleton()->GenerateCellList();
 				TeleportWindow::Refresh();
+			}
+		}
+
+		if (AddCheckbox("SETTINGS_SHOW_QUEST", config.showQuestMenu)) {
+			if (Data::GetSingleton()->GetQuestList().empty()) {
+				Data::GetSingleton()->GenerateQuestList();
+				QuestWindow::Refresh();
 			}
 		}
 	}

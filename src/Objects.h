@@ -1,5 +1,7 @@
 #pragma once
 
+#include <PCH.h>
+
 namespace Modex
 {
 	// https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
@@ -54,6 +56,10 @@ namespace Modex
 		{
 			return static_cast<std::string>(RE::FormTypeToString(TESForm->GetFormType()));
 		}
+	};
+
+	class Quest : public BaseObject
+	{
 	};
 
 	class StaticObject : public BaseObject

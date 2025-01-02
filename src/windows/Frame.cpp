@@ -6,6 +6,7 @@
 #include "Windows/Home/Home.h"
 #include "Windows/NPC/NPC.h"
 #include "Windows/Object/Object.h"
+#include "Windows/Quest/Quest.h"
 #include "Windows/Teleport/Teleport.h"
 #include "Windows/UserSettings/UserSettings.h"
 
@@ -105,6 +106,13 @@ namespace Modex
 				}
 			}
 
+			if (config.showQuestMenu) {
+				if (ImGui::Selectable(_T("Quest"), &b_Quest, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
+					_activeWindow = ActiveWindow::Quest;
+					ResetSelectable();
+				}
+			}
+
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 			if (ImGui::Selectable(_T("Settings"), &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
@@ -144,6 +152,9 @@ namespace Modex
 			case ActiveWindow::Teleport:
 				TeleportWindow::Draw(style, config);
 				break;
+			case ActiveWindow::Quest:
+				QuestWindow::Draw(style, config);
+				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
 				break;
@@ -161,11 +172,13 @@ namespace Modex
 		ResetSelectable();
 
 		// Initalize elements
+		// TODO: Is this still needed?
 		AddItemWindow::Init();
 		HomeWindow::Init();
 		NPCWindow::Init();
 		TeleportWindow::Init();
 		ObjectWindow::Init();
+		QuestWindow::Init();
 
 		RefreshStyle();
 

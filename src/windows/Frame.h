@@ -26,6 +26,7 @@ namespace Modex
 			Object,
 			NPC,
 			Teleport,
+			Quest,
 			Settings
 		};
 
@@ -33,8 +34,9 @@ namespace Modex
 		static inline bool b_AddItem = false;
 		static inline bool b_Object = false;
 		static inline bool b_NPC = false;
-		static inline bool b_Settings = false;
 		static inline bool b_Teleport = false;
+		static inline bool b_Quest = false;
+		static inline bool b_Settings = false;
 
 		static inline ActiveWindow _activeWindow = ActiveWindow::Home;
 		static void ResetSelectable()
@@ -43,8 +45,9 @@ namespace Modex
 			b_AddItem = (_activeWindow == AddItem);
 			b_Object = (_activeWindow == Object);
 			b_NPC = (_activeWindow == NPC);
-			b_Settings = (_activeWindow == Settings);
 			b_Teleport = (_activeWindow == Teleport);
+			b_Quest = (_activeWindow == Quest);
+			b_Settings = (_activeWindow == Settings);
 		}
 
 		static inline constexpr auto TABLE_FLAGS =

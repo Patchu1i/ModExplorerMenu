@@ -147,6 +147,20 @@ namespace Modex
         }
 	};
 
+    class QuestColumns : public BaseColumnList
+    {
+        public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
+        QuestColumns()
+        {
+            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("Name"), flag, 0.0f, false, BaseColumn::ID::Name });
+            columns.push_back({ _T("Editor ID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
+        }
+    };
+
 
 	class ISortable
 	{
