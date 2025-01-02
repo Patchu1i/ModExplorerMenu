@@ -17,6 +17,9 @@ namespace
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
 			Modex::PersistentData::LoadFromFile();
+			logger::info("Loaded Persistent Data");
+			Modex::Language::GetSingleton()->BuildLanguageList();
+			logger::info("Finished Building Language List");
 			Modex::Settings::GetSingleton()->LoadSettings(Modex::Settings::ini_mem_path);
 			Modex::GraphicManager::Init();
 			Modex::Settings::GetSingleton()->LoadFont();

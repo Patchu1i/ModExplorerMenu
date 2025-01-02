@@ -62,8 +62,8 @@ namespace Modex
 			return GraphicManager::GetFont(value);
 		} else if constexpr (std::is_same_v<T, GraphicManager::Image>) {
 			return GraphicManager::GetImage(value);
-		} else if constexpr (std::is_same_v<T, Language::Locale>) {
-			return Language::GetLanguage(value);
+		} else if constexpr (std::is_same_v<T, Language::GlyphRanges>) {
+			return Language::GetGlyphRange(value);
 		} else {
 			stl::report_and_fail("Unhandled type passed to GET_VALUE in Menu.cpp!");
 			return a_default;
@@ -73,21 +73,17 @@ namespace Modex
 	void Settings::FormatMasterIni(CSimpleIniA& a_ini)
 	{
 		a_ini.SetValue(rSections[Main], NULL, NULL, GetComment(iComment::PresetMainHeader));
-		a_ini.SetValue(rSections[AddItem], NULL, NULL, GetComment(iComment::PresetAddItemHeader));
-		a_ini.SetValue(rSections[Object], NULL, NULL, GetComment(iComment::PresetObjectHeader));
-		a_ini.SetValue(rSections[FormLookup], NULL, NULL, GetComment(iComment::PresetFormLookupHeader));
-		a_ini.SetValue(rSections[NPC], NULL, NULL, GetComment(iComment::PresetNPCHeader));
-		a_ini.SetValue(rSections[Teleport], NULL, NULL, GetComment(iComment::PresetTeleportHeader));
+		a_ini.SetValue(rSections[Modules], NULL, NULL, GetComment(iComment::PresetMainModules));
 	}
 
 	// Call on new ini file to generate comments and sections before inserting.
 	void Settings::FormatThemeIni(CSimpleIniA& a_ini)
 	{
 		a_ini.SetValue(rSections[Window], NULL, NULL, GetComment(iComment::ThemeConfigHeader));
-		a_ini.SetValue(rSections[Frame], NULL, NULL, GetComment(iComment::ThemeFrameHeader));
 		a_ini.SetValue(rSections[Text], NULL, NULL, GetComment(iComment::ThemeTextHeader));
 		a_ini.SetValue(rSections[Table], NULL, NULL, GetComment(iComment::ThemeTableHeader));
 		a_ini.SetValue(rSections[Widgets], NULL, NULL, GetComment(iComment::ThemeWidgetsHeader));
+		a_ini.SetValue(rSections[Images], NULL, NULL, GetComment(iComment::ThemeImageHeader));
 	}
 
 	// Master ini has no defaults, they're established here. Theme defaults are derived from def class.
@@ -102,14 +98,14 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
 			a_ini.SetValue(rSections[Main], "UI Scale", "100");
 
-			a_ini.SetValue(rSections[Main], "DefaultShow", "0");
-			a_ini.SetValue(rSections[Main], "ShowHomeMenu", "false");
-			a_ini.SetValue(rSections[Main], "ShowAddItemMenu", "true");
-			a_ini.SetValue(rSections[Main], "ShowObjectMenu", "true");
-			a_ini.SetValue(rSections[Main], "ShowNPCMenu", "true");
-			a_ini.SetValue(rSections[Main], "ShowTeleportMenu", "true");
+			a_ini.SetValue(rSections[Modules], "DefaultShow", "1");
+			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", "false");
+			a_ini.SetValue(rSections[Modules], "ShowAddItemMenu", "true");
+			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", "true");
+			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", "true");
+			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", "true");
 
-			a_ini.SetValue(rSections[Main], "DataPath", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data");
+			a_ini.SetValue(rSections[Modules], "DataPath", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data");
 		});
 	}
 
@@ -120,17 +116,22 @@ namespace Modex
 
 		// If master ini doesn't exist this will default it to "Default"
 		if (!std::filesystem::exists(a_path)) {
+			logger::info("Master ini not found! Creating default master ini...");
+
 			CreateDefaultMaster();
 		}
+
+		logger::info("Loading settings from: {}", converter.to_bytes(a_path));
 
 		// Master
 		GetIni(a_path, [](CSimpleIniA& a_ini) {
 			Settings::GetSingleton()->LoadMasterIni(a_ini);
 		});
 
+		logger::info("Using Theme specified in Modex.ini: {}", user.config.theme);
+
 		// Language
-		auto lang = Language::GetLanguageName(user.config.language);
-		Translate::GetSingleton()->LoadLanguage(lang);
+		Translate::GetSingleton()->LoadLanguage(user.config.language);
 
 		// Theme
 		InstantiateDefaultTheme(def.style);
@@ -145,8 +146,8 @@ namespace Modex
 	{
 		std::wstring fullPath = GetThemePath(user.config.theme);
 		GetIni(fullPath.c_str(), [](CSimpleIniA& a_ini) {
-			Settings::GetSingleton()->user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "Font", Settings::GetSingleton()->def.style.font, a_ini);
-			Settings::GetSingleton()->user.style.buttonFont = GET_VALUE<GraphicManager::Font>(rSections[Fonts], "ButtonFont", Settings::GetSingleton()->def.style.buttonFont, a_ini);
+			Settings::GetSingleton()->user.style.font = GET_VALUE<GraphicManager::Font>(rSections[Text], "Font", Settings::GetSingleton()->def.style.font, a_ini);
+			Settings::GetSingleton()->user.style.buttonFont = GET_VALUE<GraphicManager::Font>(rSections[Text], "ButtonFont", Settings::GetSingleton()->def.style.buttonFont, a_ini);
 		});
 	}
 
@@ -159,17 +160,18 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(Settings::GetSingleton()->user.config.showMenuKey).c_str());
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language, false).c_str());
+			a_ini.SetValue(rSections[Main], "GlyphRange", Language::GetGlyphName(Settings::GetSingleton()->user.config.glyphRange).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
 
-			a_ini.SetValue(rSections[Main], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
-			a_ini.SetValue(rSections[Main], "ShowHomeMenu", ToString(Settings::GetSingleton()->user.config.showHomeMenu, false).c_str());
-			a_ini.SetValue(rSections[Main], "ShowAddItemMenu", ToString(Settings::GetSingleton()->user.config.showAddItemMenu, true).c_str());
-			a_ini.SetValue(rSections[Main], "ShowObjectMenu", ToString(Settings::GetSingleton()->user.config.showObjectMenu, true).c_str());
-			a_ini.SetValue(rSections[Main], "ShowNPCMenu", ToString(Settings::GetSingleton()->user.config.showNPCMenu, true).c_str());
-			a_ini.SetValue(rSections[Main], "ShowTeleportMenu", ToString(Settings::GetSingleton()->user.config.showTeleportMenu, true).c_str());
+			a_ini.SetValue(rSections[Modules], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", ToString(Settings::GetSingleton()->user.config.showHomeMenu, false).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowAddItemMenu", ToString(Settings::GetSingleton()->user.config.showAddItemMenu, true).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(Settings::GetSingleton()->user.config.showObjectMenu, true).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(Settings::GetSingleton()->user.config.showNPCMenu, true).c_str());
+			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(Settings::GetSingleton()->user.config.showTeleportMenu, true).c_str());
 
-			a_ini.SetValue(rSections[Main], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
+			a_ini.SetValue(rSections[Modules], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
 	}
 
@@ -181,18 +183,19 @@ namespace Modex
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", "Default", a_ini);
 		user.config.showMenuKey = GET_VALUE<int>(rSections[Main], "ShowMenuKey", 211, a_ini);
 		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", 0, a_ini);
-		user.config.language = GET_VALUE<Language::Locale>(rSections[Main], "Language", Language::Locale::English, a_ini);
+		user.config.language = GET_VALUE<std::string>(rSections[Main], "Language", "English", a_ini);
+		user.config.glyphRange = GET_VALUE<Language::GlyphRanges>(rSections[Main], "GlyphRange", Language::GlyphRanges::Default, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
 
-		user.config.defaultShow = GET_VALUE<int>(rSections[Main], "DefaultShow", 0, a_ini);
-		user.config.showHomeMenu = GET_VALUE<bool>(rSections[Main], "ShowHomeMenu", false, a_ini);
-		user.config.showAddItemMenu = GET_VALUE<bool>(rSections[Main], "ShowAddItemMenu", true, a_ini);
-		user.config.showObjectMenu = GET_VALUE<bool>(rSections[Main], "ShowObjectMenu", true, a_ini);
-		user.config.showNPCMenu = GET_VALUE<bool>(rSections[Main], "ShowNPCMenu", true, a_ini);
-		user.config.showTeleportMenu = GET_VALUE<bool>(rSections[Main], "ShowTeleportMenu", true, a_ini);
+		user.config.defaultShow = GET_VALUE<int>(rSections[Modules], "DefaultShow", 0, a_ini);
+		user.config.showHomeMenu = GET_VALUE<bool>(rSections[Modules], "ShowHomeMenu", false, a_ini);
+		user.config.showAddItemMenu = GET_VALUE<bool>(rSections[Modules], "ShowAddItemMenu", true, a_ini);
+		user.config.showObjectMenu = GET_VALUE<bool>(rSections[Modules], "ShowObjectMenu", true, a_ini);
+		user.config.showNPCMenu = GET_VALUE<bool>(rSections[Modules], "ShowNPCMenu", true, a_ini);
+		user.config.showTeleportMenu = GET_VALUE<bool>(rSections[Modules], "ShowTeleportMenu", true, a_ini);
 
-		user.config.dataPath = GET_VALUE<std::string>(rSections[Main], "DataPath", "", a_ini);
+		user.config.dataPath = GET_VALUE<std::string>(rSections[Modules], "DataPath", "", a_ini);
 	}
 
 	void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
@@ -321,7 +324,7 @@ namespace Modex
 		user.style.noIconText = GET_VALUE<bool>(rSections[Text], "NoIconText", def.style.noIconText, a_ini);
 		user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
-		user.style.globalFontSize = GET_VALUE<float>(rSections[Fonts], "GlobalFontSize", def.style.globalFontSize, a_ini);
+		user.style.globalFontSize = GET_VALUE<float>(rSections[Text], "GlobalFontSize", def.style.globalFontSize, a_ini);
 
 		user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
 	}
@@ -385,13 +388,12 @@ namespace Modex
 			a_ini.SetValue(rSections[Widgets], "ScrollbarSize", Settings::ToString(a_user.scrollbarSize, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "GrabMinSize", Settings::ToString(a_user.grabMinSize, false).c_str());
 			a_ini.SetValue(rSections[Widgets], "GrabRounding", Settings::ToString(a_user.grabRounding, false).c_str());
-
-			a_ini.SetValue(rSections[Text], "NoIconText", Settings::ToString(a_user.noIconText, false).c_str());
 			a_ini.SetValue(rSections[Table], "ShowTableRowBG", Settings::ToString(a_user.showTableRowBG, false).c_str());
 
-			a_ini.SetValue(rSections[Fonts], "Font", Settings::ToString(a_user.font, false).c_str());
-			a_ini.SetValue(rSections[Fonts], "ButtonFont", Settings::ToString(a_user.buttonFont, false).c_str());
-			a_ini.SetValue(rSections[Fonts], "GlobalFontSize", Settings::ToString(a_user.globalFontSize, false).c_str());
+			a_ini.SetValue(rSections[Text], "NoIconText", Settings::ToString(a_user.noIconText, false).c_str());
+			a_ini.SetValue(rSections[Text], "Font", Settings::ToString(a_user.font, false).c_str());
+			a_ini.SetValue(rSections[Text], "ButtonFont", Settings::ToString(a_user.buttonFont, false).c_str());
+			a_ini.SetValue(rSections[Text], "GlobalFontSize", Settings::ToString(a_user.globalFontSize, false).c_str());
 
 			a_ini.SetValue(rSections[Images], "SplashImage", Settings::ToString(a_user.splashImage, false).c_str());
 		});

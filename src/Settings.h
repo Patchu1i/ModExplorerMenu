@@ -46,32 +46,29 @@ namespace Modex
 			Text,
 			Table,
 			Widgets,
+			Images,
 			Main,
+			Modules,
 			AddItem,
 			Object,
 			FormLookup,
 			NPC,
 			Teleport,
-			Autotest,
-			Fonts,
-			Images
 		};
 
 		static inline std::map<SECTION, const char*> rSections = {
 			{ Window, "Window" },
-			{ Frame, "Frame" },
 			{ Text, "Text" },
 			{ Table, "Table" },
 			{ Widgets, "Widgets" },
+			{ Images, "Images & Icons" },
 			{ Main, "Main" },
+			{ Modules, "Modules" },
 			{ AddItem, "AddItem" },
 			{ Object, "Object" },
 			{ FormLookup, "FormLookup" },
 			{ NPC, "NPC" },
-			{ Teleport, "Teleport" },
-			{ Autotest, "Autotest" },
-			{ Fonts, "Fonts" },
-			{ Images, "Images & Icons" }
+			{ Teleport, "Teleport" }
 		};
 
 		struct Config
@@ -79,16 +76,17 @@ namespace Modex
 			std::string theme = "Default";
 			int showMenuKey;
 			int showMenuModifier;
-			Language::Locale language = Language::Locale::English;
+			std::string language = "English";
+			Language::GlyphRanges glyphRange = Language::GlyphRanges::Default;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
-			int uiScale;      // 80, 90, 100, 110, 120
+			int uiScale;      // 80, 90, 100, 110, 120 (Should be a slider..)
 
-			int defaultShow;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
-			bool showHomeMenu;
-			bool showAddItemMenu;
-			bool showObjectMenu;
-			bool showNPCMenu;
-			bool showTeleportMenu;
+			int defaultShow = 1;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
+			bool showHomeMenu = false;
+			bool showAddItemMenu = true;
+			bool showObjectMenu = true;
+			bool showNPCMenu = true;
+			bool showTeleportMenu = true;
 
 			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
 		};
@@ -189,8 +187,8 @@ namespace Modex
 				return a_style.name;
 			} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
 				return GraphicManager::GetImageName(a_style);
-			} else if constexpr (std::is_same_v<Language::Locale, T>) {
-				return Language::GetLanguageName(a_style);
+			} else if constexpr (std::is_same_v<Language::GlyphRanges, T>) {
+				return Language::GetGlyphName(a_style);
 			} else if constexpr (std::is_same_v<float, T>) {
 				return std::format("{:.3f}", a_style);
 			} else if constexpr (std::is_same_v<bool, T>) {

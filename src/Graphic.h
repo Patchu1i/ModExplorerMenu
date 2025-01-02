@@ -47,8 +47,8 @@ namespace Modex
 
 		static void DrawImage(Image& a_texture, ImVec2 a_center);
 		static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
-		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::Locale a_language);
-		static void SetupLanguageFont(Language::Locale a_language);
+		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::GlyphRanges a_range);
+		static void SetupLanguageFont(Language::GlyphRanges a_range);
 
 		static void Init();
 

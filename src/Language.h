@@ -16,6 +16,12 @@ namespace Modex
 			return &singleton;
 		}
 
+		void RefreshLanguage(std::string a_language)
+		{
+			lang.clear();
+			LoadLanguage(a_language);
+		}
+
 		// TODO: Marked as duplicate, can be refactored in with PersistentData
 		void LoadLanguage(std::string a_path)
 		{
@@ -85,100 +91,105 @@ namespace Modex
 
 	class Language
 	{
-	public:
-		enum class Locale
-		{
-			PortugueseBR,
-			Chinese,
-			English,
-			French,
-			German,
-			Japanese,
-			Korean,
-			Russian,
-			Spanish
-		};
+	private:
+		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/User/Language/";
+		constexpr inline static const wchar_t* json_font_path = L"Data/Interface/Modex/User/Fonts/";
 
-		static const std::vector<std::string> GetSupportedLanguageList()
+		Language() = default;
+		~Language() = default;
+		Language(const Language&) = delete;
+		Language& operator=(const Language&) = delete;
+
+	public:
+		static inline Language* GetSingleton()
 		{
-			return {
-				"Portuguese-BR",
-				"Chinese",
-				"English",
-				"French",
-				"German",
-				"Japanese",
-				"Korean",
-				"Russian",
-				"Spanish"
-			};
+			static Language singleton;
+			return &singleton;
 		}
 
-		static const ImWchar* GetLanguageGlyphRange(Locale a_language)
+		enum GlyphRanges
 		{
-			switch (a_language) {
-			case Locale::Chinese:
+			Default,
+			Chinese,
+			Japanese,
+			Russian,
+			Korean
+		};
+
+		static inline std::set<std::string> languages;
+
+		static inline std::set<std::string> GetLanguages()
+		{
+			if (languages.empty()) {
+				stl::report_and_fail("No languages found in the language directory. Unable to Load Languages.");
+			}
+
+			return languages;
+		}
+
+		static const void BuildLanguageList()
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(std::wstring(json_lang_path))) {
+				if (entry.path().extension() == L".json") {
+					std::string path = entry.path().filename().string();
+					languages.insert(path.substr(0, path.find_last_of('.')));
+
+					logger::info("Added language to master list: {}", path);
+				}
+			}
+		}
+
+		static const ImWchar* GetLanguageGlyphRange(GlyphRanges a_range)
+		{
+			switch (a_range) {
+			case GlyphRanges::Chinese:
 				return ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
-			case Locale::Japanese:
+			case GlyphRanges::Japanese:
 				return ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
-			case Locale::Russian:
+			case GlyphRanges::Russian:
 				return ImGui::GetIO().Fonts->GetGlyphRangesCyrillic();
-			case Locale::Korean:
+			case GlyphRanges::Korean:
 				return ImGui::GetIO().Fonts->GetGlyphRangesKorean();
 			default:
 				return ImGui::GetIO().Fonts->GetGlyphRangesDefault();
 			}
 		}
 
-		[[nodiscard]] static std::string GetLanguageName(Locale a_language)
+		[[nodiscard]] static GlyphRanges GetGlyphRange(std::string a_language)
 		{
-			switch (a_language) {
-			case Locale::PortugueseBR:
-				return "Portuguese-BR";
-			case Locale::Chinese:
-				return "Chinese";
-			case Locale::English:
-				return "English";
-			case Locale::French:
-				return "French";
-			case Locale::German:
-				return "German";
-			case Locale::Japanese:
-				return "Japanese";
-			case Locale::Korean:
-				return "Korean";
-			case Locale::Russian:
-				return "Russian";
-			case Locale::Spanish:
-				return "Spanish";
-			default:
-				return "English";
+			if (a_language == "Chinese") {
+				return GlyphRanges::Chinese;
+			} else if (a_language == "Japanese") {
+				return GlyphRanges::Japanese;
+			} else if (a_language == "Russian") {
+				return GlyphRanges::Russian;
+			} else if (a_language == "Korean") {
+				return GlyphRanges::Korean;
+			} else {
+				return GlyphRanges::Default;
 			}
 		}
 
-		[[nodiscard]] static Locale GetLanguage(std::string a_language)
+		[[nodiscard]] static std::string GetGlyphName(GlyphRanges a_range)
 		{
-			if (a_language == "Portuguese-BR") {
-				return Locale::PortugueseBR;
-			} else if (a_language == "Chinese") {
-				return Locale::Chinese;
-			} else if (a_language == "English") {
-				return Locale::English;
-			} else if (a_language == "French") {
-				return Locale::French;
-			} else if (a_language == "German") {
-				return Locale::German;
-			} else if (a_language == "Japanese") {
-				return Locale::Japanese;
-			} else if (a_language == "Korean") {
-				return Locale::Korean;
-			} else if (a_language == "Russian") {
-				return Locale::Russian;
-			} else if (a_language == "Spanish") {
-				return Locale::Spanish;
-			} else {
-				return Locale::English;
+			switch (a_range) {
+			case GlyphRanges::Chinese:
+				return "Chinese";
+			case GlyphRanges::Japanese:
+				return "Japanese";
+			case GlyphRanges::Russian:
+				return "Russian";
+			case GlyphRanges::Korean:
+				return "Korean";
+			default:
+				return "Default";
 			}
+		}
+
+		// Not going to bother making this fancy.
+		[[nodiscard]] static std::set<std::string> GetListOfGlyphNames()
+		{
+			return { "Default", "Chinese", "Japanese", "Russian", "Korean" };
 		}
 	};
 }

@@ -108,7 +108,7 @@ namespace Modex
 	// TODO: Remove the nano, small, medium, etc indices and replace with a single font size parameter.
 	// This will allow for easier font merging and more universal font usage. Only issue is that the font dpi and scale
 	// might be a problem if changing UI size?
-	void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::Locale a_language)
+	void GraphicManager::LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::GlyphRanges a_range)
 	{
 		if (std::filesystem::exists(a_path) == false) {
 			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because Modex cannot locate the path '") + a_path + "'. Check your installation.";
@@ -116,7 +116,7 @@ namespace Modex
 			return;
 		}
 
-		auto glyph_ranges = Language::GetLanguageGlyphRange(a_language);
+		auto glyph_ranges = Language::GetLanguageGlyphRange(a_range);
 
 		for (const auto& entry : std::filesystem::directory_iterator(a_path)) {
 			if (entry.path().filename().extension() != ".ttf" && entry.path().filename().extension() != ".otf") {
@@ -136,31 +136,32 @@ namespace Modex
 		}
 	}
 
-	void GraphicManager::SetupLanguageFont(Language::Locale a_language)
+	// Setup Default font with compatible font for user's language.
+	void GraphicManager::SetupLanguageFont(Language::GlyphRanges a_range)
 	{
-		auto glyph_range = Language::GetLanguageGlyphRange(a_language);
+		auto glyph_range = Language::GetLanguageGlyphRange(a_range);
 		ImGuiIO& io = ImGui::GetIO();
 
-		switch (a_language) {
-		case Language::Locale::Chinese:
+		switch (a_range) {
+		case Language::GlyphRanges::Chinese:
 			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
 			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
 			break;
-		case Language::Locale::Japanese:
+		case Language::GlyphRanges::Japanese:
 			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
 			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
 			break;
-		case Language::Locale::Korean:
+		case Language::GlyphRanges::Korean:
 			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
 			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 20.0f, NULL, glyph_range);
 			MergeIconFont(io, 20.0f);
 			break;
-		case Language::Locale::Russian:
+		case Language::GlyphRanges::Russian:
 			font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 18.0f, NULL, glyph_range);
 			MergeIconFont(io, 18.0f);
 			font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 20.0f, NULL, glyph_range);
@@ -210,35 +211,35 @@ namespace Modex
 		// For non-english users, this will replace the ImGui default font.
 
 		auto config = Settings::GetSingleton()->GetConfig();
-		SetupLanguageFont(config.language);
+		SetupLanguageFont(config.glyphRange);
 
 		// I wrapped this into a switch statement so that all directories don't have to be present.
 		// In addition, it allows users of varying languages to only need one directory for custom fonts.
 		// For example, a Chinese user would install their custom fonts into the Chinese directory.
 		// These directories are automatically setup by the FOMOD.
 
-		switch (config.language) {
-		case Language::Locale::Chinese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/chinese"), GraphicManager::font_library, Language::Locale::Chinese);
+		switch (config.glyphRange) {
+		case Language::GlyphRanges::Chinese:
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/chinese"), GraphicManager::font_library, Language::GlyphRanges::Chinese);
 			break;
-		case Language::Locale::Japanese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/japanese"), GraphicManager::font_library, Language::Locale::Japanese);
+		case Language::GlyphRanges::Japanese:
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/japanese"), GraphicManager::font_library, Language::GlyphRanges::Japanese);
 			break;
-		case Language::Locale::Korean:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/korean"), GraphicManager::font_library, Language::Locale::Korean);
+		case Language::GlyphRanges::Korean:
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/korean"), GraphicManager::font_library, Language::GlyphRanges::Korean);
 			break;
-		case Language::Locale::Russian:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/russian"), GraphicManager::font_library, Language::Locale::Russian);
+		case Language::GlyphRanges::Russian:
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/russian"), GraphicManager::font_library, Language::GlyphRanges::Russian);
 			break;
 		default:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/english"), GraphicManager::font_library, Language::Locale::English);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/english"), GraphicManager::font_library, Language::GlyphRanges::Default);
 			break;
 		}
 
 		// Detect ImGui Icons mod and load it if it exists.
 		if (std::filesystem::exists("Data/Interface/ImGuiIcons")) {
 			GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ImGuiIcons/Icons"), GraphicManager::imgui_library);
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ImGuiIcons/Fonts"), GraphicManager::font_library, Language::Locale::English);
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ImGuiIcons/Fonts"), GraphicManager::font_library, Language::GlyphRanges::Default);
 			logger::info("Successfully found and loaded ImGui Icons.");
 		}
 
