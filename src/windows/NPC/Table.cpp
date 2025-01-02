@@ -114,7 +114,9 @@ namespace Modex
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite);
+					if (ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite)) {
+						PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
+					}
 
 					ImGui::PopStyleColor(3);
 					ImGui::PopStyleVar(2);
