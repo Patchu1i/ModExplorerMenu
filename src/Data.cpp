@@ -320,7 +320,7 @@ namespace Modex
 		_npcClassList.clear();
 
 		for (auto& npc : _npcCache) {
-			if (auto className = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName()) {
+			if (auto className = npc.GetClass().data()) {
 				if (className == nullptr) {
 					continue;
 				}

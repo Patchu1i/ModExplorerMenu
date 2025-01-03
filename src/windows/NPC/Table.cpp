@@ -145,23 +145,21 @@ namespace Modex
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetEditorID().data());
 
-					auto tesNPC = npc->TESForm->As<RE::TESNPC>();
-
 					// Gender
 					ImGui::TableNextColumn();
-					ImGui::Text(tesNPC->race->GetFullName());
+					ImGui::Text(npc->GetGender().data());
 
 					// Race
 					ImGui::TableNextColumn();
-					ImGui::Text(tesNPC->IsFemale() ? _T("Female") : _T("Male"));
+					ImGui::Text(npc->GetRace().data());
 
 					// Class
 					ImGui::TableNextColumn();
-					ImGui::Text(tesNPC->npcClass->GetFullName());
+					ImGui::Text(npc->GetClass().data());
 
 					// Level
 					ImGui::TableNextColumn();
-					ImGui::Text(std::to_string(tesNPC->GetLevel()).c_str());
+					ImGui::Text(std::to_string(npc->GetLevel()).c_str());
 
 					// Health
 					ImGui::TableNextColumn();

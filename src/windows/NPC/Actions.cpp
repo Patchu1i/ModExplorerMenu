@@ -147,12 +147,12 @@ namespace Modex
 			ImGui::Text(text);
 		};
 
-		RE::TESNPC* npc = nullptr;
+		NPC* npc = nullptr;
 
 		if (hoveredNPC != nullptr) {
-			npc = hoveredNPC->TESForm->As<RE::TESNPC>();
+			npc = hoveredNPC;
 		} else if (selectedNPC != nullptr) {
-			npc = selectedNPC->TESForm->As<RE::TESNPC>();
+			npc = selectedNPC;
 		}
 
 		if (npc == nullptr) {
@@ -165,8 +165,8 @@ namespace Modex
 		const auto cursor = ImGui::GetCursorScreenPos();
 		const auto size = ImGui::GetContentRegionAvail();
 
-		auto isEssential = npc->IsEssential();
-		auto isUnique = npc->IsUnique();
+		auto isEssential = npc->AsTESNPC->IsEssential();
+		auto isUnique = npc->AsTESNPC->IsUnique();
 
 		// Color Name Bar based on NPC Essential/Unique state.
 		auto color = isEssential ? ImVec4(0.40f, 0.12f, 0.45f, 0.65f) :
@@ -176,7 +176,7 @@ namespace Modex
 		drawList->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w - 0.32f)));
 		drawList->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(color), 0.0f, 0, 2.0f);
 
-		const auto name = npc->GetName();
+		const auto name = npc->GetName().data();
 		ImGui::NewLine();
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
@@ -191,23 +191,17 @@ namespace Modex
 		if (ImGui::BeginChild("##NPCInfoScroll", ImVec2(ImGui::GetContentRegionAvail().x, 0), false, flags)) {
 			if (ImGui::TreeNode(_T("Info"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				auto npcClass = npc->npcClass;
-				auto npcRace = npc->race;
-				auto npcGender = npc->IsFemale();
 
-				auto npcHealth = npc->GetBaseActorValue(RE::ActorValue::kHealth);
-				auto npcMagicka = npc->GetBaseActorValue(RE::ActorValue::kMagicka);
-				auto npcStamina = npc->GetBaseActorValue(RE::ActorValue::kStamina);
-				auto npcLevel = npc->GetLevel();
+				InlineText(_TFM("Class", ":"), npc->GetClass().data());
+				InlineText(_TFM("Race", ":"), npc->GetRace().data());
+				InlineText(_TFM("Gender", ":"), npc->GetGender().data());
+				InlineBar(_TFM("Level", ":"), npc->GetLevel(), 100.0f);
 
-				InlineText(_TFM("Class", ":"), npcClass->GetFullName());
-				InlineText(_TFM("Race", ":"), npcRace->GetFullName());
-				InlineText(_TFM("Gender", ":"), npcGender ? "Female" : "Male");
-				InlineBar(_TFM("Level", ":"), npcLevel, 100.0f);
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				InlineBar(_TFM("Health", ":"), npcHealth, 100.0f);
-				InlineBar(_TFM("Magicka", ":"), npcMagicka, 100.0f);
-				InlineBar(_TFM("Stamina", ":"), npcStamina, 100.0f);
+
+				InlineBar(_TFM("Health", ":"), npc->GetHealth(), 100.0f);
+				InlineBar(_TFM("Magicka", ":"), npc->GetMagicka(), 100.0f);
+				InlineBar(_TFM("Stamina", ":"), npc->GetStamina(), 100.0f);
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::TreePop();
@@ -215,7 +209,7 @@ namespace Modex
 
 			// Faction
 			if (ImGui::TreeNode(_T("Faction"))) {
-				auto factions = npc->factions;
+				auto factions = npc->AsTESNPC->factions;
 
 				if (factions.size() > 0) {
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -263,7 +257,7 @@ namespace Modex
 
 			if (ImGui::TreeNode(_T("NPC_SPELLS"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				auto* spellData = npc->GetSpellList();
+				auto spellData = npc->AsTESNPC->GetSpellList();
 
 				if (spellData != nullptr) {
 					for (uint32_t i = 0; i < spellData->numSpells; i++) {
@@ -283,9 +277,9 @@ namespace Modex
 							auto castType = Utils::GetCastingType(spell->data.castingType);
 							auto spellType = Utils::GetSpellType(spell->data.spellType);
 							auto delType = Utils::GetDeliveryType(spell->data.delivery);
-							auto cost = spell->CalculateMagickaCost(npc->As<RE::Actor>());
+							auto cost = spell->CalculateMagickaCost(npc->TESForm->As<RE::Actor>());
 
-							float costPercent = cost / npc->GetBaseActorValue(RE::ActorValue::kMagicka) * 100.0f;
+							float costPercent = cost / npc->GetMagicka() * 100.0f;
 							std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
 							InlineText(_TFM("NPC_CAST_TYPE", ":"), castType);

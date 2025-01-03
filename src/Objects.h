@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Utils/Util.h"
+#include <string>
+#include <unicode/ucnv.h>
+#include <unicode/unistr.h>
+
 namespace Modex
 {
 	// https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
@@ -26,13 +31,9 @@ namespace Modex
 		const std::string name = TESForm->GetName();
 		const std::string editorid = GetEditorIDString(FormID);
 		const std::string filename = TESFile->fileName;
-
-		bool selected = false;
-
 		RE::FormID refID = 0;
 
-		// Correct exceptions for items that fall outside traditional categories.
-		// This function acts as an accessor to route the correct form type.
+		// Categorize SoulGem's as Misc.
 		[[nodiscard]] inline RE::FormType GetFormType() const
 		{
 			if (TESForm->GetFormType() == RE::FormType::SoulGem) {
@@ -42,13 +43,13 @@ namespace Modex
 			}
 		}
 
+		// TODO: Derefencing char* without safety checks. Danger zone.
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
 		[[nodiscard]] inline std::string_view GetName() const { return name; }
 		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
 		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
 		[[nodiscard]] inline RE::FormID GetBaseForm() const { return FormID; }
 		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
-		[[nodiscard]] inline bool IsSelected() const { return selected; }
 
 		[[nodiscard]] inline std::string GetTypeName() const
 		{
@@ -92,12 +93,40 @@ namespace Modex
 	class NPC : public BaseObject
 	{
 	public:
-		[[nodiscard]] inline float GetHealth() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kHealth); }
-		[[nodiscard]] inline float GetMagicka() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kMagicka); }
-		[[nodiscard]] inline float GetStamina() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kStamina); }
-		[[nodiscard]] inline float GetCarryWeight() const { return TESForm->As<RE::TESNPC>()->GetBaseActorValue(RE::ActorValue::kCarryWeight); }
+		// const std::string classname = TESForm->As<RE::TESNPC>()->npcClass->fullName.data();
+		RE::TESNPC* AsTESNPC = TESForm->As<RE::TESNPC>();
+		const RE::TESRace* race = AsTESNPC->race;
+		const bool gender = AsTESNPC->IsFemale();
+		const uint16_t level = AsTESNPC->GetLevel();
+		const RE::TESClass* npcClass = AsTESNPC->npcClass;
 
-		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const { return TESForm->As<RE::TESNPC>()->playerSkills; }
+		[[nodiscard]] inline std::string_view GetClass() const
+		{
+			if (npcClass != nullptr) {
+				return npcClass->GetFullName();
+			} else {
+				return "Unknown";
+			}
+		}
+
+		[[nodiscard]] inline std::string_view GetRace() const
+		{
+			if (race != nullptr) {
+				return race->GetFullName();
+			} else {
+				return "Unknown";
+			}
+		}
+
+		[[nodiscard]] inline uint16_t GetLevel() const { return level; }
+		[[nodiscard]] inline std::string GetGender() const { return gender ? _T("Female") : _T("Male"); }
+
+		// TODO: Not checking null reference here, danger zone.
+		[[nodiscard]] inline float GetHealth() const { return AsTESNPC->GetBaseActorValue(RE::ActorValue::kHealth); }
+		[[nodiscard]] inline float GetMagicka() const { return AsTESNPC->GetBaseActorValue(RE::ActorValue::kMagicka); }
+		[[nodiscard]] inline float GetStamina() const { return AsTESNPC->GetBaseActorValue(RE::ActorValue::kStamina); }
+		[[nodiscard]] inline float GetCarryWeight() const { return AsTESNPC->GetBaseActorValue(RE::ActorValue::kCarryWeight); }
+		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const { return AsTESNPC->playerSkills; }
 	};
 
 	class Cell
