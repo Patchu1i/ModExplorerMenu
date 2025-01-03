@@ -25,7 +25,7 @@
 				"VCPKG_OVERLAY_PORTS": {
 					"type": "STRING",
 					"value": "${sourceDir}/cmake/ports/"
-				  },
+				},
 				"VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
 			}
 		},
@@ -41,7 +41,7 @@
 			"name": "msvc",
 			"hidden": true,
 			"cacheVariables": {
-				"CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX $penv{CXXFLAGS}"
+				"CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX $penv{CXXFLAGS} /utf-8 /Zc:char8_t-"
 			},
 			"generator": "Visual Studio 17 2022",
 			"vendor": {
