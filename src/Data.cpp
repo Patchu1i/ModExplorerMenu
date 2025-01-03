@@ -337,7 +337,7 @@ namespace Modex
 		_npcRaceList.clear();
 
 		for (auto& npc : _npcCache) {
-			if (auto raceName = npc.TESForm->As<RE::TESNPC>()->race->GetFullName()) {
+			if (auto raceName = npc.GetRace().data()) {
 				if (raceName == nullptr) {
 					continue;
 				}
@@ -354,7 +354,7 @@ namespace Modex
 		_npcFactionList.clear();
 
 		for (auto& npc : _npcCache) {
-			auto factionNames = npc.TESForm->As<RE::TESNPC>()->factions;
+			auto factionNames = npc.AsTESNPC->factions;
 			for (auto& faction : factionNames) {
 				std::string factionName = faction.faction->GetFullName();
 

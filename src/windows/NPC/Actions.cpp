@@ -209,7 +209,7 @@ namespace Modex
 
 			// Faction
 			if (ImGui::TreeNode(_T("Faction"))) {
-				auto factions = npc->AsTESNPC->factions;
+				auto factions = npc->GetFactions();
 
 				if (factions.size() > 0) {
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);

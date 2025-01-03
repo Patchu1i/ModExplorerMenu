@@ -68,21 +68,21 @@ namespace Modex
 
 				if (isEnabled && selectedFilter == filterName) {
 					if (filterName == "Class") {
-						auto npcClass = npc.TESForm->As<RE::TESNPC>()->npcClass->GetFullName();
+						auto npcClass = npc.GetClass();
 						if (npcClass == secondaryFilter) {
 							npcList.push_back(&npc);
 						}
 					}
 
 					if (filterName == "Race") {
-						auto npcRace = npc.TESForm->As<RE::TESNPC>()->race->GetFullName();
+						auto npcRace = npc.GetRace();
 						if (npcRace == secondaryFilter) {
 							npcList.push_back(&npc);
 						}
 					}
 
 					if (filterName == "Faction") {
-						auto npcFaction = npc.TESForm->As<RE::TESNPC>()->factions;
+						auto npcFaction = npc.AsTESNPC->factions;
 						for (auto& faction : npcFaction) {
 							std::string factionName = faction.faction->GetFullName();
 							if (factionName == secondaryFilter) {
@@ -183,9 +183,12 @@ namespace Modex
 						if (ImGui::Selectable(name.c_str(), selectedFilter == name)) {
 							selectedFilter = name;
 							isEnabled = !isEnabled;
-							secondaryFilter = "Show All";  // Reset just in case.
 
 							func();
+
+							// Reset the list for clean start.
+							secondaryFilter = "Show All";
+							ApplyFilters();
 						}
 					}
 					ImGui::EndCombo();
@@ -193,7 +196,7 @@ namespace Modex
 
 				if (selectedFilter != "None") {
 					ImGui::SetNextItemWidth(totalWidth);
-					ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0, ImGui::GetWindowSize().y / 2));
+					ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
 
 					if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
 						if (ImGui::Selectable(_T("GENERAL_SHOW_SEARCHBAR"), &b_ShowSearchbar)) {

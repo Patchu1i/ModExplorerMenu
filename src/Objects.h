@@ -99,6 +99,7 @@ namespace Modex
 		const bool gender = AsTESNPC->IsFemale();
 		const uint16_t level = AsTESNPC->GetLevel();
 		const RE::TESClass* npcClass = AsTESNPC->npcClass;
+		const RE::BSTArray<RE::FACTION_RANK> factions = AsTESNPC->factions;
 
 		[[nodiscard]] inline std::string_view GetClass() const
 		{
@@ -115,6 +116,15 @@ namespace Modex
 				return race->GetFullName();
 			} else {
 				return "Unknown";
+			}
+		}
+
+		[[nodiscard]] inline RE::BSTArray<RE::FACTION_RANK> GetFactions() const
+		{
+			if (!factions.empty()) {
+				return factions;
+			} else {
+				return {};
 			}
 		}
 
