@@ -521,6 +521,8 @@ namespace Modex
 		}
 		ImGui::PopItemWidth();
 
+		AddCheckbox("SETTINGS_PAUSE_GAME", config.pauseGame);
+
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::Unindent();
 		ImGui::SeparatorText(_TFM("SETTING_MODULE", ":"));

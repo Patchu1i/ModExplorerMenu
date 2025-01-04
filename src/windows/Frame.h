@@ -60,5 +60,11 @@ namespace Modex
 		static inline constexpr auto ACTIONBAR_FLAGS =
 			ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_ScrollY;
+
+		static inline constexpr auto BACKGROUND_FLAGS =
+			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing |
+			ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav;
 	};
 }

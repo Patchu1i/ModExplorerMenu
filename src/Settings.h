@@ -80,6 +80,7 @@ namespace Modex
 			Language::GlyphRanges glyphRange = Language::GlyphRanges::Default;
 			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
 			int uiScale;      // 80, 90, 100, 110, 120 (Should be a slider..)
+			bool pauseGame = false;
 
 			int defaultShow = 1;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
 			bool showHomeMenu = false;

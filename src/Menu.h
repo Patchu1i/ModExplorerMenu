@@ -17,9 +17,19 @@ namespace Modex
 		bool IsEnabled() { return enable; }
 		void SetEnabled(bool value) { enable = value; }
 
-		constexpr void Toggle() { enable = !enable; }
-		constexpr void Close() { enable = false; }
-		constexpr void Open() { enable = true; }
+		void Open();
+		void Close();
+
+		constexpr void Toggle()
+		{
+			if (enable) {
+				Close();
+			} else {
+				Open();
+			}
+		}
+
+		float prevGlobalTimeMultiplier;
 
 		static inline Menu* GetSingleton()
 		{

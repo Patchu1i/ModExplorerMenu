@@ -97,6 +97,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "Language", "English");
 			a_ini.SetValue(rSections[Main], "ModListSort", "0");
 			a_ini.SetValue(rSections[Main], "UI Scale", "100");
+			a_ini.SetValue(rSections[Main], "PauseGame", "false");
 
 			a_ini.SetValue(rSections[Modules], "DefaultShow", "1");
 			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", "false");
@@ -163,6 +164,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "GlyphRange", Language::GetGlyphName(Settings::GetSingleton()->user.config.glyphRange).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
+			a_ini.SetValue(rSections[Main], "PauseGame", ToString(Settings::GetSingleton()->user.config.pauseGame, false).c_str());
 
 			a_ini.SetValue(rSections[Modules], "DefaultShow", std::to_string(Settings::GetSingleton()->user.config.defaultShow).c_str());
 			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", ToString(Settings::GetSingleton()->user.config.showHomeMenu, false).c_str());
@@ -187,6 +189,7 @@ namespace Modex
 		user.config.glyphRange = GET_VALUE<Language::GlyphRanges>(rSections[Main], "GlyphRange", Language::GlyphRanges::Default, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", 0, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", 100, a_ini);
+		user.config.pauseGame = GET_VALUE<bool>(rSections[Main], "PauseGame", false, a_ini);
 
 		user.config.defaultShow = GET_VALUE<int>(rSections[Modules], "DefaultShow", 0, a_ini);
 		user.config.showHomeMenu = GET_VALUE<bool>(rSections[Modules], "ShowHomeMenu", false, a_ini);
