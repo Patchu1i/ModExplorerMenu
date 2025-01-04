@@ -74,6 +74,48 @@ namespace Modex
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_PLACE_ALL_HELP"));
 
+		if (ImGui::m_Button(_T("AIM_ADD_TO_CONTAINER"), a_style, ImVec2(button_width, 0))) {
+			if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
+				auto form = RE::TESForm::LookupByID(RE::FormID(0x000D762F));
+				auto player = RE::PlayerCharacter::GetSingleton();
+
+				if (form) {
+					auto position = player->GetPosition();
+					auto angle = player->GetAngle();
+
+					// TODO: Maybe position it better?
+
+					auto objHandle = dataHandler->CreateReferenceAtLocation(
+						form->As<RE::TESBoundObject>(),  // RE::TESBoundObject* a_baseObj,
+						position,                        // const RE::NiPoint3& a_position,
+						{ 0.0f, angle.y, 0.0f },         // const RE::NiPoint3& a_rotation,
+						player->GetParentCell(),         // RE::TESObjectCELL* a_parentCell,
+						player->GetWorldspace(),         // RE::TESWorldSpace* a_worldspace,
+						nullptr,                         // RE::TESObjectREFR *a_alreadyCreatedRef,
+						nullptr,                         // RE::BGSPrimitive *a_primitive,
+						RE::ObjectRefHandle(),           // const RE::ObjectRefHandle &a_linkedRoomRefHandle,
+						false,                           // bool a_forcePersist,
+						true                             // bool a_arg11,
+					);
+
+					if (objHandle) {
+						if (auto ref = objHandle.get()) {
+							for (auto& item : itemList) {
+								RE::ExtraDataList* extraDataList = nullptr;  // ??
+
+								ref->AddObjectToContainer(
+									item->TESForm->As<RE::TESBoundObject>(),  // RE::TESBoundObject* a_item,
+									extraDataList,                            // RE::ExtraDataList* a_extraData,
+									1,                                        // std::uint32_t a_count,
+									player                                    // RE::TESObjectREFR* a_fromRefr,
+								);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		ImGui::PopStyleColor(3);  // End of Secondary Buttons
 
 		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
