@@ -397,77 +397,92 @@ namespace Utils
 		};
 	};
 
-	inline static const char* GetArmorSlot(RE::TESObjectARMO* a_armor)
+	inline static const char* GetArmorSlotName(RE::BIPED_MODEL::BipedObjectSlot a_slot)
 	{
-		switch (a_armor->GetSlotMask()) {
+		switch (a_slot) {
 		case RE::BIPED_MODEL::BipedObjectSlot::kAmulet:
-			return "Amulet";
+			return "35 - Amulet";
 		case RE::BIPED_MODEL::BipedObjectSlot::kBody:
-			return "Body";
+			return "32 - Body";
 		case RE::BIPED_MODEL::BipedObjectSlot::kCalves:
-			return "Calves";
+			return "38 - Calves";
 		case RE::BIPED_MODEL::BipedObjectSlot::kCirclet:
-			return "Circlet";
+			return "42 - Circlet";
 		case RE::BIPED_MODEL::BipedObjectSlot::kDecapitate:
-			return "Decapitate";
+			return "51 - Decapitate";
 		case RE::BIPED_MODEL::BipedObjectSlot::kDecapitateHead:
-			return "Decapitate Head";
+			return "50 - Decapitate Head";
 		case RE::BIPED_MODEL::BipedObjectSlot::kEars:
-			return "Ears";
+			return "43 - Ears";
 		case RE::BIPED_MODEL::BipedObjectSlot::kFeet:
-			return "Feet";
+			return "37 - Feet";
 		case RE::BIPED_MODEL::BipedObjectSlot::kForearms:
-			return "Forearms";
+			return "34 - Forearms";
 		case RE::BIPED_MODEL::BipedObjectSlot::kFX01:
-			return "FX01";
+			return "61 - FX01";
 		case RE::BIPED_MODEL::BipedObjectSlot::kHair:
-			return "Hair";
+			return "31 - Hair";
 		case RE::BIPED_MODEL::BipedObjectSlot::kHands:
-			return "Hands";
+			return "33 - Hands";
 		case RE::BIPED_MODEL::BipedObjectSlot::kHead:
-			return "Head";
+			return "30 - Head";
 		case RE::BIPED_MODEL::BipedObjectSlot::kLongHair:
-			return "Long Hair";
+			return "41 - Long Hair";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModArmLeft:
-			return "Mod Arm Left";
+			return "58 - Mod Arm Left";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModArmRight:
-			return "Mod Arm Right";
+			return "59 - Mod Arm Right";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModBack:
-			return "Mod Back";
+			return "47 - Mod Back";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModChestPrimary:
-			return "Mod Chest Primary";
+			return "46 - Mod Chest Primary";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModChestSecondary:
-			return "Mod Chest Secondary";
+			return "56 - Mod Chest Secondary";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModFaceJewelry:
-			return "Mod Face Jewelry";
+			return "55 - Mod Face Jewelry";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModLegLeft:
-			return "Mod Leg Left";
+			return "54 - Mod Leg Left";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModLegRight:
-			return "Mod Leg Right";
+			return "53 - Mod Leg Right";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModMisc1:
-			return "Mod Misc1";
+			return "48 - Mod Misc1";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModMisc2:
-			return "Mod Misc2";
+			return "60 - Mod Misc2";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModMouth:
-			return "Mod Mouth";
+			return "44 - Mod Mouth";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModNeck:
-			return "Mod Neck";
+			return "45 - Mod Neck";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModPelvisPrimary:
-			return "Mod Pelvis Primary";
+			return "49 - Mod Pelvis Primary";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModPelvisSecondary:
-			return "Mod Pelvis Secondary";
+			return "52 - Mod Pelvis Secondary";
 		case RE::BIPED_MODEL::BipedObjectSlot::kModShoulder:
-			return "Mod Shoulder";
+			return "57 - Mod Shoulder";
 		case RE::BIPED_MODEL::BipedObjectSlot::kRing:
-			return "Ring";
+			return "36 - Ring";
 		case RE::BIPED_MODEL::BipedObjectSlot::kShield:
-			return "Shield";
+			return "39 - Shield";
 		case RE::BIPED_MODEL::BipedObjectSlot::kTail:
-			return "Tail";
+			return "40 - Tail";
 		default:
-			return "None";
+			return "MODEX_ERR";
 		};
 	};
+
+	inline static std::vector<std::string> GetArmorSlots(RE::TESObjectARMO* a_armor)
+	{
+		std::vector<std::string> slots;
+		auto bipedObject = a_armor->As<RE::BGSBipedObjectForm>();
+		if (bipedObject) {
+			auto slotMask = bipedObject->GetSlotMask();
+			for (int i = 0; i < 32; i++) {
+				if (static_cast<int>(slotMask) & (1 << i)) {
+					slots.push_back(GetArmorSlotName(static_cast<RE::BIPED_MODEL::BipedObjectSlot>(1 << i)));
+				}
+			}
+		}
+		return slots;
+	}
 
 	template <class T>
 	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form, T& a_interface = nullptr)

@@ -49,6 +49,19 @@ namespace Modex
 			ImGui::Text(text);
 		};
 
+		const auto InlineTextMulti = [maxWidth](const char* label, std::vector<std::string> text) {
+			// const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text[0]).x);
+			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text[0].c_str()).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text[0].c_str()).x);
+			ImGui::Text(label);
+			ImGui::SameLine(width);
+			ImGui::Text(text[0].c_str());
+
+			for (int i = 1; i < text.size(); i++) {
+				ImGui::SetCursorPosX(maxWidth - ImGui::CalcTextSize(text[i].c_str()).x);
+				ImGui::Text(text[i].c_str());
+			}
+		};
+
 		const auto TruncateText = [](const char* text, const float width) -> std::string {
 			if (ImGui::CalcTextSize(text).x > width) {
 				std::string truncated = text;
@@ -109,7 +122,7 @@ namespace Modex
 				const auto armorType = Utils::GetArmorType(armor);
 				const float armorRating = Utils::CalcBaseArmorRating(armor);
 				const float armorRatingMax = Utils::CalcMaxArmorRating(armorRating, 50);
-				const auto equipSlot = Utils::GetArmorSlot(armor);
+				const auto equipSlots = Utils::GetArmorSlots(armor);
 
 				if (armorRating == 0) {
 					// InlineText("Armor Rating:", "None");
@@ -120,7 +133,7 @@ namespace Modex
 				}
 
 				InlineText(_TICONM(ICON_RPG_ARMOR, "Type", ":"), _T(armorType));
-				InlineText(_TICONM(ICON_RPG_ARMOR, "Slot", ":"), _T(equipSlot));
+				InlineTextMulti(_TICONM(ICON_RPG_ARMOR, "Slot", ":"), equipSlots);
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {
