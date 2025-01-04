@@ -295,12 +295,17 @@ namespace Modex
 
 		// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
 		// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
-		static std::pair<std::string, bool> SetThemeFromIni(std::string& a_str)
+		static std::pair<std::string, bool> SetThemeFromIni(std::string a_str)
 		{
 			std::vector<std::string> themes = GetListOfThemes();
 			std::wstring full_path = GetThemePath(a_str);
 
-			for (const auto& entry : themes) {
+			// Case-insensitive comparison for Steamdeck support, and common sense.
+			std::transform(a_str.begin(), a_str.end(), a_str.begin(), ::tolower);
+
+			for (auto entry : themes) {
+				std::transform(entry.begin(), entry.end(), entry.begin(), ::tolower);
+
 				if (entry == a_str) {
 					Settings::GetSingleton()->GetIni(full_path.c_str(), [](CSimpleIniA& a_ini) {
 						Settings::GetSingleton()->LoadThemeFromIni(a_ini);
