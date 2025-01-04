@@ -7,6 +7,31 @@
 
 namespace Modex
 {
+
+	void Menu::Open()
+	{
+		enable = true;
+
+		if (Settings::GetSingleton()->GetConfig().pauseGame) {
+			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(false);
+			RE::Main::GetSingleton()->freezeTime = true;
+		}
+	}
+
+	void Menu::Close()
+	{
+		enable = false;
+
+		if (Settings::GetSingleton()->GetConfig().pauseGame) {
+			if (const auto& overrideData = RE::ImageSpaceManager::GetSingleton()->overrideBaseData) {
+				overrideData->cinematic.brightness = 1.0f;
+			}
+
+			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(true);
+			RE::Main::GetSingleton()->freezeTime = false;
+		}
+	}
+
 	void Menu::Draw()
 	{
 		// TODO: Maybe hook this into an update call?
@@ -27,9 +52,7 @@ namespace Modex
 			ImGui::GetIO().MouseDrawCursor = false;
 		}
 
-		Settings::Style& style = Settings::GetSingleton()->GetStyle();
-
-		ImGui::PushFont(style.font.normal);
+		ImGui::PushFont(Settings::GetSingleton()->GetStyle().font.normal);
 		Frame::Draw(is_settings_popped);
 		ImGui::PopFont();
 
