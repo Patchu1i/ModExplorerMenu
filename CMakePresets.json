@@ -41,7 +41,7 @@
 			"name": "msvc",
 			"hidden": true,
 			"cacheVariables": {
-				"CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX $penv{CXXFLAGS} /utf-8 /Zc:char8_t-"
+				"CMAKE_CXX_FLAGS": "/utf-8 /EHsc /MP /W4 /WX $penv{CXXFLAGS}"
 			},
 			"generator": "Visual Studio 17 2022",
 			"vendor": {
