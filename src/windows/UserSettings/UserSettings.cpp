@@ -9,6 +9,7 @@
 #include "Windows/AddItem/AddItem.h"
 #include "Windows/NPC/NPC.h"
 #include "Windows/Object/Object.h"
+#include "Windows/Persistent.h"
 #include "Windows/Teleport/Teleport.h"
 #include <codecvt>
 
@@ -560,6 +561,58 @@ namespace Modex
 		}
 	}
 
+	void SettingsWindow::DrawBlacklistSettings()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 0.0f));
+
+		constexpr auto flags = ImGuiChildFlags_Border;
+		const float width = (ImGui::GetContentRegionAvail().x * 0.5f) - 10.0f;
+		auto modList = Data::GetSingleton()->GetModList(Data::ALL_MOD_LIST, 0);
+
+		ImGui::NewLine();
+
+		// Labels
+		ImGui::Text(_TFM("Whitelist", ":"));
+		ImGui::SameLine(width + ImGui::GetFontSize() * 4.0f);
+		ImGui::Text(_TFM("Blacklist", ":"));
+		ImGui::NewLine();
+
+		// Left Column
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
+			for (auto& mod : modList) {
+				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+				if (!blacklist.contains(mod)) {
+					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
+						//blacklist.insert(mod);
+						PersistentData::GetSingleton()->AddModToBlacklist(mod);
+					}
+				}
+			}
+		}
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		ImGui::SameLine();
+
+		if (ImGui::BeginChild("##BlacklistRightSide", ImVec2(width - 10.0f, width / 1.5f), flags)) {
+			for (auto& mod : modList) {
+				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+				if (blacklist.contains(mod)) {
+					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
+						PersistentData::GetSingleton()->RemoveModFromBlacklist(mod);
+					}
+				}
+			}
+		}
+		ImGui::EndChild();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		ImGui::NewLine();
+
+		ImGui::PopStyleVar();
+	}
+
 	void SettingsWindow::DrawThemeSelector()
 	{
 		Settings::Style& style = Settings::GetSingleton()->GetStyle();
@@ -748,20 +801,42 @@ namespace Modex
 		ImGui::Text(_T("THEME_WELCOME"));
 
 		constexpr auto child_flags = ImGuiChildFlags_Border;
-		constexpr auto header_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
+		constexpr auto header_flags = ImGuiTreeNodeFlags_Framed;
 		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 15.0f));
 			if (ImGui::CollapsingHeader(_T("THEME_GENERAL"), header_flags)) {
+				ImGui::PopStyleVar();
+
 				ImGui::Indent();
 				DrawGeneralSettings();
 				ImGui::Unindent();
+			} else {
+				ImGui::PopStyleVar();
 			}
 
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 15.0f));
+			if (ImGui::CollapsingHeader(_T("SETTING_BLACKLIST"), header_flags)) {
+				ImGui::PopStyleVar();
+
+				ImGui::Indent();
+				DrawBlacklistSettings();
+				ImGui::Unindent();
+			} else {
+				ImGui::PopStyleVar();
+			}
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 15.0f));
 			if (ImGui::CollapsingHeader(_T("THEME_THEME"), header_flags)) {
+				ImGui::PopStyleVar();
+
 				ImGui::Indent();
 				DrawThemeSelector();
 				ImGui::Unindent();
+			} else {
+				ImGui::PopStyleVar();
 			}
 		}
+
 		ImGui::EndChild();
 
 		auto& config = Settings::GetSingleton()->GetConfig();

@@ -7,6 +7,7 @@ namespace Modex
 	public:
 		static void Draw();
 		static void DrawGeneralSettings();
+		static void DrawBlacklistSettings();
 		static void DrawThemeSelector();
 		static void DrawTeleportSettings();
 		static void DrawAddItemSettings();

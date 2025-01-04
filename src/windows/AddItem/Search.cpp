@@ -1,6 +1,7 @@
 #include "AddItem.h"
 #include "Console.h"
 #include "Utils/Util.h"
+#include "Windows/Persistent.h"
 
 namespace Modex
 {
@@ -61,6 +62,12 @@ namespace Modex
 
 			if (selectedFilter.second != "None") {
 				if (item.GetFormType() != selectedFilter.first) {
+					continue;
+				}
+			}
+
+			if (selectedMod == "All Mods") {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(item.TESFile)) {
 					continue;
 				}
 			}
@@ -198,6 +205,10 @@ namespace Modex
 					for (auto& mod : Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort)) {
 						const char* modName = mod->GetFilename().data();
 						bool bSelected = false;
+
+						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+							continue;
+						}
 
 						auto match = false;
 						for (auto& modMap : modFormTypeMap) {

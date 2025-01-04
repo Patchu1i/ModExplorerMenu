@@ -1,6 +1,7 @@
 #include "Console.h"
 #include "NPC.h"
 #include "Utils/Util.h"
+#include "Windows/Persistent.h"
 
 namespace Modex
 {
@@ -95,6 +96,12 @@ namespace Modex
 
 			if (selectedFilter != "None" && secondaryFilter != "Show All") {
 				continue;
+			}
+
+			if (selectedMod == "All Mods") {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(npc.TESFile)) {
+					continue;
+				}
 			}
 
 			if (compareString.find(inputString) != std::string::npos) {
@@ -302,6 +309,10 @@ namespace Modex
 					for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
 						const char* modName = mod->GetFilename().data();
 						bool bSelected = false;
+
+						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+							continue;
+						}
 
 						auto match = false;
 						for (auto& modMap : modFormTypeMap) {

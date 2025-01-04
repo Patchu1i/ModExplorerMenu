@@ -74,6 +74,15 @@ namespace Modex
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_PLACE_ALL_HELP"));
 
+		ImGui::PopStyleColor(3);  // End of Secondary Buttons
+
+		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
+			for (auto& item : itemList) {
+				Console::PlaceAtMe(item->GetFormID());
+			}
+		});
+
+		// Spawn Container with Table contents
 		if (ImGui::m_Button(_T("AIM_ADD_TO_CONTAINER"), a_style, ImVec2(button_width, 0))) {
 			if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
 				auto form = RE::TESForm::LookupByID(RE::FormID(0x000D762F));
@@ -115,14 +124,7 @@ namespace Modex
 				}
 			}
 		}
-
-		ImGui::PopStyleColor(3);  // End of Secondary Buttons
-
-		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
-			for (auto& item : itemList) {
-				Console::PlaceAtMe(item->GetFormID());
-			}
-		});
+		ImGui::SetDelayedTooltip(_T("AIM_ADD_TO_CONTAINER_HELP"));
 
 		// Show Favorites
 		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {

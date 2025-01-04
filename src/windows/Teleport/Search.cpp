@@ -1,5 +1,6 @@
 #include "Teleport.h"
 #include "Utils/Util.h"
+#include "Windows/Persistent.h"
 
 namespace Modex
 {
@@ -60,6 +61,12 @@ namespace Modex
 
 			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
 				continue;
+			}
+
+			if (selectedMod == "All Mods") {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(item.mod)) {
+					continue;
+				}
 			}
 
 			if (compare.find(input) != std::string::npos) {
@@ -157,6 +164,10 @@ namespace Modex
 					for (auto& mod : Data::GetModList(Data::CELL_MOD_LIST, a_config.modListSort)) {
 						const char* modName = mod->GetFilename().data();
 						bool is_selected = false;
+
+						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+							continue;
+						}
 
 						if (std::strlen(modListBuffer) > 0) {
 							std::string compare = modName;

@@ -21,9 +21,11 @@ namespace Modex
 			ITEM_MOD_LIST = 0,
 			NPC_MOD_LIST,
 			STATIC_MOD_LIST,
-			CELL_MOD_LIST
+			CELL_MOD_LIST,
+			ALL_MOD_LIST
 		};
 
+		// Accidentally creating a copy of modlist?
 		[[nodiscard]] static inline std::vector<RE::TESFile*> SortModList(std::vector<RE::TESFile*> modList, int sort = 0)
 		{
 			switch (sort) {

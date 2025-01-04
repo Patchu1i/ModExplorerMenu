@@ -97,6 +97,7 @@ namespace Modex
 			if (config.showAddItemMenu) {
 				if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::AddItem;
+					AddItemWindow::Refresh();
 					ResetSelectable();
 				}
 			}
@@ -104,6 +105,7 @@ namespace Modex
 			if (config.showObjectMenu) {
 				if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::Object;
+					ObjectWindow::Refresh();
 					ResetSelectable();
 				}
 			}
@@ -111,6 +113,7 @@ namespace Modex
 			if (config.showNPCMenu) {
 				if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::NPC;
+					NPCWindow::Refresh();
 					ResetSelectable();
 				}
 			}
@@ -118,6 +121,7 @@ namespace Modex
 			if (config.showTeleportMenu) {
 				if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::Teleport;
+					TeleportWindow::Refresh();
 					ResetSelectable();
 				}
 			}

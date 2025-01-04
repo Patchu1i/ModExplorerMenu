@@ -435,5 +435,29 @@ namespace Modex
 		if (config.showTeleportMenu) {
 			GenerateCellList();
 		}
+
+		for (auto& mod : _itemModList) {
+			if (!_modList.contains(mod)) {
+				_modList.insert(mod);
+			}
+		}
+
+		for (auto& mod : _npcModList) {
+			if (!_modList.contains(mod)) {
+				_modList.insert(mod);
+			}
+		}
+
+		for (auto& mod : _staticModList) {
+			if (!_modList.contains(mod)) {
+				_modList.insert(mod);
+			}
+		}
+
+		for (auto& mod : _cellModList) {
+			if (!_modList.contains(mod)) {
+				_modList.insert(mod);
+			}
+		}
 	}
 }
