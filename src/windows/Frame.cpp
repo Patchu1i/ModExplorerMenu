@@ -49,21 +49,19 @@ namespace Modex
 		float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f) + (style.sidebarSpacing / 2);
 		float sidebar_x = panel_x - (window.sidebar_w) - (style.sidebarSpacing);
 
-		// Draw a transparent black overlay when the game is paused.
-		if (config.pauseGame) {
-			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(displaySize);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.35f));
+		// Draw a transparent black background.
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(displaySize);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.35f));
 
-			ImGui::Begin("##Background", NULL, BACKGROUND_FLAGS);
-			ImGui::End();
+		ImGui::Begin("##Background", NULL, BACKGROUND_FLAGS);
+		ImGui::End();
 
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleColor(2);
-		}
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(2);
 
 		// Draw Sidebar Frame
 		static constexpr ImGuiWindowFlags sidebar_flag = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
