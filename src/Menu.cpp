@@ -318,19 +318,18 @@ namespace Modex
 						}
 					}
 
-					if (scanCode == showMenuModifier) {  // Check Menu Modifier
-						if (buttonEvent->IsDown()) {
-							_isOpenModDown = true;
-						} else {
-							_isOpenModDown = false;
-						}
-					}
-
 					if (scanCode == showMenuKey && buttonEvent->IsDown()) {  // Open / Close Menu
 						if (showMenuModifier == 0) {
 							Toggle();
-						} else if (_isOpenModDown == true) {
-							Toggle();
+						} else {
+							logger::info("showMenuModifier: {}", showMenuModifier);
+							if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && _isShiftDown) {
+								Toggle();
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && _isCtrlDown) {
+								Toggle();
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LMENU) && _isAltDown) {
+								Toggle();
+							}
 						}
 					}
 

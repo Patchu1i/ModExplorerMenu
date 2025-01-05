@@ -52,6 +52,7 @@ namespace Modex
 		static inline bool _isCtrlDown = false;
 		static inline bool _isAltDown = false;
 		static inline bool _isOpenModDown = false;
+		static inline bool _ignoreInput = false;
 
 	private:
 		bool enable = false;
