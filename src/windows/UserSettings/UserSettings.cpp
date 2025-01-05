@@ -595,10 +595,17 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 		if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
 			for (auto& mod : modList) {
+				if (mod == nullptr || mod->fileName == nullptr) {
+					continue;
+				}
+
 				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 				if (!blacklist.contains(mod)) {
+					if (mod->GetFilename().empty()) {
+						continue;
+					}
+
 					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
-						//blacklist.insert(mod);
 						PersistentData::GetSingleton()->AddModToBlacklist(mod);
 					}
 				}
