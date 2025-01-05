@@ -144,8 +144,10 @@ namespace Modex
 				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
 				                                                          selectedMod;
 
+				auto min = ImVec2(totalWidth, 0.0f);
+				auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
 				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
+				ImGui::SetNextWindowSizeConstraints(min, max);
 				if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedModName.c_str())) {
 					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
 						selectedMod = "All Mods";
