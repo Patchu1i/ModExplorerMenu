@@ -45,9 +45,13 @@ namespace Modex
 		ID3D11DeviceContext* GetContext() const { return context; };
 
 		static inline bool is_settings_popped = false;
-		static inline bool is_modifier_pressed = false;
 		static inline std::atomic<bool> initialized = false;
 		static inline bool _prevFreeze = false;
+
+		static inline bool _isShiftDown = false;
+		static inline bool _isCtrlDown = false;
+		static inline bool _isAltDown = false;
+		static inline bool _isOpenModDown = false;
 
 	private:
 		bool enable = false;
