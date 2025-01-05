@@ -11,22 +11,12 @@
 
 namespace Modex
 {
-	// Frame::ActiveWindow Frame::_activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
-
 	struct WindowProperties
 	{
 		float sidebar_w;
 		float sidebar_h;
 		float panel_w;
 		float panel_h;
-
-		// Properties()
-		// {
-		// 	sidebar_w = screenSize.x * 0.10f;
-		// 	sidebar_h = screenSize.y * 0.75f;
-		// 	panel_w = screenSize.x * 0.60f;
-		// 	panel_h = screenSize.y * 0.75f;
-		// }
 	};
 
 	void Frame::Draw(bool is_settings_popped)
@@ -39,32 +29,30 @@ namespace Modex
 		}
 
 		ImGuiIO& io = ImGui::GetIO();
-		WindowProperties window;
-		window.panel_w = (io.DisplaySize.x * 0.60f) * (config.uiScale / 100.0f);
-		window.panel_h = (io.DisplaySize.y * 0.75f) * (config.uiScale / 100.0f);
-		window.sidebar_w = (io.DisplaySize.x * 0.10f) * (config.uiScale / 100.0f);
-		window.sidebar_h = (io.DisplaySize.y * 0.75f) * (config.uiScale / 100.0f);
 
-		float center_x = (io.DisplaySize.x * 0.5f);
-		float center_y = (io.DisplaySize.y * 0.5f) - (window.panel_h * 0.5f);
+		// Set the window size based on the display size and the user's screen scale ratio.
+		auto displaySize = io.DisplaySize;
+		displaySize.x *= config.screenScaleRatio.x;
+		displaySize.y *= config.screenScaleRatio.y;
+
+		WindowProperties window;
+
+		// Apply the user's UI scale config
+		window.panel_w = (displaySize.x * 0.60f) * (config.uiScale / 100.0f);
+		window.panel_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+		window.sidebar_w = (displaySize.x * 0.10f) * (config.uiScale / 100.0f);
+		window.sidebar_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+
+		// Calculate window positions post scaling.
+		float center_x = (displaySize.x * 0.5f);
+		float center_y = (displaySize.y * 0.5f) - (window.panel_h * 0.5f);
 		float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f) + (style.sidebarSpacing / 2);
 		float sidebar_x = panel_x - (window.sidebar_w) - (style.sidebarSpacing);
 
-		// window.panel_w = window.panel_w * (config.uiScale / 100.0f);
-		// window.panel_h = window.panel_h * (config.uiScale / 100.0f);
-		// window.sidebar_w = window.sidebar_w * (config.uiScale / 100.0f);
-		// window.sidebar_h = window.sidebar_h * (config.uiScale / 100.0f);
-
-		// const float center_x = window.screenSize.x * 0.5f;
-		// const float center_y = (window.screenSize.y * 0.5f) - (window.panel_h * 0.5f);
-		// const float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f) + (style.sidebarSpacing / 2);
-		// const float sidebar_x = panel_x - (window.sidebar_w) - (style.sidebarSpacing);
-
 		// Draw a transparent black overlay when the game is paused.
-		// Workaround instead of using Skyrim imagespace filters.
 		if (config.pauseGame) {
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(io.DisplaySize);
+			ImGui::SetNextWindowSize(displaySize);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -181,7 +169,7 @@ namespace Modex
 			ImGui::End();
 		}
 
-		GraphicManager::DrawImage(style.splashImage, ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
+		GraphicManager::DrawImage(style.splashImage, ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
 	}
 
 	void Frame::Install()

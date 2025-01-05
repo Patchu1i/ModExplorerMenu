@@ -90,6 +90,9 @@ namespace Modex
 			bool showTeleportMenu = true;
 
 			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
+
+			// Hiden from User
+			ImVec2 screenScaleRatio;
 		};
 
 		ImGuiStyle test;

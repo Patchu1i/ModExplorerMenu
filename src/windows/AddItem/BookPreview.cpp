@@ -6,8 +6,13 @@ namespace Modex
 	void AddItemWindow::ShowBookPreview()
 	{
 		auto& io = ImGui::GetIO();
-		ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-		ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f));
+		auto& config = Settings::GetSingleton()->GetConfig();
+		ImVec2 displaySize = io.DisplaySize;
+		displaySize.x *= config.screenScaleRatio.x;
+		displaySize.y *= config.screenScaleRatio.y;
+
+		ImGui::SetNextWindowPos(ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowSize(ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
 
 		constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
 		if (ImGui::Begin("##ReadBookFromAIM", nullptr, flags)) {

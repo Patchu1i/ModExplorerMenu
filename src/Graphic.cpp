@@ -179,7 +179,13 @@ namespace Modex
 
 	void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
 	{
-		auto scale = ImGui::GetIO().DisplaySize.y / 1080.0f;
+		auto& io = ImGui::GetIO();
+		auto& config = Settings::GetSingleton()->GetConfig();
+		auto displaySize = io.DisplaySize;
+		displaySize.x *= config.screenScaleRatio.x;
+		displaySize.y *= config.screenScaleRatio.y;
+
+		auto scale = displaySize.y / 1080.0f;
 
 		auto width = a_image.width * scale;
 		auto height = a_image.height * scale;

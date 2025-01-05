@@ -41,8 +41,8 @@ namespace Modex
 			return;  // TODO: Should this be called one level up?
 		}
 
-		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
+		ImGui_ImplDX11_NewFrame();
 
 		ImGui::NewFrame();
 
@@ -67,16 +67,24 @@ namespace Modex
 	void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11DeviceContext* a_context)
 	{
 		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImPlot::CreateContext();
 
 		DXGI_SWAP_CHAIN_DESC desc;
 		a_swapchain->GetDesc(&desc);
 
+		ImGui::CreateContext();
+
+		RECT rect{};
+		ImVec2 screenScaleRatio;
+		if (GetClientRect(desc.OutputWindow, &rect) == TRUE) {
+			screenScaleRatio = ImVec2{ static_cast<float>(desc.BufferDesc.Width) / static_cast<float>(rect.right), static_cast<float>(desc.BufferDesc.Height) / static_cast<float>(rect.bottom) };
+		} else {
+			screenScaleRatio = ImVec2{ 1.0f, 1.0f };
+		}
+
+		Settings::GetSingleton()->GetConfig().screenScaleRatio = screenScaleRatio;
+
 		ImGui_ImplWin32_Init(desc.OutputWindow);
 		ImGui_ImplDX11_Init(a_device, a_context);
-
-		//initialized.store(true);
 
 		this->device = a_device;
 		this->context = a_context;
