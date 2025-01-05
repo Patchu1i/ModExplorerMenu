@@ -72,9 +72,9 @@
 			"name": "VR",
 			"cacheVariables": {
 				"BUILD_SKYRIM": true,
-				"ENABLE_SKYRIM_AE": "ON",
-				"ENABLE_SKYRIM_SE": "ON",
-				"ENABLE_SKYRIM_VR": "OFF",
+				"ENABLE_SKYRIM_AE": "OFF",
+				"ENABLE_SKYRIM_SE": "OFF",
+				"ENABLE_SKYRIM_VR": "ON",
 				"AUTO_PLUGIN_DEPLOYMENT": "ON"
 			},
 			"inherits": [
