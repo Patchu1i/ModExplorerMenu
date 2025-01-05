@@ -23,8 +23,8 @@ namespace Modex
 		// Behavior State Variables.
 		static inline bool b_ClickToSelect = true;
 		static inline bool b_ClickToFavorite = false;
-		static inline bool b_PlaceFrozen = false;
-		static inline bool b_PlaceNaked = false;
+		static inline bool b_ClickToPlace = false;
+		static inline int clickToPlaceCount = 1;
 
 		static inline bool _itemHovered = false;
 		static inline bool _itemSelected = false;

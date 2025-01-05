@@ -189,6 +189,9 @@ namespace Modex
 						if (ImGui::IsMouseClicked(0)) {
 							if (b_ClickToSelect) {
 								selectedNPC = npc;
+							} else if (b_ClickToPlace) {
+								Console::PlaceAtMe(npc->GetFormID().c_str(), clickToPlaceCount);
+								Console::StartProcessThread();
 							} else if (b_ClickToFavorite) {
 								npc->favorite = !npc->favorite;
 								PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);

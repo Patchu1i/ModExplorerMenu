@@ -22,12 +22,27 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
 
+		if (ImGui::m_Selectable(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+			b_ClickToFavorite = false;
+			b_ClickToSelect = false;
+		}
+
 		if (ImGui::m_Selectable(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), b_ClickToSelect, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
+			b_ClickToPlace = false;
 		}
 
 		if (ImGui::m_Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
 			b_ClickToSelect = false;
+			b_ClickToPlace = false;
+		}
+
+		if (b_ClickToPlace) {
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			// Add Count Input.
+			ImGui::SetNextItemWidth(button_width);
+			ImGui::InputInt("##NPCPlaceCount", &clickToPlaceCount, 1, 100, ImGuiInputTextFlags_CharsDecimal);
 		}
 
 		ImGui::PopStyleColor(3);

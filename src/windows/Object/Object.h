@@ -24,7 +24,9 @@ namespace Modex
 
 		// Actions / Behavior
 		static inline bool b_ClickToSelect = true;
+		static inline bool b_ClickToPlace = false;
 		static inline bool b_ClickToFavorite = false;
+		static inline int clickToPlaceCount = 1;
 
 		// Local State Variables.
 		static inline bool _itemHovered = false;
