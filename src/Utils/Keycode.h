@@ -4,46 +4,240 @@
 namespace ImGui
 {
 	// Used for conditional hotkey assignment. Prevent users from assigning invalid keys to hotkey.
-	static inline bool IsKeyboardWhitelist(int key)
+	static inline bool IsKeyboardWhitelist(ImGuiKey key)
 	{
-		return (key != VK_LBUTTON &&     // Left mouse button
-				key != VK_RBUTTON &&     // Right mouse button
-				key != VK_MBUTTON &&     // Middle mouse button
-				key != VK_XBUTTON1 &&    // Mouse 3 button
-				key != VK_XBUTTON2 &&    // Mouse 4 button
-				key != VK_CANCEL &&      // Control-break processing
-				key != VK_ZOOM &&        // Reserved
-				key != VK_BACK &&        // BACKSPACE key
-				key != VK_TAB &&         // TAB key
-				key != VK_CLEAR &&       // CLEAR key
-				key != VK_RETURN &&      // ENTER key
-				key != VK_SHIFT &&       // SHIFT key
-				key != VK_LSHIFT &&      // Left SHIFT key
-				key != VK_RSHIFT &&      // Right SHIFT key
-				key != VK_CONTROL &&     // CTRL key
-				key != VK_LCONTROL &&    // Left CTRL key
-				key != VK_RCONTROL &&    // Right CTRL key
-				key != VK_LMENU &&       // Left ALT key
-				key != VK_RMENU &&       // Right ALT key
-				key != VK_MENU &&        // ALT key
-				key != VK_CAPITAL &&     // CAPS LOCK key
-				key != VK_ESCAPE &&      // ESC key
-				key != VK_MODECHANGE &&  // MODE CHANGE key
-				key != VK_SPACE);        // SPACEBAR
+		return (key != ImGuiKey_MouseLeft &&    // Left mouse button
+				key != ImGuiKey_MouseRight &&   // Right mouse button
+				key != ImGuiKey_MouseMiddle &&  // Middle mouse button
+				key != ImGuiKey_MouseX1 &&      // Mouse 3 button
+				key != ImGuiKey_MouseX2 &&      // Mouse 4 button
+				key != ImGuiKey_Enter &&        // ENTER key
+				key != ImGuiKey_LeftShift &&    // SHIFT key
+				key != ImGuiKey_RightShift &&   // Left SHIFT key
+				key != ImGuiKey_LeftCtrl &&     // Right SHIFT key
+				key != ImGuiKey_RightCtrl &&    // CTRL key
+				key != ImGuiKey_LeftAlt &&      // Left CTRL key
+				key != ImGuiKey_RightAlt &&     // Right CTRL key
+				key != ImGuiKey_CapsLock &&     // Left ALT key
+				key != ImGuiKey_Escape &&       // Right ALT key
+				key != ImGuiKey_Space           // ALT key
+		);
 	}
 
-	// GetAsyncKeyState() distinguishes between VK_L and VK_R
-	static inline bool IsModifierKey(int key)
+	static inline int ImGuiKeyToSkyrimKey(ImGuiKey a_key)
 	{
-		return (key == VK_SHIFT ||     // SHIFT key
-				key == VK_LSHIFT ||    // Left SHIFT key
-				key == VK_RSHIFT ||    // Right SHIFT key
-				key == VK_CONTROL ||   // CTRL key
-				key == VK_LCONTROL ||  // Left CTRL key
-				key == VK_RCONTROL ||  // Right CTRL key
-				key == VK_MENU ||      // ALT key
-				key == VK_LMENU ||     // Left ALT key
-				key == VK_RMENU);      // Right ALT key
+		switch (a_key) {
+		case ImGuiKey_Tab:
+			return 0x0F;
+		case ImGuiKey_LeftArrow:
+			return 0xCB;
+		case ImGuiKey_RightArrow:
+			return 0xCD;
+		case ImGuiKey_UpArrow:
+			return 0xC8;
+		case ImGuiKey_DownArrow:
+			return 0xD0;
+		case ImGuiKey_PageUp:
+			return 0xC9;
+		case ImGuiKey_PageDown:
+			return 0xD1;
+		case ImGuiKey_Home:
+			return 0xC7;
+		case ImGuiKey_End:
+			return 0xCF;
+		case ImGuiKey_Insert:
+			return 0xD2;
+		case ImGuiKey_Delete:
+			return 0xD3;
+		case ImGuiKey_Backspace:
+			return 0x0E;
+		case ImGuiKey_Space:
+			return 0x39;
+		case ImGuiKey_Enter:
+			return 0x1C;
+		case ImGuiKey_Escape:
+			return 0x01;
+		case ImGuiKey_Apostrophe:
+			return 0x28;
+		case ImGuiKey_Comma:
+			return 0x33;
+		case ImGuiKey_Minus:
+			return 0x0C;
+		case ImGuiKey_Period:
+			return 0x34;
+		case ImGuiKey_Slash:
+			return 0x35;
+		case ImGuiKey_Semicolon:
+			return 0x27;
+		case ImGuiKey_Equal:
+			return 0x0D;
+		case ImGuiKey_LeftBracket:
+			return 0x1A;
+		case ImGuiKey_Backslash:
+			return 0x2B;
+		case ImGuiKey_RightBracket:
+			return 0x1B;
+		case ImGuiKey_GraveAccent:
+			return 0x29;
+		case ImGuiKey_CapsLock:
+			return 0x3A;
+		case ImGuiKey_ScrollLock:
+			return 0x46;
+		case ImGuiKey_NumLock:
+			return 0x45;
+		case ImGuiKey_PrintScreen:
+			return 0xB7;
+		case ImGuiKey_Pause:
+			return 0xC5;
+		case ImGuiKey_Keypad0:
+			return 0x52;
+		case ImGuiKey_Keypad1:
+			return 0x4F;
+		case ImGuiKey_Keypad2:
+			return 0x50;
+		case ImGuiKey_Keypad3:
+			return 0x51;
+		case ImGuiKey_Keypad4:
+			return 0x4B;
+		case ImGuiKey_Keypad5:
+			return 0x4C;
+		case ImGuiKey_Keypad6:
+			return 0x4D;
+		case ImGuiKey_Keypad7:
+			return 0x47;
+		case ImGuiKey_Keypad8:
+			return 0x48;
+		case ImGuiKey_Keypad9:
+			return 0x49;
+		case ImGuiKey_KeypadDecimal:
+			return 0x53;
+		case ImGuiKey_KeypadDivide:
+			return 0xB5;
+		case ImGuiKey_KeypadMultiply:
+			return 0x37;
+		case ImGuiKey_KeypadSubtract:
+			return 0x4A;
+		case ImGuiKey_KeypadAdd:
+			return 0x4E;
+		case ImGuiKey_KeypadEnter:
+			return 0x9C;
+		case ImGuiKey_LeftShift:
+			return 0x2A;
+		case ImGuiKey_LeftCtrl:
+			return 0x1D;
+		case ImGuiKey_LeftAlt:
+			return 0x38;
+		case ImGuiKey_LeftSuper:
+			return 0x5B;
+		case ImGuiKey_RightShift:
+			return 0x36;
+		case ImGuiKey_RightCtrl:
+			return 0x9D;
+		case ImGuiKey_RightAlt:
+			return 0xB8;
+		case ImGuiKey_RightSuper:
+			return 0x5C;
+		case ImGuiKey_Menu:
+			return 0x5D;
+		case ImGuiKey_0:
+			return 0x0B;
+		case ImGuiKey_1:
+			return 0x02;
+		case ImGuiKey_2:
+			return 0x03;
+		case ImGuiKey_3:
+			return 0x04;
+		case ImGuiKey_4:
+			return 0x05;
+		case ImGuiKey_5:
+			return 0x06;
+		case ImGuiKey_6:
+			return 0x07;
+		case ImGuiKey_7:
+			return 0x08;
+		case ImGuiKey_8:
+			return 0x09;
+		case ImGuiKey_9:
+			return 0x0A;
+		case ImGuiKey_A:
+			return 0x1E;
+		case ImGuiKey_B:
+			return 0x30;
+		case ImGuiKey_C:
+			return 0x2E;
+		case ImGuiKey_D:
+			return 0x20;
+		case ImGuiKey_E:
+			return 0x12;
+		case ImGuiKey_F:
+			return 0x21;
+		case ImGuiKey_G:
+			return 0x22;
+		case ImGuiKey_H:
+			return 0x23;
+		case ImGuiKey_I:
+			return 0x17;
+		case ImGuiKey_J:
+			return 0x24;
+		case ImGuiKey_K:
+			return 0x25;
+		case ImGuiKey_L:
+			return 0x26;
+		case ImGuiKey_M:
+			return 0x32;
+		case ImGuiKey_N:
+			return 0x31;
+		case ImGuiKey_O:
+			return 0x18;
+		case ImGuiKey_P:
+			return 0x19;
+		case ImGuiKey_Q:
+			return 0x10;
+		case ImGuiKey_R:
+			return 0x13;
+		case ImGuiKey_S:
+			return 0x1F;
+		case ImGuiKey_T:
+			return 0x14;
+		case ImGuiKey_U:
+			return 0x16;
+		case ImGuiKey_V:
+			return 0x2F;
+		case ImGuiKey_W:
+			return 0x11;
+		case ImGuiKey_X:
+			return 0x2D;
+		case ImGuiKey_Y:
+			return 0x15;
+		case ImGuiKey_Z:
+			return 0x2C;
+		case ImGuiKey_F1:
+			return 0x3B;
+		case ImGuiKey_F2:
+			return 0x3C;
+		case ImGuiKey_F3:
+			return 0x3D;
+		case ImGuiKey_F4:
+			return 0x3E;
+		case ImGuiKey_F5:
+			return 0x3F;
+		case ImGuiKey_F6:
+			return 0x40;
+		case ImGuiKey_F7:
+			return 0x41;
+		case ImGuiKey_F8:
+			return 0x42;
+		case ImGuiKey_F9:
+			return 0x43;
+		case ImGuiKey_F10:
+			return 0x44;
+		case ImGuiKey_F11:
+			return 0x57;
+		case ImGuiKey_F12:
+			return 0x58;
+		default:
+			return 0;
+		}
 	}
 
 	// Translates Virtual Key Codes into ImGui compatible codes for ImGui specific Input.
