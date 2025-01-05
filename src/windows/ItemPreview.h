@@ -50,7 +50,6 @@ namespace Modex
 		};
 
 		const auto InlineTextMulti = [maxWidth](const char* label, std::vector<std::string> text) {
-			// const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text[0]).x);
 			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text[0].c_str()).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text[0].c_str()).x);
 			ImGui::Text(label);
 			ImGui::SameLine(width);

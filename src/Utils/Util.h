@@ -469,6 +469,8 @@ namespace Utils
 		};
 	};
 
+	// Returns a list of armor slots assigned to the armor.
+	// Returns "None" if no slots are assigned to prevent out-of-range access. (Issue #21)
 	inline static std::vector<std::string> GetArmorSlots(RE::TESObjectARMO* a_armor)
 	{
 		std::vector<std::string> slots;
@@ -481,6 +483,11 @@ namespace Utils
 				}
 			}
 		}
+
+		if (slots.empty()) {
+			slots.push_back("None");
+		}
+
 		return slots;
 	}
 
