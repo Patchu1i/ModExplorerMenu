@@ -47,6 +47,7 @@ namespace Modex
 		static inline bool is_settings_popped = false;
 		static inline bool is_modifier_pressed = false;
 		static inline std::atomic<bool> initialized = false;
+		static inline bool _prevFreeze = false;
 
 	private:
 		bool enable = false;

@@ -11,9 +11,9 @@ namespace Modex
 	void Menu::Open()
 	{
 		enable = true;
+		_prevFreeze = RE::Main::GetSingleton()->freezeTime;
 
 		if (Settings::GetSingleton()->GetConfig().pauseGame) {
-			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(false);
 			RE::Main::GetSingleton()->freezeTime = true;
 		}
 	}
@@ -22,14 +22,7 @@ namespace Modex
 	{
 		enable = false;
 
-		if (Settings::GetSingleton()->GetConfig().pauseGame) {
-			if (const auto& overrideData = RE::ImageSpaceManager::GetSingleton()->overrideBaseData) {
-				overrideData->cinematic.brightness = 1.0f;
-			}
-
-			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(true);
-			RE::Main::GetSingleton()->freezeTime = false;
-		}
+		RE::Main::GetSingleton()->freezeTime = _prevFreeze;
 	}
 
 	void Menu::Draw()
