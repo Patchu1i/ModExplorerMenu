@@ -103,6 +103,9 @@ namespace Hooks
 				io.ClearInputKeys();
 				io.ClearEventsQueue();
 				io.ClearInputCharacters();  // TODO: Test if this is necessary(?)
+
+				io.AddFocusEvent(false);
+				Modex::Menu::GetSingleton()->OnFocusKill();
 			}
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);
 		}
