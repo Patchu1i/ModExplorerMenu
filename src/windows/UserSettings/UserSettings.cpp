@@ -146,33 +146,39 @@ namespace Modex
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
 		if (ImGui::BeginPopup("##ModifierPopup", flags)) {
-			if (newModifier > 0) {
-				if (ImGui::IsModifierKey(newModifier) && GetAsyncKeyState(newModifier)) {
-					a_modifier = ImGui::VirtualKeyToSkyrim(newModifier);
+			auto _prevModifier = a_modifier;
+			int _newModifier = 0;
+
+			if (ImGui::IsKeyPressed(ImGuiMod_Alt)) {
+				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LMENU);
+			} else if (ImGui::IsKeyPressed(ImGuiMod_Ctrl)) {
+				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LCONTROL);
+			} else if (ImGui::IsKeyPressed(ImGuiMod_Shift)) {
+				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LSHIFT);
+			}
+
+			if (_newModifier != 0) {
+				if (_newModifier != _prevModifier) {
+					a_modifier = _newModifier;
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 					ImGui::CloseCurrentPopup();
+				} else {
+					ImGui::CloseCurrentPopup();
 				}
-			}
+			} else {
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+					ImGui::CloseCurrentPopup();
+				}
 
-			if (newModifier == 0) {
-				for (int key = 0x0; key <= 255; key++) {
-					if (GetAsyncKeyState(key)) {
-						if (ImGui::IsModifierKey(key)) {
-							newModifier = key;
-						}
-
-						if (key == 0x54) {  // "T" Key
-							a_modifier = defaultKey;
-							SettingsWindow::changes.store(true);
-							SettingsWindow::file_changes.store(true);
-							ImGui::CloseCurrentPopup();
-						}
-
-						if (key == VK_ESCAPE) {
-							ImGui::CloseCurrentPopup();
-						}
+				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
+					if (a_modifier != defaultKey) {
+						SettingsWindow::changes.store(true);
+						SettingsWindow::file_changes.store(true);
 					}
+
+					a_modifier = defaultKey;
+					ImGui::CloseCurrentPopup();
 				}
 			}
 
@@ -253,35 +259,43 @@ namespace Modex
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
 		if (ImGui::BeginPopup("##KeybindPopup", flags)) {
-			if (newKeybind > 0) {
-				if (ImGui::IsKeyboardWhitelist(newKeybind) && GetAsyncKeyState(newKeybind)) {
-					a_keybind = ImGui::VirtualKeyToSkyrim(newKeybind);
+			auto _prevKeybind = a_keybind;
+			int _newKeybind = 0;
+
+			for (int key = ImGuiKey_None; key < ImGuiKey_COUNT; key++) {
+				ImGuiKey imGuiKey = static_cast<ImGuiKey>(key);
+
+				if (ImGui::IsKeyPressed(imGuiKey)) {
+					auto skyrimKey = ImGui::ImGuiKeyToSkyrimKey(imGuiKey);
+
+					if (skyrimKey != 0 && ImGui::IsKeyboardWhitelist(imGuiKey)) {
+						_newKeybind = skyrimKey;
+					}
+				}
+			}
+
+			if (_newKeybind != 0) {
+				if (_newKeybind != _prevKeybind) {
+					a_keybind = _newKeybind;
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 					ImGui::CloseCurrentPopup();
 				} else {
-					newKeybind = 0;
+					ImGui::CloseCurrentPopup();
 				}
-			}
+			} else {
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+					ImGui::CloseCurrentPopup();
+				}
 
-			if (newKeybind == 0) {
-				for (int key = 0x0; key <= 255; key++) {
-					if (GetAsyncKeyState(key)) {
-						if (ImGui::IsKeyboardWhitelist(key)) {
-							newKeybind = key;
-						}
-
-						if (key == 0x54) {  // "T" Key
-							a_keybind = defaultKey;
-							SettingsWindow::changes.store(true);
-							SettingsWindow::file_changes.store(true);
-							ImGui::CloseCurrentPopup();
-						}
-
-						if (key == VK_ESCAPE) {
-							ImGui::CloseCurrentPopup();
-						}
+				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
+					if (a_keybind != defaultKey) {
+						SettingsWindow::changes.store(true);
+						SettingsWindow::file_changes.store(true);
 					}
+
+					a_keybind = defaultKey;
+					ImGui::CloseCurrentPopup();
 				}
 			}
 

@@ -44,6 +44,14 @@ namespace Modex
 		}
 		ImGui::SetDelayedTooltip(_T("AIM_FAVORITE_HELP"));
 
+		if (b_AddToInventory || b_PlaceOnGround) {
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+			// Add Count Input.
+			ImGui::SetNextItemWidth(button_width);
+			ImGui::InputInt("##AddItemCount", &clickToAddCount, 1, 100, ImGuiInputTextFlags_CharsDecimal);
+		}
+
 		ImGui::PopStyleColor(3);
 		ImGui::SeparatorText(_TFM("Shortcuts", ":"));
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));

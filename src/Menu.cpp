@@ -11,9 +11,9 @@ namespace Modex
 	void Menu::Open()
 	{
 		enable = true;
+		_prevFreeze = RE::Main::GetSingleton()->freezeTime;
 
 		if (Settings::GetSingleton()->GetConfig().pauseGame) {
-			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(false);
 			RE::Main::GetSingleton()->freezeTime = true;
 		}
 	}
@@ -22,14 +22,7 @@ namespace Modex
 	{
 		enable = false;
 
-		if (Settings::GetSingleton()->GetConfig().pauseGame) {
-			if (const auto& overrideData = RE::ImageSpaceManager::GetSingleton()->overrideBaseData) {
-				overrideData->cinematic.brightness = 1.0f;
-			}
-
-			RE::PlayerCharacter::GetSingleton()->SetPlayerControls(true);
-			RE::Main::GetSingleton()->freezeTime = false;
-		}
+		RE::Main::GetSingleton()->freezeTime = _prevFreeze;
 	}
 
 	void Menu::Draw()
@@ -187,38 +180,19 @@ namespace Modex
 
 		auto& io = ImGui::GetIO();
 
-		for (auto event = *a_event; event; event = event->next) {
-			if (event->eventType == RE::INPUT_EVENT_TYPE::kChar) {
-				if (!Menu::IsEnabled()) {
-					continue;
+		// Loop through inputEvents passed by the game.
+		for (auto inputEvent = *a_event; inputEvent; inputEvent = inputEvent->next) {
+			if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kChar) {
+				if (enable) {
+					io.AddInputCharacter(static_cast<CharEvent*>(inputEvent)->keyCode);
 				}
+			} else if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kButton) {
+				const RE::ButtonEvent* buttonEvent = static_cast<RE::ButtonEvent*>(inputEvent);
+				const uint32_t scanCode = buttonEvent->GetIDCode();
 
-				io.AddInputCharacter(static_cast<CharEvent*>(event)->keyCode);
-			} else if (event->eventType == RE::INPUT_EVENT_TYPE::kButton) {
-				const auto button = static_cast<RE::ButtonEvent*>(event);
-				if (!button || (button->IsPressed() && !button->IsDown()))
-					continue;
-
-				auto scan_code = button->GetIDCode();
-
-				using DeviceType = RE::INPUT_DEVICE;
-				auto input = scan_code;
-				switch (button->device.get()) {
-				case DeviceType::kMouse:
-					input += kMouseOffset;
-					break;
-				case DeviceType::kKeyboard:
-					input += kKeyboardOffset;
-					break;
-				case DeviceType::kGamepad:
-					continue;
-					break;
-				default:
-					continue;
-				}
-
-				uint32_t key = MapVirtualKeyEx(scan_code, MAPVK_VSC_TO_VK_EX, GetKeyboardLayout(0));
-				switch (scan_code) {
+				// Translate scan code to virtual key code.
+				uint32_t key = MapVirtualKeyEx(scanCode, MAPVK_VSC_TO_VK_EX, GetKeyboardLayout(0));
+				switch (scanCode) {
 				case DIK_LEFTARROW:
 					key = VK_LEFT;
 					break;
@@ -306,50 +280,61 @@ namespace Modex
 
 				uint32_t showMenuKey = Settings::GetSingleton()->GetConfig().showMenuKey;
 				uint32_t showMenuModifier = Settings::GetSingleton()->GetConfig().showMenuModifier;
+				const ImGuiKey imGuiKey = ImGui::VirtualKeyToImGuiKey(key);
 
-				switch (button->device.get()) {
+				// Detect and pass modifier keys to ImGui IO.
+				if (imGuiKey == ImGuiKey_LeftShift || imGuiKey == ImGuiKey_RightShift) {
+					_isShiftDown = buttonEvent->IsPressed();
+				} else if (imGuiKey == ImGuiKey_LeftCtrl || imGuiKey == ImGuiKey_RightCtrl) {
+					_isCtrlDown = buttonEvent->IsPressed();
+				} else if (imGuiKey == ImGuiKey_LeftAlt || imGuiKey == ImGuiKey_RightAlt) {
+					_isAltDown = buttonEvent->IsPressed();
+				}
+
+				io.AddKeyEvent(ImGuiKey_ModShift, _isShiftDown);
+				io.AddKeyEvent(ImGuiKey_ModCtrl, _isCtrlDown);
+				io.AddKeyEvent(ImGuiKey_ModAlt, _isAltDown);
+
+				switch (buttonEvent->device.get()) {
 				case RE::INPUT_DEVICE::kMouse:
-					if (!Menu::IsEnabled()) {
-						continue;
-					}
-
-					if (scan_code > 7)  // middle scroll
-						io.AddMouseWheelEvent(0, button->Value() * (scan_code == 8 ? 1 : -1));
-					else {
-						if (scan_code > 5)
-							scan_code = 5;
-						io.AddMouseButtonEvent(scan_code, button->IsPressed());
+					if (enable) {
+						if (scanCode > 7)  // Middle Scroll
+							io.AddMouseWheelEvent(0, buttonEvent->Value() * (scanCode == 8 ? 1 : -1));
+						else {
+							if (scanCode > 5) {
+								io.AddMouseButtonEvent(5, buttonEvent->IsPressed());
+							} else {
+								io.AddMouseButtonEvent(scanCode, buttonEvent->IsPressed());
+							}
+						}
 					}
 					break;
 				case RE::INPUT_DEVICE::kKeyboard:
-					if (Menu::IsEnabled()) {
-						io.AddKeyEvent(ImGui::VirtualKeyToImGuiKey(key), button->IsPressed());
-					}
+					if (enable) {
+						io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
 
-					if (button->GetIDCode() == showMenuModifier) {
-						if (button->IsPressed()) {
-							Menu::is_modifier_pressed = true;
-						} else {
-							Menu::is_modifier_pressed = false;
+						if (scanCode == uint32_t(41) && buttonEvent->IsDown()) {  // Escape
+							Close();
 						}
 					}
 
-					if (button->GetIDCode() == showMenuKey) {
-						if (button->IsDown() && Menu::initialized.load()) {
-							if (showMenuModifier == 0) {
-								Menu::Toggle();
-							} else if (Menu::is_modifier_pressed == true) {
-								Menu::Toggle();
+					if (scanCode == showMenuKey && buttonEvent->IsDown()) {  // Open / Close Menu
+						if (showMenuModifier == 0) {
+							Toggle();
+						} else {
+							logger::info("showMenuModifier: {}", showMenuModifier);
+							if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && _isShiftDown) {
+								Toggle();
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && _isCtrlDown) {
+								Toggle();
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LMENU) && _isAltDown) {
+								Toggle();
 							}
 						}
-					} else if (button->GetIDCode() == uint32_t(41)) {  // console escape.
-						if (button->IsDown() && Menu::IsEnabled()) {
-							Menu::SetEnabled(false);
-						}
 					}
+
 					break;
-				case RE::INPUT_DEVICE::kGamepad:
-					// not implemented
+				case RE::INPUT_DEVICE::kGamepad:  // Not implemented
 					break;
 				default:
 					continue;

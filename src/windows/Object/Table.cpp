@@ -145,6 +145,9 @@ namespace Modex
 						if (ImGui::IsMouseClicked(0)) {
 							if (b_ClickToSelect) {
 								selectedObject = obj;
+							} else if (b_ClickToPlace) {
+								Console::PlaceAtMe(obj->GetFormID().c_str(), clickToPlaceCount);
+								Console::StartProcessThread();
 							} else if (b_ClickToFavorite) {
 								obj->favorite = !obj->favorite;
 								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);

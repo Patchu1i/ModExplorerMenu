@@ -102,7 +102,7 @@ namespace Modex
 		config.GlyphOffset.y = 3.0f;
 		config.GlyphOffset.x = 1.0f;
 		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
-		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/fonts/icons/rpgawesome-webfont.ttf", size - 1.0f, &config, icon_ranges);
+		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/rpgawesome-webfont.ttf", size - 1.0f, &config, icon_ranges);
 	}
 
 	// TODO: Remove the nano, small, medium, etc indices and replace with a single font size parameter.
@@ -215,38 +215,17 @@ namespace Modex
 
 		// Set the default font to what the user has selected in the settings.
 		// For non-english users, this will replace the ImGui default font.
-
 		auto config = Settings::GetSingleton()->GetConfig();
 		SetupLanguageFont(config.glyphRange);
 
-		// I wrapped this into a switch statement so that all directories don't have to be present.
-		// In addition, it allows users of varying languages to only need one directory for custom fonts.
-		// For example, a Chinese user would install their custom fonts into the Chinese directory.
-		// These directories are automatically setup by the FOMOD.
-
-		switch (config.glyphRange) {
-		case Language::GlyphRanges::Chinese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/chinese"), GraphicManager::font_library, Language::GlyphRanges::Chinese);
-			break;
-		case Language::GlyphRanges::Japanese:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/japanese"), GraphicManager::font_library, Language::GlyphRanges::Japanese);
-			break;
-		case Language::GlyphRanges::Korean:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/korean"), GraphicManager::font_library, Language::GlyphRanges::Korean);
-			break;
-		case Language::GlyphRanges::Russian:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/russian"), GraphicManager::font_library, Language::GlyphRanges::Russian);
-			break;
-		default:
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts/english"), GraphicManager::font_library, Language::GlyphRanges::Default);
-			break;
-		}
+		// Load any user-installed fonts from fonts directory.
+		GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts"), GraphicManager::font_library, config.glyphRange);
 
 		// Detect ImGui Icons mod and load it if it exists.
 		if (std::filesystem::exists("Data/Interface/ImGuiIcons")) {
 			GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ImGuiIcons/Icons"), GraphicManager::imgui_library);
-			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ImGuiIcons/Fonts"), GraphicManager::font_library, Language::GlyphRanges::Default);
-			logger::info("Successfully found and loaded ImGui Icons.");
+			GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/ImGuiIcons/Fonts"), GraphicManager::font_library, config.glyphRange);
+			logger::info("Successfully found and loaded ImGui Icon Library.");
 		}
 
 		// Queue other assets to load.
