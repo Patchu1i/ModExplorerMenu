@@ -25,17 +25,24 @@ namespace Modex
 			ALL_MOD_LIST
 		};
 
-		// Accidentally creating a copy of modlist?
 		[[nodiscard]] static inline std::vector<RE::TESFile*> SortModList(std::vector<RE::TESFile*> modList, int sort = 0)
 		{
 			switch (sort) {
 			case 0:  // Alphabetical
 				std::sort(modList.begin(), modList.end(), [](const RE::TESFile* a, const RE::TESFile* b) {
-					return a->GetFilename() < b->GetFilename();
+					if (a->GetFilename().data() == nullptr || b->GetFilename().data() == nullptr) {
+						return false;  // Maybe resolves issue #19
+					}
+
+					return a->GetFilename().data() < b->GetFilename().data();
 				});
 				break;
 			case 1:  // Last Installed
 				std::sort(modList.begin(), modList.end(), [](RE::TESFile* a, RE::TESFile* b) {
+					if (_modListLastModified[a] == 0 || _modListLastModified[b] == 0) {
+						return false;  // Should never happen (?)
+					}
+
 					return _modListLastModified[a] > _modListLastModified[b];
 				});
 				break;
@@ -44,35 +51,28 @@ namespace Modex
 			return modList;
 		}
 
+		// Could Issue #19 be related to lifetime of the returned vector?
 		[[nodiscard]] static inline std::vector<RE::TESFile*> GetModList(int listType, int sort = 0)
 		{
+			std::vector<RE::TESFile*> _unsortedList;
+
 			switch (listType) {
 			case ITEM_MOD_LIST:
-				return SortModList(std::vector<RE::TESFile*>(_itemModList.begin(), _itemModList.end()), sort);
+				_unsortedList = _itemModList;
 			case NPC_MOD_LIST:
-				return SortModList(std::vector<RE::TESFile*>(_npcModList.begin(), _npcModList.end()), sort);
+				_unsortedList = _npcModList;
 			case STATIC_MOD_LIST:
-				return SortModList(std::vector<RE::TESFile*>(_staticModList.begin(), _staticModList.end()), sort);
+				_unsortedList = _staticModList;
 			case CELL_MOD_LIST:
-				return SortModList(std::vector<RE::TESFile*>(_cellModList.begin(), _cellModList.end()), sort);
+				_unsortedList = _cellModList;
 			default:
-				return SortModList(std::vector<RE::TESFile*>(_modList.begin(), _modList.end()), sort);
+				_unsortedList = _modList;
 			}
+
+			return SortModList(_unsortedList, sort);
 		}
 
 	private:
-		inline static const char* _skyrimFiles[9] = {
-			"ccBGSSSE025-AdvDSGS.esm",
-			"Dragonborn.esm",
-			"HearthFires.esm",
-			"Skyrim.esm",
-			"ccBGSSSE037-Curios.esm",
-			"Update.esm",
-			"Dawnguard.esm",
-			"ccBGSSSE001-Fish.esm",
-			"ccQDRSSE001-SurvivalMode.esl",
-		};
-
 		static inline std::vector<Item> _cache;
 		static inline std::vector<Cell> _cellCache;
 		static inline std::vector<NPC> _npcCache;
