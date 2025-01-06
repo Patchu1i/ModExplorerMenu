@@ -581,7 +581,7 @@ namespace Modex
 
 		constexpr auto flags = ImGuiChildFlags_Border;
 		const float width = (ImGui::GetContentRegionAvail().x * 0.5f) - 10.0f;
-		auto modList = Data::GetSingleton()->GetModList(Data::ALL_MOD_LIST, 0);
+		auto modList = Data::GetModList(Data::ALL_MOD_LIST, 0);
 
 		ImGui::NewLine();
 
@@ -595,16 +595,12 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 		if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
 			for (auto& mod : modList) {
-				if (mod == nullptr || mod->fileName == nullptr) {
+				if (mod == nullptr || mod->GetFilename().data() == nullptr) {
 					continue;
 				}
 
 				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 				if (!blacklist.contains(mod)) {
-					if (mod->GetFilename().empty()) {
-						continue;
-					}
-
 					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
 						PersistentData::GetSingleton()->AddModToBlacklist(mod);
 					}
