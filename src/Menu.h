@@ -13,6 +13,7 @@ namespace Modex
 		void LoadSettings(CSimpleIniA& a_ini);
 		void ProcessInputEvent(RE::InputEvent** a_event);
 		void RefreshStyle();
+		void OnFocusKill();
 
 		bool IsEnabled() { return enable; }
 		void SetEnabled(bool value) { enable = value; }
@@ -52,7 +53,6 @@ namespace Modex
 		static inline bool _isCtrlDown = false;
 		static inline bool _isAltDown = false;
 		static inline bool _isOpenModDown = false;
-		static inline bool _ignoreInput = false;
 
 	private:
 		bool enable = false;

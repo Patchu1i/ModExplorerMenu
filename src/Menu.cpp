@@ -173,6 +173,14 @@ namespace Modex
 		kGamepadOffset = 266
 	};
 
+	void Menu::OnFocusKill()
+	{
+		_isShiftDown = false;
+		_isCtrlDown = false;
+		_isAltDown = false;
+		_isOpenModDown = false;
+		}
+
 	void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 	{
 		if (!a_event)
