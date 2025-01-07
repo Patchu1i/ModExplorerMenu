@@ -479,18 +479,16 @@ namespace Modex
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
 		ImGui::PushItemWidth(fixedWidth);
 
-		// TODO: No reason this can't be a slider, but it's not a priority.
-		// std::vector<std::string> scales = { "80", "90", "100", "110", "120" };
-		// if (ImGui::BeginCombo("##UIScaleSelection", (std::to_string(config.uiScale) + "%").c_str())) {
-		// 	for (int i = 0; i < scales.size(); ++i) {
-		// 		if (ImGui::Selectable((std::string(scales[i] + "%").c_str()))) {
-		// 			config.uiScale = std::stoi(scales[i]);
-		// 			SettingsWindow::changes.store(true);
-		// 			SettingsWindow::file_changes.store(true);
-		// 		}
-		// 	}
-		// 	ImGui::EndCombo();
-		// }
+		// Might need to change min max value for users with UHD monitors?
+		ImGui::SliderInt("##UIScaleSelection", &_uiScale, 60, 120, "%d%%");
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			config.uiScale = _uiScale;
+
+			SettingsWindow::changes.store(true);
+			SettingsWindow::file_changes.store(true);
+		}
+
 		ImGui::PopItemWidth();
 
 		AddCheckbox("SETTINGS_PAUSE_GAME", config.pauseGame);
@@ -915,6 +913,7 @@ namespace Modex
 
 	void SettingsWindow::Init()
 	{
+		_uiScale = Settings::GetSingleton()->GetConfig().uiScale;
 		// Open = true;
 	}
 }
