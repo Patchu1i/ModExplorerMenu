@@ -163,9 +163,15 @@ namespace Modex
 
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-					for (auto& mod : Data::GetModList(Data::CELL_MOD_LIST, a_config.modListSort)) {
+					auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
+					for (auto& mod : *modList) {
+						bool bSelected = false;
+
+						if (mod->GetFilename().data() == nullptr) {
+							continue;
+						}
+
 						const char* modName = mod->GetFilename().data();
-						bool is_selected = false;
 
 						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
 							continue;
@@ -193,7 +199,7 @@ namespace Modex
 							ApplyFilters();
 						}
 
-						if (is_selected)
+						if (bSelected)  // ??
 							ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();

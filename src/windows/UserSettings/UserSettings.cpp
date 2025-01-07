@@ -550,7 +550,7 @@ namespace Modex
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
 		ImGui::PushItemWidth(fixedWidth);
 
-		std::vector<std::string> fontSizes = { "16", "18", "20", "22", "24", "26" };
+		std::vector<std::string> fontSizes = { "12", "14", "16", "18", "20", "22", "24", "26" };
 		if (ImGui::BeginCombo("##FontSizeSelection", (std::to_string(config.globalFontSize)).c_str())) {
 			for (int i = 0; i < fontSizes.size(); ++i) {
 				if (ImGui::Selectable((std::string(fontSizes[i]).c_str()))) {
@@ -619,18 +619,28 @@ namespace Modex
 		// Left Column
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 		if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
-			for (auto& mod : modList) {
-				if (mod == nullptr || mod->GetFilename().data() == nullptr) {
-					continue;
-				}
+			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
-				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+			for (auto& mod : *modList) {
 				if (!blacklist.contains(mod)) {
 					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
 						PersistentData::GetSingleton()->AddModToBlacklist(mod);
 					}
 				}
 			}
+
+			// for (auto& mod : modList) {
+			// 	if (mod == nullptr || mod->GetFilename().data() == nullptr) {
+			// 		continue;
+			// 	}
+
+			// 	auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+			// 	if (!blacklist.contains(mod)) {
+			// 		if (ImGui::Selectable(mod->GetFilename().data(), false)) {
+			// 			PersistentData::GetSingleton()->AddModToBlacklist(mod);
+			// 		}
+			// 	}
+			// }
 		}
 		ImGui::EndChild();
 
@@ -639,14 +649,24 @@ namespace Modex
 		ImGui::SameLine();
 
 		if (ImGui::BeginChild("##BlacklistRightSide", ImVec2(width - 10.0f, width / 1.5f), flags)) {
-			for (auto& mod : modList) {
-				auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+
+			for (auto& mod : *modList) {
 				if (blacklist.contains(mod)) {
 					if (ImGui::Selectable(mod->GetFilename().data(), false)) {
 						PersistentData::GetSingleton()->RemoveModFromBlacklist(mod);
 					}
 				}
 			}
+
+			// for (auto& mod : modList) {
+			// 	auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+			// 	if (blacklist.contains(mod)) {
+			// 		if (ImGui::Selectable(mod->GetFilename().data(), false)) {
+			// 			PersistentData::GetSingleton()->RemoveModFromBlacklist(mod);
+			// 		}
+			// 	}
+			// }
 		}
 		ImGui::EndChild();
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);

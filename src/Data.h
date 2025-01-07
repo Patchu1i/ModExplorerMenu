@@ -25,11 +25,15 @@ namespace Modex
 			ALL_MOD_LIST
 		};
 
-		[[nodiscard]] static inline std::vector<RE::TESFile*> SortModList(std::vector<RE::TESFile*> modList, int sort = 0)
+		[[nodiscard]] static inline std::shared_ptr<std::vector<RE::TESFile*>> SortModList(std::shared_ptr<std::vector<RE::TESFile*>> modList, int sort = 0)
 		{
 			switch (sort) {
 			case 0:  // Alphabetical
-				std::sort(modList.begin(), modList.end(), [](const RE::TESFile* a, const RE::TESFile* b) {
+				std::sort(modList->begin(), modList->end(), [](const RE::TESFile* a, const RE::TESFile* b) {
+					if (a == nullptr || b == nullptr) {
+						return false;
+					}
+
 					if (a->GetFilename().data() == nullptr || b->GetFilename().data() == nullptr) {
 						return false;  // Maybe resolves issue #19
 					}
@@ -38,7 +42,11 @@ namespace Modex
 				});
 				break;
 			case 1:  // Last Installed
-				std::sort(modList.begin(), modList.end(), [](RE::TESFile* a, RE::TESFile* b) {
+				std::sort(modList->begin(), modList->end(), [](RE::TESFile* a, RE::TESFile* b) {
+					if (a == nullptr || b == nullptr) {
+						return false;
+					}
+
 					if (_modListLastModified[a] == 0 || _modListLastModified[b] == 0) {
 						return false;  // Should never happen (?)
 					}
@@ -52,25 +60,26 @@ namespace Modex
 		}
 
 		// Could Issue #19 be related to lifetime of the returned vector?
-		[[nodiscard]] static inline std::vector<RE::TESFile*> GetModList(int listType, int sort = 0)
+		[[nodiscard]] static inline std::shared_ptr<std::vector<RE::TESFile*>> GetModList(int listType, int sort = 0)
 		{
-			std::vector<RE::TESFile*> _unsortedList;
+			// std::vector<RE::TESFile*>* _unsortedList = std::make_shared<std::vector<RE::TESFile*>>();
+			std::shared_ptr<std::vector<RE::TESFile*>> _unsortedList = std::make_shared<std::vector<RE::TESFile*>>();
 
 			switch (listType) {
 			case ITEM_MOD_LIST:
-				_unsortedList.assign(_itemModList.begin(), _itemModList.end());
+				_unsortedList->assign(_itemModList.begin(), _itemModList.end());
 				break;
 			case NPC_MOD_LIST:
-				_unsortedList.assign(_npcModList.begin(), _npcModList.end());
+				_unsortedList->assign(_npcModList.begin(), _npcModList.end());
 				break;
 			case STATIC_MOD_LIST:
-				_unsortedList.assign(_staticModList.begin(), _staticModList.end());
+				_unsortedList->assign(_staticModList.begin(), _staticModList.end());
 				break;
 			case CELL_MOD_LIST:
-				_unsortedList.assign(_cellModList.begin(), _cellModList.end());
+				_unsortedList->assign(_cellModList.begin(), _cellModList.end());
 				break;
 			default:
-				_unsortedList.assign(_modList.begin(), _modList.end());
+				_unsortedList->assign(_modList.begin(), _modList.end());
 			}
 
 			return SortModList(_unsortedList, sort);

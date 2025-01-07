@@ -197,11 +197,17 @@ namespace Modex
 
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-					auto modFormTypeMap = Data::GetModFormTypeMap();
 					auto numOfFilter = 0;
-					for (auto& mod : Data::GetModList(Data::STATIC_MOD_LIST, a_config.modListSort)) {
-						const char* modName = mod->GetFilename().data();
+					auto modFormTypeMap = Data::GetModFormTypeMap();
+					auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
+					for (auto& mod : *modList) {
 						bool bSelected = false;
+
+						if (mod->GetFilename().data() == nullptr) {
+							continue;
+						}
+
+						const char* modName = mod->GetFilename().data();
 
 						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
 							continue;

@@ -47,9 +47,17 @@ namespace Modex
 		[[nodiscard]] inline std::string GetFormID() const { return fmt::format("{:08x}", TESForm->GetFormID()); }
 		[[nodiscard]] inline std::string_view GetName() const { return name; }
 		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }
-		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
 		[[nodiscard]] inline RE::FormID GetBaseForm() const { return FormID; }
 		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
+
+		[[nodiscard]] inline std::string GetPluginName() const
+		{
+			if (TESFile != nullptr) {
+				return TESFile->fileName;
+			} else {
+				return "Unknown";
+			}
+		}
 
 		[[nodiscard]] inline std::string GetTypeName() const
 		{

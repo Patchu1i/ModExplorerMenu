@@ -307,9 +307,15 @@ namespace Modex
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 					auto modFormTypeMap = Data::GetModFormTypeMap();
-					for (auto& mod : Data::GetModList(Data::NPC_MOD_LIST, a_config.modListSort)) {
-						const char* modName = mod->GetFilename().data();
+					auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
+					for (auto& mod : *modList) {
 						bool bSelected = false;
+
+						if (mod->GetFilename().data() == nullptr) {
+							continue;
+						}
+
+						const char* modName = mod->GetFilename().data();
 
 						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
 							continue;
