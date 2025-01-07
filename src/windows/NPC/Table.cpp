@@ -145,13 +145,13 @@ namespace Modex
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetEditorID().data());
 
-					// Gender
-					ImGui::TableNextColumn();
-					ImGui::Text(npc->GetGender().data());
-
 					// Race
 					ImGui::TableNextColumn();
 					ImGui::Text(npc->GetRace().data());
+
+					// Gender
+					ImGui::TableNextColumn();
+					ImGui::Text(npc->GetGender().data());
 
 					// Class
 					ImGui::TableNextColumn();
