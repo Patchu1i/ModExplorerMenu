@@ -20,10 +20,12 @@ namespace
 			Modex::PersistentData::LoadBlacklist();
 			logger::info("Loaded Persistent Data");
 			Modex::Language::GetSingleton()->BuildLanguageList();
-			logger::info("Finished Building Language List");
+			Modex::FontManager::GetSingleton()->BuildFontLibrary();
+			logger::info("Finished Building Language & Font List");
 			Modex::Settings::GetSingleton()->LoadSettings(Modex::Settings::ini_mem_path);
+			Modex::Settings::GetSingleton()->LoadUserFontSetting();
+			Modex::FontManager::GetSingleton()->SetStartupFont();
 			Modex::GraphicManager::Init();
-			Modex::Settings::GetSingleton()->LoadFont();
 			Modex::Data::GetSingleton()->Run();
 			Modex::Frame::Install();
 			break;

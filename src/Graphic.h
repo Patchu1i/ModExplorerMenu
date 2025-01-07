@@ -20,51 +20,27 @@ namespace Modex
 			int32_t height = 0;
 		};
 
-		struct Font
-		{
-			std::string name = "Default";
-			ImFont* normal = nullptr;
-			ImFont* large = nullptr;
-
-			bool operator==(const Font& other) const
-			{
-				return name.compare(other.name) == 0;
-			}
-		};
-
-		enum FontSize
-		{
-			Nano,
-			Tiny,
-			Medium,
-			Large
-		};
-
 		static inline std::map<std::string, GraphicManager::Image> image_library;
 		static inline std::map<std::string, GraphicManager::Image> imgui_library;
-		static inline std::map<std::string, Font> font_library;
-		static inline std::map<std::string, Font> icon_library;
 
 		static void DrawImage(Image& a_texture, ImVec2 a_center);
 		static void LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
-		static void LoadFontsFromDirectory(std::string a_path, std::map<std::string, Font>& out_struct, Language::GlyphRanges a_range);
-		static void SetupLanguageFont(Language::GlyphRanges a_range);
 
 		static void Init();
 
 		[[nodiscard]] static bool GetD3D11Texture(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width,
 			int& out_height);
 
-		[[nodiscard]] static Font GetFont(std::string a_font)
-		{
-			auto found = font_library.find(a_font);
-			if (found != font_library.end()) {
-				return found->second;
-			}
+		// [[nodiscard]] static Font GetFont(std::string a_font)
+		// {
+		// 	auto found = font_library.find(a_font);
+		// 	if (found != font_library.end()) {
+		// 		return found->second;
+		// 	}
 
-			logger::warn("Font Reference not found: {}", a_font);
-			return Font();
-		}
+		// 	logger::warn("Font Reference not found: {}", a_font);
+		// 	return Font();
+		// }
 
 		[[nodiscard]] static Image GetImage(std::string a_name)
 		{

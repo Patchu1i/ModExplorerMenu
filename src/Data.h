@@ -58,15 +58,19 @@ namespace Modex
 
 			switch (listType) {
 			case ITEM_MOD_LIST:
-				_unsortedList = _itemModList;
+				_unsortedList.assign(_itemModList.begin(), _itemModList.end());
+				break;
 			case NPC_MOD_LIST:
-				_unsortedList = _npcModList;
+				_unsortedList.assign(_npcModList.begin(), _npcModList.end());
+				break;
 			case STATIC_MOD_LIST:
-				_unsortedList = _staticModList;
+				_unsortedList.assign(_staticModList.begin(), _staticModList.end());
+				break;
 			case CELL_MOD_LIST:
-				_unsortedList = _cellModList;
+				_unsortedList.assign(_cellModList.begin(), _cellModList.end());
+				break;
 			default:
-				_unsortedList = _modList;
+				_unsortedList.assign(_modList.begin(), _modList.end());
 			}
 
 			return SortModList(_unsortedList, sort);

@@ -68,7 +68,7 @@ void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::
 	}
 
 	if (menu->IsEnabled()) {
-		_InputHandler(a_dispatcher, dummy);
+		_InputHandler(a_dispatcher, dummy);  // Block Input Events to Skyrim
 		return;
 	} else {
 		_InputHandler(a_dispatcher, a_events);

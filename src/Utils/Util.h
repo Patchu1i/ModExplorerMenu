@@ -13,7 +13,7 @@ namespace ImGui
 
 	inline static void ShowLanguagePopup()
 	{
-		auto& style = Modex::Settings::GetSingleton()->GetStyle();
+		// auto& style = Modex::Settings::GetSingleton()->GetStyle();
 
 		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
 		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
@@ -29,11 +29,11 @@ namespace ImGui
 		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
 		if (ImGui::BeginPopupModal("Non-latin Alphabetical Language", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
 			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Non-latin Alphabetical Language"));
-			ImGui::PushFont(style.font.normal);
+			// ImGui::PushFont(style.font.normal);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
 			ImGui::Text("Non-latin Alphabetical Language");
 			ImGui::PopStyleColor(1);
-			ImGui::PopFont();
+			// ImGui::PopFont();
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -63,7 +63,7 @@ namespace ImGui
 	// Call ImGui::ShowWarningPopup(<popup_name>, <callback>) outside of conditional logic.
 	inline static void ShowWarningPopup(const char* warning, std::function<void()> callback)
 	{
-		auto& style = Modex::Settings::GetSingleton()->GetStyle();
+		// auto& style = Modex::Settings::GetSingleton()->GetStyle();
 
 		auto width = ImGui::GetMainViewport()->Size.x * 0.25f;
 		auto height = ImGui::GetMainViewport()->Size.y * 0.20f;
@@ -79,11 +79,11 @@ namespace ImGui
 		ImGui::SetNextWindowPos(ImVec2(pos_x, pos_y));
 		if (ImGui::BeginPopupModal(warning, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar)) {
 			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(warning));
-			ImGui::PushFont(style.font.normal);
+			// ImGui::PushFont(style.font.normal);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
 			ImGui::Text(warning);
 			ImGui::PopStyleColor(1);
-			ImGui::PopFont();
+			// ImGui::PopFont();
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -116,9 +116,11 @@ namespace ImGui
 
 	inline static bool m_Button(const char* label, Modex::Settings::Style& style, const ImVec2& size = ImVec2(0, 0))
 	{
-		ImGui::PushFont(style.buttonFont.normal);
+		(void)style;
+
+		// ImGui::PushFont(style.buttonFont.normal);
 		auto result = ImGui::Button(label, size);
-		ImGui::PopFont();
+		// ImGui::PopFont();
 		return result;
 	}
 
@@ -132,9 +134,9 @@ namespace ImGui
 		auto innerPadding = style.widgetPadding.y;
 		auto newSize = ImVec2(size.x, size.y + innerPadding);
 
-		ImGui::PushFont(style.buttonFont.normal);
+		// ImGui::PushFont(style.buttonFont.normal);
 		auto result = ImGui::Selectable(label, &selected, flag, newSize);
-		ImGui::PopFont();
+		// ImGui::PopFont();
 		return result;
 	}
 
