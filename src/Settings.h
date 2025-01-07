@@ -19,7 +19,7 @@ namespace Modex
 
 		void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
 		void LoadSettings(const wchar_t* a_path);
-		void LoadFont();
+		void LoadUserFontSetting();
 		void SaveSettings();
 		void LoadMasterIni(CSimpleIniA& a_ini);
 		void LoadThemeFromIni(CSimpleIniA& a_ini);
@@ -73,15 +73,21 @@ namespace Modex
 
 		struct Config
 		{
+			// General
 			std::string theme = "Default";
-			int showMenuKey;
-			int showMenuModifier;
-			std::string language = "English";
-			Language::GlyphRanges glyphRange = Language::GlyphRanges::Default;
-			int modListSort;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
-			int uiScale;      // 80, 90, 100, 110, 120 (Should be a slider..)
+			int showMenuKey = 211;
+			int showMenuModifier = 0;
+			int modListSort = 0;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
+			int uiScale = 100;    // 80, 90, 100, 110, 120 (Should be a slider..)
 			bool pauseGame = false;
 
+			// Font Stuff
+			std::string language = "English";
+			Language::GlyphRanges glyphRange = Language::GlyphRanges::English;
+			std::string globalFont = "Default";
+			int globalFontSize = 16;
+
+			// Modules
 			int defaultShow = 1;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings
 			bool showHomeMenu = false;
 			bool showAddItemMenu = true;
@@ -151,13 +157,9 @@ namespace Modex
 			float scrollbarSize = 14;
 			float grabMinSize = 10;
 			float grabRounding = 3;
-			float globalFontSize = 1.0;
 
 			bool showTableRowBG = true;
 			bool noIconText = false;
-
-			GraphicManager::Font font;
-			GraphicManager::Font buttonFont;
 
 			GraphicManager::Image splashImage;
 		};
@@ -176,7 +178,7 @@ namespace Modex
 
 		// https://github.com/powerof3/PhotoMode | License: MIT
 		template <class T>
-		static std::string ToString(const T& a_style, bool a_hex)
+		static std::string ToString(const T& a_style, bool a_hex = false)
 		{
 			if constexpr (std::is_same_v<ImVec4, T>) {
 				if (a_hex) {
@@ -187,7 +189,7 @@ namespace Modex
 				return std::format("{}{},{}{}", "{", a_style.x, a_style.y, "}");
 			} else if constexpr (std::is_same_v<std::string, T>) {
 				return a_style;
-			} else if constexpr (std::is_same_v<GraphicManager::Font, T>) {
+			} else if constexpr (std::is_same_v<FontManager::FontData, T>) {
 				return a_style.name;
 			} else if constexpr (std::is_same_v<GraphicManager::Image, T>) {
 				return GraphicManager::GetImageName(a_style);
@@ -252,11 +254,6 @@ namespace Modex
 			logger::critical("Failed to parse ImVec2 from .ini file! Ensure you're using the correct format!");
 			logger::critical("ImVec2 input: {}", a_str);
 			return { ImVec2(), false };
-		}
-
-		static std::map<std::string, GraphicManager::Font> GetListOfFonts()
-		{
-			return GraphicManager::font_library;
 		}
 
 		static std::map<std::string, GraphicManager::Image> GetListOfImages()

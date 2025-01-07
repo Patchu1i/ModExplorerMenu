@@ -14,6 +14,7 @@ namespace Modex
 		void ProcessInputEvent(RE::InputEvent** a_event);
 		void RefreshStyle();
 		void OnFocusKill();
+		void RefreshFont();
 
 		bool IsEnabled() { return enable; }
 		void SetEnabled(bool value) { enable = value; }
@@ -47,6 +48,7 @@ namespace Modex
 
 		static inline bool is_settings_popped = false;
 		static inline std::atomic<bool> initialized = false;
+		static inline bool _rebuildFonts = false;
 		static inline bool _prevFreeze = false;
 
 		static inline bool _isShiftDown = false;
@@ -56,6 +58,8 @@ namespace Modex
 
 	private:
 		bool enable = false;
+
+		void RebuildFontAtlas();
 	};
 
 }

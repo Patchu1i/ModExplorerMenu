@@ -73,7 +73,7 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.buttonHovered);
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-		ImGui::PushFont(style.buttonFont.normal);
+		// ImGui::PushFont(style.buttonFont.normal);
 		if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
 			auto iWidth = ImGui::GetContentRegionAvail().x;
 			auto iHeight = ImGui::GetWindowSize().y / 12;
@@ -133,7 +133,7 @@ namespace Modex
 
 			ImGui::End();
 		}
-		ImGui::PopFont();
+		// ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(1);
 

@@ -4,7 +4,6 @@
 
 namespace Modex
 {
-
 	class Translate
 	{
 	public:
@@ -109,11 +108,15 @@ namespace Modex
 
 		enum GlyphRanges
 		{
-			Default,
-			Chinese,
+			English,
+			Greek,
+			Korean,
 			Japanese,
-			Russian,
-			Korean
+			ChineseFull,
+			ChineseSimplified,
+			Cryillic,
+			Thai,
+			Vietnamese
 		};
 
 		static inline std::set<std::string> languages;
@@ -134,62 +137,158 @@ namespace Modex
 					std::string path = entry.path().filename().string();
 					languages.insert(path.substr(0, path.find_last_of('.')));
 
-					logger::info("Added language to master list: {}", path);
+					logger::info("[Language] Added language to master list: {}", path);
 				}
 			}
 		}
 
-		static const ImWchar* GetLanguageGlyphRange(GlyphRanges a_range)
+		static const ImWchar* GetUserGlyphRange(GlyphRanges a_range)
 		{
+			auto& io = ImGui::GetIO();
+
 			switch (a_range) {
-			case GlyphRanges::Chinese:
-				return ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
-			case GlyphRanges::Japanese:
-				return ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
-			case GlyphRanges::Russian:
-				return ImGui::GetIO().Fonts->GetGlyphRangesCyrillic();
+			case GlyphRanges::English:
+				return io.Fonts->GetGlyphRangesDefault();  // Basic Latin, Extended Latin
+			case GlyphRanges::Greek:
+				return io.Fonts->GetGlyphRangesGreek();  // Default + Greek and Coptic
 			case GlyphRanges::Korean:
-				return ImGui::GetIO().Fonts->GetGlyphRangesKorean();
+				return io.Fonts->GetGlyphRangesKorean();  // Default + Korean characters
+			case GlyphRanges::Japanese:
+				return io.Fonts->GetGlyphRangesJapanese();  // Default + Hiragana, Katakana, Half-Width, Selection of 2999 Ideographs
+			case GlyphRanges::ChineseFull:
+				return io.Fonts->GetGlyphRangesChineseFull();  // Default + Half-Width + Japanese Hiragana/Katakana + full set of about 21000 CJK Unified Ideographs
+			case GlyphRanges::ChineseSimplified:
+				return io.Fonts->GetGlyphRangesChineseSimplifiedCommon();  // Default + Half-Width + Japanese Hiragana/Katakana + set of 2500 CJK Unified Ideographs for common simplified Chinese
+			case GlyphRanges::Cryillic:
+				return io.Fonts->GetGlyphRangesCyrillic();  // Default + about 400 Cyrillic characters
+			case GlyphRanges::Thai:
+				return io.Fonts->GetGlyphRangesThai();  // Default + Thai characters
+			case GlyphRanges::Vietnamese:
+				return io.Fonts->GetGlyphRangesVietnamese();  // Default + Vietnamese characters
 			default:
-				return ImGui::GetIO().Fonts->GetGlyphRangesDefault();
-			}
+				return io.Fonts->GetGlyphRangesDefault();  // Basic Latin, Extended Latin
+			};
 		}
 
 		[[nodiscard]] static GlyphRanges GetGlyphRange(std::string a_language)
 		{
-			if (a_language == "Chinese") {
-				return GlyphRanges::Chinese;
-			} else if (a_language == "Japanese") {
-				return GlyphRanges::Japanese;
-			} else if (a_language == "Russian") {
-				return GlyphRanges::Russian;
-			} else if (a_language == "Korean") {
+			if (a_language.compare("English") == 0) {
+				return GlyphRanges::English;
+			} else if (a_language.compare("Greek") == 0) {
+				return GlyphRanges::Greek;
+			} else if (a_language.compare("Korean") == 0) {
 				return GlyphRanges::Korean;
+			} else if (a_language.compare("Japanese") == 0) {
+				return GlyphRanges::Japanese;
+			} else if (a_language.compare("ChineseFull") == 0) {
+				return GlyphRanges::ChineseFull;
+			} else if (a_language.compare("ChineseSimplified") == 0) {
+				return GlyphRanges::ChineseSimplified;
+			} else if (a_language.compare("Cryillic") == 0) {
+				return GlyphRanges::Cryillic;
+			} else if (a_language.compare("Thai") == 0) {
+				return GlyphRanges::Thai;
+			} else if (a_language.compare("Vietnamese") == 0) {
+				return GlyphRanges::Vietnamese;
 			} else {
-				return GlyphRanges::Default;
+				return GlyphRanges::English;
 			}
 		}
 
 		[[nodiscard]] static std::string GetGlyphName(GlyphRanges a_range)
 		{
 			switch (a_range) {
-			case GlyphRanges::Chinese:
-				return "Chinese";
-			case GlyphRanges::Japanese:
-				return "Japanese";
-			case GlyphRanges::Russian:
-				return "Russian";
+			case GlyphRanges::English:
+				return "English";
+			case GlyphRanges::Greek:
+				return "Greek";
 			case GlyphRanges::Korean:
 				return "Korean";
+			case GlyphRanges::Japanese:
+				return "Japanese";
+			case GlyphRanges::ChineseFull:
+				return "ChineseFull";
+			case GlyphRanges::ChineseSimplified:
+				return "ChineseSimplified";
+			case GlyphRanges::Cryillic:
+				return "Cryillic";
+			case GlyphRanges::Thai:
+				return "Thai";
+			case GlyphRanges::Vietnamese:
+				return "Vietnamese";
 			default:
-				return "Default";
-			}
+				return "English";
+			};
 		}
 
 		// Not going to bother making this fancy.
 		[[nodiscard]] static std::set<std::string> GetListOfGlyphNames()
 		{
-			return { "Default", "Chinese", "Japanese", "Russian", "Korean" };
+			return { "English", "Greek", "Korean", "Japanese", "ChineseFull", "ChineseSimplified", "Cryillic", "Thai", "Vietnamese" };
 		}
+	};
+
+	class FontManager
+	{
+	public:
+		enum class FontSize
+		{
+			Small,
+			Medium,
+			Large,
+		};
+
+		struct FontData
+		{
+			std::string name;
+			std::string fullPath;
+		};
+
+		static inline FontManager* GetSingleton()
+		{
+			static FontManager singleton;
+			return &singleton;
+		}
+
+		void LoadCustomFont(FontData& a_font, float a_size);
+		void MergeIconFont(ImGuiIO& io, float size);
+		void SetStartupFont();
+		void BuildFontLibrary();
+
+		// Returns std::map<std::string, FontData>
+		[[nodiscard]] static inline FontData& GetFontData(const std::string& a_name)
+		{
+			return font_library[a_name];
+		}
+
+		// Returns a sorted list of registered fonts.
+		[[nodiscard]] static inline std::vector<std::string> GetFontLibrary()
+		{
+			std::vector<std::string> fonts;
+			for (const auto& [key, value] : font_library) {
+				fonts.push_back(key);
+			}
+
+			std::sort(fonts.begin(), fonts.end());
+			return fonts;
+		}
+
+		// members
+		static inline std::map<std::string, FontData> font_library;
+
+	private:
+		inline static const wchar_t* font_path = L"Data/Interface/Modex/Fonts/";
+		inline static const wchar_t* imgui_font_path = L"Data/Interface/ImGuiIcons/Fonts";
+
+		inline static const char* chinese_font = "c:\\Windows\\Fonts\\simsun.ttc";
+		inline static const char* japanese_font = "c:\\Windows\\Fonts\\msgothic.ttc";
+		inline static const char* korean_font = "c:\\Windows\\Fonts\\malgun.ttf";
+
+		void AddDefaultFont();
+
+		FontManager() = default;
+		~FontManager() = default;
+		FontManager(const FontManager&) = delete;
+		FontManager& operator=(const FontManager&) = delete;
 	};
 }

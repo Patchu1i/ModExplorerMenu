@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Console.h"
+#include "Graphic.h"
 #include "Utils/Keycode.h"
 #include "Windows/Frame.h"
 #include "Windows/UserSettings/UserSettings.h"
@@ -31,7 +32,13 @@ namespace Modex
 		Console::ProcessMainThreadTasks();
 
 		if (!IsEnabled()) {
-			return;  // TODO: Should this be called one level up?
+			return;
+		}
+
+		if (_rebuildFonts) {
+			RebuildFontAtlas();
+
+			return;
 		}
 
 		ImGui_ImplWin32_NewFrame();
@@ -45,9 +52,9 @@ namespace Modex
 			ImGui::GetIO().MouseDrawCursor = false;
 		}
 
-		ImGui::PushFont(Settings::GetSingleton()->GetStyle().font.normal);
+		//ImGui::PushFont(Settings::GetSingleton()->GetStyle().font.normal);
 		Frame::Draw(is_settings_popped);
-		ImGui::PopFont();
+		//ImGui::PopFont();
 
 		//ImGui::ShowDemoWindow();
 
@@ -55,6 +62,24 @@ namespace Modex
 
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void Menu::RefreshFont()
+	{
+		_rebuildFonts = true;
+	}
+
+	void Menu::RebuildFontAtlas()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->Clear();
+
+		FontManager::GetSingleton()->SetStartupFont();
+
+		io.Fonts->Build();
+		ImGui_ImplDX11_InvalidateDeviceObjects();
+
+		_rebuildFonts = false;
 	}
 
 	void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11DeviceContext* a_context)
@@ -107,7 +132,7 @@ namespace Modex
 		auto& style = ImGui::GetStyle();
 		auto& colors = style.Colors;
 
-		ImGui::GetIO().FontGlobalScale = user.globalFontSize;
+		// ImGui::GetIO().FontGlobalScale = user.globalFontSize;
 
 		colors[ImGuiCol_Text] = user.text;
 		colors[ImGuiCol_TextDisabled] = user.textDisabled;
@@ -179,7 +204,7 @@ namespace Modex
 		_isCtrlDown = false;
 		_isAltDown = false;
 		_isOpenModDown = false;
-		}
+	}
 
 	void Menu::ProcessInputEvent(RE::InputEvent** a_event)
 	{

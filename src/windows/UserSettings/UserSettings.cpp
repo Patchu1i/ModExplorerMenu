@@ -389,24 +389,22 @@ namespace Modex
 		ImGui::PopItemWidth();
 	}
 
-	void AddFontDropdown(const char* a_text, GraphicManager::Font* a_fontRef)
+	void AddFontDropdown(const char* a_text, std::string* a_font)
 	{
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		auto id = "##FontDropdown" + std::string(a_text);
-		auto fontName = a_fontRef->name;
 		auto width = 200.0f;
-		constexpr auto flags = ImGuiComboFlags_None;
 		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
 		ImGui::PushItemWidth(width);
-		if (ImGui::BeginCombo(id.c_str(), fontName.c_str(), flags)) {
-			auto fonts = Settings::GetListOfFonts();
+		if (ImGui::BeginCombo(id.c_str(), a_font->c_str())) {
+			auto fontLibrary = FontManager::GetFontLibrary();
 			ImGui::PushID("##FontSelectionPopup");
-			for (const auto& font : fonts) {
-				if (ImGui::Selectable(font.first.c_str())) {
-					*a_fontRef = font.second;
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+			for (const auto& font : fontLibrary) {
+				if (ImGui::Selectable(font.c_str())) {
+					*a_font = font;
+
+					Menu::GetSingleton()->RefreshFont();
 				}
 			}
 			ImGui::PopID();
@@ -458,6 +456,7 @@ namespace Modex
 	{
 		//Settings::Style& style = Settings::GetSingleton()->GetStyle();
 		Settings::Config& config = Settings::GetSingleton()->GetConfig();
+		auto fixedWidth = 200.0f;
 
 		if (changes.load()) {
 			Menu::GetSingleton()->RefreshStyle();
@@ -471,12 +470,40 @@ namespace Modex
 		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
 		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, modifierHoverTint);
 
+		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_RECENT" };
+		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
+
+		// UI Scale Setting
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::Text(_T("SETTING_UI_SCALE"));
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
+		ImGui::PushItemWidth(fixedWidth);
+
+		// TODO: No reason this can't be a slider, but it's not a priority.
+		// std::vector<std::string> scales = { "80", "90", "100", "110", "120" };
+		// if (ImGui::BeginCombo("##UIScaleSelection", (std::to_string(config.uiScale) + "%").c_str())) {
+		// 	for (int i = 0; i < scales.size(); ++i) {
+		// 		if (ImGui::Selectable((std::string(scales[i] + "%").c_str()))) {
+		// 			config.uiScale = std::stoi(scales[i]);
+		// 			SettingsWindow::changes.store(true);
+		// 			SettingsWindow::file_changes.store(true);
+		// 		}
+		// 	}
+		// 	ImGui::EndCombo();
+		// }
+		ImGui::PopItemWidth();
+
+		AddCheckbox("SETTINGS_PAUSE_GAME", config.pauseGame);
+
+		ImGui::Unindent();
+		ImGui::SeparatorText(_TFM("SETTING_GENERAL", ":"));
+		ImGui::Indent();
+
 		// Language Dropdown
-		auto width = 200.0f;
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::Text(_T("Language"));
-		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
-		ImGui::PushItemWidth(width);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
+		ImGui::PushItemWidth(fixedWidth);
 
 		auto languages = Language::GetLanguages();
 
@@ -496,8 +523,8 @@ namespace Modex
 		// Glpyh Dropdown
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::Text("Language Glyph Range (Requires restart).");
-		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
-		ImGui::PushItemWidth(width);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
+		ImGui::PushItemWidth(fixedWidth);
 
 		auto glyphs = Language::GetListOfGlyphNames();
 		auto currentGlyph = Language::GetGlyphName(config.glyphRange);
@@ -506,39 +533,37 @@ namespace Modex
 			for (auto& glyph : glyphs) {
 				if (ImGui::Selectable(glyph.data())) {
 					config.glyphRange = Language::GetGlyphRange(glyph);
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+
+					Menu::GetSingleton()->RefreshFont();
 				}
 			}
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
 
-		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_RECENT" };
-		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
+		// Font Dropdown
+		AddFontDropdown("SETTING_FONT", &config.globalFont);
 
+		// Font Size Setting
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		ImGui::Text(_T("SETTING_UI_SCALE"));
-		ImGui::SameLine(ImGui::GetContentRegionMax().x - width - 10.0f);
-		ImGui::PushItemWidth(width);
+		ImGui::Text(_T("SETTING_FONT_SIZE"));
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
+		ImGui::PushItemWidth(fixedWidth);
 
-		// TODO: No reason this can't be a slider, but it's not a priority.
-		std::vector<std::string> scales = { "80", "90", "100", "110", "120" };
-		if (ImGui::BeginCombo("##UIScaleSelection", (std::to_string(config.uiScale) + "%").c_str())) {
-			for (int i = 0; i < scales.size(); ++i) {
-				if (ImGui::Selectable((std::string(scales[i] + "%").c_str()))) {
-					config.uiScale = std::stoi(scales[i]);
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+		std::vector<std::string> fontSizes = { "16", "18", "20", "22", "24", "26" };
+		if (ImGui::BeginCombo("##FontSizeSelection", (std::to_string(config.globalFontSize)).c_str())) {
+			for (int i = 0; i < fontSizes.size(); ++i) {
+				if (ImGui::Selectable((std::string(fontSizes[i]).c_str()))) {
+					config.globalFontSize = std::stoi(fontSizes[i]);
+
+					Menu::GetSingleton()->RefreshFont();
 				}
 			}
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
-
-		AddCheckbox("SETTINGS_PAUSE_GAME", config.pauseGame);
-
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 		ImGui::Unindent();
 		ImGui::SeparatorText(_TFM("SETTING_MODULE", ":"));
 		ImGui::Indent();
@@ -763,9 +788,6 @@ namespace Modex
 			AddColorPicker("THEME_TEXT_DISABLED_COLOR", style.textDisabled);
 			AddColorPicker("THEME_TEXT_SELECTED_BG_COLOR", style.textSelectedBg);
 			AddCheckbox("THEME_DISABLE_ICON_TEXT", style.noIconText);
-			AddFontDropdown("THEME_TEXT_FONT", &style.font);
-			AddFontDropdown("THEME_BUTTON_FONT", &style.buttonFont);
-			AddSliderPicker("THEME_TEXT_FONT_SIZE", style.globalFontSize, 0.5f, 3.0f);
 			ImGui::Unindent();
 		}
 
