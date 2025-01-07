@@ -464,7 +464,7 @@ namespace Modex
 		}
 
 		ImGui::Unindent();
-		ImGui::SeparatorText(_TFM("SETTING_GENERAL", ":"));
+		ImGui::SeparatorText(_TFM("SETTING_FONT_AND_LANGUAGE", ":"));
 		ImGui::Indent();
 
 		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
@@ -520,7 +520,7 @@ namespace Modex
 
 		// Glpyh Dropdown
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		ImGui::Text("Language Glyph Range (Requires restart).");
+		ImGui::Text(_T("SETTING_GLYPH_RANGE"));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
 		ImGui::PushItemWidth(fixedWidth);
 
