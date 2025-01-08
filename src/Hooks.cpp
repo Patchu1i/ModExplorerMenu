@@ -99,14 +99,15 @@ namespace Hooks
 		static LRESULT thunk(HWND a_hwnd, UINT a_msg, WPARAM a_wParam, LPARAM a_lParam)
 		{
 			if (a_msg == WM_KILLFOCUS) {
-				auto& io = ImGui::GetIO();
-				io.ClearInputKeys();
-				io.ClearEventsQueue();
-				io.ClearInputCharacters();  // TODO: Test if this is necessary(?)
-
-				io.AddFocusEvent(false);
 				Modex::Menu::GetSingleton()->OnFocusKill();
+				Modex::Menu::GetSingleton()->SetWndProcHandleRef(nullptr);
 			}
+
+			if (a_msg == WM_SETFOCUS) {
+				logger::info("WndProc SETFOCUS");
+				Modex::Menu::GetSingleton()->SetWndProcHandleRef(a_hwnd);
+			}
+
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;

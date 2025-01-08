@@ -13,8 +13,12 @@ namespace Modex
 		void LoadSettings(CSimpleIniA& a_ini);
 		void ProcessInputEvent(RE::InputEvent** a_event);
 		void RefreshStyle();
-		void OnFocusKill();
 		void RefreshFont();
+
+		void OnFocusKill();
+		void OnFocusGain();
+
+		void SetWndProcHandleRef(HWND hWnd) { _hWnd = hWnd; }
 
 		bool IsEnabled() { return enable; }
 		void SetEnabled(bool value) { enable = value; }
@@ -55,6 +59,8 @@ namespace Modex
 		static inline bool _isCtrlDown = false;
 		static inline bool _isAltDown = false;
 		static inline bool _isOpenModDown = false;
+
+		static inline HWND _hWnd = nullptr;
 
 	private:
 		bool enable = false;

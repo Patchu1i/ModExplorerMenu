@@ -91,6 +91,11 @@ namespace Modex
 
 		ImGui::CreateContext();
 
+		if (_hWnd) {
+			logger::info("Setup ImGui WndProc Handler");
+			ImGui::GetMainViewport()->PlatformHandleRaw = _hWnd;
+		}
+
 		RECT rect{};
 		ImVec2 screenScaleRatio;
 		if (GetClientRect(desc.OutputWindow, &rect) == TRUE) {
@@ -200,6 +205,13 @@ namespace Modex
 
 	void Menu::OnFocusKill()
 	{
+		auto& io = ImGui::GetIO();
+		io.ClearInputKeys();
+		io.ClearEventsQueue();
+		io.ClearInputCharacters();  // TODO: Test if this is necessary(?)
+
+		io.AddFocusEvent(false);
+
 		_isShiftDown = false;
 		_isCtrlDown = false;
 		_isAltDown = false;
