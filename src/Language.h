@@ -114,7 +114,7 @@ namespace Modex
 			Japanese,
 			ChineseFull,
 			ChineseSimplified,
-			Cryillic,
+			Cyrillic,
 			Thai,
 			Vietnamese
 		};
@@ -159,7 +159,7 @@ namespace Modex
 				return io.Fonts->GetGlyphRangesChineseFull();  // Default + Half-Width + Japanese Hiragana/Katakana + full set of about 21000 CJK Unified Ideographs
 			case GlyphRanges::ChineseSimplified:
 				return io.Fonts->GetGlyphRangesChineseSimplifiedCommon();  // Default + Half-Width + Japanese Hiragana/Katakana + set of 2500 CJK Unified Ideographs for common simplified Chinese
-			case GlyphRanges::Cryillic:
+			case GlyphRanges::Cyrillic:
 				return io.Fonts->GetGlyphRangesCyrillic();  // Default + about 400 Cyrillic characters
 			case GlyphRanges::Thai:
 				return io.Fonts->GetGlyphRangesThai();  // Default + Thai characters
@@ -184,8 +184,8 @@ namespace Modex
 				return GlyphRanges::ChineseFull;
 			} else if (a_language.compare("ChineseSimplified") == 0) {
 				return GlyphRanges::ChineseSimplified;
-			} else if (a_language.compare("Cryillic") == 0) {
-				return GlyphRanges::Cryillic;
+			} else if (a_language.compare("Cyrillic") == 0) {
+				return GlyphRanges::Cyrillic;
 			} else if (a_language.compare("Thai") == 0) {
 				return GlyphRanges::Thai;
 			} else if (a_language.compare("Vietnamese") == 0) {
@@ -210,8 +210,8 @@ namespace Modex
 				return "ChineseFull";
 			case GlyphRanges::ChineseSimplified:
 				return "ChineseSimplified";
-			case GlyphRanges::Cryillic:
-				return "Cryillic";
+			case GlyphRanges::Cyrillic:
+				return "Cyrillic";
 			case GlyphRanges::Thai:
 				return "Thai";
 			case GlyphRanges::Vietnamese:
@@ -224,7 +224,7 @@ namespace Modex
 		// Not going to bother making this fancy.
 		[[nodiscard]] static std::set<std::string> GetListOfGlyphNames()
 		{
-			return { "English", "Greek", "Korean", "Japanese", "ChineseFull", "ChineseSimplified", "Cryillic", "Thai", "Vietnamese" };
+			return { "English", "Greek", "Korean", "Japanese", "ChineseFull", "ChineseSimplified", "Cyrillic", "Thai", "Vietnamese" };
 		}
 	};
 

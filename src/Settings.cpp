@@ -70,18 +70,18 @@ namespace Modex
 
 	void Settings::FormatMasterIni(CSimpleIniA& a_ini)
 	{
-		a_ini.SetValue(rSections[Main], NULL, NULL, GetComment(iComment::PresetMainHeader));
-		a_ini.SetValue(rSections[Modules], NULL, NULL, GetComment(iComment::PresetMainModules));
+		a_ini.SetValue(rSections[Main], NULL, NULL, GetHeader(iHeader::MasterPresetHeader));
+		a_ini.SetValue(rSections[Modules], NULL, NULL, GetHeader(iHeader::PresetMainModules));
 	}
 
 	// Call on new ini file to generate comments and sections before inserting.
 	void Settings::FormatThemeIni(CSimpleIniA& a_ini)
 	{
-		a_ini.SetValue(rSections[Window], NULL, NULL, GetComment(iComment::ThemeConfigHeader));
-		a_ini.SetValue(rSections[Text], NULL, NULL, GetComment(iComment::ThemeTextHeader));
-		a_ini.SetValue(rSections[Table], NULL, NULL, GetComment(iComment::ThemeTableHeader));
-		a_ini.SetValue(rSections[Widgets], NULL, NULL, GetComment(iComment::ThemeWidgetsHeader));
-		a_ini.SetValue(rSections[Images], NULL, NULL, GetComment(iComment::ThemeImageHeader));
+		a_ini.SetValue(rSections[Window], NULL, NULL, GetHeader(iHeader::ThemeConfigHeader));
+		a_ini.SetValue(rSections[Text], NULL, NULL, GetHeader(iHeader::ThemeTextHeader));
+		a_ini.SetValue(rSections[Table], NULL, NULL, GetHeader(iHeader::ThemeTableHeader));
+		a_ini.SetValue(rSections[Widgets], NULL, NULL, GetHeader(iHeader::ThemeWidgetsHeader));
+		a_ini.SetValue(rSections[Images], NULL, NULL, GetHeader(iHeader::ThemeImageHeader));
 	}
 
 	// Master ini has no defaults, they're established here. Theme defaults are derived from def class.
@@ -93,28 +93,28 @@ namespace Modex
 			auto& _default = Settings::GetSingleton()->def.config;
 
 			// General
-			a_ini.SetValue(rSections[Main], "Theme", _default.theme.c_str());
-			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(_default.showMenuKey).c_str());
-			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(_default.showMenuModifier).c_str());
-			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(_default.modListSort).c_str());
-			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScale).c_str());
-			a_ini.SetValue(rSections[Main], "PauseGame", ToString(_default.pauseGame).c_str());
+			a_ini.SetValue(rSections[Main], "Theme", _default.theme.c_str(), GetComment(iComment::ConfigTheme));
+			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(_default.showMenuKey).c_str(), GetComment(iComment::ConfigShowMenuKey));
+			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(_default.showMenuModifier).c_str(), GetComment(iComment::ConfigShowMenuModifier));
+			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(_default.modListSort).c_str(), GetComment(iComment::ConfigModListSort));
+			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScale).c_str(), GetComment(iComment::ConfigUIScale));
+			a_ini.SetValue(rSections[Main], "PauseGame", ToString(_default.pauseGame).c_str(), GetComment(iComment::ConfigPauseGame));
 
 			// Font & Localization
-			a_ini.SetValue(rSections[Main], "Language", ToString(_default.language, false).c_str());
-			a_ini.SetValue(rSections[Main], "GlyphRange", Language::GetGlyphName(_default.glyphRange).c_str());
-			a_ini.SetValue(rSections[Main], "GlobalFont", _default.globalFont.c_str());
-			a_ini.SetValue(rSections[Main], "GlobalFontSize", std::to_string(_default.globalFontSize).c_str());
+			a_ini.SetValue(rSections[Main], "Language", ToString(_default.language, false).c_str(), GetComment(iComment::ConfigLanguage));
+			a_ini.SetValue(rSections[Main], "GlyphRange", Language::GetGlyphName(_default.glyphRange).c_str(), GetComment(iComment::ConfigGlyphRange));
+			a_ini.SetValue(rSections[Main], "GlobalFont", _default.globalFont.c_str(), GetComment(iComment::ConfigGlobalFont));
+			a_ini.SetValue(rSections[Main], "GlobalFontSize", std::to_string(_default.globalFontSize).c_str(), GetComment(iComment::ConfigGlobalFontSize));
 
 			// Modules
-			a_ini.SetValue(rSections[Modules], "DefaultShow", std::to_string(_default.defaultShow).c_str());
-			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", ToString(_default.showHomeMenu).c_str());
-			a_ini.SetValue(rSections[Modules], "ShowAddItemMenu", ToString(_default.showAddItemMenu).c_str());
-			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(_default.showObjectMenu).c_str());
-			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(_default.showNPCMenu).c_str());
-			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(_default.showTeleportMenu).c_str());
+			a_ini.SetValue(rSections[Modules], "DefaultShow", std::to_string(_default.defaultShow).c_str(), GetComment(iComment::ConfigDefaultShow));
+			a_ini.SetValue(rSections[Modules], "ShowHomeMenu", ToString(_default.showHomeMenu).c_str(), GetComment(iComment::ConfigShowHomeMenu));
+			a_ini.SetValue(rSections[Modules], "ShowAddItemMenu", ToString(_default.showAddItemMenu).c_str(), GetComment(iComment::ConfigShowAddItemMenu));
+			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(_default.showObjectMenu).c_str(), GetComment(iComment::ConfigShowObjectMenu));
+			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(_default.showNPCMenu).c_str(), GetComment(iComment::ConfigShowNPCMenu));
+			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(_default.showTeleportMenu).c_str(), GetComment(iComment::ConfigShowTeleportMenu));
 
-			a_ini.SetValue(rSections[Modules], "DataPath", _default.dataPath.c_str());
+			a_ini.SetValue(rSections[Modules], "DataPath", _default.dataPath.c_str(), GetComment(iComment::ConfigDataPath));
 		});
 	}
 
@@ -157,8 +157,7 @@ namespace Modex
 	// Also need the settings to be loaded first to load proper fonts.
 	void Settings::LoadUserFontSetting()
 	{
-		std::wstring fullPath = GetThemePath(user.config.theme);
-		GetIni(fullPath.c_str(), [](CSimpleIniA& a_ini) {
+		GetIni(L"Data/Interface/Modex/Modex.ini", [](CSimpleIniA& a_ini) {
 			Settings::GetSingleton()->user.config.globalFont = GET_VALUE<std::string>(rSections[Main], "GlobalFont", Settings::GetSingleton()->def.config.globalFont, a_ini);
 		});
 

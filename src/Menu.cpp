@@ -52,9 +52,7 @@ namespace Modex
 			ImGui::GetIO().MouseDrawCursor = false;
 		}
 
-		//ImGui::PushFont(Settings::GetSingleton()->GetStyle().font.normal);
 		Frame::Draw(is_settings_popped);
-		//ImGui::PopFont();
 
 		//ImGui::ShowDemoWindow();
 
@@ -91,10 +89,10 @@ namespace Modex
 
 		ImGui::CreateContext();
 
-		if (_hWnd) {
-			logger::info("Setup ImGui WndProc Handler");
-			ImGui::GetMainViewport()->PlatformHandleRaw = _hWnd;
-		}
+		// if (_hWnd) {
+		// 	logger::info("Setup ImGui WndProc Handler");
+		// 	ImGui::GetMainViewport()->PlatformHandleRaw = _hWnd;
+		// }
 
 		RECT rect{};
 		ImVec2 screenScaleRatio;
@@ -124,9 +122,7 @@ namespace Modex
 	void Menu::RefreshStyle()
 	{
 		auto& style = Settings::GetSingleton()->GetStyle();
-		//auto& config = Settings::GetSingleton()->GetConfig();
 
-		//Settings::SetThemeFromIni(config.theme);
 		SyncUserStyleToImGui(style);
 
 		Frame::RefreshStyle();
@@ -358,7 +354,11 @@ namespace Modex
 					if (enable) {
 						io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
 
-						if (scanCode == uint32_t(41) && buttonEvent->IsDown()) {  // Escape
+						if (scanCode == uint32_t(41) && buttonEvent->IsDown()) {  // Console
+							Close();
+						}
+
+						if (scanCode == uint32_t(1) && buttonEvent->IsDown()) {  // Escape
 							Close();
 						}
 					}

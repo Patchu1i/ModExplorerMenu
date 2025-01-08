@@ -19,5 +19,6 @@ namespace Modex
 		static inline char savePath[MAX_PATH] = { 0 };
 
 		static inline int _uiScale = 100;
+		static inline int _fontSize = 14;
 	};
 }

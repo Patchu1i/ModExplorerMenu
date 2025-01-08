@@ -13,6 +13,9 @@
 #include "Windows/Teleport/Teleport.h"
 #include <codecvt>
 
+// TODO: God this is a mess. It started out strong, but as I've added more and more settings without
+// much consideration into scale, it's bad. I need to re-do this entireley ASAP.
+
 namespace Modex
 {
 	//
@@ -404,6 +407,9 @@ namespace Modex
 				if (ImGui::Selectable(font.c_str())) {
 					*a_font = font;
 
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+
 					Menu::GetSingleton()->RefreshFont();
 				}
 			}
@@ -464,7 +470,7 @@ namespace Modex
 		}
 
 		ImGui::Unindent();
-		ImGui::SeparatorText(_TFM("SETTING_FONT_AND_LANGUAGE", ":"));
+		ImGui::SeparatorText(_TFM("SETTING_GENERAL", ":"));
 		ImGui::Indent();
 
 		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
@@ -493,8 +499,10 @@ namespace Modex
 
 		AddCheckbox("SETTINGS_PAUSE_GAME", config.pauseGame);
 
+		// Begin Text & Font Settings
+
 		ImGui::Unindent();
-		ImGui::SeparatorText(_TFM("SETTING_GENERAL", ":"));
+		ImGui::SeparatorText(_TFM("SETTING_FONT_AND_LANGUAGE", ":"));
 		ImGui::Indent();
 
 		// Language Dropdown
@@ -509,8 +517,10 @@ namespace Modex
 			for (auto& language : languages) {
 				if (ImGui::Selectable(language.c_str())) {
 					config.language = language;
+
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
+
 					Translate::GetSingleton()->RefreshLanguage(config.language);
 				}
 			}
@@ -532,6 +542,9 @@ namespace Modex
 				if (ImGui::Selectable(glyph.data())) {
 					config.glyphRange = Language::GetGlyphRange(glyph);
 
+					SettingsWindow::changes.store(true);
+					SettingsWindow::file_changes.store(true);
+
 					Menu::GetSingleton()->RefreshFont();
 				}
 			}
@@ -548,19 +561,22 @@ namespace Modex
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - fixedWidth - 10.0f);
 		ImGui::PushItemWidth(fixedWidth);
 
-		std::vector<std::string> fontSizes = { "12", "14", "16", "18", "20", "22", "24", "26" };
-		if (ImGui::BeginCombo("##FontSizeSelection", (std::to_string(config.globalFontSize)).c_str())) {
-			for (int i = 0; i < fontSizes.size(); ++i) {
-				if (ImGui::Selectable((std::string(fontSizes[i]).c_str()))) {
-					config.globalFontSize = std::stoi(fontSizes[i]);
+		ImGui::SliderInt("##FontSizeSelection", &_fontSize, 8, 28, "%d");
 
-					Menu::GetSingleton()->RefreshFont();
-				}
-			}
-			ImGui::EndCombo();
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			config.globalFontSize = _fontSize;
+
+			SettingsWindow::changes.store(true);
+			SettingsWindow::file_changes.store(true);
+
+			Menu::GetSingleton()->RefreshFont();
 		}
+
 		ImGui::PopItemWidth();
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		// End of Text & Font Settings
+		// Begin of Module settings
 
 		ImGui::Unindent();
 		ImGui::SeparatorText(_TFM("SETTING_MODULE", ":"));
@@ -911,9 +927,11 @@ namespace Modex
 		}
 	}
 
+	// Called from XSEPlugin -> Frame::Install() -> Modules::Init()
+	// This is important, because settings *must* be loaded before.
 	void SettingsWindow::Init()
 	{
 		_uiScale = Settings::GetSingleton()->GetConfig().uiScale;
-		// Open = true;
+		_fontSize = Settings::GetSingleton()->GetConfig().globalFontSize;
 	}
 }

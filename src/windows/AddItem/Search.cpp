@@ -148,17 +148,17 @@ namespace Modex
 					}
 
 					for (auto& filter : filterMap) {
-						auto formName = std::get<1>(filter).data();
+						if (auto formName = std::get<1>(filter); formName.data() != nullptr) {
+							bool isSelected = (formName == selectedFilter.second);
 
-						bool isSelected = (formName == selectedFilter.second);
+							if (ImGui::Selectable(_T(formName), isSelected)) {
+								selectedFilter = filter;
+								ApplyFilters();
+							}
 
-						if (ImGui::Selectable(_T(formName), isSelected)) {
-							selectedFilter = filter;
-							ApplyFilters();
-						}
-
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}
 						}
 					}
 

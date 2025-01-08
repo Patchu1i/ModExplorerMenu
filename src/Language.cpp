@@ -31,8 +31,6 @@ namespace Modex
 			data.fullPath = WideToUTF8(entry.path().wstring());
 
 			font_library[data.name] = data;
-
-			logger::info("Font Index Names: {}", data.name);
 		}
 
 		// Search for fonts relative to ImGui Icon Library directory.
@@ -89,7 +87,7 @@ namespace Modex
 		case Language::GlyphRanges::Korean:
 			io.Fonts->AddFontFromFileTTF(korean_font, imFontConfig.SizePixels, NULL, glyphRange);
 			break;
-		default:  // English / Latin; Greek; Cryillic; Thai; Vietnamese (?)
+		default:  // English / Latin; Greek; Cyrillic; Thai; Vietnamese (?)
 			io.Fonts->AddFontDefault(&imFontConfig);
 			break;
 		}
@@ -122,7 +120,10 @@ namespace Modex
 	{
 		logger::info("[Font Manager] Setting startup font.");
 		auto& config = Settings::GetSingleton()->GetConfig();
-		auto& fontData = GetFontData(config.globalFont);
+		auto fontData = GetFontData(config.globalFont);
+
+		logger::info("[Font Manager] Global Font: {}", config.globalFont);
+		logger::info("[Font Manager] Loading font: {}", fontData.fullPath);
 
 		if (std::filesystem::exists(fontData.fullPath) == true) {
 			logger::info("[Font Manager] Loading custom font: {}", fontData.name);
