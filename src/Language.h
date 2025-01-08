@@ -283,6 +283,7 @@ namespace Modex
 		inline static const char* chinese_font = "c:\\Windows\\Fonts\\simsun.ttc";
 		inline static const char* japanese_font = "c:\\Windows\\Fonts\\msgothic.ttc";
 		inline static const char* korean_font = "c:\\Windows\\Fonts\\malgun.ttf";
+		inline static const char* russian_font = "c:\\Windows\\Fonts\\arial.ttf";
 
 		void AddDefaultFont();
 

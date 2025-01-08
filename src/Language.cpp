@@ -87,6 +87,9 @@ namespace Modex
 		case Language::GlyphRanges::Korean:
 			io.Fonts->AddFontFromFileTTF(korean_font, imFontConfig.SizePixels, NULL, glyphRange);
 			break;
+		case Language::GlyphRanges::Cyrillic:
+			io.Fonts->AddFontFromFileTTF(russian_font, imFontConfig.SizePixels, NULL, glyphRange);
+			break;
 		default:  // English / Latin; Greek; Cyrillic; Thai; Vietnamese (?)
 			io.Fonts->AddFontDefault(&imFontConfig);
 			break;
