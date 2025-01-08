@@ -17,12 +17,14 @@ namespace Modex
 		if (Settings::GetSingleton()->GetConfig().pauseGame) {
 			RE::Main::GetSingleton()->freezeTime = true;
 		}
+
+		ImGui::SetWindowFocus(NULL);  // Reset InputBox Focus
 	}
 
 	void Menu::Close()
 	{
 		enable = false;
-
+		OnFocusKill();
 		RE::Main::GetSingleton()->freezeTime = _prevFreeze;
 	}
 

@@ -63,11 +63,14 @@ void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::
 		return;
 	}
 
+	auto prevState = menu->IsEnabled();
+
 	if (menu->initialized.load()) {
 		menu->ProcessInputEvent(a_events);
 	}
 
-	if (menu->IsEnabled()) {
+	// Small workaround to capture key event on close.
+	if (menu->IsEnabled() || (prevState != menu->IsEnabled() && prevState == true)) {
 		_InputHandler(a_dispatcher, dummy);  // Block Input Events to Skyrim
 		return;
 	} else {
