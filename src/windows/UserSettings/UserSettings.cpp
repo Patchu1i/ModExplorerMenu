@@ -160,8 +160,10 @@ namespace Modex
 			if (_newModifier != 0) {
 				if (_newModifier != _prevModifier) {
 					a_modifier = _newModifier;
+
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
+
 					ImGui::CloseCurrentPopup();
 				} else {
 					ImGui::CloseCurrentPopup();
@@ -277,8 +279,10 @@ namespace Modex
 			if (_newKeybind != 0) {
 				if (_newKeybind != _prevKeybind) {
 					a_keybind = _newKeybind;
+
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
+
 					ImGui::CloseCurrentPopup();
 				} else {
 					ImGui::CloseCurrentPopup();
@@ -633,11 +637,11 @@ namespace Modex
 			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 			for (auto& mod : *modList) {
-				if (mod->GetFilename().data() == nullptr) {
+				const char* modName = mod->GetFilename().data();
+
+				if (modName == nullptr || modName[0] == '\0') {
 					continue;
 				}
-
-				const char* modName = mod->GetFilename().data();
 
 				if (!blacklist.contains(mod)) {
 					if (ImGui::Selectable(modName, false)) {
@@ -657,11 +661,11 @@ namespace Modex
 			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 			for (auto& mod : *modList) {
-				if (mod->GetFilename().data() == nullptr) {
+				const char* modName = mod->GetFilename().data();
+
+				if (modName == nullptr || modName[0] == '\0') {
 					continue;
 				}
-
-				const char* modName = mod->GetFilename().data();
 
 				if (blacklist.contains(mod)) {
 					if (ImGui::Selectable(modName, false)) {

@@ -35,6 +35,7 @@ namespace Modex
 
         void        Init();
         void        OnFocusKill();
+        void        UpdateSettings();
         void        ProcessInputEvent(RE::InputEvent** a_event);
 
         // members
@@ -48,9 +49,6 @@ namespace Modex
         bool           modifierDown;
 
         HWND           wndProcHandle;
-
-
-
     };
 }
 // clang-format on

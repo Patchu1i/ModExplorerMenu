@@ -19,11 +19,16 @@ namespace Modex
 		modifierDown = false;
 	}
 
-	void InputManager::Init()
+	void InputManager::UpdateSettings()
 	{
 		auto& config = Settings::GetSingleton()->GetConfig();
 		showMenuKey = config.showMenuKey;
 		showMenuModifier = config.showMenuModifier;
+	}
+
+	void InputManager::Init()
+	{
+		UpdateSettings();
 
 		captureInput = false;
 	}
