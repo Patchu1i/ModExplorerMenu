@@ -1,4 +1,5 @@
 #include "include/H/Hooks.h"
+#include "include/I/InputManager.h"
 #include "include/M/Menu.h"
 
 decltype(&IDXGISwapChain::Present) ptr_IDXGISwapChain_Present;
@@ -55,24 +56,13 @@ static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;  // 
 
 void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events)
 {
-	static RE::InputEvent* dummy[] = { nullptr };
-	auto menu = Modex::Menu::GetSingleton();
-
-	if (!a_events) {
-		_InputHandler(a_dispatcher, a_events);
-		return;
+	if (a_events) {
+		Modex::InputManager::GetSingleton()->ProcessInputEvent(a_events);
 	}
 
-	auto prevState = menu->isEnabled;
-
-	if (menu->isLoaded) {
-		menu->ProcessInputEvent(a_events);
-	}
-
-	// Small workaround to capture key event on close.
-	if (menu->isEnabled || (prevState != menu->isEnabled && prevState == true)) {
-		_InputHandler(a_dispatcher, dummy);  // Block Input Events to Skyrim
-		return;
+	if (Modex::InputManager::GetSingleton()->captureInput) {
+		static RE::InputEvent* dummy[] = { nullptr };
+		_InputHandler(a_dispatcher, dummy);
 	} else {
 		_InputHandler(a_dispatcher, a_events);
 	}
@@ -101,11 +91,9 @@ namespace Hooks
 	{
 		static LRESULT thunk(HWND a_hwnd, UINT a_msg, WPARAM a_wParam, LPARAM a_lParam)
 		{
-			const auto& menu = Modex::Menu::GetSingleton();
-
 			switch (a_msg) {
 			case WM_KILLFOCUS:
-				menu->OnFocusKill();
+				Modex::InputManager::GetSingleton()->OnFocusKill();
 				// set proc handlr?
 				break;
 

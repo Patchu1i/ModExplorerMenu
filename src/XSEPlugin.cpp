@@ -4,6 +4,7 @@
 #include "include/D/Data.h"
 #include "include/F/Frame.h"
 #include "include/H/Hooks.h"
+#include "include/I/InputManager.h"
 #include "include/L/Language.h"
 #include "include/P/Persistent.h"
 #include "include/S/Settings.h"
@@ -27,6 +28,7 @@ namespace
 			Modex::FontManager::GetSingleton()->SetStartupFont();
 			Modex::GraphicManager::Init();
 			Modex::Data::GetSingleton()->Run();
+			Modex::InputManager::GetSingleton()->Init();
 			Modex::Frame::Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
