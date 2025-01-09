@@ -1,5 +1,5 @@
-#include "Home.h"
-#include "Graphic.h"
+#include "include/H/Home.h"
+#include "include/G/Graphic.h"
 
 namespace Modex
 {

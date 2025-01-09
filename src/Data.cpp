@@ -1,15 +1,15 @@
-#include "Data.h"
-#include "Settings.h"
-#include "Utils/Util.h"
-#include "Utils/Worldspace.h"
-#include "Windows/Persistent.h"
+#include "include/D/Data.h"
+#include "include/P/Persistent.h"
+#include "include/S/Settings.h"
+#include "include/U/Util.h"
+#include "include/W/Worldspace.h"
 
 namespace Modex
 {
 	// https://github.com/Nightfallstorm/DescriptionFramework | License GPL-3.0
 	using _GetFormEditorID = const char* (*)(std::uint32_t);
 
-	std::string GetEditorID(RE::FormID a_formID)
+	std::string po3_GetEditorID(RE::FormID a_formID)
 	{
 		static auto tweaks = GetModuleHandleA("po3_Tweaks");
 		static auto function = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
@@ -25,7 +25,7 @@ namespace Modex
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
-			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
+			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			RE::TESNPC* npc = form->As<RE::TESNPC>();
 
@@ -136,7 +136,7 @@ namespace Modex
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
-			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
+			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			_cache.push_back(Modex::Item{ form, formid, mod, favorite });
 
@@ -199,7 +199,7 @@ namespace Modex
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			RE::FormID formid = form->GetFormID();
 			RE::TESFile* mod = form->GetFile();
-			bool favorite = PersistentData::m_favorites[GetEditorID(formid)];
+			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			_staticCache.push_back(Modex::StaticObject{ form, formid, mod, favorite });
 

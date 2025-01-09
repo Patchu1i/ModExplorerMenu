@@ -1,5 +1,5 @@
-#include "Console.h"
-#include "Object.h"
+#include "include/C/Console.h"
+#include "include/O/Object.h"
 
 namespace Modex
 {

@@ -1,12 +1,12 @@
 #define DLLEXPORT __declspec(dllexport)
 
-#include "Console.h"
-#include "Data.h"
-#include "Hooks.h"
-#include "Language.h"
-#include "Settings.h"
-#include "Windows/Frame.h"
-#include "Windows/Persistent.h"
+#include "include/C/Console.h"
+#include "include/D/Data.h"
+#include "include/F/Frame.h"
+#include "include/H/Hooks.h"
+#include "include/L/Language.h"
+#include "include/P/Persistent.h"
+#include "include/S/Settings.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace
@@ -68,9 +68,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
 		return false;
 	}
-
-	Modex::Console::Register();
-	//DumpSpecificVersion();
 
 	return true;
 }

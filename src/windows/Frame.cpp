@@ -1,13 +1,12 @@
-#include "Frame.h"
-#include "Graphic.h"
-#include "Menu.h"
-#include "Utils/Util.h"
-#include "Windows/AddItem/AddItem.h"
-#include "Windows/Home/Home.h"
-#include "Windows/NPC/NPC.h"
-#include "Windows/Object/Object.h"
-#include "Windows/Teleport/Teleport.h"
-#include "Windows/UserSettings/UserSettings.h"
+#include "include/F/Frame.h"
+#include "include/A/AddItem.h"
+#include "include/H/Home.h"
+#include "include/M/Menu.h"
+#include "include/N/NPC.h"
+#include "include/O/Object.h"
+#include "include/S/Settings.h"
+#include "include/T/Teleport.h"
+#include "include/U/UserSettings.h"
 
 namespace Modex
 {

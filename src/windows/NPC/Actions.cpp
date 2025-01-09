@@ -1,8 +1,6 @@
-#include "Console.h"
-#include "Data.h"
-#include "Menu.h"
-#include "NPC.h"
-#include "Utils/Util.h"
+#include "include/C/Console.h"
+#include "include/M/Menu.h"
+#include "include/N/NPC.h"
 
 namespace Modex
 {

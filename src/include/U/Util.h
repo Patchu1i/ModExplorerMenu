@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PCH.h"
-#include "Settings.h"
+#include "include/S/Settings.h"
+#include <PCH.h>
 
 namespace ImGui
 {

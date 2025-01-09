@@ -1,5 +1,5 @@
-#include "Console.h"
-#include "Menu.h"
+#include "include/C/Console.h"
+#include "include/M/Menu.h"
 
 namespace Modex
 {
@@ -394,45 +394,5 @@ namespace Modex
 	void Console::Teleport(std::string a_editorID)
 	{
 		AddToQueue("coc " + a_editorID);
-	}
-
-	// Callback definition for console command script.
-	bool Console::Run(const RE::SCRIPT_PARAMETER*, RE::SCRIPT_FUNCTION::ScriptData* a_scriptData,
-		RE::TESObjectREFR* a_thisObj, RE::TESObjectREFR* a_containingObj, RE::Script* a_scriptObj,
-		RE::ScriptLocals* a_locals, double& a_result, std::uint32_t& a_opcodeOffsetPtr)
-	{
-		(void)a_opcodeOffsetPtr;
-		(void)a_result;
-		(void)a_locals;
-		(void)a_scriptObj;
-		(void)a_containingObj;
-		(void)a_thisObj;
-		(void)a_scriptData;
-
-		// UIMessageQueue -> AddMessage -> kHide
-		auto queue = RE::UIMessageQueue::GetSingleton();
-		auto menu = Menu::GetSingleton();
-
-		if (queue) {
-			queue->AddMessage(RE::BSFixedString("Console"), RE::UI_MESSAGE_TYPE::kHide, nullptr);
-			menu->SetEnabled(true);
-		}
-
-		return true;
-	}
-
-	// Register custom Console Command.
-	void Console::Register()
-	{
-		auto info = RE::SCRIPT_FUNCTION::LocateConsoleCommand("Timing");  // unused
-		if (info) {
-			static RE::SCRIPT_PARAMETER params;
-
-			info->functionName = LONG_NAME;
-			info->shortName = SHORT_NAME;
-			info->referenceFunction = false;
-			info->executeFunction = Run;
-			info->conditionFunction = nullptr;
-		}
 	}
 }

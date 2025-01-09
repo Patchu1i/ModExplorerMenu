@@ -1,5 +1,5 @@
-#include "Hooks.h"
-#include <Menu.h>
+#include "include/H/Hooks.h"
+#include "include/M/Menu.h"
 
 decltype(&IDXGISwapChain::Present) ptr_IDXGISwapChain_Present;
 
@@ -63,14 +63,14 @@ void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::
 		return;
 	}
 
-	auto prevState = menu->IsEnabled();
+	auto prevState = menu->isEnabled;
 
-	if (menu->initialized.load()) {
+	if (menu->isLoaded) {
 		menu->ProcessInputEvent(a_events);
 	}
 
 	// Small workaround to capture key event on close.
-	if (menu->IsEnabled() || (prevState != menu->IsEnabled() && prevState == true)) {
+	if (menu->isEnabled || (prevState != menu->isEnabled && prevState == true)) {
 		_InputHandler(a_dispatcher, dummy);  // Block Input Events to Skyrim
 		return;
 	} else {
@@ -101,14 +101,49 @@ namespace Hooks
 	{
 		static LRESULT thunk(HWND a_hwnd, UINT a_msg, WPARAM a_wParam, LPARAM a_lParam)
 		{
-			if (a_msg == WM_KILLFOCUS) {
-				Modex::Menu::GetSingleton()->OnFocusKill();
-				Modex::Menu::GetSingleton()->SetWndProcHandleRef(nullptr);
-			}
+			const auto& menu = Modex::Menu::GetSingleton();
 
-			if (a_msg == WM_SETFOCUS) {
-				logger::info("WndProc SETFOCUS");
-				Modex::Menu::GetSingleton()->SetWndProcHandleRef(a_hwnd);
+			switch (a_msg) {
+			case WM_KILLFOCUS:
+				menu->OnFocusKill();
+				// set proc handlr?
+				break;
+
+			case WM_SETFOCUS:
+				// set proc handler?
+				break;
+
+			case WM_ACTIVATE:
+				if (a_wParam == WA_ACTIVE) {
+					// str composition = std::wstring;
+				}
+
+				break;
+
+			case WM_IME_NOTIFY:
+				// switch (a_wParam) {
+				// case IMN_OPENCANDIDATE:
+				// case IMN_SETCANDIDATEPOS:
+				// case IMN_CHANGECANDIDATE:
+				// 	// update candidate list
+				// };
+
+				return S_OK;
+
+			case WM_INPUTLANGCHANGE:
+				// check if we are focused on text input
+				// if so, enable panel and disable conflicting control maps
+				return S_OK;
+
+			case WM_IME_ENDCOMPOSITION:
+				// Clear candidate list and input contet
+				break;
+
+			case WM_CHAR:
+				return S_OK;
+
+			case WM_IME_SETCONTEXT:
+				return DefWindowProc(a_hwnd, a_msg, a_wParam, a_lParam);
 			}
 
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);

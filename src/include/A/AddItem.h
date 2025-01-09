@@ -1,14 +1,9 @@
 #pragma once
 
-#include "Data.h"
-#include "Graphic.h"
-#include "Libraries/DescriptionFrameworkAPI.h"
-#include "Settings.h"
-#include "Windows/Columns.h"
-#include "Windows/Frame.h"
-#include <unordered_set>
-
-// #include "Console.h"
+#include "extern/DescriptionFrameworkAPI.h"
+#include "include/C/Columns.h"
+#include "include/F/Frame.h"
+#include "include/G/Graphic.h"
 
 namespace Modex
 {

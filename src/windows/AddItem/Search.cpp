@@ -1,7 +1,6 @@
-#include "AddItem.h"
-#include "Console.h"
-#include "Utils/Util.h"
-#include "Windows/Persistent.h"
+#include "include/A/AddItem.h"
+#include "include/C/Console.h"
+#include "include/P/Persistent.h"
 
 namespace Modex
 {

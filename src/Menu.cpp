@@ -1,9 +1,9 @@
-#include "Menu.h"
-#include "Console.h"
-#include "Graphic.h"
-#include "Utils/Keycode.h"
-#include "Windows/Frame.h"
-#include "Windows/UserSettings/UserSettings.h"
+#include "include/M/Menu.h"
+#include "include/C/Console.h"
+#include "include/F/Frame.h"
+#include "include/G/Graphic.h"
+#include "include/K/Keycode.h"
+#include "include/U/UserSettings.h"
 #include <dinput.h>
 
 namespace Modex
@@ -11,8 +11,8 @@ namespace Modex
 
 	void Menu::Open()
 	{
-		enable = true;
-		_prevFreeze = RE::Main::GetSingleton()->freezeTime;
+		isEnabled = true;
+		prevFreezeState = RE::Main::GetSingleton()->freezeTime;
 
 		if (Settings::GetSingleton()->GetConfig().pauseGame) {
 			RE::Main::GetSingleton()->freezeTime = true;
@@ -23,9 +23,19 @@ namespace Modex
 
 	void Menu::Close()
 	{
-		enable = false;
 		OnFocusKill();
-		RE::Main::GetSingleton()->freezeTime = _prevFreeze;
+		RE::Main::GetSingleton()->freezeTime = prevFreezeState;
+
+		isEnabled = false;
+	}
+
+	void Menu::Toggle()
+	{
+		if (isEnabled) {
+			Close();
+		} else {
+			Open();
+		}
 	}
 
 	void Menu::Draw()
@@ -33,11 +43,11 @@ namespace Modex
 		// TODO: Maybe hook this into an update call?
 		Console::ProcessMainThreadTasks();
 
-		if (!IsEnabled()) {
+		if (!isEnabled) {
 			return;
 		}
 
-		if (_rebuildFonts) {
+		if (pendingFontChange) {
 			RebuildFontAtlas();
 
 			return;
@@ -48,13 +58,13 @@ namespace Modex
 
 		ImGui::NewFrame();
 
-		if (IsEnabled()) {
+		if (isEnabled) {
 			ImGui::GetIO().MouseDrawCursor = true;
 		} else {
 			ImGui::GetIO().MouseDrawCursor = false;
 		}
 
-		Frame::Draw(is_settings_popped);
+		Frame::Draw(showSettingWindow);
 
 		//ImGui::ShowDemoWindow();
 
@@ -66,7 +76,7 @@ namespace Modex
 
 	void Menu::RefreshFont()
 	{
-		_rebuildFonts = true;
+		pendingFontChange = true;
 	}
 
 	void Menu::RebuildFontAtlas()
@@ -79,7 +89,7 @@ namespace Modex
 		io.Fonts->Build();
 		ImGui_ImplDX11_InvalidateDeviceObjects();
 
-		_rebuildFonts = false;
+		pendingFontChange = false;
 	}
 
 	void Menu::Init(IDXGISwapChain* a_swapchain, ID3D11Device* a_device, ID3D11DeviceContext* a_context)
@@ -90,11 +100,6 @@ namespace Modex
 		a_swapchain->GetDesc(&desc);
 
 		ImGui::CreateContext();
-
-		// if (_hWnd) {
-		// 	logger::info("Setup ImGui WndProc Handler");
-		// 	ImGui::GetMainViewport()->PlatformHandleRaw = _hWnd;
-		// }
 
 		RECT rect{};
 		ImVec2 screenScaleRatio;
@@ -111,14 +116,6 @@ namespace Modex
 
 		this->device = a_device;
 		this->context = a_context;
-	}
-
-	Menu::~Menu()
-	{
-		ImGui_ImplDX11_Shutdown();
-		ImGui_ImplWin32_Shutdown();
-		ImPlot::DestroyContext();
-		ImGui::DestroyContext();
 	}
 
 	void Menu::RefreshStyle()
@@ -210,10 +207,10 @@ namespace Modex
 
 		io.AddFocusEvent(false);
 
-		_isShiftDown = false;
-		_isCtrlDown = false;
-		_isAltDown = false;
-		_isOpenModDown = false;
+		shiftDown = false;
+		ctrlDown = false;
+		altDown = false;
+		modifierDown = false;
 	}
 
 	void Menu::ProcessInputEvent(RE::InputEvent** a_event)
@@ -226,7 +223,7 @@ namespace Modex
 		// Loop through inputEvents passed by the game.
 		for (auto inputEvent = *a_event; inputEvent; inputEvent = inputEvent->next) {
 			if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kChar) {
-				if (enable) {
+				if (isEnabled) {
 					io.AddInputCharacter(static_cast<CharEvent*>(inputEvent)->keyCode);
 				}
 			} else if (inputEvent->eventType == RE::INPUT_EVENT_TYPE::kButton) {
@@ -327,20 +324,20 @@ namespace Modex
 
 				// Detect and pass modifier keys to ImGui IO.
 				if (imGuiKey == ImGuiKey_LeftShift || imGuiKey == ImGuiKey_RightShift) {
-					_isShiftDown = buttonEvent->IsPressed();
+					shiftDown = buttonEvent->IsPressed();
 				} else if (imGuiKey == ImGuiKey_LeftCtrl || imGuiKey == ImGuiKey_RightCtrl) {
-					_isCtrlDown = buttonEvent->IsPressed();
+					ctrlDown = buttonEvent->IsPressed();
 				} else if (imGuiKey == ImGuiKey_LeftAlt || imGuiKey == ImGuiKey_RightAlt) {
-					_isAltDown = buttonEvent->IsPressed();
+					altDown = buttonEvent->IsPressed();
 				}
 
-				io.AddKeyEvent(ImGuiKey_ModShift, _isShiftDown);
-				io.AddKeyEvent(ImGuiKey_ModCtrl, _isCtrlDown);
-				io.AddKeyEvent(ImGuiKey_ModAlt, _isAltDown);
+				io.AddKeyEvent(ImGuiKey_ModShift, shiftDown);
+				io.AddKeyEvent(ImGuiKey_ModCtrl, ctrlDown);
+				io.AddKeyEvent(ImGuiKey_ModAlt, altDown);
 
 				switch (buttonEvent->device.get()) {
 				case RE::INPUT_DEVICE::kMouse:
-					if (enable) {
+					if (isEnabled) {
 						if (scanCode > 7)  // Middle Scroll
 							io.AddMouseWheelEvent(0, buttonEvent->Value() * (scanCode == 8 ? 1 : -1));
 						else {
@@ -353,7 +350,7 @@ namespace Modex
 					}
 					break;
 				case RE::INPUT_DEVICE::kKeyboard:
-					if (enable) {
+					if (isEnabled) {
 						io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
 
 						if (scanCode == uint32_t(41) && buttonEvent->IsDown()) {  // Console
@@ -370,11 +367,11 @@ namespace Modex
 							Toggle();
 						} else {
 							logger::info("showMenuModifier: {}", showMenuModifier);
-							if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && _isShiftDown) {
+							if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && shiftDown) {
 								Toggle();
-							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && _isCtrlDown) {
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && ctrlDown) {
 								Toggle();
-							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LMENU) && _isAltDown) {
+							} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LMENU) && altDown) {
 								Toggle();
 							}
 						}

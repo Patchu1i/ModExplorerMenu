@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Data.h"
-#include "Language.h"
-#include "Settings.h"
+#include "include/D/Data.h"
+#include "include/S/Settings.h"
 
 namespace Modex
 {

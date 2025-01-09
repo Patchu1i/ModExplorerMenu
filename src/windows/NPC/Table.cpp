@@ -1,8 +1,6 @@
-#include "NPC.h"
-
-#include "Console.h"
-#include "Utils/Util.h"
-#include "Windows/Persistent.h"
+#include "include/C/Console.h"
+#include "include/N/NPC.h"
+#include "include/P/Persistent.h"
 
 namespace Modex
 {
@@ -151,7 +149,7 @@ namespace Modex
 
 					// Gender
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->GetGender().data());
+					ImGui::Text(_T(npc->GetGender().data()));
 
 					// Class
 					ImGui::TableNextColumn();

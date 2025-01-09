@@ -1,8 +1,7 @@
-#include "Settings.h"
-#include "Menu.h"
+#include "include/S/Settings.h"
 #include "SimpleIni.h"
-#include "Utils/INI.h"
-#include <codecvt>
+#include "include/I/INI.h"
+#include "include/M/Menu.h"
 #include <format>
 
 using namespace IniHelper;

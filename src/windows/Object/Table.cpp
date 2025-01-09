@@ -1,9 +1,6 @@
-#include "Object.h"
-
-#include "Console.h"
-#include "Utils/Util.h"
-#include "Windows/Persistent.h"
-// #include "Windows/ItemCards.h"
+#include "include/C/Console.h"
+#include "include/O/Object.h"
+#include "include/P/Persistent.h"
 
 namespace Modex
 {

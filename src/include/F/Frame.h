@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Settings.h"
+#include "include/S/Settings.h"
 #include <PCH.h>
 
 namespace Modex

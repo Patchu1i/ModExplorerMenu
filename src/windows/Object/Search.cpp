@@ -1,6 +1,5 @@
-#include "Object.h"
-#include "Utils/Util.h"
-#include "Windows/Persistent.h"
+#include "include/O/Object.h"
+#include "include/P/Persistent.h"
 
 namespace Modex
 {
