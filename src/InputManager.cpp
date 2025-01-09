@@ -17,8 +17,6 @@ namespace Modex
 		ctrlDown = false;
 		altDown = false;
 		modifierDown = false;
-
-		captureInput = false;
 	}
 
 	void InputManager::Init()
