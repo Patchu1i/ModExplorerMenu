@@ -1,5 +1,4 @@
-#include "AddItem.h"
-#include "Settings.h"
+#include "include/A/AddItem.h"
 
 namespace Modex
 {

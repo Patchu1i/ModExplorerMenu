@@ -1,6 +1,6 @@
-#include "Console.h"
-#include "Menu.h"
-#include "Teleport.h"
+#include "include/C/Console.h"
+#include "include/M/Menu.h"
+#include "include/T/Teleport.h"
 
 namespace Modex
 {

@@ -1,4 +1,4 @@
-#include "NPC.h"
+#include "include/N/NPC.h"
 
 namespace Modex
 {

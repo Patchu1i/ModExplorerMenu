@@ -6,18 +6,18 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 	unsigned debugFlags, const char* file, int line);
 
 #pragma warning(push)
-#	include "RE/Skyrim.h"
-#	include "SKSE/SKSE.h"
-#	include <xbyak/xbyak.h>
+#include "RE/Skyrim.h"
+#include "SKSE/SKSE.h"
+#include <xbyak/xbyak.h>
 
-#	include <imgui_impl_dx11.h>
-#	include <imgui_impl_win32.h>
+#include <imgui_impl_dx11.h>
+#include <imgui_impl_win32.h>
 
-#	include "imgui.h"
-#	include "imgui_internal.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 
-#	include "implot.h"
-#	include "implot_internal.h"
+#include "implot.h"
+#include "implot_internal.h"
 
 #ifdef NDEBUG
 #	include <spdlog/sinks/basic_file_sink.h>
@@ -104,6 +104,10 @@ using json = nlohmann::json;
 #include <magic_enum.hpp>
 
 #include "SimpleMath.h"
+#include <codecvt>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <unordered_set>
 
 using uint = uint32_t;
 

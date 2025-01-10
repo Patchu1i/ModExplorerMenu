@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "include/O/Object.h"
 
 // If I need to add filtering for items like Interior/Exterior or something, reference this:
 // std::vector<std::tuple<bool*, AddItemWindow::ItemType, std::string>> AddItemWindow::_filterMap = {

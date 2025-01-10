@@ -1,8 +1,8 @@
-#include "Settings.h"
-#include "Menu.h"
+#include "include/S/Settings.h"
 #include "SimpleIni.h"
-#include "Utils/INI.h"
-#include <codecvt>
+#include "include/I/INI.h"
+#include "include/I/InputManager.h"
+#include "include/M/Menu.h"
 #include <format>
 
 using namespace IniHelper;
@@ -193,6 +193,9 @@ namespace Modex
 
 			a_ini.SetValue(rSections[Modules], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
+
+		// This function body is called when a change is made, so send updates out:
+		InputManager::GetSingleton()->UpdateSettings();
 	}
 
 	// This is executed within the scope of Modex.ini

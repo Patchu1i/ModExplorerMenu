@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Data.h"
-#include "Settings.h"
-#include "Windows/Columns.h"
-#include "Windows/Frame.h"
+#include "include/C/Columns.h"
+#include "include/F/Frame.h"
 
 namespace Modex
 {

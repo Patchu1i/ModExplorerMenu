@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Language.h"
-#include "Utils/IconRpgAwesome.h"
 #include "d3d11.h"
+#include "include/I/IconRpgAwesome.h"
+#include "include/L/Language.h"
 
 // Sourced from dTry's Wheeler and Llama's Tiny Hud. Adapted to NG.
 // Huge gratitude for their public works.

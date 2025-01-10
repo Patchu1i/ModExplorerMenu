@@ -1,8 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "Libraries/stb_image.h"
-
-#include "Graphic.h"
-#include "Menu.h"
+#include "include/G/Graphic.h"
+#include "extern/stb_image.h"
+#include "include/M/Menu.h"
 
 namespace Modex
 {
@@ -92,47 +91,6 @@ namespace Modex
 		}
 	}
 
-	// Setup Default font with compatible font for user's language.
-	// void GraphicManager::SetupLanguageFont(Language::GlyphRanges a_range)
-	// {
-	// 	auto glyph_range = Language::GetLanguageGlyphRange(a_range);
-	// 	ImGuiIO& io = ImGui::GetIO();
-
-	// 	switch (a_range) {
-	// 	case Language::GlyphRanges::Chinese:
-	// 		font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 18.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 18.0f);
-	// 		font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simsun.ttc", 20.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 20.0f);
-	// 		break;
-	// 	case Language::GlyphRanges::Japanese:
-	// 		font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 18.0f);
-	// 		font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 20.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 20.0f);
-	// 		break;
-	// 	case Language::GlyphRanges::Korean:
-	// 		font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 18.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 18.0f);
-	// 		font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\malgun.ttf", 20.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 20.0f);
-	// 		break;
-	// 	case Language::GlyphRanges::Russian:
-	// 		font_library["Default"].normal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 18.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 18.0f);
-	// 		font_library["Default"].large = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\arial.ttf", 20.0f, NULL, glyph_range);
-	// 		MergeIconFont(io, 20.0f);
-	// 		break;
-	// 	default:
-	// 		ImFontConfig config;
-	// 		config.SizePixels = 20.0f;
-	// 		font_library["Default"].normal = io.Fonts->AddFontDefault();
-	// 		MergeIconFont(io, 18.0f);
-	// 		font_library["Default"].large = io.Fonts->AddFontDefault(&config);
-	// 		MergeIconFont(io, 20.0f);
-	// 	}
-	// }
-
 	void GraphicManager::DrawImage(Image& a_image, ImVec2 a_center)
 	{
 		auto& io = ImGui::GetIO();
@@ -169,22 +127,13 @@ namespace Modex
 		image_library["None"] = Image();
 		GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/Modex/images"), GraphicManager::image_library);
 
-		// Set the default font to what the user has selected in the settings.
-		// For non-english users, this will replace the ImGui default font.
-
-		//auto config = Settings::GetSingleton()->GetConfig();
-		//SetupLanguageFont(config.glyphRange);
-
-		// Load any user-installed fonts from fonts directory.
-		//GraphicManager::LoadFontsFromDirectory(std::string("Data/Interface/Modex/fonts"), GraphicManager::font_library, config.glyphRange);
-
 		// Detect ImGui Icons mod and load it if it exists.
 		if (std::filesystem::exists("Data/Interface/ImGuiIcons")) {
 			GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ImGuiIcons/Icons"), GraphicManager::imgui_library);
 			logger::info("Successfully found and loaded ImGui Icon Library.");
 		}
 
-		// Queue other assets to load.
-		Menu::initialized.store(true);
+		// TODO: This doesn't belong here. Way to coupled.
+		Menu::GetSingleton()->isLoaded = true;
 	}
 }

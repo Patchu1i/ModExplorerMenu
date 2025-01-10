@@ -1,17 +1,14 @@
-#include "UserSettings.h"
-#include "Data.h"
-#include "Graphic.h"
-#include "Language.h"
-#include "Menu.h"
-#include "Settings.h"
-#include "Utils/Keycode.h"
-#include "Utils/Util.h"
-#include "Windows/AddItem/AddItem.h"
-#include "Windows/NPC/NPC.h"
-#include "Windows/Object/Object.h"
-#include "Windows/Persistent.h"
-#include "Windows/Teleport/Teleport.h"
-#include <codecvt>
+#include "include/U/UserSettings.h"
+#include "include/A/AddItem.h"
+#include "include/D/Data.h"
+#include "include/G/Graphic.h"
+#include "include/K/Keycode.h"
+#include "include/M/Menu.h"
+#include "include/N/NPC.h"
+#include "include/O/Object.h"
+#include "include/P/Persistent.h"
+#include "include/T/Teleport.h"
+#include "include/U/Util.h"
 
 // TODO: God this is a mess. It started out strong, but as I've added more and more settings without
 // much consideration into scale, it's bad. I need to re-do this entireley ASAP.
@@ -163,8 +160,10 @@ namespace Modex
 			if (_newModifier != 0) {
 				if (_newModifier != _prevModifier) {
 					a_modifier = _newModifier;
+
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
+
 					ImGui::CloseCurrentPopup();
 				} else {
 					ImGui::CloseCurrentPopup();
@@ -280,8 +279,10 @@ namespace Modex
 			if (_newKeybind != 0) {
 				if (_newKeybind != _prevKeybind) {
 					a_keybind = _newKeybind;
+
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
+
 					ImGui::CloseCurrentPopup();
 				} else {
 					ImGui::CloseCurrentPopup();
@@ -448,7 +449,7 @@ namespace Modex
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
 			if (ImGui::Button(_T("THEME_POPUP_CLOSE"), ImVec2(ImGui::GetContentRegionAvail().x, 25.0f))) {
-				Menu::is_settings_popped = false;
+				Menu::GetSingleton()->showSettingWindow = false;
 			}
 			ImGui::PopStyleColor(1);
 		}
@@ -636,11 +637,11 @@ namespace Modex
 			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 			for (auto& mod : *modList) {
-				if (mod->GetFilename().data() == nullptr) {
+				const char* modName = mod->GetFilename().data();
+
+				if (modName == nullptr || modName[0] == '\0') {
 					continue;
 				}
-
-				const char* modName = mod->GetFilename().data();
 
 				if (!blacklist.contains(mod)) {
 					if (ImGui::Selectable(modName, false)) {
@@ -660,11 +661,11 @@ namespace Modex
 			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 			for (auto& mod : *modList) {
-				if (mod->GetFilename().data() == nullptr) {
+				const char* modName = mod->GetFilename().data();
+
+				if (modName == nullptr || modName[0] == '\0') {
 					continue;
 				}
-
-				const char* modName = mod->GetFilename().data();
 
 				if (blacklist.contains(mod)) {
 					if (ImGui::Selectable(modName, false)) {
@@ -781,7 +782,7 @@ namespace Modex
 
 			ImGui::HelpMarker("THEME_HELP_POP_WINDOW");
 			if (ImGui::Button(_T("THEME_POPUP"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0))) {
-				Menu::is_settings_popped = !Menu::is_settings_popped;
+				Menu::GetSingleton()->showSettingWindow = !Menu::GetSingleton()->showSettingWindow;
 			}
 		}
 

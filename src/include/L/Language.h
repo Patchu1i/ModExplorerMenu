@@ -1,6 +1,6 @@
 #pragma once
-#include "PCH.h"
-#include "Utils/IconRpgAwesome.h"
+#include "include/I/IconRpgAwesome.h"
+#include <PCH.h>
 
 namespace Modex
 {

@@ -1,5 +1,3 @@
-# Test
-
 # CommonLibSSE-NG Plugin Template
 
 Template for building SKSE plugins using the NG branch of CommonLibVR.  
@@ -37,7 +35,8 @@ Open terminal (e.g., PowerShell) and run the following commands:
 ```
 git clone https://github.com/ponzipyramid/CommonLibSSE-NG-Template.git --recursive
 cd CommonLibSSE-NG-Template
-.\BuildRelease.bat
+.\BuildRelease.bat SE/AE
+.\BuildRelease.bat VR
 ```
 
 ### CMAKE Options (optional)
