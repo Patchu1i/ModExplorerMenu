@@ -251,6 +251,45 @@ namespace Utils
 		};
 	}
 
+	// Conversion functions for ANSI <-> UTF-8 <-> UTF-16 (wchar_t) that use std::string and std::wstring
+	// Source: https://github.com/Kerite/SkyrimInputMethod/blob/a2e3ba47fe35d000e0eea01b32c666a625cccafd/src/Utils.cpp#L284
+
+	// Convert a wide Unicode string to an UTF8 string
+	inline static std::string utf8_encode(const std::wstring& wstr)
+	{
+		int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+		std::string strTo(size_needed, 0);
+		WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+		return strTo;
+	}
+
+	// Convert an UTF8 string to a wide Unicode String
+	inline static std::wstring utf8_decode(const std::string& str)
+	{
+		int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+		std::wstring wstrTo(size_needed, 0);
+		MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+		return wstrTo;
+	}
+
+	// Convert an wide Unicode string to ANSI string
+	inline static std::string unicode2ansi(const std::wstring& wstr)
+	{
+		int size_needed = WideCharToMultiByte(CP_ACP, 0, &wstr[0], -1, NULL, 0, NULL, NULL);
+		std::string strTo(size_needed, 0);
+		WideCharToMultiByte(CP_ACP, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+		return strTo;
+	}
+
+	// Convert an ANSI string to a wide Unicode String
+	inline static std::wstring ansi2unicode(const std::string& str)
+	{
+		int size_needed = MultiByteToWideChar(CP_ACP, 0, &str[0], (int)str.size(), NULL, 0);
+		std::wstring wstrTo(size_needed, 0);
+		MultiByteToWideChar(CP_ACP, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+		return wstrTo;
+	}
+
 	inline static std::string RemoveQuotesInPath(const std::string& path)
 	{
 		std::string newPath = path;
