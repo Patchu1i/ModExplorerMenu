@@ -103,7 +103,7 @@ namespace Modex
 
 		auto width = a_image.width * scale;
 		auto height = a_image.height * scale;
-		auto texture = a_image.texture;
+		ImTextureID texture = (ImTextureID)(intptr_t)a_image.texture;
 
 		const ImVec2 pos[4] = {
 			ImVec2(a_center.x - width / 2, a_center.y - height / 2),

@@ -126,7 +126,8 @@ namespace Modex
 			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
 
-			if (ImGui::ImageButton("##ImGuiHotkeyModifier", img.texture, size, uv0, uv1, bg_col, a_hover)) {
+			ImTextureID texture = (ImTextureID)(intptr_t)img.texture;
+			if (ImGui::ImageButton("##ImGuiHotkeyModifier", texture, size, uv0, uv1, bg_col, a_hover)) {
 				ImGui::OpenPopup("##ModifierPopup");
 				newModifier = 0;
 			}
@@ -241,7 +242,8 @@ namespace Modex
 			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
 
-			if (ImGui::ImageButton("##ImGuiHotkey", img.texture, size, uv0, uv1, bg_col, a_hover)) {
+			ImTextureID texture = (ImTextureID)(intptr_t)img.texture;
+			if (ImGui::ImageButton("##ImGuiHotkey", texture, size, uv0, uv1, bg_col, a_hover)) {
 				ImGui::OpenPopup("##KeybindPopup");
 				newModifier = 0;
 			}
@@ -589,7 +591,7 @@ namespace Modex
 		if (AddCheckbox("SETTING_SHOW_ADDITEM", config.showAddItemMenu)) {
 			if (Data::GetSingleton()->GetItemList().empty()) {
 				Data::GetSingleton()->GenerateItemList();
-				AddItemWindow::Refresh();
+				AddItemWindow::GetSingleton()->Refresh();
 			}
 		}
 

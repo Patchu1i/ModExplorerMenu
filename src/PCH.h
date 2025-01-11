@@ -16,9 +16,6 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "implot.h"
-#include "implot_internal.h"
-
 #ifdef NDEBUG
 #	include <spdlog/sinks/basic_file_sink.h>
 #else

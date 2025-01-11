@@ -14,15 +14,14 @@
     "nlohmann-json",
     "clib-util",
     "simpleini",
-    "icu",
     {
       "name": "imgui",
       "features": [
         "dx11-binding",
         "win32-binding"
-      ]
-    },
-    "implot"
+      ],
+      "version>=": "1.91.5"
+    }
   ],
   "builtin-baseline": "83972272512ce4ede5fc3b2ba98f6468b179f192"
 }
