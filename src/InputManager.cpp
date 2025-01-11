@@ -36,10 +36,6 @@ namespace Modex
 	void InputManager::SetWndProcHandle(HWND a_hwnd)
 	{
 		wndProcHandle = a_hwnd;
-
-		if (wndProcHandle != nullptr) {
-			ImGui::GetIO().ImeWindowHandle = wndProcHandle;
-		}
 	}
 
 	void InputManager::SendUnicodeChar(std::uint32_t a_wParam)

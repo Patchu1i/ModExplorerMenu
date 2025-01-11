@@ -383,6 +383,13 @@ namespace Modex
                     
                     break;
                 }
+            case BaseColumn::ID::Weight:
+                if constexpr (!std::is_same<Object, Item>::value) {
+                    break;
+                } else {
+                    delta = (lhs->weight < rhs->weight) ? -1 : (lhs->weight > rhs->weight) ? 1 : 0;
+                    break;
+                }
             case BaseColumn::ID::DPS:
                 if constexpr (!std::is_same<Object, Item>::value) {
                     break;
