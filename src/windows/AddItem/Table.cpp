@@ -218,9 +218,22 @@ namespace Modex
 						ImGui::Text(buffer);
 					}
 
-					// Input Handlers
-					auto curRow = ImGui::TableGetHoveredRow();
-					if (curRow == ImGui::TableGetRowIndex()) {
+					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
+					// 1/11/2025 - Merged Table Input Handler function into this to better detect selected item.
+					ImRect row_rect(
+						table->WorkRect.Min.x,
+						table->RowPosY1,
+						table->WorkRect.Max.x,
+						table->RowPosY2);
+					row_rect.ClipWith(table->BgClipRect);
+
+					bool bHover =
+						ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
+						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
+						!ImGui::IsAnyItemHovered();  // optional
+
+					if (bHover) {
+						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 						itemPreview = item;
 
 						if (ImGui::IsMouseClicked(0)) {
@@ -245,24 +258,6 @@ namespace Modex
 						ShowItemListContextMenu(*item);
 						ImGui::EndPopup();
 					}
-
-					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
-					ImRect row_rect(
-						table->WorkRect.Min.x,
-						table->RowPosY1,
-						table->WorkRect.Max.x,
-						table->RowPosY2);
-					row_rect.ClipWith(table->BgClipRect);
-
-					bool bHover =
-						ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
-						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
-						!ImGui::IsAnyItemHovered();  // optional
-
-					if (bHover) {
-						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
-					}
-					// End of Row Background Hover effect.
 
 					ImGui::PopID();
 				}

@@ -179,9 +179,22 @@ namespace Modex
 					const auto carry = std::format("{:.0f}", npc->GetCarryWeight());
 					ImGui::Text(carry.c_str());
 
-					// Input Handlers
-					auto curRow = ImGui::TableGetHoveredRow();
-					if (curRow == ImGui::TableGetRowIndex()) {
+					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
+					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.
+					ImRect row_rect(
+						table->WorkRect.Min.x,
+						table->RowPosY1,
+						table->WorkRect.Max.x,
+						table->RowPosY2);
+					row_rect.ClipWith(table->BgClipRect);
+
+					bool bHover =
+						ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
+						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
+						!ImGui::IsAnyItemHovered();  // optional
+
+					if (bHover || selectedNPC == npc) {
+						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 						hoveredNPC = npc;
 
 						if (ImGui::IsMouseClicked(0)) {
@@ -204,24 +217,6 @@ namespace Modex
 					if (ImGui::BeginPopup("ShowNPCContextMenu")) {
 						ShowNPCListContextMenu(*npc);
 						ImGui::EndPopup();
-					}
-
-					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
-					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.
-					ImRect row_rect(
-						table->WorkRect.Min.x,
-						table->RowPosY1,
-						table->WorkRect.Max.x,
-						table->RowPosY2);
-					row_rect.ClipWith(table->BgClipRect);
-
-					bool bHover =
-						ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
-						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
-						!ImGui::IsAnyItemHovered();  // optional
-
-					if (bHover || selectedNPC == npc) {
-						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 					}
 
 					ImGui::PopID();
