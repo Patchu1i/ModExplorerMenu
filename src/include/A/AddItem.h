@@ -4,23 +4,35 @@
 #include "include/C/Columns.h"
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
+#include "include/M/Modules.h"
+
+// clang-format off
 
 namespace Modex
 {
-	using ItemFilterType = std::pair<RE::FormType, std::string>;
-
-	class AddItemWindow : private ISortable
+	class AddItemWindow : private ISortable, private ISearch
 	{
 	public:
-		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowItemListContextMenu(Item& a_item);
-		static void ShowBookPreview();
-		static void ApplyFilters();
-		static void Refresh();
-		static void Init();
+
+		static inline AddItemWindow* GetSingleton()
+		{
+			static AddItemWindow singleton;
+			return &singleton;
+		}
+
+		AddItemWindow() = default;
+		~AddItemWindow() = default;
+
+
+		void Draw(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowItemListContextMenu(ItemData& a_item);
+		void ShowBookPreview();
+		void ApplyFilters();
+		void Refresh();
+		void Init();
 
 		enum FilterType
 		{
@@ -34,23 +46,23 @@ namespace Modex
 			Weapon
 		};
 
-		static inline AddItemColumns columnList;
+		AddItemColumns columnList;
 
 		// Book Popup Window State.
-		static inline Item* openBook = nullptr;
-		static inline Item* itemPreview = nullptr;
+		ItemData* openBook = nullptr;
+		ItemData* itemPreview = nullptr;
 
 		// Local State Variables.
-		static inline bool b_AddToInventory = true;
-		static inline bool b_PlaceOnGround = false;
-		static inline bool b_AddToFavorites = false;
-		static inline int clickToAddCount = 1;
+		bool b_AddToInventory = true;
+		bool b_PlaceOnGround = false;
+		bool b_AddToFavorites = false;
+		int clickToAddCount = 1;
 
 		// Filtering State Variables.
-		static inline ItemFilterType selectedFilter = { RE::FormType::None, "None" };
-		static inline std::vector<Item*> itemList;
+		ItemFilterType selectedFilter = { RE::FormType::None, "None" };
+		std::vector<ItemData*> itemList;
 
-		static inline std::vector<ItemFilterType> filterMap = {
+		std::vector<ItemFilterType> filterMap = {
 			{ RE::FormType::Armor, "Armor" },
 			{ RE::FormType::AlchemyItem, "Alchemy" },
 			{ RE::FormType::Ammo, "Ammunition" },
@@ -63,18 +75,23 @@ namespace Modex
 		};
 
 		// Description Framework API.
-		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+		DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+
 
 	private:
-		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
-		static inline char inputBuffer[256] = "";
-		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = "All Mods";
-		static inline bool dirty = true;
-		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
+		BaseColumn::ID searchKey = BaseColumn::ID::Name;
+		char inputBuffer[256] = "";
+		// static inline char modListBuffer[256] = "";
+		// static inline std::string selectedMod = "All Mods";
+		bool dirty = true;
+		const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Name, "Name" },
 			{ BaseColumn::ID::EditorID, "Editor ID" },
 			{ BaseColumn::ID::FormID, "Form ID" }
 		};
+
+		// ISearch Interface
+		char modSearchBuffer[256];
+		std::string selectedMod;
 	};
 }

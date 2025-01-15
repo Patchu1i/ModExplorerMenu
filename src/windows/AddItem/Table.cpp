@@ -5,7 +5,7 @@
 namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
-	void AddItemWindow::ShowItemListContextMenu(Item& a_item)
+	void AddItemWindow::ShowItemListContextMenu(ItemData& a_item)
 	{
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
@@ -84,7 +84,7 @@ namespace Modex
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs<std::vector<Item*>, Item>(itemList, sort_specs);
+					SortColumnsWithSpecs<std::vector<ItemData*>, ItemData>(itemList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}
@@ -115,7 +115,7 @@ namespace Modex
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
 					if (ImGui::DisabledCheckbox("##AddItemWindow::FavoriteCheckbox", b_AddToFavorites, item->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
+						PersistentData::GetSingleton()->UpdatePersistentData<ItemData*>(item);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -151,7 +151,7 @@ namespace Modex
 					// Base Damage
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Weapon) {
-						auto* weapon = item->TESForm->As<RE::TESObjectWEAP>();
+						auto* weapon = item->GetForm()->As<RE::TESObjectWEAP>();
 						const auto baseDamage = Utils::CalcBaseDamage(weapon);
 						char buffer[12];
 						snprintf(buffer, sizeof(buffer), "%.0f", baseDamage);
@@ -162,7 +162,7 @@ namespace Modex
 					// Armor Rating
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Armor) {
-						auto* armor = item->TESForm->As<RE::TESObjectARMO>();
+						auto* armor = item->GetForm()->As<RE::TESObjectARMO>();
 						const auto armorRating = Utils::CalcBaseArmorRating(armor);
 						char buffer[12];
 						snprintf(buffer, sizeof(buffer), "%.0f", armorRating);
@@ -173,7 +173,7 @@ namespace Modex
 					// Weapon Speed
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Weapon) {
-						auto* weapon = item->TESForm->As<RE::TESObjectWEAP>();
+						auto* weapon = item->GetForm()->As<RE::TESObjectWEAP>();
 						const auto speed = weapon->weaponData.speed;
 						char buffer[12];
 						snprintf(buffer, sizeof(buffer), "%.2f", speed);
@@ -184,7 +184,7 @@ namespace Modex
 					// Crit Damage
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Weapon) {
-						auto* weapon = item->TESForm->As<RE::TESObjectWEAP>();
+						auto* weapon = item->GetForm()->As<RE::TESObjectWEAP>();
 						const uint16_t critDamage = weapon->GetCritDamage();
 						ImGui::Text(std::to_string(critDamage).c_str());
 					}
@@ -192,7 +192,7 @@ namespace Modex
 					// Skill Type
 					ImGui::TableNextColumn();
 					if (true) {
-						auto skill = item->TESForm->GetObjectTypeName();
+						auto skill = item->GetForm()->GetObjectTypeName();
 						ImGui::Text(skill);
 					}
 
@@ -208,7 +208,7 @@ namespace Modex
 					// Weapon DPS
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Weapon) {
-						auto* weapon = item->TESForm->As<RE::TESObjectWEAP>();
+						auto* weapon = item->GetForm()->As<RE::TESObjectWEAP>();
 						const float baseDamage = Utils::CalcBaseDamage(weapon);
 						const float speed = weapon->weaponData.speed;
 						const float dps = baseDamage * speed;
@@ -245,7 +245,7 @@ namespace Modex
 								Console::StartProcessThread();
 							} else if (b_AddToFavorites) {
 								item->favorite = !item->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<Item*>(item);
+								PersistentData::GetSingleton()->UpdatePersistentData<ItemData*>(item);
 							}
 						}
 

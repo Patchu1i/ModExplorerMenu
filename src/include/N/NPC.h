@@ -4,75 +4,88 @@
 #include "include/C/Columns.h"
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
+#include "include/M/Modules.h"
 
 namespace Modex
 {
-	class NPCWindow : private ISortable
+	class NPCWindow : private ISortable, private ISearch
 	{
 	private:
-		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowNPCListContextMenu(NPC& a_npc);
-		static void ApplyFilters();
+		void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowNPCListContextMenu(NPCData& a_npc);
+		void ApplyFilters();
 
-		static inline std::vector<NPC*> npcList;
-		static inline NPCColumns columnList;
+		std::vector<NPCData*> npcList;
+		NPCColumns columnList;
 
 		// Behavior State Variables.
-		static inline bool b_ClickToSelect = true;
-		static inline bool b_ClickToFavorite = false;
-		static inline bool b_ClickToPlace = false;
-		static inline int clickToPlaceCount = 1;
+		bool b_ClickToSelect = true;
+		bool b_ClickToFavorite = false;
+		bool b_ClickToPlace = false;
+		int clickToPlaceCount = 1;
 
-		static inline bool _itemHovered = false;
-		static inline bool _itemSelected = false;
-		static inline NPC* selectedNPC = nullptr;
-		static inline NPC* hoveredNPC = nullptr;
+		bool _itemHovered = false;
+		bool _itemSelected = false;
+		NPCData* selectedNPC = nullptr;
+		NPCData* hoveredNPC = nullptr;
 
 		// Filtering
-		static inline bool b_ShowSearchbar = false;
-		static inline bool b_Class = false;
-		static inline bool b_Race = false;
-		static inline bool b_Faction = false;
+		bool b_ShowSearchbar = false;
+		bool b_Class = false;
+		bool b_Race = false;
+		bool b_Faction = false;
 
-		static inline std::vector<std::tuple<bool*, std::function<void()>, std::string>> filterMap = {
-			{ &b_Class, Data::GenerateNPCClassList, "Class" },
-			{ &b_Race, Data::GenerateNPCRaceList, "Race" },
-			{ &b_Faction, Data::GenerateNPCFactionList, "Faction" }
-		};
+		// static inline std::vector<std::pair<bool*, std::string>> filterMap = {
+		// 	{ &b_Class, "Class" },
+		// 	{ &b_Race, "Race" },
+		// 	{ &b_Faction, "Faction" }
+		// };
 
-		static inline std::vector<std::pair<std::function<std::set<std::string>()>, std::string>> secondaryFilterMap = {
-			{ Data::GetNPCClassList, "Class" },
-			{ Data::GetNPCRaceList, "Race" },
-			{ Data::GetNPCFactionList, "Faction" }
-		};
+		// static inline std::vector<std::pair<std::function<std::set<std::string>()>, std::string>> secondaryFilterMap = {
+		// 	{ RE::FormType::Class, "Class" },
+		// 	{ &Data::GetSingleton()->GetNPCRaceList, "Race" },
+		// 	{ &Data::GetSingleton()->GetNPCFactionList, "Faction" }
+		// };
 
-		static inline std::string selectedFilter = "None";
-		static inline std::string secondaryFilter = "Show All";
+		std::string selectedFilter = "None";
+		std::string secondaryFilter = "Show All";
 
 	public:
-		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-		static void Refresh();
-		static void Init();
+		static inline NPCWindow* GetSingleton()
+		{
+			static NPCWindow singleton;
+			return &singleton;
+		}
+
+		NPCWindow() = default;
+		~NPCWindow() = default;
+
+		void Draw(Settings::Style& a_style, Settings::Config& a_config);
+		void Refresh();
+		void Init();
 
 	private:
 		// Search Input Field.
-		static inline BaseColumn::ID searchKey = BaseColumn::ID::Name;
-		static inline char inputBuffer[256] = "";
-		static inline char modListBuffer[256] = "";
-		static inline char secondaryFilterBuffer[256] = "";
-		static inline std::string selectedMod = "All Mods";
-		static inline bool dirty = true;
+		BaseColumn::ID searchKey = BaseColumn::ID::Name;
+		char inputBuffer[256] = "";
+		// static inline char modListBuffer[256] = "";
+		// static inline std::string selectedMod = "All Mods";
+		char secondaryFilterBuffer[256] = "";
+		bool dirty = true;
 
 		// Sorting & Filtering
-		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
+		const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Name, "Name" },
 			{ BaseColumn::ID::EditorID, "Editor ID" },
 			{ BaseColumn::ID::FormID, "Form ID" },
 			{ BaseColumn::ID::Race, "Race" }
 		};
 
-		static inline DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+		char modSearchBuffer[256];
+		std::string selectedMod;
+
+		DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
 	};
 }

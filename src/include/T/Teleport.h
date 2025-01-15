@@ -8,9 +8,9 @@ namespace Modex
 	class TeleportWindow : private ISortable
 	{
 	private:
-		static inline std::vector<Cell*> cellList;
+		static inline std::vector<CellData*> cellList;
 		static inline TeleportColumns columnList;
-		static inline Cell* selectedCell;
+		static inline CellData* selectedCell;
 
 	public:
 		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
@@ -22,7 +22,7 @@ namespace Modex
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowTeleportContextMenu(Cell& a_cell);
+		static void ShowTeleportContextMenu(CellData& a_cell);
 
 		static inline constexpr auto TeleportTableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |

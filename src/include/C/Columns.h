@@ -1,7 +1,9 @@
 #pragma once
 #include "include/D/Data.h"
+#include "include/D/DataTypes.h"
 #include "include/S/Settings.h"
 #include "include/U/Util.h"
+#include <cstring>
 
 namespace Modex
 {
@@ -203,6 +205,9 @@ namespace Modex
 	public:
 		static inline ImGuiTableSortSpecs* s_current_sort_specs;
 
+        // TODO: A lot of this has repeating behavior. Could probably be refactored by checking
+        // lhs and rhs types and then comparing them based on type instead of Object.
+
 		template <class Object>
 		inline static bool SortColumns(const Object* lhs, const Object* rhs)
 		{
@@ -216,10 +221,10 @@ namespace Modex
                 delta = (lhs->favorite < rhs->favorite) ? -1 : (lhs->favorite > rhs->favorite) ? 1 : 0;
                 break;
             case BaseColumn::ID::EditorID:
-                delta = lhs->editorid.compare(rhs->editorid);
+                delta = lhs->GetEditorIDView().compare(rhs->GetEditorIDView());
                 break;
             case BaseColumn::ID::Plugin:
-                delta = lhs->filename.compare(rhs->filename);
+                delta = lhs->GetPluginNameView().compare(rhs->GetPluginNameView());
                 break;
             case BaseColumn::ID::Type:
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
@@ -229,7 +234,7 @@ namespace Modex
             case BaseColumn::ID::FormID:
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
-                else delta = (lhs->FormID < rhs->FormID) ? -1 : (lhs->FormID > rhs->FormID) ? 1 : 0;
+                else delta = (lhs->GetBaseForm() < rhs->GetBaseForm()) ? -1 : (lhs->GetBaseForm() > rhs->GetBaseForm()) ? 1 : 0;
                     break;
             case BaseColumn::ID::ReferenceID:
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
@@ -239,100 +244,93 @@ namespace Modex
             case BaseColumn::ID::Name:
                 if constexpr (!std::is_base_of<BaseObject, Object>::value)
                     break;
-                else delta = lhs->name.compare(rhs->name);
+                else delta = lhs->GetNameView().compare(rhs->GetNameView());
                     break;
             case BaseColumn::ID::Class:
-                if constexpr (!std::is_same<Object, NPC>::value) {
+                if constexpr (!std::is_same<Object, NPCData>::value) {
                     break;
                 } else {
-                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
-                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
-                    std::string lhsClass = lhsTesNPC->npcClass->GetFullName();
-                    std::string rhsClass = rhsTesNPC->npcClass->GetFullName();
+                    std::string_view lhsClass = lhs->GetClass();
+                    std::string_view rhsClass = rhs->GetClass();
 
                     delta = lhsClass.compare(rhsClass);
                     break;
                 }
             case BaseColumn::ID::Gender:
-                if constexpr (!std::is_same<Object, NPC>::value) {
+                if constexpr (!std::is_same<Object, NPCData>::value) {
                     break;
                 } else {
-                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
-                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
-                    bool lhsGender = lhsTesNPC->IsFemale();
-                    bool rhsGender = rhsTesNPC->IsFemale();
-                    
-                    delta = (lhsGender < rhsGender) ? -1 : (lhsGender > rhsGender) ? 1 : 0;
+
+                    std::string_view lhsGender = lhs->GetGender();
+                    std::string_view rhsGender = rhs->GetGender();
+                    delta = lhsGender.compare(rhsGender);
                     break;
                 }
             case BaseColumn::ID::Race:
-                if constexpr (!std::is_same<Object, NPC>::value) {
+                if constexpr (!std::is_same<Object, NPCData>::value) {
                     break;
                 } else {
-                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
-                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
-                    std::string lhsRace = lhsTesNPC->race->GetFullName();
-                    std::string rhsRace = rhsTesNPC->race->GetFullName();
+                    std::string_view lhsRace = lhs->GetRace();
+                    std::string_view rhsRace = rhs->GetRace();
 
                     delta = lhsRace.compare(rhsRace);
                     break;
                 }
             case BaseColumn::ID::Level:
-                if constexpr (!std::is_same<Object, NPC>::value) {
+                if constexpr (!std::is_same<Object, NPCData>::value) {
                     break;
                 } else {
-                    auto lhsTesNPC = lhs->TESForm->As<RE::TESNPC>();
-                    auto rhsTesNPC = rhs->TESForm->As<RE::TESNPC>();
-
-                    delta = (lhsTesNPC->GetLevel() < rhsTesNPC->GetLevel()) ? -1 : (lhsTesNPC->GetLevel() > rhsTesNPC->GetLevel()) ? 1 : 0;
+                    auto lhsLevel = lhs->GetLevel();
+                    auto rhsLevel = rhs->GetLevel();
+                    delta = (lhsLevel < rhsLevel) ? -1 : (lhsLevel > rhsLevel) ? 1 : 0;
                     break;
                 }
             case BaseColumn::ID::Health:
-                if constexpr (!std::is_same<Object, NPC>::value)
+                if constexpr (!std::is_same<Object, NPCData>::value)
                     break;
                 else delta = (lhs->GetHealth() < rhs->GetHealth()) ? -1 : (lhs->GetHealth() > rhs->GetHealth()) ? 1 : 0;
                     break;
             case BaseColumn::ID::Magicka:
-                if constexpr (!std::is_same<Object, NPC>::value)
+                if constexpr (!std::is_same<Object, NPCData>::value)
                     break;
                 else delta = (lhs->GetMagicka() < rhs->GetMagicka()) ? -1 : (lhs->GetMagicka() > rhs->GetMagicka()) ? 1 : 0;
                     break;
             case BaseColumn::ID::Stamina:
-                if constexpr (!std::is_same<Object, NPC>::value)
+                if constexpr (!std::is_same<Object, NPCData>::value)
                     break;
                 else delta = (lhs->GetStamina() < rhs->GetStamina()) ? -1 : (lhs->GetStamina() > rhs->GetStamina()) ? 1 : 0;
                     break;
             case BaseColumn::ID::CarryWeight:
-                if constexpr (!std::is_same<Object, NPC>::value)
+                if constexpr (!std::is_same<Object, NPCData>::value)
                     break;
                 else delta = (lhs->GetCarryWeight() < rhs->GetCarryWeight()) ? -1 : (lhs->GetCarryWeight() > rhs->GetCarryWeight()) ? 1 : 0;
                     break;
             case BaseColumn::ID::GoldValue:
-                if constexpr (!std::is_same<Object, Item>::value) 
+                if constexpr (!std::is_same<Object, ItemData>::value) 
                     break;
-                else delta = (lhs->value < rhs->value) ? -1 : (lhs->value > rhs->value) ? 1 : 0;
+                else delta = (lhs->GetValue() < rhs->GetValue()) ? -1 : (lhs->GetValue() > rhs->GetValue()) ? 1 : 0;
                     break;
             case BaseColumn::ID::Space:
-                if constexpr (!std::is_same<Object, Cell>::value)
+                if constexpr (!std::is_same<Object, CellData>::value)
                     break;
                 else delta = lhs->space.compare(rhs->space);
                     break;
             case BaseColumn::ID::Zone:
-                if constexpr (!std::is_same<Object, Cell>::value)
+                if constexpr (!std::is_same<Object, CellData>::value)
                     break;
                 else delta = lhs->zone.compare(rhs->zone);
                     break;
             case BaseColumn::ID::CellName:
-                if constexpr (!std::is_same<Object, Cell>::value)
+                if constexpr (!std::is_same<Object, CellData>::value)
                     break;
                 else delta = lhs->cellName.compare(rhs->cellName);
                     break;
             case BaseColumn::ID::BaseDamage:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
-                        delta = CompareWeaponDamage(lhs->TESForm->As<RE::TESObjectWEAP>(), rhs->TESForm->As<RE::TESObjectWEAP>());
+                        delta = CompareWeaponDamage(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
                     } else if (lhs->GetFormType() == RE::FormType::Weapon) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Weapon) {
@@ -342,11 +340,11 @@ namespace Modex
                     break;
                 }
             case BaseColumn::ID::ArmorRating:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Armor) {
-                        delta = CompareArmorRating(lhs->TESForm->As<RE::TESObjectARMO>(), rhs->TESForm->As<RE::TESObjectARMO>());
+                        delta = CompareArmorRating(lhs->GetForm()->As<RE::TESObjectARMO>(), rhs->GetForm()->As<RE::TESObjectARMO>());
                     } else if (lhs->GetFormType() == RE::FormType::Armor) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Armor) {
@@ -356,11 +354,11 @@ namespace Modex
                     break;
                 }
             case BaseColumn::ID::Speed:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
-                        delta = CompareWeaponSpeed(lhs->TESForm->As<RE::TESObjectWEAP>(), rhs->TESForm->As<RE::TESObjectWEAP>());
+                        delta = CompareWeaponSpeed(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
                     } else if (lhs->GetFormType() == RE::FormType::Weapon) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Weapon) {
@@ -370,11 +368,11 @@ namespace Modex
                     break;
                 }
             case BaseColumn::ID::CritDamage:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
-                        delta = CompareCritDamage(lhs->TESForm->As<RE::TESObjectWEAP>(), rhs->TESForm->As<RE::TESObjectWEAP>());
+                        delta = CompareCritDamage(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
                     } else if (lhs->GetFormType() == RE::FormType::Weapon) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Weapon) {
@@ -384,18 +382,18 @@ namespace Modex
                     break;
                 }
             case BaseColumn::ID::Weight:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
-                    delta = (lhs->weight < rhs->weight) ? -1 : (lhs->weight > rhs->weight) ? 1 : 0;
+                    delta = (lhs->GetWeight() < rhs->GetWeight()) ? -1 : (lhs->GetWeight() > rhs->GetWeight()) ? 1 : 0;
                     break;
                 }
             case BaseColumn::ID::DPS:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
-                        delta = CompareWeaponDPS(lhs->TESForm->As<RE::TESObjectWEAP>(), rhs->TESForm->As<RE::TESObjectWEAP>());
+                        delta = CompareWeaponDPS(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
                     } else if (lhs->GetFormType() == RE::FormType::Weapon) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Weapon) {
@@ -405,14 +403,14 @@ namespace Modex
                     break;
                 }
             case BaseColumn::ID::Skill:
-                if constexpr (!std::is_same<Object, Item>::value) {
+                if constexpr (!std::is_same<Object, ItemData>::value) {
                     break;
                 } else {
                     if ((lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) ||
                         (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Armor) ||
                         (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Armor) ||
                         (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Weapon)) {
-                        delta = CompareSkill(lhs->TESForm, rhs->TESForm);
+                        delta = CompareSkill(lhs->GetForm(), rhs->GetForm());
                     } else if (lhs->GetFormType() == RE::FormType::Weapon || lhs->GetFormType() == RE::FormType::Armor) {
                         delta = 1;
                     } else if (rhs->GetFormType() == RE::FormType::Weapon || rhs->GetFormType() == RE::FormType::Armor) {

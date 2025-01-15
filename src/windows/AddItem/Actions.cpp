@@ -120,10 +120,10 @@ namespace Modex
 								RE::ExtraDataList* extraDataList = nullptr;  // ??
 
 								ref->AddObjectToContainer(
-									item->TESForm->As<RE::TESBoundObject>(),  // RE::TESBoundObject* a_item,
-									extraDataList,                            // RE::ExtraDataList* a_extraData,
-									1,                                        // std::uint32_t a_count,
-									player                                    // RE::TESObjectREFR* a_fromRefr,
+									item->GetForm()->As<RE::TESBoundObject>(),  // RE::TESBoundObject* a_item,
+									extraDataList,                              // RE::ExtraDataList* a_extraData,
+									1,                                          // std::uint32_t a_count,
+									player                                      // RE::TESObjectREFR* a_fromRefr,
 								);
 							}
 						}
@@ -135,14 +135,14 @@ namespace Modex
 
 		// Show Favorites
 		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {
-			selectedMod = "Favorite";
+			this->selectedMod = "Favorite";
 			ApplyFilters();
 		}
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
 		ImGui::SeparatorText(_TFM("Preview", ":"));
-		ShowItemPreview<Item>(itemPreview);
+		ShowItemPreview<ItemData>(itemPreview);
 
 		ImGui::EndChild();
 	}

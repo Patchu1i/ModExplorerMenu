@@ -1,4 +1,5 @@
 #include "include/D/Data.h"
+#include "include/D/DataTypes.h"
 #include "include/P/Persistent.h"
 #include "include/S/Settings.h"
 #include "include/U/Util.h"
@@ -19,24 +20,63 @@ namespace Modex
 		return {};
 	}
 
+	// Attempts to "Validate" the fileName member of a RE:TESFile* pointer.
+	// Returns "`MODEX_ERR`" if the pointer is null or the fileName member is null.
+	std::string ValidateTESFileName(const RE::TESFile* a_file)
+	{
+		if (a_file == nullptr) {
+			return "MODEX_ERR";
+		}
+
+		if (a_file->fileName == nullptr) {
+			return "MODEX_ERR";
+		}
+
+		if (a_file->GetFilename().data() == nullptr) {
+			return "MODEX_ERR";
+		}
+
+		// std::string_view to const char* to std::string. utf-8 entry?
+		return std::string(a_file->fileName);
+	}
+
+	// Attempts to "Validate" the name member of a RE:TESForm or RE::TESName pointer.
+	// Returns "`MODEX_ERR`" if the pointer is null or the name member is null.
+	template <class TESObject>
+	const char* ValidateTESName(const TESObject* a_object)
+	{
+		if (a_object == nullptr) {
+			return "MODEX_ERR";
+		}
+
+		if (a_object->GetName() == nullptr) {
+			return "MODEX_ERR";
+		}
+
+		// Ensure the name is a valid, null-terminated C-string
+		return a_object->GetName();
+	}
+
 	template <class T>
 	void Data::CacheNPCs(RE::TESDataHandler* a_data)
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			RE::FormID formid = form->GetFormID();
-			RE::TESFile* mod = form->GetFile();
+			const RE::FormID formid = form->GetFormID();
+			const RE::TESFile* mod = form->GetFile();
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
-			RE::TESNPC* npc = form->As<RE::TESNPC>();
+			// RE::TESNPC* npc = form->As<RE::TESNPC>();
 
-			if (npc->IsPlayerRef()) {
+			if (RE::TESNPC* npc = form->As<RE::TESNPC>(); npc->IsPlayerRef()) {
 				continue;
 			}
 
-			_npcCache.push_back(Modex::NPC{ form, formid, mod, favorite });
+			// _npcCache.push_back(NPCData{ form, formid, mod, favorite });
+			_npcCache.push_back(NPCData{ form, favorite });
 
 			if (!_npcModList.contains(mod)) {
 				_npcModList.insert(mod);
+				_modList.insert(mod);
 			}
 
 			if (_npcModList.contains(mod)) {
@@ -50,14 +90,15 @@ namespace Modex
 		}
 	}
 
-	// Merge NPC Reference IDs into the NPC cache list.
+	// Called Internally from Data::CacheNPCRefIds.
+	// Merges newfound NPC references with the master list.
 	void Data::MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map)
 	{
 		if (npc_ref_map->empty()) {
 			logger::warn("No NPC references found.");
 		} else {
 			for (auto& npc : _npcCache) {
-				auto it = npc_ref_map->find(npc.FormID);
+				auto it = npc_ref_map->find(npc.GetBaseForm());
 				if (it != npc_ref_map->end()) {
 					npc.refID = it->second;
 				}
@@ -123,7 +164,7 @@ namespace Modex
 			}
 
 			// Callback to Data to merge with master list.
-			Data::MergeNPCRefIds(npc_ref_map);
+			Data::GetSingleton()->MergeNPCRefIds(npc_ref_map);
 		});
 	}
 
@@ -134,15 +175,17 @@ namespace Modex
 		dataPath = Utils::RemoveQuotesInPath(dataPath);
 
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			RE::FormID formid = form->GetFormID();
-			RE::TESFile* mod = form->GetFile();
+			const RE::FormID formid = form->GetFormID();
+			const RE::TESFile* mod = form->GetFile();
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
-			_cache.push_back(Modex::Item{ form, formid, mod, favorite });
+			// _cache.push_back(Modex::ItemData{ form, formid, mod, favorite });
+			_cache.push_back(ItemData{ form, favorite });
 
 			//Add mod file to list.
 			if (!_itemModList.contains(mod)) {
 				_itemModList.insert(mod);
+				_modList.insert(mod);
 
 				std::filesystem::path path = dataPath + "/" + mod->fileName;
 				if (std::filesystem::exists(path)) {
@@ -197,14 +240,16 @@ namespace Modex
 	void Data::CacheStaticObjects(RE::TESDataHandler* a_data)
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			RE::FormID formid = form->GetFormID();
-			RE::TESFile* mod = form->GetFile();
+			const RE::FormID formid = form->GetFormID();
+			const RE::TESFile* mod = form->GetFile();
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
-			_staticCache.push_back(Modex::StaticObject{ form, formid, mod, favorite });
+			// _staticCache.push_back(Modex::ObjectData{ form, formid, mod, favorite });
+			_staticCache.push_back(ObjectData{ form, favorite });
 
 			if (!_staticModList.contains(mod)) {
 				_staticModList.insert(mod);
+				_modList.insert(mod);
 			}
 
 			if (_staticModList.contains(mod)) {
@@ -240,15 +285,16 @@ namespace Modex
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
 	// Modified to include both Interior and Exterior cells, and to also cache fullname record.
-	void Data::CacheCells(RE::TESFile* a_file, std::vector<Cell>& a_cellMap)
+	void Data::CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_cellMap)
 	{
-		if (!a_file->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
+		auto tesFile = const_cast<RE::TESFile*>(a_file);
+		if (!tesFile->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
 			logger::warn(FMT_STRING("failed to open file: {:s}"sv), a_file->fileName);
 			return;
 		}
 
 		do {
-			if (a_file->currentform.form == 'LLEC') {
+			if (tesFile->currentform.form == 'LLEC') {
 				char edid[512]{ '\0' };
 				bool gotEDID{ false };
 
@@ -256,12 +302,12 @@ namespace Modex
 				bool gotLUFF{ false };
 
 				do {
-					switch (a_file->GetCurrentSubRecordType()) {
+					switch (tesFile->GetCurrentSubRecordType()) {
 					case 'DIDE':
-						gotEDID = a_file->ReadData(edid, a_file->actualChunkSize);
+						gotEDID = tesFile->ReadData(edid, tesFile->actualChunkSize);
 						break;
 					case 'LLUF':
-						gotLUFF = a_file->ReadData(luff, a_file->actualChunkSize);
+						gotLUFF = tesFile->ReadData(luff, tesFile->actualChunkSize);
 						break;
 					default:
 						break;
@@ -270,20 +316,21 @@ namespace Modex
 					if (gotEDID && gotLUFF) {
 						bool favorite = PersistentData::m_favorites[edid];
 
-						a_cellMap.push_back(Cell(a_file->fileName, "Unknown", "Unknown", luff, edid, favorite, a_file));
+						a_cellMap.push_back(CellData(tesFile->fileName, "Unknown", "Unknown", luff, edid, favorite, tesFile));
 
-						if (!_cellModList.contains(a_file)) {
-							_cellModList.insert(a_file);
+						if (!_cellModList.contains(tesFile)) {
+							_cellModList.insert(tesFile);
+							_modList.insert(tesFile);
 						}
 
 						break;
 					}
-				} while (a_file->SeekNextSubrecord());
+				} while (tesFile->SeekNextSubrecord());
 			}
-		} while (a_file->SeekNextForm(true));
+		} while (tesFile->SeekNextForm(true));
 
-		if (!a_file->CloseTES(false)) {
-			logger::warn(FMT_STRING("failed to close file: {:s}"sv), a_file->fileName);
+		if (!tesFile->CloseTES(false)) {
+			logger::warn(FMT_STRING("failed to close file: {:s}"sv), tesFile->fileName);
 		}
 	}
 
@@ -354,7 +401,8 @@ namespace Modex
 		_npcFactionList.clear();
 
 		for (auto& npc : _npcCache) {
-			auto factionNames = npc.AsTESNPC->factions;
+			// auto factionNames = npc.AsTESNPC->factions;
+			auto factionNames = npc.GetFactions();
 			for (auto& faction : factionNames) {
 				std::string factionName = faction.faction->GetFullName();
 
@@ -394,19 +442,18 @@ namespace Modex
 			for (const auto& cell : cells.table) {
 				const auto& [_plugin, space, place, name, editorid] = cell;
 				std::string plugin = _plugin + ".esm";
-				const RE::TESFile* mod = dataHandler->LookupModByName(plugin.c_str());
-				RE::TESFile* modFile = const_cast<RE::TESFile*>(mod);
+				const RE::TESFile* modFile = dataHandler->LookupModByName(plugin.c_str());
 				bool favorite = PersistentData::m_favorites[editorid];
 
 				if (!_cellModList.contains(modFile)) {
 					_cellModList.insert(modFile);
 				}
 
-				_cellCache.push_back(Cell(plugin, space, place, name, editorid, favorite, mod));
+				_cellCache.push_back(CellData(plugin, space, place, name, editorid, favorite, modFile));
 			}
 
 			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
-				RE::TESFile* mod = form->GetFile();
+				const RE::TESFile* mod = form->GetFile();
 
 				if (!_cellModList.contains(mod)) {
 					CacheCells(mod, _cellCache);
@@ -436,28 +483,10 @@ namespace Modex
 			GenerateCellList();
 		}
 
-		for (auto& mod : _itemModList) {
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
-			}
-		}
-
-		for (auto& mod : _npcModList) {
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
-			}
-		}
-
-		for (auto& mod : _staticModList) {
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
-			}
-		}
-
-		for (auto& mod : _cellModList) {
-			if (!_modList.contains(mod)) {
-				_modList.insert(mod);
-			}
+		for (auto& file : _modList) {
+			std::string modName = ValidateTESFileName(file);
+			logger::info("Mod: {}", modName);
+			_modListSorted.insert(modName);
 		}
 	}
 }

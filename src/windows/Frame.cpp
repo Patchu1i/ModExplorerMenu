@@ -76,7 +76,9 @@ namespace Modex
 		if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
 			auto iWidth = ImGui::GetContentRegionAvail().x;
 			auto iHeight = ImGui::GetWindowSize().y / 12;
-			ImGui::Image(GraphicManager::image_library["logo"].texture, ImVec2(iWidth, iHeight));
+
+			ImTextureID texture = (ImTextureID)GraphicManager::image_library["logo"].texture;
+			ImGui::Image(texture, ImVec2(iWidth, iHeight));
 
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -90,7 +92,7 @@ namespace Modex
 			if (config.showAddItemMenu) {
 				if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::AddItem;
-					AddItemWindow::Refresh();
+					AddItemWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
 			}
@@ -106,7 +108,7 @@ namespace Modex
 			if (config.showNPCMenu) {
 				if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
 					_activeWindow = ActiveWindow::NPC;
-					NPCWindow::Refresh();
+					NPCWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
 			}
@@ -147,13 +149,13 @@ namespace Modex
 				HomeWindow::Draw();
 				break;
 			case ActiveWindow::AddItem:
-				AddItemWindow::Draw(style, config);
+				AddItemWindow::GetSingleton()->Draw(style, config);
 				break;
 			case ActiveWindow::Object:
 				ObjectWindow::Draw(style, config);
 				break;
 			case ActiveWindow::NPC:
-				NPCWindow::Draw(style, config);
+				NPCWindow::GetSingleton()->Draw(style, config);
 				break;
 			case ActiveWindow::Teleport:
 				TeleportWindow::Draw(style, config);
@@ -175,9 +177,9 @@ namespace Modex
 		ResetSelectable();
 
 		// Initalize elements
-		AddItemWindow::Init();
+		AddItemWindow::GetSingleton()->Init();
 		HomeWindow::Init();
-		NPCWindow::Init();
+		NPCWindow::GetSingleton()->Init();
 		TeleportWindow::Init();
 		ObjectWindow::Init();
 

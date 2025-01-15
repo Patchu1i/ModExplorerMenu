@@ -102,6 +102,7 @@ using json = nlohmann::json;
 
 #include "SimpleMath.h"
 #include <codecvt>
+#include <cstring>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <unordered_set>

@@ -5,7 +5,7 @@
 namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
-	void ObjectWindow::ShowObjectListContextMenu(StaticObject& a_object)
+	void ObjectWindow::ShowObjectListContextMenu(ObjectData& a_object)
 	{
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
@@ -19,7 +19,7 @@ namespace Modex
 
 		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
 			ImGui::LogToClipboard();
-			ImGui::LogText(a_object.editorid.c_str());
+			ImGui::LogText(a_object.GetEditorID().c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
@@ -27,7 +27,7 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (ImGui::Selectable(_T("GENERAL_COPY_MODEL_PATH"), false, flags)) {
-			RE::TESModel* model = a_object.TESForm->As<RE::TESModel>();
+			RE::TESModel* model = a_object.GetForm()->As<RE::TESModel>();
 
 			if (model != nullptr) {
 				std::string modelFullPath = model->GetModel();
@@ -80,7 +80,7 @@ namespace Modex
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs<std::vector<StaticObject*>, StaticObject>(objectList, sort_specs);
+					SortColumnsWithSpecs<std::vector<ObjectData*>, ObjectData>(objectList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}
@@ -111,7 +111,7 @@ namespace Modex
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
 					if (ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, obj->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);
+						PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(obj);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -159,7 +159,7 @@ namespace Modex
 								Console::StartProcessThread();
 							} else if (b_ClickToFavorite) {
 								obj->favorite = !obj->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<StaticObject*>(obj);
+								PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(obj);
 							}
 						}
 

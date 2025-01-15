@@ -5,14 +5,14 @@
 namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
-	void NPCWindow::ShowNPCListContextMenu(NPC& a_npc)
+	void NPCWindow::ShowNPCListContextMenu(NPCData& a_npc)
 	{
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
 		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
-			ImGui::LogText(std::format("{:08x}", a_npc.FormID).c_str());
+			ImGui::LogText(a_npc.GetFormID().c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
@@ -26,7 +26,7 @@ namespace Modex
 
 		if (ImGui::Selectable(_T("GENERAL_COPY_EDITOR_ID"), false, flags)) {
 			ImGui::LogToClipboard();
-			ImGui::LogText(a_npc.editorid.c_str());
+			ImGui::LogText(a_npc.GetEditorID().c_str());
 			ImGui::LogFinish();
 			ImGui::CloseCurrentPopup();
 		}
@@ -82,7 +82,7 @@ namespace Modex
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs<std::vector<NPC*>, NPC>(npcList, sort_specs);
+					SortColumnsWithSpecs<std::vector<NPCData*>, NPCData>(npcList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}
@@ -113,7 +113,7 @@ namespace Modex
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
 					if (ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
+						PersistentData::GetSingleton()->UpdatePersistentData<NPCData*>(npc);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -137,7 +137,7 @@ namespace Modex
 
 					// Item Name
 					ImGui::TableNextColumn();
-					ImGui::Text(npc->GetName().data());
+					ImGui::Text(npc->GetNameView().data());
 
 					// Editor ID
 					ImGui::TableNextColumn();
@@ -205,7 +205,7 @@ namespace Modex
 								Console::StartProcessThread();
 							} else if (b_ClickToFavorite) {
 								npc->favorite = !npc->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<NPC*>(npc);
+								PersistentData::GetSingleton()->UpdatePersistentData<NPCData*>(npc);
 							}
 						}
 

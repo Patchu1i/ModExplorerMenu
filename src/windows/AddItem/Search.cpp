@@ -1,5 +1,6 @@
 #include "include/A/AddItem.h"
 #include "include/C/Console.h"
+#include "include/M/Modules.h"
 #include "include/P/Persistent.h"
 
 namespace Modex
@@ -8,18 +9,18 @@ namespace Modex
 	{
 		itemList.clear();
 
-		auto& cached_item_list = Data::GetItemList();
+		auto& cached_item_list = Data::GetSingleton()->GetAddItemList();
 
 		std::string compareString;
 		std::string inputString = inputBuffer;
 		std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		// TODO: Implement additional columns
+		//TODO: Implement additional columns
 		for (auto& item : cached_item_list) {
 			switch (searchKey) {
 			case BaseColumn::ID::Name:
-				compareString = item.GetName();
+				compareString = item.GetNameView();
 				break;
 			case BaseColumn::ID::FormID:
 				compareString = item.GetFormID();
@@ -28,7 +29,7 @@ namespace Modex
 				compareString = item.GetEditorID();
 				break;
 			default:
-				compareString = item.GetName();
+				compareString = item.GetNameView();
 				break;
 			}
 
@@ -45,15 +46,33 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+			// const char* compareString = nullptr;
+
+			// for (auto& item : cached_item_list) {
+			// 	switch (searchKey) {
+			// 	case BaseColumn::ID::Name:
+			// 		compareString = item.GetName();
+			// 		break;
+			// 	case BaseColumn::ID::FormID:
+			// 		compareString = item.GetFormID().data();
+			// 		break;
+			// 	case BaseColumn::ID::EditorID:
+			// 		compareString = item.GetEditorID().data();
+			// 		break;
+			// 	default:
+			// 		compareString = item.GetName().data();
+			// 		break;
+			// 	}
+
+			// if (strcasecmp(compareString, inputBuffer) == 0) {
+			// 	continue;
+			// }
+
+			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
-				continue;
-			}
-
-			if (item.GetName() == "")
+			if (item.GetNameView() == "")
 				continue;
 
 			if (item.IsNonPlayable())  // non-useable
@@ -66,11 +85,14 @@ namespace Modex
 			}
 
 			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(item.TESFile)) {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(item.GetPlugin())) {
 					continue;
 				}
 			}
 
+			// if (strstr(compareString, inputBuffer) != nullptr) {
+			// 	itemList.push_back(&item);
+			// }
 			if (compareString.find(inputString) != std::string::npos) {
 				itemList.push_back(&item);
 				continue;
@@ -89,6 +111,7 @@ namespace Modex
 	void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
 	{
 		(void)a_style;
+		(void)a_config;
 
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
@@ -169,157 +192,37 @@ namespace Modex
 			}
 
 			// Mod List sort and filter.
+			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ITEM, selectedFilter.first);
+			modListVector.insert(modListVector.begin(), "All Mods");
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::InputTextWithHint("##AddItemWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-					IM_ARRAYSIZE(modListBuffer),
-					Frame::INPUT_FLAGS);
+				if (InputTextComboBox("##AddItemWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
+					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::ITEM);
+					selectedMod = "All Mods";
 
-				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-				                                                          selectedMod;
-
-				auto min = ImVec2(totalWidth, 0.0f);
-				auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::SetNextWindowSizeConstraints(min, max);
-				auto numOfFilter = 0;
-				if (ImGui::BeginCombo("##AddItemWindow::FilterByMod", selectedModName.c_str())) {
-					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-						selectedMod = "All Mods";
-						ApplyFilters();
-						ImGui::SetItemDefaultFocus();
-					}
-
-					if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-						selectedMod = "Favorite";
-						ApplyFilters();
-						ImGui::SetItemDefaultFocus();
-					}
-
-					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-					auto modFormTypeMap = Data::GetModFormTypeMap();
-					auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
-					for (auto& mod : *modList) {
-						bool bSelected = false;
-
-						if (mod->GetFilename().data() == nullptr) {
-							continue;
-						}
-
-						const char* modName = mod->GetFilename().data();
-
-						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-							continue;
-						}
-
-						auto match = false;
-						for (auto& modMap : modFormTypeMap) {
-							if (mod == modMap.first) {
-								numOfFilter = 0;
-								for (auto& filter : filterMap) {
-									auto formName = std::get<1>(filter);
-									auto formType = std::get<0>(filter);
-									auto isEnabled = (filter == selectedFilter);
-
-									if (!isEnabled) {
-										continue;
-									}
-
-									numOfFilter++;
-
-									if (match) {
-										continue;
-									}
-
-									switch (formType) {
-									case RE::FormType::Armor:
-										if (modMap.second.armor) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Book:
-										if (modMap.second.book) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Weapon:
-										if (modMap.second.weapon) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Misc:
-										if (modMap.second.misc) {
-											match = true;
-										}
-										break;
-									case RE::FormType::KeyMaster:
-										if (modMap.second.key) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Ammo:
-										if (modMap.second.ammo) {
-											match = true;
-										}
-										break;
-									case RE::FormType::AlchemyItem:
-										if (modMap.second.alchemy) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Ingredient:
-										if (modMap.second.ingredient) {
-											match = true;
-										}
-										break;
-									case RE::FormType::Scroll:
-										if (modMap.second.scroll) {
-											match = true;
-										}
-										break;
-									default:
-										break;
-									}
-								}
-
-								if (numOfFilter == 0) {
-									match = true;
-								}
-							}
-						}
-
-						if (!match) {
-							continue;
-						}
-
-						if (std::strlen(modListBuffer) > 0) {
-							std::string compare = modName;
-							std::string input = modListBuffer;
-
-							std::transform(input.begin(), input.end(), input.begin(),
-								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-							std::transform(compare.begin(), compare.end(), compare.begin(),
-								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-							if (compare.find(input) != std::string::npos) {
-								// Do nothing?
-							} else {
+					if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+					} else {
+						for (auto& mod : modList) {
+							if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
 								continue;
 							}
-						}
 
-						if (ImGui::Selectable(modName, selectedMod == modName)) {
-							selectedMod = modName;
-							ApplyFilters();
-						}
+							std::string modName = ValidateTESFileName(mod);
 
-						if (bSelected)
-							ImGui::SetItemDefaultFocus();
+							if (modName == "All Mods") {
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
+
+							if (modName.find(modSearchBuffer) != std::string::npos) {
+								selectedMod = modName;
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
+						}
 					}
-					ImGui::EndCombo();
+
+					ApplyFilters();
 				}
 
 				ImGui::NewLine();

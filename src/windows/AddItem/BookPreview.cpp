@@ -15,13 +15,13 @@ namespace Modex
 
 		constexpr auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration;
 		if (ImGui::Begin("##ReadBookFromAIM", nullptr, flags)) {
-			auto desc = const_cast<RE::TESDescription*>(openBook->TESForm->As<RE::TESDescription>());
+			auto desc = const_cast<RE::TESDescription*>(openBook->GetForm()->As<RE::TESDescription>());
 			RE::BSString buf;
 			desc->GetDescription(buf, nullptr);
 			std::string bufStr = std::string(buf);
 			Utils::RemoveHTMLTags(bufStr);
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize(openBook->GetName().data()).x * 0.5f);
-			ImGui::Text(openBook->GetName().data());
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize(openBook->GetNameView().data()).x * 0.5f);
+			ImGui::Text(openBook->GetNameView().data());
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 			ImGui::TextWrapped(bufStr.c_str());
 		}

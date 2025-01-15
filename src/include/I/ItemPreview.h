@@ -93,8 +93,8 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		// NPC Specific Item Card details:
-		if constexpr (std::is_same<Object, NPC>::value) {
-			auto* npc = a_object->TESForm->As<RE::TESNPC>();
+		if constexpr (std::is_same<Object, NPCData>::value) {
+			auto* npc = a_object->GetForm()->As<RE::TESNPC>();
 
 			if (npc == nullptr) {
 				return;
@@ -110,9 +110,9 @@ namespace Modex
 
 		// constexpr allows for compile-time evaluation of struct passed
 		// allowing for member access to be determined by control paths.
-		if constexpr (std::is_same<Object, Item>::value) {
+		if constexpr (std::is_same<Object, ItemData>::value) {
 			if (a_object->GetFormType() == RE::FormType::Armor) {
-				auto* armor = a_object->TESForm->As<RE::TESObjectARMO>();
+				auto* armor = a_object->GetForm()->As<RE::TESObjectARMO>();
 
 				if (armor == nullptr) {
 					return;
@@ -136,7 +136,7 @@ namespace Modex
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {
-				auto* weapon = a_object->TESForm->As<RE::TESObjectWEAP>();
+				auto* weapon = a_object->GetForm()->As<RE::TESObjectWEAP>();
 
 				if (weapon == nullptr) {
 					return;
@@ -193,7 +193,7 @@ namespace Modex
 			InlineInt(ICON_RPG_WEIGHT " WT:", (int)a_object->GetWeight());
 			InlineInt(_TICONM(ICON_RPG_VALUE, "Value", ":"), a_object->GetValue());
 
-			const std::string desc = Utils::GetItemDescription(a_object->TESForm, g_DescriptionFrameworkInterface);
+			const std::string desc = Utils::GetItemDescription(a_object->GetForm(), g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Description"));

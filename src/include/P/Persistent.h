@@ -132,14 +132,14 @@ namespace Modex
 			}
 
 			if (obj->favorite) {
-				json["Favorite"][obj->filename][obj->editorid] = true;
+				json["Favorite"][obj->GetPluginName()][obj->GetEditorID()] = true;
 			} else {
-				if (json["Favorite"].contains(obj->filename) && json["Favorite"][obj->filename].contains(obj->editorid)) {
-					json["Favorite"][obj->filename].erase(obj->editorid);
+				if (json["Favorite"].contains(obj->GetPluginName()) && json["Favorite"][obj->GetPluginName()].contains(obj->GetEditorID())) {
+					json["Favorite"][obj->GetPluginName()].erase(obj->GetEditorID());
 
 					// Purge empty filenames in JSON.
-					if (json["Favorite"][obj->filename].empty()) {
-						json["Favorite"].erase(obj->filename);
+					if (json["Favorite"][obj->GetPluginName()].empty()) {
+						json["Favorite"].erase(obj->GetPluginName());
 					}
 				}
 			}

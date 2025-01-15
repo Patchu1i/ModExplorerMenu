@@ -6,7 +6,7 @@
 namespace Modex
 {
 	// Draws a Copy to Clipboard button on Context popup.
-	void TeleportWindow::ShowTeleportContextMenu(Cell& a_cell)
+	void TeleportWindow::ShowTeleportContextMenu(CellData& a_cell)
 	{
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
@@ -78,7 +78,7 @@ namespace Modex
 			// Sort our data if sort specs have been changed!
 			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
 				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs<std::vector<Cell*>, Cell>(cellList, sort_specs);
+					SortColumnsWithSpecs<std::vector<CellData*>, CellData>(cellList, sort_specs);
 					sort_specs->SpecsDirty = false;
 					dirty = false;
 				}
@@ -109,7 +109,7 @@ namespace Modex
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
 					if (ImGui::DisabledCheckbox("##TeleportWindow::FavoriteCheckbox", b_ClickToFavorite, cell->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<Cell*>(cell);
+						PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(cell);
 					}
 
 					ImGui::PopStyleColor(3);
@@ -168,7 +168,7 @@ namespace Modex
 
 							if (b_ClickToFavorite) {
 								cell->favorite = !cell->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<Cell*>(cell);
+								PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(cell);
 							}
 						}
 

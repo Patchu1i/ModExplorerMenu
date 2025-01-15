@@ -77,7 +77,7 @@ namespace Modex
 
 		ImGui::SeparatorText(_TFM("Info", ":"));
 
-		StaticObject* obj = nullptr;
+		ObjectData* obj = nullptr;
 
 		if (hoveredObject != nullptr) {
 			obj = hoveredObject;
@@ -99,10 +99,10 @@ namespace Modex
 		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
 		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
 
-		const auto name = obj->editorid.c_str();
+		const auto name = obj->GetName();
 		ImGui::NewLine();
-		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
-		ImGui::Text(name);
+		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.c_str()));
+		ImGui::Text(name.c_str());
 		ImGui::NewLine();
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
@@ -119,13 +119,13 @@ namespace Modex
 			return strings;
 		};
 
-		if (obj->editorid.empty()) {
+		if (obj->GetEditorID().empty()) {
 			return;
 		}
 
 		ImGui::NewLine();
 
-		RE::TESModel* model = obj->TESForm->As<RE::TESModel>();
+		RE::TESModel* model = obj->GetForm()->As<RE::TESModel>();
 
 		if (model != nullptr) {
 			std::string modelFullPath = model->GetModel();

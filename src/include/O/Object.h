@@ -15,9 +15,9 @@ namespace Modex
 		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
 		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowObjectListContextMenu(StaticObject& a_object);
+		static void ShowObjectListContextMenu(ObjectData& a_object);
 
-		static inline std::vector<StaticObject*> objectList;
+		static inline std::vector<ObjectData*> objectList;
 		static inline ObjectColumns columnList;
 
 		// Actions / Behavior
@@ -29,8 +29,8 @@ namespace Modex
 		// Local State Variables.
 		static inline bool _itemHovered = false;
 		static inline bool _itemSelected = false;
-		static inline StaticObject* hoveredObject = nullptr;
-		static inline StaticObject* selectedObject = nullptr;
+		static inline ObjectData* hoveredObject = nullptr;
+		static inline ObjectData* selectedObject = nullptr;
 
 		// Filter Buttons.
 		static inline bool b_Tree = false;

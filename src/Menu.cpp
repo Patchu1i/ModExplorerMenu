@@ -62,7 +62,7 @@ namespace Modex
 
 		Frame::Draw(showSettingWindow);
 
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 
 		ImGui::EndFrame();
 

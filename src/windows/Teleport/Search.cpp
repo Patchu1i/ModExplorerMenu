@@ -11,7 +11,7 @@ namespace Modex
 		cellList.clear();
 		selectedCell = nullptr;
 
-		auto& cached_item_list = Data::GetCellMap();
+		auto& cached_item_list = Data::GetSingleton()->GetTeleportList();
 
 		std::string compare;
 		std::string input = inputBuffer;
@@ -143,66 +143,67 @@ namespace Modex
 				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
 				                                                          selectedMod;
 
-				auto min = ImVec2(totalWidth, 0.0f);
-				auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::SetNextWindowSizeConstraints(min, max);
-				if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedModName.c_str())) {
-					if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-						selectedMod = "All Mods";
-						ApplyFilters();
-						ImGui::SetItemDefaultFocus();
-					}
+				(void)a_config;
+				// auto min = ImVec2(totalWidth, 0.0f);
+				// auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
+				// ImGui::SetNextItemWidth(totalWidth);
+				// ImGui::SetNextWindowSizeConstraints(min, max);
+				// if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedModName.c_str())) {
+				// 	if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
+				// 		selectedMod = "All Mods";
+				// 		ApplyFilters();
+				// 		ImGui::SetItemDefaultFocus();
+				// 	}
 
-					if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-						selectedMod = "Favorite";
-						ApplyFilters();
-						ImGui::SetItemDefaultFocus();
-					}
+				// 	if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
+				// 		selectedMod = "Favorite";
+				// 		ApplyFilters();
+				// 		ImGui::SetItemDefaultFocus();
+				// 	}
 
-					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				// 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-					auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
-					for (auto& mod : *modList) {
-						bool bSelected = false;
+				// 	auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
+				// 	for (auto& mod : *modList) {
+				// 		bool bSelected = false;
 
-						if (mod->GetFilename().data() == nullptr) {
-							continue;
-						}
+				// 		if (mod->GetFilename().data() == nullptr) {
+				// 			continue;
+				// 		}
 
-						const char* modName = mod->GetFilename().data();
+				// 		const char* modName = mod->GetFilename().data();
 
-						if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-							continue;
-						}
+				// 		if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+				// 			continue;
+				// 		}
 
-						if (std::strlen(modListBuffer) > 0) {
-							std::string compare = modName;
-							std::string input = modListBuffer;
+				// 		if (std::strlen(modListBuffer) > 0) {
+				// 			std::string compare = modName;
+				// 			std::string input = modListBuffer;
 
-							std::transform(input.begin(), input.end(), input.begin(),
-								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+				// 			std::transform(input.begin(), input.end(), input.begin(),
+				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-							std::transform(compare.begin(), compare.end(), compare.begin(),
-								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+				// 			std::transform(compare.begin(), compare.end(), compare.begin(),
+				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-							if (compare.find(input) != std::string::npos) {
-								// Do nothing?
-							} else {
-								continue;
-							}
-						}
+				// 			if (compare.find(input) != std::string::npos) {
+				// 				// Do nothing?
+				// 			} else {
+				// 				continue;
+				// 			}
+				// 		}
 
-						if (ImGui::Selectable(modName, selectedMod == modName)) {
-							selectedMod = modName;
-							ApplyFilters();
-						}
+				// 		if (ImGui::Selectable(modName, selectedMod == modName)) {
+				// 			selectedMod = modName;
+				// 			ApplyFilters();
+				// 		}
 
-						if (bSelected)  // ??
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
+				// 		if (bSelected)  // ??
+				// 			ImGui::SetItemDefaultFocus();
+				// 	}
+				// 	ImGui::EndCombo();
+				// }
 				ImGui::NewLine();
 				ImGui::TreePop();
 			}

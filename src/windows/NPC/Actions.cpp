@@ -67,7 +67,7 @@ namespace Modex
 		ImGui::PopStyleColor(3);  // End of Green Buttons
 
 		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {
-			selectedMod = "Favorite";
+			this->selectedMod = "Favorite";
 			ApplyFilters();
 		}
 		if (ImGui::m_Button(_T("NPC_UPDATE_REFERENCES"), a_style, ImVec2(button_width, 0))) {
@@ -160,7 +160,7 @@ namespace Modex
 			ImGui::Text(text);
 		};
 
-		NPC* npc = nullptr;
+		NPCData* npc = nullptr;
 
 		if (hoveredNPC != nullptr) {
 			npc = hoveredNPC;
@@ -178,8 +178,8 @@ namespace Modex
 		const auto cursor = ImGui::GetCursorScreenPos();
 		const auto size = ImGui::GetContentRegionAvail();
 
-		auto isEssential = npc->AsTESNPC->IsEssential();
-		auto isUnique = npc->AsTESNPC->IsUnique();
+		auto isEssential = npc->GetTESNPC()->IsEssential();
+		auto isUnique = npc->GetTESNPC()->IsUnique();
 
 		// Color Name Bar based on NPC Essential/Unique state.
 		auto color = isEssential ? ImVec4(0.40f, 0.12f, 0.45f, 0.65f) :
@@ -189,12 +189,13 @@ namespace Modex
 		drawList->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w - 0.32f)));
 		drawList->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(color), 0.0f, 0, 2.0f);
 
-		const auto name = npc->GetName().data();
+		// this is showing wrong
+		const auto name = npc->GetName();
 		ImGui::NewLine();
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name));
+		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.c_str()));
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() / 2);
-		ImGui::Text(name);
+		ImGui::Text(name.c_str());
 		ImGui::NewLine();
 		ImGui::PopStyleVar();
 
@@ -270,7 +271,7 @@ namespace Modex
 
 			if (ImGui::TreeNode(_T("NPC_SPELLS"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				auto spellData = npc->AsTESNPC->GetSpellList();
+				auto spellData = npc->GetTESNPC()->GetSpellList();
 
 				if (spellData != nullptr) {
 					for (uint32_t i = 0; i < spellData->numSpells; i++) {
@@ -290,7 +291,7 @@ namespace Modex
 							auto castType = Utils::GetCastingType(spell->data.castingType);
 							auto spellType = Utils::GetSpellType(spell->data.spellType);
 							auto delType = Utils::GetDeliveryType(spell->data.delivery);
-							auto cost = spell->CalculateMagickaCost(npc->TESForm->As<RE::Actor>());
+							auto cost = spell->CalculateMagickaCost(npc->GetForm()->As<RE::Actor>());
 
 							float costPercent = cost / npc->GetMagicka() * 100.0f;
 							std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");

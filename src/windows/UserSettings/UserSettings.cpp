@@ -588,99 +588,100 @@ namespace Modex
 		AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" });
 		AddCheckbox("SETTING_SHOW_HOME", config.showHomeMenu);
 
-		if (AddCheckbox("SETTING_SHOW_ADDITEM", config.showAddItemMenu)) {
-			if (Data::GetSingleton()->GetItemList().empty()) {
-				Data::GetSingleton()->GenerateItemList();
-				AddItemWindow::GetSingleton()->Refresh();
-			}
-		}
+		// TODO: Reimplmenet these settings
+		// if (AddCheckbox("SETTING_SHOW_ADDITEM", config.showAddItemMenu)) {
+		// 	if (Data::GetSingleton()->GetItemList().empty()) {
+		// 		Data::GetSingleton()->GenerateItemList();
+		// 		AddItemWindow::GetSingleton()->Refresh();
+		// 	}
+		// }
 
-		if (AddCheckbox("SETTING_SHOW_OBJECT", config.showObjectMenu)) {
-			if (Data::GetSingleton()->GetObjectList().empty()) {
-				Data::GetSingleton()->GenerateObjectList();
-				ObjectWindow::Refresh();
-			}
-		}
+		// if (AddCheckbox("SETTING_SHOW_OBJECT", config.showObjectMenu)) {
+		// 	if (Data::GetSingleton()->GetObjectList().empty()) {
+		// 		Data::GetSingleton()->GenerateObjectList();
+		// 		ObjectWindow::Refresh();
+		// 	}
+		// }
 
-		if (AddCheckbox("SETTING_SHOW_NPC", config.showNPCMenu)) {
-			if (Data::GetSingleton()->GetNPCList().empty()) {
-				Data::GetSingleton()->GenerateNPCList();
-				NPCWindow::Refresh();
-			}
-		}
+		// if (AddCheckbox("SETTING_SHOW_NPC", config.showNPCMenu)) {
+		// 	if (Data::GetSingleton()->GetNPCList().empty()) {
+		// 		Data::GetSingleton()->GenerateNPCList();
+		// 		NPCWindow::Refresh();
+		// 	}
+		// }
 
-		if (AddCheckbox("SETTING_SHOW_TELEPORT", config.showTeleportMenu)) {
-			if (Data::GetSingleton()->GetCellMap().empty()) {
-				Data::GetSingleton()->GenerateCellList();
-				TeleportWindow::Refresh();
-			}
-		}
+		// if (AddCheckbox("SETTING_SHOW_TELEPORT", config.showTeleportMenu)) {
+		// 	if (Data::GetSingleton()->GetCellMap().empty()) {
+		// 		Data::GetSingleton()->GenerateCellList();
+		// 		TeleportWindow::Refresh();
+		// 	}
+		// }
 	}
 
 	void SettingsWindow::DrawBlacklistSettings()
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 0.0f));
+		// ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 0.0f));
 
-		constexpr auto flags = ImGuiChildFlags_Border;
-		const float width = (ImGui::GetContentRegionAvail().x * 0.5f) - 10.0f;
-		auto modList = Data::GetModList(Data::ALL_MOD_LIST, 0);
+		// constexpr auto flags = ImGuiChildFlags_Border;
+		// const float width = (ImGui::GetContentRegionAvail().x * 0.5f) - 10.0f;
+		// auto modList = Data::GetModList(Data::ALL_MOD_LIST, 0);
 
-		ImGui::NewLine();
+		// ImGui::NewLine();
 
-		// Labels
-		ImGui::Text(_TFM("Whitelist", ":"));
-		ImGui::SameLine(width + ImGui::GetFontSize() * 4.0f);
-		ImGui::Text(_TFM("Blacklist", ":"));
-		ImGui::NewLine();
+		// // Labels
+		// ImGui::Text(_TFM("Whitelist", ":"));
+		// ImGui::SameLine(width + ImGui::GetFontSize() * 4.0f);
+		// ImGui::Text(_TFM("Blacklist", ":"));
+		// ImGui::NewLine();
 
-		// Left Column
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
-			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+		// // Left Column
+		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		// if (ImGui::BeginChild("##BlacklistLeftSide", ImVec2(width, width / 1.5f), flags)) {
+		// 	auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
-			for (auto& mod : *modList) {
-				const char* modName = mod->GetFilename().data();
+		// 	for (auto& mod : *modList) {
+		// 		const char* modName = mod->GetFilename().data();
 
-				if (modName == nullptr || modName[0] == '\0') {
-					continue;
-				}
+		// 		if (modName == nullptr || modName[0] == '\0') {
+		// 			continue;
+		// 		}
 
-				if (!blacklist.contains(mod)) {
-					if (ImGui::Selectable(modName, false)) {
-						PersistentData::GetSingleton()->AddModToBlacklist(mod);
-					}
-				}
-			}
-		}
-		ImGui::EndChild();
+		// 		if (!blacklist.contains(mod)) {
+		// 			if (ImGui::Selectable(modName, false)) {
+		// 				PersistentData::GetSingleton()->AddModToBlacklist(mod);
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// ImGui::EndChild();
 
-		ImGui::SameLine();
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		ImGui::SameLine();
+		// ImGui::SameLine();
+		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		// ImGui::SameLine();
 
-		// Right Column
-		if (ImGui::BeginChild("##BlacklistRightSide", ImVec2(width - 10.0f, width / 1.5f), flags)) {
-			auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+		// // Right Column
+		// if (ImGui::BeginChild("##BlacklistRightSide", ImVec2(width - 10.0f, width / 1.5f), flags)) {
+		// 	auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
-			for (auto& mod : *modList) {
-				const char* modName = mod->GetFilename().data();
+		// 	for (auto& mod : *modList) {
+		// 		const char* modName = mod->GetFilename().data();
 
-				if (modName == nullptr || modName[0] == '\0') {
-					continue;
-				}
+		// 		if (modName == nullptr || modName[0] == '\0') {
+		// 			continue;
+		// 		}
 
-				if (blacklist.contains(mod)) {
-					if (ImGui::Selectable(modName, false)) {
-						PersistentData::GetSingleton()->RemoveModFromBlacklist(mod);
-					}
-				}
-			}
-		}
-		ImGui::EndChild();
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		ImGui::NewLine();
+		// 		if (blacklist.contains(mod)) {
+		// 			if (ImGui::Selectable(modName, false)) {
+		// 				PersistentData::GetSingleton()->RemoveModFromBlacklist(mod);
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// ImGui::EndChild();
+		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		// ImGui::NewLine();
 
-		ImGui::PopStyleVar();
+		// ImGui::PopStyleVar();
 	}
 
 	void SettingsWindow::DrawThemeSelector()
