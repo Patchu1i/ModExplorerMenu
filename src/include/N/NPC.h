@@ -4,16 +4,17 @@
 #include "include/C/Columns.h"
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
-#include "include/M/Modules.h"
+#include "include/I/ISearch.h"
+#include "include/I/ISortable.h"
 
 namespace Modex
 {
 	class NPCWindow : private ISortable, private ISearch
 	{
 	private:
-		void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
+		void ShowFormTable();
+		void ShowSearch();
+		void ShowActions();
 		void ShowNPCListContextMenu(NPCData& a_npc);
 		void ApplyFilters();
 
@@ -62,7 +63,7 @@ namespace Modex
 		NPCWindow() = default;
 		~NPCWindow() = default;
 
-		void Draw(Settings::Style& a_style, Settings::Config& a_config);
+		void Draw();
 		void Refresh();
 		void Init();
 

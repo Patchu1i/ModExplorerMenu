@@ -3,7 +3,7 @@
 namespace Modex
 {
 	// Main Draw function for AddItem, called by Frame::Draw()
-	void AddItemWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
+	void AddItemWindow::Draw()
 	{
 		constexpr auto flags = ImGuiOldColumnFlags_NoResize;
 		ImGui::BeginColumns("##HorizontalSplit", 2, flags);
@@ -12,12 +12,12 @@ namespace Modex
 		ImGui::SetColumnWidth(0, width * 0.75f);
 
 		// Left Column
-		ShowSearch(a_style, a_config);
-		ShowFormTable(a_style, a_config);
+		ShowSearch();
+		ShowFormTable();
 
 		// Right Column
 		ImGui::NextColumn();
-		ShowActions(a_style, a_config);
+		ShowActions();
 		ImGui::EndColumns();
 
 		// Book Prompt
@@ -29,7 +29,20 @@ namespace Modex
 	void AddItemWindow::Init()
 	{
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-		ApplyFilters();
 		columnList = AddItemColumns();
+
+		primaryFilter = RE::FormType::None;
+		openBook = nullptr;
+		itemPreview = nullptr;
+
+		b_AddToInventory = true;
+		b_PlaceOnGround = false;
+		b_AddToFavorites = false;
+		clickToAddCount = 1;
+
+		searchKey = BaseColumn::ID::Name;
+		dirty = true;
+
+		ApplyFilters();
 	}
 }

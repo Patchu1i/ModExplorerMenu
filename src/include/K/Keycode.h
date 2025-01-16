@@ -1,6 +1,8 @@
 
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)
 
+// TODO: ImGui Impl has its own functions for Virtual key to ImGui key conversions.
+
 namespace ImGui
 {
 	// Used for conditional hotkey assignment. Prevent users from assigning invalid keys to hotkey.

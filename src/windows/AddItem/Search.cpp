@@ -1,6 +1,6 @@
 #include "include/A/AddItem.h"
 #include "include/C/Console.h"
-#include "include/M/Modules.h"
+#include "include/I/ISearch.h"
 #include "include/P/Persistent.h"
 
 namespace Modex
@@ -78,8 +78,13 @@ namespace Modex
 			if (item.IsNonPlayable())  // non-useable
 				continue;
 
-			if (selectedFilter.second != "None") {
-				if (item.GetFormType() != selectedFilter.first) {
+			// if (selectedFilter.second != "None") {
+			// 	if (item.GetFormType() != selectedFilter.first) {
+			// 		continue;
+			// 	}
+			// }
+			if (primaryFilter != RE::FormType::None) {
+				if (item.GetFormType() != primaryFilter) {
 					continue;
 				}
 			}
@@ -108,11 +113,8 @@ namespace Modex
 	}
 
 	// Draw search bar for filtering items.
-	void AddItemWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
+	void AddItemWindow::ShowSearch()
 	{
-		(void)a_style;
-		(void)a_config;
-
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
@@ -162,25 +164,26 @@ namespace Modex
 			// Secondary Record Type filters
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 				ImGui::SetNextItemWidth(totalWidth);
-				if (ImGui::BeginCombo("##AddItemWindow::FilterByType", _T(selectedFilter.second), ImGuiComboFlags_HeightLarge)) {
-					if (ImGui::Selectable(_T("None"), selectedFilter.second == "None")) {
-						selectedFilter = { RE::FormType::None, "None" };
+
+				std::string filterName = RE::FormTypeToString(primaryFilter).data();
+				if (ImGui::BeginCombo("##AddItemWindow::FilterByType", _T(filterName), ImGuiComboFlags_HeightLarge)) {
+					if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
+						primaryFilter = RE::FormType::None;
 						ApplyFilters();
 						ImGui::SetItemDefaultFocus();
 					}
 
-					for (auto& filter : filterMap) {
-						if (auto formName = std::get<1>(filter); formName.data() != nullptr) {
-							bool isSelected = (formName == selectedFilter.second);
+					for (auto& filter : filterList) {
+						bool isSelected = (filter == primaryFilter);
 
-							if (ImGui::Selectable(_T(formName), isSelected)) {
-								selectedFilter = filter;
-								ApplyFilters();
-							}
+						std::string formName = RE::FormTypeToString(filter).data();
+						if (ImGui::Selectable(_T(formName), isSelected)) {
+							primaryFilter = filter;
+							ApplyFilters();
+						}
 
-							if (isSelected) {
-								ImGui::SetItemDefaultFocus();
-							}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
 						}
 					}
 
@@ -192,7 +195,7 @@ namespace Modex
 			}
 
 			// Mod List sort and filter.
-			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ITEM, selectedFilter.first);
+			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ITEM, primaryFilter);
 			modListVector.insert(modListVector.begin(), "All Mods");
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 				if (InputTextComboBox("##AddItemWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {

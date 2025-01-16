@@ -44,12 +44,12 @@ namespace Modex
 	}
 
 	// Draw the table of items
-	void AddItemWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
+	void AddItemWindow::ShowFormTable()
 	{
-		(void)a_config;
-
 		auto results = std::string(_T("Results")) + std::string(" (") + std::to_string(itemList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
+
+		auto a_style = Settings::GetSingleton()->GetStyle();
 
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 		ImVec2 tableSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);

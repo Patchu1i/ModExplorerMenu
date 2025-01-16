@@ -43,9 +43,9 @@ namespace Modex
 	}
 
 	// Draw the table of items
-	void TeleportWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
+	void TeleportWindow::ShowFormTable()
 	{
-		(void)a_config;
+		auto a_style = Settings::GetSingleton()->GetStyle();
 
 		auto results = std::string(_T("Results")) + std::string(" (") + std::to_string(cellList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());
@@ -53,7 +53,7 @@ namespace Modex
 		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
 		ImVec2 table_size = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##TeleportWindow::Table", columnList.GetTotalColumns(), TeleportTableFlags | rowBG, table_size)) {
+		if (ImGui::BeginTable("##TeleportWindow::Table", columnList.GetTotalColumns(), Frame::TELEPORT_FLAGS | rowBG, table_size)) {
 			ImGui::TableSetupScrollFreeze(1, 1);
 			for (auto& column : columnList.columns) {
 				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);

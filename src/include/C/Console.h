@@ -2,6 +2,10 @@
 
 #include <PCH.h>
 
+// clang-format off
+
+// TODO: Refactor; this class is a mess.
+
 namespace Modex
 {
 	class Console

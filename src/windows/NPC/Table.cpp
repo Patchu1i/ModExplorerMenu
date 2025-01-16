@@ -46,9 +46,9 @@ namespace Modex
 	}
 
 	// Draw the table of items
-	void NPCWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
+	void NPCWindow::ShowFormTable()
 	{
-		(void)a_config;
+		auto a_style = Settings::GetSingleton()->GetStyle();
 
 		auto results = std::string(_T("Results")) + std::string(" (") + std::to_string(npcList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());

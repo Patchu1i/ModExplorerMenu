@@ -29,7 +29,7 @@ namespace
 			Modex::GraphicManager::Init();
 			Modex::Data::GetSingleton()->Run();
 			Modex::InputManager::GetSingleton()->Init();
-			Modex::Frame::Install();
+			Modex::Frame::GetSingleton()->Install();
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
 			logger::info("kPostLoad");

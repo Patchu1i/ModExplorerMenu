@@ -1,5 +1,7 @@
 #pragma once
 
+// clang-format off
+
 namespace Modex
 {
 	template <class TESObject>
@@ -13,17 +15,17 @@ namespace Modex
 	class BaseObject
 	{
 	private:
-		RE::TESForm* TESForm;  // cannot be const
-		const std::string name;
-		const std::string editorid;
-		const std::string plugin;
-		const std::string formid;
-
-		const RE::FormID baseid;
+		RE::TESForm* 		TESForm;  // cannot be const
+		
+		const std::string 	name;
+		const std::string 	editorid;
+		const std::string 	plugin;
+		const std::string 	formid;
+		const RE::FormID 	baseid;
 
 	public:
-		bool favorite = false;
-		RE::FormID refID = 0;
+		bool 				favorite;
+		RE::FormID 			refID;
 
 		// Initializer which stores key information about the object to avoid cache misses (?)
 		// during SortColumns and other heavy operations. Speeds up iterations and sorting.
@@ -33,7 +35,8 @@ namespace Modex
 			name{ form != nullptr ? ValidateTESName(form) : "NULL_ERR" },
 			editorid{ form != nullptr ? po3_GetEditorID(form->GetFormID()) : "NULL_ERR" },
 			formid{ form != nullptr ? fmt::format("{:08x}", form->GetFormID()) : "NULL_ERR" },
-			baseid{ form != nullptr ? form->GetFormID() : 0 }
+			baseid{ form != nullptr ? form->GetFormID() : 0 },
+			refID{ 0 }
 		{}
 
 		// TODO: Derefencing char* without safety checks. Danger zone.
@@ -216,14 +219,14 @@ namespace Modex
 	class CellData
 	{
 	public:
-		const std::string filename;
-		const std::string space;
-		const std::string zone;
-		const std::string cellName;
-		const std::string editorid;
+		const std::string 	filename;
+		const std::string 	space;
+		const std::string 	zone;
+		const std::string 	cellName;
+		const std::string 	editorid;
 
-		bool favorite = false;
-		const RE::TESFile* mod;
+		const RE::TESFile* 	mod;
+		bool 				favorite;
 
 		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
 		[[nodiscard]] inline std::string_view GetPluginNameView() const { return filename; }
@@ -235,6 +238,13 @@ namespace Modex
 		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
 
 		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, bool favorite, const RE::TESFile* mod = nullptr) :
-			filename(filename), space(space), zone(zone), cellName(cellName), editorid(editorid), favorite(favorite), mod(mod) {}
+			filename(filename), 
+			space(space),
+			 zone(zone), 
+			 cellName(cellName), 
+			 editorid(editorid), 
+			 favorite(favorite), 
+			 mod(mod) 
+		{}
 	};
 }

@@ -8,14 +8,6 @@
 
 namespace Modex
 {
-
-	using ItemFilterType = std::pair<RE::FormType, std::string>;
-
-	// class NPCData;
-	// class ItemData;
-	// class ObjectData;
-	// class CellData;
-
 	class Data
 	{
 	public:
@@ -31,23 +23,23 @@ namespace Modex
 
 		struct ModFileItemFlags
 		{
-			bool alchemy = false;
-			bool ingredient = false;
-			bool ammo = false;
-			bool key = false;
-			bool misc = false;
-			bool armor = false;
-			bool book = false;
-			bool weapon = false;
-			bool scroll = false;
-			bool npc = false;
-			bool staticObject = false;
-			bool tree = false;
-			bool activator = false;
-			bool container = false;
-			bool door = false;
-			bool light = false;
-			bool furniture = false;
+			bool 	alchemy 		= false;
+			bool 	ingredient 		= false;
+			bool 	ammo 			= false;
+			bool 	key 			= false;
+			bool 	misc 			= false;
+			bool 	armor 			= false;
+			bool 	book 			= false;
+			bool 	weapon 			= false;
+			bool 	scroll 			= false;
+			bool 	npc 			= false;
+			bool 	staticObject 	= false;
+			bool 	tree 			= false;
+			bool 	activator 		= false;
+			bool 	container 		= false;
+			bool 	door 			= false;
+			bool 	light 			= false;
+			bool 	furniture 		= false;
 		};
 
 		static inline Data* GetSingleton()
@@ -116,51 +108,5 @@ namespace Modex
 
 		// Windows Specific API for File Creation Time
 		[[nodiscard]] std::time_t GetFileCreationTime(const std::filesystem::path& path);
-
-		// [[nodiscard]] static inline std::vector<Cell>& GetCellMap()
-		// {
-		// 	return _cellCache;
-		// }
-
-		// [[nodiscard]] static inline std::vector<Item>& GetItemList()
-		// {
-		// 	return _cache;
-		// }
-
-		// [[nodiscard]] static std::unordered_map<const RE::TESFile*, ModFileItemFlags> GetModFormTypeMap()
-		// {
-		// 	return _itemListModFormTypeMap;
-		// }
-
-		// [[nodiscard]] static inline std::vector<NPC>& GetNPCList()
-		// {
-		// 	return _npcCache;
-		// }
-
-		// [[nodiscard]] static inline std::set<std::string>& GetNPCClassList()
-		// {
-		// 	return _npcClassList;
-		// }
-
-		// [[nodiscard]] static inline std::set<std::string>& GetNPCRaceList()
-		// {
-		// 	return _npcRaceList;
-		// }
-
-		// [[nodiscard]] static inline std::set<std::string>& GetNPCFactionList()
-		// {
-		// 	return _npcFactionList;
-		// }
-
-		// [[nodiscard]] static inline std::vector<RE::TESObjectREFR*>& GetNPCRefIds()
-		// {
-		// 	return _npcRefIds;
-		// }
-
-		// [[nodiscard]] static inline std::vector<StaticObject>& GetObjectList()
-		// {
-		// 	return _staticCache;
-		// }
 	};
 }
-// clang-format on

@@ -83,16 +83,14 @@ namespace Modex
 	}
 
 	// Draw search bar for filtering items.
-	void TeleportWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
+	void TeleportWindow::ShowSearch()
 	{
-		(void)a_style;
-
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
 			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
 			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			auto totalWidth = inputTextWidth + filterWidth + 2.0f;
+			// auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
 			// Search bar for compare string.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -134,16 +132,16 @@ namespace Modex
 
 			// Mod List sort and filter.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::InputTextWithHint("##TeleportWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-					IM_ARRAYSIZE(modListBuffer),
-					Frame::INPUT_FLAGS);
+				// ImGui::SetNextItemWidth(totalWidth);
+				// ImGui::InputTextWithHint("##TeleportWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
+				// 	IM_ARRAYSIZE(modListBuffer),
+				// 	Frame::INPUT_FLAGS);
 
-				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-				                                                          selectedMod;
+				// std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+				//                               selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+				//                                                           selectedMod;
 
-				(void)a_config;
+				// (void)a_config;
 				// auto min = ImVec2(totalWidth, 0.0f);
 				// auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
 				// ImGui::SetNextItemWidth(totalWidth);

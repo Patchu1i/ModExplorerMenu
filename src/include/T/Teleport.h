@@ -2,47 +2,51 @@
 
 #include "include/C/Columns.h"
 #include "include/F/Frame.h"
+#include "include/I/ISearch.h"
+#include "include/I/ISortable.h"
+
+// clang-format off
 
 namespace Modex
 {
-	class TeleportWindow : private ISortable
+	class TeleportWindow : private ISortable, private ISearch
 	{
-	private:
-		static inline std::vector<CellData*> cellList;
-		static inline TeleportColumns columnList;
-		static inline CellData* selectedCell;
-
 	public:
-		static void Draw(Settings::Style& a_style, Settings::Config& a_config);
-		static void Init();
-		static void Refresh();
+		static inline TeleportWindow* GetSingleton()
+		{
+			static TeleportWindow singleton;
+			return &singleton;
+		}
+
+		TeleportWindow() = default;
+		~TeleportWindow() = default;
+
+		void 			Draw();
+		void 			Init();
+		void 			Refresh();
 
 	private:
-		static void ApplyFilters();
-		static void ShowActions(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowSearch(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowFormTable(Settings::Style& a_style, Settings::Config& a_config);
-		static void ShowTeleportContextMenu(CellData& a_cell);
+		void 			ApplyFilters();
+		void 			ShowActions();
+		void 			ShowSearch();
+		void 			ShowFormTable();
+		void 			ShowTeleportContextMenu(CellData& a_cell);
 
-		static inline constexpr auto TeleportTableFlags =
-			ImGuiTableFlags_Reorderable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
-			ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Hideable |
-			ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_NoBordersInBody |
-			ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
+		// Local State Variables.
+		bool 						b_ClickToTeleport;
+		bool 						b_ClickToFavorite;
 
-		// Actions
-		static inline bool b_ClickToTeleport = false;
-		static inline bool b_ClickToFavorite = true;
+		std::vector<CellData*> 		cellList;
+		TeleportColumns 			columnList;
+		CellData* 					selectedCell;
 
-		// Searching
-		static inline BaseColumn::ID searchKey = BaseColumn::ID::EditorID;
-		static inline char inputBuffer[256] = "";
-		static inline char modListBuffer[256] = "";
-		static inline std::string selectedMod = "All Mods";
-		static inline bool dirty = true;
+		// Input Fuzzy Search
+		BaseColumn::ID 				searchKey;
+		char 						inputBuffer[256];
+		bool 						dirty;
 
 		// Sorting & Filtering
-		static inline const std::map<BaseColumn::ID, const char*> InputSearchMap = {
+		const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Plugin, "Plugin" },
 			{ BaseColumn::ID::Space, "Worldspace" },
 			{ BaseColumn::ID::Zone, "Zone" },
@@ -50,7 +54,8 @@ namespace Modex
 			{ BaseColumn::ID::EditorID, "Editor ID" }
 		};
 
-		//static const int column_count = 6;
-		//static inline std::map<std::string, Data::CachedCell*> cellMap;
+		// ISearch Interface
+		char 						modSearchBuffer[256];
+		std::string 				selectedMod;
 	};
 }

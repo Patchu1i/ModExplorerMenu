@@ -2,7 +2,7 @@
 
 namespace Modex
 {
-	void NPCWindow::Draw(Settings::Style& a_style, Settings::Config& a_config)
+	void NPCWindow::Draw()
 	{
 		constexpr auto flags = ImGuiOldColumnFlags_NoResize;
 		ImGui::BeginColumns("##HorizontalSplit", 2, flags);
@@ -11,12 +11,12 @@ namespace Modex
 		ImGui::SetColumnWidth(0, width * 0.75f);
 
 		// Left Column
-		ShowSearch(a_style, a_config);
-		ShowFormTable(a_style, a_config);
+		ShowSearch();
+		ShowFormTable();
 
 		// Right Column
 		ImGui::NextColumn();
-		ShowActions(a_style, a_config);
+		ShowActions();
 		ImGui::EndColumns();
 	}
 

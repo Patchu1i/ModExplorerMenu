@@ -119,11 +119,8 @@ namespace Modex
 	}
 
 	// Draw search bar for filtering items.
-	void NPCWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
+	void NPCWindow::ShowSearch()
 	{
-		(void)a_style;
-		(void)a_config;
-
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 

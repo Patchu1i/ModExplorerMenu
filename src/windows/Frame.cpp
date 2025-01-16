@@ -84,14 +84,14 @@ namespace Modex
 
 			if (config.showHomeMenu) {
 				if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					_activeWindow = ActiveWindow::Home;
+					activeWindow = ActiveWindow::Home;
 					ResetSelectable();
 				}
 			}
 
 			if (config.showAddItemMenu) {
 				if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					_activeWindow = ActiveWindow::AddItem;
+					activeWindow = ActiveWindow::AddItem;
 					AddItemWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
@@ -99,15 +99,15 @@ namespace Modex
 
 			if (config.showObjectMenu) {
 				if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					_activeWindow = ActiveWindow::Object;
-					ObjectWindow::Refresh();
+					activeWindow = ActiveWindow::Object;
+					ObjectWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
 			}
 
 			if (config.showNPCMenu) {
 				if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					_activeWindow = ActiveWindow::NPC;
+					activeWindow = ActiveWindow::NPC;
 					NPCWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
@@ -115,8 +115,8 @@ namespace Modex
 
 			if (config.showTeleportMenu) {
 				if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					_activeWindow = ActiveWindow::Teleport;
-					TeleportWindow::Refresh();
+					activeWindow = ActiveWindow::Teleport;
+					TeleportWindow::GetSingleton()->Refresh();
 					ResetSelectable();
 				}
 			}
@@ -124,7 +124,7 @@ namespace Modex
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 			if (ImGui::Selectable(_T("Settings"), &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				_activeWindow = ActiveWindow::Settings;
+				activeWindow = ActiveWindow::Settings;
 				ResetSelectable();
 			}
 
@@ -144,21 +144,21 @@ namespace Modex
 		ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
 
 		if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus + ImGuiWindowFlags_NoScrollbar + ImGuiWindowFlags_NoScrollWithMouse)) {
-			switch (_activeWindow) {
+			switch (activeWindow) {
 			case ActiveWindow::Home:
 				HomeWindow::Draw();
 				break;
 			case ActiveWindow::AddItem:
-				AddItemWindow::GetSingleton()->Draw(style, config);
+				AddItemWindow::GetSingleton()->Draw();
 				break;
 			case ActiveWindow::Object:
-				ObjectWindow::Draw(style, config);
+				ObjectWindow::GetSingleton()->Draw();
 				break;
 			case ActiveWindow::NPC:
-				NPCWindow::GetSingleton()->Draw(style, config);
+				NPCWindow::GetSingleton()->Draw();
 				break;
 			case ActiveWindow::Teleport:
-				TeleportWindow::Draw(style, config);
+				TeleportWindow::GetSingleton()->Draw();
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
@@ -173,20 +173,17 @@ namespace Modex
 
 	void Frame::Install()
 	{
-		Frame::_activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
+		Frame::activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
 		ResetSelectable();
 
 		// Initalize elements
 		AddItemWindow::GetSingleton()->Init();
 		HomeWindow::Init();
 		NPCWindow::GetSingleton()->Init();
-		TeleportWindow::Init();
-		ObjectWindow::Init();
+		TeleportWindow::GetSingleton()->Init();
+		ObjectWindow::GetSingleton()->Init();
 
 		RefreshStyle();
-
-		// FIXME: This shouldn't be needed anymore
-		Frame::_init.store(true);
 	}
 
 	void Frame::RefreshStyle()

@@ -1,6 +1,8 @@
 #pragma once
 #include <include/D/Data.h>
 
+// TODO: Not sure why this is its own header.
+
 namespace Modex
 {
 	template <class Object>

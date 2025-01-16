@@ -59,8 +59,8 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedFilter.second != "None") {
-				if (obj.GetFormType() != selectedFilter.first) {
+			if (primaryFilter != RE::FormType::None) {
+				if (obj.GetFormType() != primaryFilter) {
 					continue;
 				}
 			}
@@ -86,10 +86,8 @@ namespace Modex
 	}
 
 	// Draw search bar for filtering items.
-	void ObjectWindow::ShowSearch(Settings::Style& a_style, Settings::Config& a_config)
+	void ObjectWindow::ShowSearch()
 	{
-		(void)a_style;
-
 		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Indent();
 
@@ -138,20 +136,21 @@ namespace Modex
 			// Secondary Filter for object record types.
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 				ImGui::SetNextItemWidth(totalWidth);
-				if (ImGui::BeginCombo("##ObjectWindow::FilterByType", _T(selectedFilter.second))) {
-					if (ImGui::Selectable(_T("None"), selectedFilter.second == "None")) {
-						selectedFilter = { RE::FormType::None, "None" };
+
+				auto filterName = RE::FormTypeToString(primaryFilter).data();
+				if (ImGui::BeginCombo("##ObjectWindow::FilterByType", _T(filterName))) {
+					if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
+						primaryFilter = RE::FormType::None;
 						ApplyFilters();
 						ImGui::SetItemDefaultFocus();
 					}
 
-					for (auto& filter : filterMap) {
-						auto formName = std::get<1>(filter).data();
+					for (auto& filter : filterList) {
+						bool isSelected = (filter == primaryFilter);
 
-						bool isSelected = (formName == selectedFilter.second);
-
+						std::string formName = RE::FormTypeToString(filter).data();
 						if (ImGui::Selectable(_T(formName), isSelected)) {
-							selectedFilter = filter;
+							primaryFilter = filter;
 							ApplyFilters();
 						}
 
@@ -168,16 +167,15 @@ namespace Modex
 			}
 
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(totalWidth);
-				ImGui::InputTextWithHint("##ObjectWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-					IM_ARRAYSIZE(modListBuffer),
-					Frame::INPUT_FLAGS);
+				// ImGui::SetNextItemWidth(totalWidth);
+				// ImGui::InputTextWithHint("##ObjectWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modSearchBuffer,
+				// 	IM_ARRAYSIZE(modSearchBuffer),
+				// 	Frame::INPUT_FLAGS);
 
-				std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-				                              selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-				                                                          selectedMod;
+				// std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
+				//                               selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
+				//                                                           selectedMod;
 
-				(void)a_config;
 				// auto min = ImVec2(totalWidth, 0.0f);
 				// auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
 				// ImGui::SetNextItemWidth(totalWidth);

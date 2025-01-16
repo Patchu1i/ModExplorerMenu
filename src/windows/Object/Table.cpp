@@ -43,9 +43,9 @@ namespace Modex
 	}
 
 	// Draw the table of items
-	void ObjectWindow::ShowFormTable(Settings::Style& a_style, Settings::Config& a_config)
+	void ObjectWindow::ShowFormTable()
 	{
-		(void)a_config;
+		auto a_style = Settings::GetSingleton()->GetStyle();
 
 		auto results = std::string("Results (") + std::to_string(objectList.size()) + std::string(")");
 		ImGui::SeparatorText(results.c_str());

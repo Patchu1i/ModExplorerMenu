@@ -1,5 +1,5 @@
 #pragma once
-#include "include/M/Modules.h"
+#include "include/I/ISearch.h"
 
 namespace Modex
 {

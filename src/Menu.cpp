@@ -60,7 +60,7 @@ namespace Modex
 		ImGui::NewFrame();
 		ImGui::GetIO().MouseDrawCursor = true;
 
-		Frame::Draw(showSettingWindow);
+		Frame::GetSingleton()->Draw(showSettingWindow);
 
 		ImGui::ShowDemoWindow();
 
@@ -120,7 +120,7 @@ namespace Modex
 
 		SyncUserStyleToImGui(style);
 
-		Frame::RefreshStyle();
+		Frame::GetSingleton()->RefreshStyle();
 	}
 
 	void Menu::SyncUserStyleToImGui(Settings::Style user)
