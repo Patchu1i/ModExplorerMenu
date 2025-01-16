@@ -367,14 +367,10 @@ namespace Modex
 		_npcClassList.clear();
 
 		for (auto& npc : _npcCache) {
-			if (auto className = npc.GetClass().data()) {
-				if (className == nullptr) {
-					continue;
-				}
+			auto className = npc.GetClass();
 
-				if (_npcClassList.find(className) == _npcClassList.end()) {
-					_npcClassList.insert(className);
-				}
+			if (_npcClassList.find(className) == _npcClassList.end()) {
+				_npcClassList.insert(className);
 			}
 		}
 	}
@@ -384,14 +380,10 @@ namespace Modex
 		_npcRaceList.clear();
 
 		for (auto& npc : _npcCache) {
-			if (auto raceName = npc.GetRace().data()) {
-				if (raceName == nullptr) {
-					continue;
-				}
+			auto raceName = npc.GetRace();
 
-				if (_npcRaceList.find(raceName) == _npcRaceList.end()) {
-					_npcRaceList.insert(raceName);
-				}
+			if (_npcRaceList.find(raceName) == _npcRaceList.end()) {
+				_npcRaceList.insert(raceName);
 			}
 		}
 	}
@@ -401,14 +393,9 @@ namespace Modex
 		_npcFactionList.clear();
 
 		for (auto& npc : _npcCache) {
-			// auto factionNames = npc.AsTESNPC->factions;
 			auto factionNames = npc.GetFactions();
 			for (auto& faction : factionNames) {
-				std::string factionName = faction.faction->GetFullName();
-
-				if (factionName.empty()) {
-					continue;
-				}
+				std::string factionName = ValidateTESName(faction.faction);
 
 				if (_npcFactionList.find(factionName) == _npcFactionList.end()) {
 					_npcFactionList.insert(factionName);

@@ -32,7 +32,7 @@ namespace Modex
 				compareString = npc.GetEditorID();
 				break;
 			case BaseColumn::ID::Race:
-				compareString = npc.GetForm()->As<RE::TESNPC>()->race->GetFullName();
+				compareString = npc.GetRace();
 				break;
 			default:
 				compareString = npc.GetNameView();
@@ -63,40 +63,47 @@ namespace Modex
 			if (npc.GetNameView() == "")
 				continue;
 
-			// for (auto& filter : filterMap) {
-			// 	bool isEnabled = *std::get<0>(filter);
-			// 	auto filterName = std::get<2>(filter);
+			bool skip = false;
+			for (auto& filter : filterList) {
+				bool isSelected = (filter == primaryFilter);
 
-			// 	if (isEnabled && selectedFilter == filterName) {
-			// 		if (filterName == "Class") {
-			// 			auto npcClass = npc.GetClass();
-			// 			if (npcClass == secondaryFilter) {
-			// 				npcList.push_back(&npc);
-			// 			}
-			// 		}
+				if (isSelected && primaryFilter != RE::FormType::None) {
+					if (primaryFilter == RE::FormType::Class) {
+						auto npcClass = npc.GetClass();
 
-			// 		if (filterName == "Race") {
-			// 			auto npcRace = npc.GetRace();
-			// 			if (npcRace == secondaryFilter) {
-			// 				npcList.push_back(&npc);
-			// 			}
-			// 		}
+						if (npcClass != secondaryFilter) {
+							skip = true;
+							break;
+						}
+					}
 
-			// 		if (filterName == "Faction") {
-			// 			auto npcFaction = npc.AsTESNPC->factions;
-			// 			for (auto& faction : npcFaction) {
-			// 				std::string factionName = faction.faction->GetFullName();
-			// 				if (factionName == secondaryFilter) {
-			// 					npcList.push_back(&npc);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
+					if (primaryFilter == RE::FormType::Race) {
+						auto npcRace = npc.GetRace();
 
-			// if (selectedFilter != "None" && secondaryFilter != "Show All") {
-			// 	continue;
-			// }
+						if (npcRace != secondaryFilter) {
+							skip = true;
+							break;
+						}
+					}
+
+					if (primaryFilter == RE::FormType::Faction) {
+						auto npcFaction = npc.GetFactions();
+
+						for (auto& faction : npcFaction) {
+							std::string factionName = ValidateTESName(faction.faction);
+
+							if (factionName != secondaryFilter) {
+								skip = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
 
 			if (selectedMod == "All Mods") {
 				if (PersistentData::GetSingleton()->m_blacklist.contains(npc.GetPlugin())) {
@@ -116,6 +123,21 @@ namespace Modex
 	void NPCWindow::Refresh()
 	{
 		ApplyFilters();
+	}
+
+	std::set<std::string> NPCWindow::GetSecondaryFilterList()
+	{
+		switch (primaryFilter) {
+		case RE::FormType::Class:
+			return Data::GetSingleton()->GetNPCClassList();
+		case RE::FormType::Race:
+			return Data::GetSingleton()->GetNPCRaceList();
+		case RE::FormType::Faction:
+			return Data::GetSingleton()->GetNPCFactionList();
+		case RE::FormType::None:
+		default:
+			return {};
+		}
 	}
 
 	// Draw search bar for filtering items.
@@ -168,111 +190,88 @@ namespace Modex
 				ImGui::TreePop();
 			}
 
-			// Secondary drop down filter list.
-			// if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			// 	ImGui::SetNextItemWidth(totalWidth);
-			// 	ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
+			// Class, Race, Faction filtering
+			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::SetNextItemWidth(totalWidth);
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(0.0f, ImGui::GetWindowSize().y / 4));
 
-			// 	if (ImGui::BeginCombo("##NPCWindow::PrimaryFilter", selectedFilter.c_str())) {
-			// 		if (ImGui::Selectable(_T("None"), selectedFilter == "None")) {
-			// 			selectedFilter = "None";
-			// 			ApplyFilters();
-			// 			ImGui::SetItemDefaultFocus();
-			// 		}
+				std::string primaryFilterName = RE::FormTypeToString(primaryFilter).data();
+				if (ImGui::BeginCombo("###NPCWindow::PrimaryFilter", primaryFilterName.c_str())) {
+					if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
+						primaryFilter = RE::FormType::None;
+						ImGui::SetItemDefaultFocus();
+						ApplyFilters();
+					}
 
-			// 		for (auto& filter : filterMap) {
-			// 			auto& isEnabled = *std::get<0>(filter);
-			// 			auto func = std::get<1>(filter);
-			// 			auto name = std::get<2>(filter);
+					for (auto& filter : filterList) {
+						bool isSelected = (filter == primaryFilter);
 
-			// 			if (ImGui::Selectable(name.c_str(), selectedFilter == name)) {
-			// 				selectedFilter = name;
-			// 				isEnabled = !isEnabled;
+						// Class, Race, Faction
+						std::string formName = RE::FormTypeToString(filter).data();
+						if (ImGui::Selectable(_T(formName), isSelected)) {
+							primaryFilter = filter;
 
-			// 				func();
+							// TODO: Is it necessary to regenerate this?
+							// Why not just cache it at startup..
 
-			// 				// Reset the list for clean start.
-			// 				secondaryFilter = "Show All";
-			// 				ApplyFilters();
-			// 			}
-			// 		}
-			// 		ImGui::EndCombo();
-			// 	}
+							switch (primaryFilter) {
+							case RE::FormType::Class:
+								Data::GetSingleton()->GenerateNPCClassList();
+								break;
+							case RE::FormType::Race:
+								Data::GetSingleton()->GenerateNPCRaceList();
+								break;
+							case RE::FormType::Faction:
+								Data::GetSingleton()->GenerateNPCFactionList();
+								break;
+							}
 
-			// 	if (selectedFilter != "None") {
-			// 		ImGui::SetNextItemWidth(totalWidth);
-			// 		ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
+							ApplyFilters();
+							ImGui::SetItemDefaultFocus();
+						}
+					}
 
-			// 		if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
-			// 			if (ImGui::Selectable(_T("GENERAL_SHOW_SEARCHBAR"), &b_ShowSearchbar)) {
-			// 				secondaryFilterBuffer[0] = '\0';
-			// 				ImGui::SetItemDefaultFocus();
-			// 			}
+					ImGui::EndCombo();
+				}
 
-			// 			if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
-			// 				secondaryFilter = "Show All";
-			// 				ApplyFilters();
-			// 				ImGui::SetItemDefaultFocus();
-			// 			}
+				// If we selected a primary filter, show secondary filter list:
+				if (primaryFilter != RE::FormType::None) {
+					ImGui::SetNextItemWidth(totalWidth);
+					ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
 
-			// 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-			// 			for (auto& filter : secondaryFilterMap) {
-			// 				if (filter.second == selectedFilter) {
-			// 					auto list = filter.first();
+					if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
+						if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
+							secondaryFilter = "Show All";
+							ApplyFilters();
+							ImGui::SetItemDefaultFocus();
+						}
 
-			// 					for (auto& item : list) {
-			// 						if (item.empty()) {
-			// 							continue;
-			// 						}
+						ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+						for (auto& filter : filterList) {
+							if (primaryFilter == filter) {
+								auto list = GetSecondaryFilterList();
 
-			// 						if (b_ShowSearchbar) {
-			// 							if (std::strlen(secondaryFilterBuffer) > 0) {
-			// 								std::string compareString = item;
-			// 								std::string inputString = secondaryFilterBuffer;
+								// TODO: Better string validation?
+								for (auto& item : list) {
+									if (item.empty()) {
+										continue;
+									}
 
-			// 								std::transform(inputString.begin(), inputString.end(), inputString.begin(),
-			// 									[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+									if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
+										secondaryFilter = item;
+										ImGui::SetItemDefaultFocus();
+										ApplyFilters();
+									}
+								}
+							}
+						}
 
-			// 								std::transform(compareString.begin(), compareString.end(), compareString.begin(),
-			// 									[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-			// 								if (compareString.find(inputString) != std::string::npos) {
-			// 									// Do nothing?
-			// 								} else {
-			// 									continue;
-			// 								}
-			// 							}
-			// 						}
-
-			// 						if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
-			// 							secondaryFilter = item;
-
-			// 							ApplyFilters();
-			// 							ImGui::SetItemDefaultFocus();
-			// 						}
-			// 					}
-			// 				}
-			// 			}
-			// 			ImGui::EndCombo();
-			// 		}
-
-			// 		if (b_ShowSearchbar) {
-			// 			ImGui::NewLine();
-			// 			ImGui::Text(_TFM("GENERAL_FILTER_REFINE", ":"));
-			// 			ImGui::SetNextItemWidth(inputTextWidth + filterWidth);
-			// 			if (ImGui::InputTextWithHint("##NPCWindow::SecondaryFilterSearch", _T("GENERAL_CLICK_TO_TYPE"), secondaryFilterBuffer,
-			// 					IM_ARRAYSIZE(secondaryFilterBuffer),
-			// 					ImGuiInputTextFlags_EscapeClearsAll)) {
-			// 				// Text Callback if we need it.
-			// 			}
-			// 		} else {
-			// 			secondaryFilterBuffer[0] = '\0';
-			// 		}
-			// 	}
-
-			// 	ImGui::NewLine();
-			// 	ImGui::TreePop();
-			// }
+						ImGui::EndCombo();
+					}
+				}
+				ImGui::NewLine();
+				ImGui::TreePop();
+			}
 
 			// Mod List sort and filter.
 

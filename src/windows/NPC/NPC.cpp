@@ -23,8 +23,22 @@ namespace Modex
 	void NPCWindow::Init()
 	{
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-		ApplyFilters();
+
+		b_ClickToSelect = true;
+		b_ClickToFavorite = false;
+		b_ClickToPlace = false;
+		clickToPlaceCount = 1;
+
+		_itemHovered = false;
+		_itemSelected = false;
+		selectedNPC = nullptr;
+		hoveredNPC = nullptr;
+
+		primaryFilter = RE::FormType::None;
+		searchKey = BaseColumn::ID::Name;
+		dirty = true;
 
 		columnList = NPCColumns();
+		ApplyFilters();
 	}
 }

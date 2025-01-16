@@ -35,7 +35,7 @@ namespace Modex
 		void 					ShowSearch();
 		void 					ShowItemListContextMenu(ItemData& a_item);
 
-		// Filtering State Variables.
+		// Primary Filter List
 		std::vector<RE::FormType> filterList = {
 			{ RE::FormType::Armor },
 			{ RE::FormType::AlchemyItem },
