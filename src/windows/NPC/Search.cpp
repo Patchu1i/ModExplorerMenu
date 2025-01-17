@@ -64,37 +64,38 @@ namespace Modex
 				continue;
 
 			bool skip = false;
-			for (auto& filter : filterList) {
-				bool isSelected = (filter == primaryFilter);
+			if (primaryFilter != RE::FormType::None && secondaryFilter != "Show All") {
+				for (auto& filter : filterList) {
+					bool isSelected = (filter == primaryFilter);
 
-				if (isSelected && primaryFilter != RE::FormType::None) {
-					if (primaryFilter == RE::FormType::Class) {
-						auto npcClass = npc.GetClass();
+					if (isSelected) {
+						if (primaryFilter == RE::FormType::Class) {
+							auto npcClass = npc.GetClass();
 
-						if (npcClass != secondaryFilter) {
-							skip = true;
-							break;
-						}
-					}
-
-					if (primaryFilter == RE::FormType::Race) {
-						auto npcRace = npc.GetRace();
-
-						if (npcRace != secondaryFilter) {
-							skip = true;
-							break;
-						}
-					}
-
-					if (primaryFilter == RE::FormType::Faction) {
-						auto npcFaction = npc.GetFactions();
-
-						for (auto& faction : npcFaction) {
-							std::string factionName = ValidateTESName(faction.faction);
-
-							if (factionName != secondaryFilter) {
+							if (npcClass != secondaryFilter) {
 								skip = true;
 								break;
+							}
+						}
+
+						if (primaryFilter == RE::FormType::Race) {
+							auto npcRace = npc.GetRace();
+
+							if (npcRace != secondaryFilter) {
+								skip = true;
+								break;
+							}
+						}
+
+						if (primaryFilter == RE::FormType::Faction) {
+							auto npcFaction = npc.GetFactions();
+
+							skip = true;
+							for (auto& faction : npcFaction) {
+								if (ValidateTESName(faction.faction) == secondaryFilter) {
+									skip = false;
+									break;
+								}
 							}
 						}
 					}
@@ -217,12 +218,15 @@ namespace Modex
 							switch (primaryFilter) {
 							case RE::FormType::Class:
 								Data::GetSingleton()->GenerateNPCClassList();
+								secondaryFilter = "Show All";
 								break;
 							case RE::FormType::Race:
 								Data::GetSingleton()->GenerateNPCRaceList();
+								secondaryFilter = "Show All";
 								break;
 							case RE::FormType::Faction:
 								Data::GetSingleton()->GenerateNPCFactionList();
+								secondaryFilter = "Show All";
 								break;
 							}
 
@@ -235,39 +239,68 @@ namespace Modex
 				}
 
 				// If we selected a primary filter, show secondary filter list:
+				// CRASHING: Empty ID at root... check buffer and stuff
 				if (primaryFilter != RE::FormType::None) {
-					ImGui::SetNextItemWidth(totalWidth);
-					ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
+					for (auto& filter : filterList) {
+						if (primaryFilter == filter) {
+							auto _list = GetSecondaryFilterList();
+							std::vector<std::string> list(_list.begin(), _list.end());
 
-					if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
-						if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
-							secondaryFilter = "Show All";
-							ApplyFilters();
-							ImGui::SetItemDefaultFocus();
-						}
+							if (InputTextComboBox("##NPCWindow::SecondaryFilter", secondaryFilterBuffer, secondaryFilter, IM_ARRAYSIZE(secondaryFilterBuffer), list, totalWidth)) {
+								secondaryFilter = "Show All";
 
-						ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-						for (auto& filter : filterList) {
-							if (primaryFilter == filter) {
-								auto list = GetSecondaryFilterList();
+								if (secondaryFilter.find(secondaryFilterBuffer) != std::string::npos) {
+									ImFormatString(secondaryFilterBuffer, IM_ARRAYSIZE(secondaryFilterBuffer), "");
+								} else {
+									for (auto& item : list) {
+										if (item.empty()) {
+											continue;
+										}
 
-								// TODO: Better string validation?
-								for (auto& item : list) {
-									if (item.empty()) {
-										continue;
-									}
-
-									if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
-										secondaryFilter = item;
-										ImGui::SetItemDefaultFocus();
-										ApplyFilters();
+										if (item.find(secondaryFilterBuffer) != std::string::npos) {
+											secondaryFilter = item;
+											ImFormatString(secondaryFilterBuffer, IM_ARRAYSIZE(secondaryFilterBuffer), "");
+											break;
+										}
 									}
 								}
+
+								ApplyFilters();
 							}
 						}
-
-						ImGui::EndCombo();
 					}
+					// ImGui::SetNextItemWidth(totalWidth);
+					// ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
+
+					// if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
+					// 	if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
+					// 		secondaryFilter = "Show All";
+					// 		ApplyFilters();
+					// 		ImGui::SetItemDefaultFocus();
+					// 	}
+
+					// 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+					// 	for (auto& filter : filterList) {
+					// 		if (primaryFilter == filter) {
+					// 			auto list = GetSecondaryFilterList();
+
+					// 			// TODO: Better string validation?
+					// 			for (auto& item : list) {
+					// 				if (item.empty()) {
+					// 					continue;
+					// 				}
+
+					// 				if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
+					// 					secondaryFilter = item;
+					// 					ImGui::SetItemDefaultFocus();
+					// 					ApplyFilters();
+					// 				}
+					// 			}
+					// 		}
+					// 	}
+
+					// 	ImGui::EndCombo();
+					// }
 				}
 				ImGui::NewLine();
 				ImGui::TreePop();
