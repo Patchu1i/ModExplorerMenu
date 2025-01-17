@@ -9,8 +9,6 @@ namespace Modex
 		auto& io = ImGui::GetIO();
 		io.ClearInputKeys();
 		io.ClearEventsQueue();
-		io.ClearInputCharacters();  // TODO: Test if this is necessary(?)
-
 		io.AddFocusEvent(false);
 
 		shiftDown = false;
@@ -31,27 +29,6 @@ namespace Modex
 		UpdateSettings();
 
 		captureInput = false;
-	}
-
-	void InputManager::SetWndProcHandle(HWND a_hwnd)
-	{
-		wndProcHandle = a_hwnd;
-	}
-
-	void InputManager::SendUnicodeChar(std::uint32_t a_wParam)
-	{
-		if (captureIMEMode) {
-			logger::info("SendUnicodeChar: {}", a_wParam);
-			// CharEvent charEvent;
-			// charEvent.keyCode = a_wParam;
-			// charEvent.device = RE::INPUT_DEVICE::kKeyboard;
-			// charEvent.eventType = RE::INPUT_EVENT_TYPE::kChar;
-
-			ImGuiIO& io = ImGui::GetIO();
-			io.AddInputCharacter(a_wParam);
-			//RE::InputEvent* inputEvent = &charEvent;
-			//ProcessInputEvent(&inputEvent);
-		}
 	}
 
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)
@@ -219,6 +196,8 @@ namespace Modex
 							break;
 						}
 					}
+
+					break;
 				}
 			}
 		}

@@ -37,8 +37,6 @@ namespace Modex
         void        OnFocusKill();
         void        UpdateSettings();
         void        ProcessInputEvent(RE::InputEvent** a_event);
-        void        SetWndProcHandle(HWND a_hwnd);
-        void        SendUnicodeChar(std::uint32_t a_wParam);
 
         // members
         uint32_t       showMenuKey;

@@ -93,83 +93,11 @@ namespace Hooks
 		{
 			switch (a_msg) {
 			case WM_KILLFOCUS:
-				{
-					Modex::InputManager::GetSingleton()->OnFocusKill();
-					// set proc handlr?
-					break;
-				}
-			case WM_SETFOCUS:
-				{
-					// set proc handler?
-					break;
-				}
-			case WM_ACTIVATE:
-				{
-					if (a_wParam == WA_ACTIVE) {
-						// str composition = std::wstring;
-					}
-
-					break;
-				}
-
-			case WM_IME_NOTIFY:
-				{
-					switch (a_wParam) {
-					case IMN_OPENCANDIDATE:
-					case IMN_SETCANDIDATEPOS:
-					case IMN_CHANGECANDIDATE:
-						Modex::InputManager::GetSingleton()->captureIMEMode = true;
-					};
-
-					return S_OK;
-				}
-
-			case WM_INPUTLANGCHANGE:
-				{
-					HKL hkl = (HKL)a_lParam;
-					WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-					LCIDToLocaleName(MAKELCID(LOWORD(hkl), SORT_DEFAULT), localeName, LOCALE_NAME_MAX_LENGTH, 0);
-
-					WCHAR lang[9];
-					GetLocaleInfoEx(localeName, LOCALE_SISO639LANGNAME2, lang, 9);
-
-					if (wcscmp(lang, L"en_us") == 0) {
-						logger::info("[WM_INPUTLANGCHANGE] IME Mode Off");
-						Modex::InputManager::GetSingleton()->captureIMEMode = false;
-					} else {
-						logger::info("[WM_INPUTLANGCHANGE] IME Mode On");
-						Modex::InputManager::GetSingleton()->captureIMEMode = true;
-					}
-					return S_OK;
-				}
-
-			case WM_IME_ENDCOMPOSITION:
-				{  // Clear candidate list and input contet
-					logger::info("[WM_IME_ENDCOMPOSITION] Clear candidate list and input content");
-					break;
-				}
-			case WM_CHAR:
-				{
-					if (ImGui::GetIO().WantCaptureKeyboard) {
-						if (a_wParam == VK_SPACE && GetKeyState(VK_LWIN) < 0) {
-							ActivateKeyboardLayout((HKL)HKL_NEXT, KLF_SETFORPROCESS);
-							logger::info("[WM_CHAR] ActivateKeyboardLayout");
-							return S_OK;
-						}
-
-						logger::info("[WM_CHAR] SendUnicodeChar");
-						Modex::InputManager::GetSingleton()->SendUnicodeChar(static_cast<uint32_t>(a_wParam));
-					}
-
-					return S_OK;
-				}
-			case WM_IME_SETCONTEXT:
-				{
-					logger::info("[WM_IME_SETCONTEXT] WndProcHandle Set");
-					Modex::InputManager::GetSingleton()->SetWndProcHandle(a_hwnd);
-					return DefWindowProc(a_hwnd, a_msg, a_wParam, a_lParam);
-				}
+				Modex::InputManager::GetSingleton()->OnFocusKill();
+				break;
 			}
+
+			// TODO: IME Implementation Here.
 
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);
 		}
