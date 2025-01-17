@@ -239,7 +239,6 @@ namespace Modex
 				}
 
 				// If we selected a primary filter, show secondary filter list:
-				// CRASHING: Empty ID at root... check buffer and stuff
 				if (primaryFilter != RE::FormType::None) {
 					for (auto& filter : filterList) {
 						if (primaryFilter == filter) {
@@ -269,38 +268,6 @@ namespace Modex
 							}
 						}
 					}
-					// ImGui::SetNextItemWidth(totalWidth);
-					// ImGui::SetNextWindowSizeConstraints(ImVec2(totalWidth, 0.0f), ImVec2(totalWidth, ImGui::GetWindowSize().y / 2));
-
-					// if (ImGui::BeginCombo("##NPCWindow::SecondaryFilter", secondaryFilter.c_str())) {
-					// 	if (ImGui::Selectable(_T("Show All"), secondaryFilter == "Show All")) {
-					// 		secondaryFilter = "Show All";
-					// 		ApplyFilters();
-					// 		ImGui::SetItemDefaultFocus();
-					// 	}
-
-					// 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					// 	for (auto& filter : filterList) {
-					// 		if (primaryFilter == filter) {
-					// 			auto list = GetSecondaryFilterList();
-
-					// 			// TODO: Better string validation?
-					// 			for (auto& item : list) {
-					// 				if (item.empty()) {
-					// 					continue;
-					// 				}
-
-					// 				if (ImGui::Selectable(item.c_str(), secondaryFilter == item)) {
-					// 					secondaryFilter = item;
-					// 					ImGui::SetItemDefaultFocus();
-					// 					ApplyFilters();
-					// 				}
-					// 			}
-					// 		}
-					// 	}
-
-					// 	ImGui::EndCombo();
-					// }
 				}
 				ImGui::NewLine();
 				ImGui::TreePop();

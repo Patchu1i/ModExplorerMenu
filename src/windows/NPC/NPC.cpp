@@ -38,6 +38,8 @@ namespace Modex
 		searchKey = BaseColumn::ID::Name;
 		dirty = true;
 
+		selectedMod = "All Mods";
+
 		columnList = NPCColumns();
 		ApplyFilters();
 	}

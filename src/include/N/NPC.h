@@ -56,26 +56,7 @@ namespace Modex
 		RE::FormType 			primaryFilter;
 		std::vector<NPCData*> 	npcList;
 		NPCColumns 				columnList;
-
-		// static inline std::vector<std::pair<bool*, std::string>> filterMap = {
-		// 	{ &b_Class, "Class" },
-		// 	{ &b_Race, "Race" },
-		// 	{ &b_Faction, "Faction" }
-		// };
-
-		// static inline std::vector<std::pair<std::function<std::set<std::string>()>, std::string>> secondaryFilterMap = {
-		// 	{ RE::FormType::Class, "Class" },
-		// 	{ &Data::GetSingleton()->GetNPCRaceList, "Race" },
-		// 	{ &Data::GetSingleton()->GetNPCFactionList, "Faction" }
-		// };
-
-		// Local State Variables.
-
-		// Search Input Field.
-		// static inline char modListBuffer[256] = "";
-		// static inline std::string selectedMod = "All Mods";
-		// char secondaryFilterBuffer[256] = "";
-
+		
 		// Description Framework API.
 		DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
 

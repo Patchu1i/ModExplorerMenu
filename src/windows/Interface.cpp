@@ -158,7 +158,7 @@ namespace Modex
 				int filtered_idx = 0;
 				for (int i = 0; i < filteredList.size(); i++) {
 					auto item = filteredList.at(i);
-					if (item.show) {
+					if (item.show && !item.name.empty()) {
 						const char* item_name = item.name.c_str();
 						const ImVec2 item_pos = popup_window->DC.CursorPos;
 
@@ -226,7 +226,7 @@ namespace Modex
 				int filtered_idx = 0;
 				for (int i = 0; i < filteredList.size(); i++) {
 					auto item = filteredList.at(i);
-					if (item.show or forceDropdown) {
+					if ((item.show or forceDropdown) && !item.name.empty()) {
 						const char* item_name = item.name.c_str();
 						const ImVec2 item_pos = popup_window->DC.CursorPos;
 
