@@ -46,6 +46,8 @@ namespace Modex
 		searchKey = BaseColumn::ID::EditorID;
 		dirty = true;
 
+		selectedMod = "All Mods";
+
 		ApplyFilters();
 	}
 }

@@ -46,58 +46,28 @@ namespace Modex
 				continue;
 			}
 
-			// const char* compareString = nullptr;
-
-			// for (auto& item : cached_item_list) {
-			// 	switch (searchKey) {
-			// 	case BaseColumn::ID::Name:
-			// 		compareString = item.GetName();
-			// 		break;
-			// 	case BaseColumn::ID::FormID:
-			// 		compareString = item.GetFormID().data();
-			// 		break;
-			// 	case BaseColumn::ID::EditorID:
-			// 		compareString = item.GetEditorID().data();
-			// 		break;
-			// 	default:
-			// 		compareString = item.GetName().data();
-			// 		break;
-			// 	}
-
-			// if (strcasecmp(compareString, inputBuffer) == 0) {
-			// 	continue;
-			// }
+			if (item.IsNonPlayable())  // TODO: Doesn't do what expected.
+				continue;
 
 			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (item.GetNameView() == "")
-				continue;
-
-			if (item.IsNonPlayable())  // non-useable
-				continue;
-
-			// if (selectedFilter.second != "None") {
-			// 	if (item.GetFormType() != selectedFilter.first) {
-			// 		continue;
-			// 	}
-			// }
-			if (primaryFilter != RE::FormType::None) {
-				if (item.GetFormType() != primaryFilter) {
-					continue;
-				}
-			}
-
+			// Ensure Items from Blacklisted Plugins aren't shown.
 			if (selectedMod == "All Mods") {
 				if (PersistentData::GetSingleton()->m_blacklist.contains(item.GetPlugin())) {
 					continue;
 				}
 			}
 
-			// if (strstr(compareString, inputBuffer) != nullptr) {
-			// 	itemList.push_back(&item);
-			// }
+			// Primary Filter (Record Type)
+			if (primaryFilter != RE::FormType::None) {
+				if (item.GetFormType() != primaryFilter) {
+					continue;
+				}
+			}
+
+			// Input Fuzzy Search
 			if (compareString.find(inputString) != std::string::npos) {
 				itemList.push_back(&item);
 				continue;

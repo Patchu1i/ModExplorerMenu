@@ -51,22 +51,19 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !obj.IsFavorite()) {
+			if (selectedMod != "All Mods" && obj.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && obj.GetPluginName() != selectedMod) {
-				continue;
-			}
-
-			if (primaryFilter != RE::FormType::None) {
-				if (obj.GetFormType() != primaryFilter) {
+			// Ensure Object's from Blacklisted Plugins aren't shown.
+			if (selectedMod == "All Mods") {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(obj.GetPlugin())) {
 					continue;
 				}
 			}
 
-			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(obj.GetPlugin())) {
+			if (primaryFilter != RE::FormType::None) {
+				if (obj.GetFormType() != primaryFilter) {
 					continue;
 				}
 			}
@@ -166,147 +163,38 @@ namespace Modex
 				ImGui::TreePop();
 			}
 
+			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::OBJECT, primaryFilter);
+			modListVector.insert(modListVector.begin(), "All Mods");
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				// ImGui::SetNextItemWidth(totalWidth);
-				// ImGui::InputTextWithHint("##ObjectWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modSearchBuffer,
-				// 	IM_ARRAYSIZE(modSearchBuffer),
-				// 	Frame::INPUT_FLAGS);
+				if (InputTextComboBox("##ObjectWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
+					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::OBJECT);
+					selectedMod = "All Mods";
 
-				// std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-				//                               selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-				//                                                           selectedMod;
+					if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+					} else {
+						for (auto& mod : modList) {
+							if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+								continue;
+							}
 
-				// auto min = ImVec2(totalWidth, 0.0f);
-				// auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
-				// ImGui::SetNextItemWidth(totalWidth);
-				// ImGui::SetNextWindowSizeConstraints(min, max);
-				// if (ImGui::BeginCombo("##ObjectWindow::FilterByMod", selectedModName.c_str())) {
-				// 	if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-				// 		selectedMod = "All Mods";
-				// 		ApplyFilters();
-				// 		ImGui::SetItemDefaultFocus();
-				// 	}
+							std::string modName = ValidateTESFileName(mod);
 
-				// 	if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-				// 		selectedMod = "Favorite";
-				// 		ApplyFilters();
-				// 		ImGui::SetItemDefaultFocus();
-				// 	}
+							if (modName == "All Mods") {
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
 
-				// 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+							if (modName.find(modSearchBuffer) != std::string::npos) {
+								selectedMod = modName;
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
+						}
+					}
 
-				// 	auto numOfFilter = 0;
-				// 	auto modFormTypeMap = Data::GetModFormTypeMap();
-				// 	auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
-				// 	for (auto& mod : *modList) {
-				// 		bool bSelected = false;
-
-				// 		if (mod->GetFilename().data() == nullptr) {
-				// 			continue;
-				// 		}
-
-				// 		const char* modName = mod->GetFilename().data();
-
-				// 		if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-				// 			continue;
-				// 		}
-
-				// 		auto match = false;
-				// 		for (auto& modMap : modFormTypeMap) {
-				// 			if (mod == modMap.first) {
-				// 				numOfFilter = 0;
-				// 				for (auto& filter : filterMap) {
-				// 					auto formName = std::get<1>(filter);
-				// 					auto formType = std::get<0>(filter);
-				// 					auto isEnabled = (filter == selectedFilter);
-
-				// 					if (!isEnabled) {
-				// 						continue;
-				// 					}
-
-				// 					numOfFilter++;
-
-				// 					if (match) {
-				// 						continue;
-				// 					}
-
-				// 					switch (formType) {
-				// 					case RE::FormType::Tree:
-				// 						if (modMap.second.tree) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Static:
-				// 						if (modMap.second.staticObject) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Container:
-				// 						if (modMap.second.container) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Light:
-				// 						if (modMap.second.light) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Door:
-				// 						if (modMap.second.door) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Activator:
-				// 						if (modMap.second.activator) {
-				// 							match = true;
-				// 						}
-				// 						break;
-				// 					case RE::FormType::Furniture:
-				// 						if (modMap.second.furniture) {
-				// 							match = true;
-				// 						}
-				// 					default:
-				// 						break;
-				// 					}
-				// 				}
-
-				// 				if (numOfFilter == 0) {
-				// 					match = true;
-				// 				}
-				// 			}
-				// 		}
-
-				// 		if (!match) {
-				// 			continue;
-				// 		}
-
-				// 		if (std::strlen(modListBuffer) > 0) {
-				// 			std::string compareString = modName;
-				// 			std::string inputString = modListBuffer;
-
-				// 			std::transform(inputString.begin(), inputString.end(), inputString.begin(),
-				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-				// 			std::transform(compareString.begin(), compareString.end(), compareString.begin(),
-				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-				// 			if (compareString.find(inputString) != std::string::npos) {
-				// 				// Do nothing?
-				// 			} else {
-				// 				continue;
-				// 			}
-				// 		}
-
-				// 		if (ImGui::Selectable(modName, selectedMod == modName)) {
-				// 			selectedMod = modName;
-				// 			ApplyFilters();
-				// 		}
-
-				// 		if (bSelected)
-				// 			ImGui::SetItemDefaultFocus();
-				// 	}
-				// 	ImGui::EndCombo();
-				// }
+					ApplyFilters();
+				}
 
 				ImGui::NewLine();
 				ImGui::TreePop();

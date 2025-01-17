@@ -54,19 +54,18 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !item.IsFavorite()) {
+			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && item.GetPluginName() != selectedMod) {
-				continue;
-			}
-
-			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(item.mod)) {
-					continue;
-				}
-			}
+			// Don't include Blacklist with Teleport since users will likely
+			// blacklist mods that are landscape or quest mods for AddItem or NPC.
+			//
+			// if (selectedMod == "All Mods") {
+			// 	if (PersistentData::GetSingleton()->m_blacklist.contains(item.GetPluginName())) {
+			// 		continue;
+			// 	}
+			// }
 
 			if (compare.find(input) != std::string::npos) {
 				cellList.push_back(&item);
@@ -131,7 +130,41 @@ namespace Modex
 			}
 
 			// Mod List sort and filter.
+			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, RE::FormType::None);
+			modListVector.insert(modListVector.begin(), "All Mods");
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, inputTextWidth)) {
+					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
+					selectedMod = "All Mods";
+
+					if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+					} else {
+						for (auto& mod : modList) {
+							if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+								continue;
+							}
+
+							std::string modName = ValidateTESFileName(mod);
+
+							if (modName == "All Mods") {
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
+
+							if (modName.find(modSearchBuffer) != std::string::npos) {
+								selectedMod = modName;
+								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+								break;
+							}
+						}
+					}
+
+					ApplyFilters();
+				}
+
+				ImGui::NewLine();
+				ImGui::TreePop();
 				// ImGui::SetNextItemWidth(totalWidth);
 				// ImGui::InputTextWithHint("##TeleportWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
 				// 	IM_ARRAYSIZE(modListBuffer),
@@ -202,8 +235,6 @@ namespace Modex
 				// 	}
 				// 	ImGui::EndCombo();
 				// }
-				ImGui::NewLine();
-				ImGui::TreePop();
 			}
 
 			ImGui::Unindent();

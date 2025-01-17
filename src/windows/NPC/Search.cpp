@@ -52,16 +52,16 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedMod == "Favorite" && !npc.IsFavorite()) {
+			if (selectedMod != "All Mods" && npc.GetPluginName() != selectedMod) {
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && selectedMod != "Favorite" && npc.GetPluginName() != selectedMod) {
-				continue;
+			// Ensure NPC's from Blacklisted Plugins aren't shown.
+			if (selectedMod == "All Mods") {
+				if (PersistentData::GetSingleton()->m_blacklist.contains(npc.GetPlugin())) {
+					continue;
+				}
 			}
-
-			if (npc.GetNameView() == "")
-				continue;
 
 			bool skip = false;
 			if (primaryFilter != RE::FormType::None && secondaryFilter != "Show All") {
@@ -104,12 +104,6 @@ namespace Modex
 
 			if (skip) {
 				continue;
-			}
-
-			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(npc.GetPlugin())) {
-					continue;
-				}
 			}
 
 			if (compareString.find(inputString) != std::string::npos) {
@@ -244,6 +238,7 @@ namespace Modex
 						if (primaryFilter == filter) {
 							auto _list = GetSecondaryFilterList();
 							std::vector<std::string> list(_list.begin(), _list.end());
+							list.insert(list.begin(), "Show All");
 
 							if (InputTextComboBox("##NPCWindow::SecondaryFilter", secondaryFilterBuffer, secondaryFilter, IM_ARRAYSIZE(secondaryFilterBuffer), list, totalWidth)) {
 								secondaryFilter = "Show All";
@@ -279,7 +274,7 @@ namespace Modex
 			modListVector.insert(modListVector.begin(), "All Mods");
 			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
 				if (InputTextComboBox("##NPCWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
-					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::ITEM);
+					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::NPC);
 					selectedMod = "All Mods";
 
 					if (selectedMod.find(modSearchBuffer) != std::string::npos) {

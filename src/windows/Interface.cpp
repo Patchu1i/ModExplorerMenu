@@ -76,7 +76,7 @@ namespace Modex
 			bool unlock_scroll = unlock_scroll_prev;
 
 			if (navList.size() <= 0) {
-				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.3f, 1.0f), "No Plugins Found, try clearing your search.");
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.3f, 1.0f), "No Results Found, try clearing your search.");
 			}
 
 			// If we are typing, reset navigation state and cursor. The filtered list
@@ -291,7 +291,7 @@ namespace Modex
 
 		// Fallback in-case the user presses enter without a matching plugin or selection.
 		if ((result && !forceDropdown) && navList.size() <= 0) {
-			a_preview = "(Warning: No Plugin Found \"" + std::string(a_buffer) + "\")";
+			a_preview = "(Warning: No Results Found \"" + std::string(a_buffer) + "\")";
 			ImFormatString(a_buffer, a_size, "%s", "");
 			ImGui::CloseCurrentPopup();
 			result = false;

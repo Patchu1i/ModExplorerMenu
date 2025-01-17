@@ -29,7 +29,6 @@ namespace Modex
 	void AddItemWindow::Init()
 	{
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-		columnList = AddItemColumns();
 
 		primaryFilter = RE::FormType::None;
 		openBook = nullptr;
@@ -43,6 +42,9 @@ namespace Modex
 		searchKey = BaseColumn::ID::Name;
 		dirty = true;
 
+		selectedMod = "All Mods";
+
+		columnList = AddItemColumns();
 		ApplyFilters();
 	}
 }

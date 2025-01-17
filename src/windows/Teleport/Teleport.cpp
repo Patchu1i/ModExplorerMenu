@@ -39,6 +39,8 @@ namespace Modex
 		searchKey = BaseColumn::ID::CellName;
 		dirty = true;
 
+		selectedMod = "All Mods";
+
 		ApplyFilters();
 	}
 }
