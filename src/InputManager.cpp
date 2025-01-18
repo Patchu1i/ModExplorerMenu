@@ -147,6 +147,16 @@ namespace Modex
 						altDown = buttonEvent->IsPressed();
 					}
 
+					// 0x0F = Skyrim "Tab" key.
+					// 0x38 = Skyrim "L-Alt" key.
+					if (lastKeyPress == 0x0F) {
+						if (scanCode == 0x38 && buttonEvent->IsPressed()) {
+							lastKeyPress = 0;
+
+							io.ClearInputKeys();
+						}
+					}
+
 					io.AddKeyEvent(ImGuiKey_ModShift, shiftDown);
 					io.AddKeyEvent(ImGuiKey_ModCtrl, ctrlDown);
 					io.AddKeyEvent(ImGuiKey_ModAlt, altDown);
@@ -193,11 +203,11 @@ namespace Modex
 								}
 							}
 
+							lastKeyPress = scanCode;
+
 							break;
 						}
 					}
-
-					break;
 				}
 			}
 		}

@@ -41,6 +41,7 @@ namespace Modex
         // members
         uint32_t       showMenuKey;
         uint32_t       showMenuModifier;
+        uint32_t       lastKeyPress;
         bool           captureInput;
         bool           captureIMEMode;
 
