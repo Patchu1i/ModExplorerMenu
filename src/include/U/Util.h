@@ -11,6 +11,48 @@ namespace ImGui
 		       ImGui::CalcTextSize(text).x / 2;
 	};
 
+	inline static bool ToggleButton(const char* str_id, bool* v, const float width)
+	{
+		ImVec2 p = ImGui::GetCursorScreenPos();
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+		float height = ImGui::GetFrameHeight();
+		// float width = height * 3.55f;
+		float radius = height * 0.50f;
+		bool clicked = false;
+
+		ImGui::InvisibleButton(str_id, ImVec2(width, height));
+		if (ImGui::IsItemClicked()) {
+			*v = !*v;
+			clicked = *v;
+		}
+
+		float t = *v ? 1.0f : 0.0f;
+
+		ImGuiContext& g = *GImGui;
+		float ANIM_SPEED = 0.08f;
+		if (g.LastActiveId == g.CurrentWindow->GetID(str_id))  // && g.LastActiveIdTimer < ANIM_SPEED)
+		{
+			float t_anim = ImSaturate(g.LastActiveIdTimer / ANIM_SPEED);
+			t = *v ? (t_anim) : (1.0f - t_anim);
+		}
+
+		ImU32 col_bg;
+		ImU32 col_grab;
+		if (ImGui::IsItemHovered()) {
+			col_bg = ImGui::GetColorU32(ImLerp(ImGui::GetStyleColorVec4(ImGuiCol_FrameBgHovered), ImVec4(0.40f, 0.70f, 0.40f, 1.0f), t));
+			col_grab = ImGui::GetColorU32(ImLerp(ImGui::GetStyleColorVec4(ImGuiCol_SliderGrab), ImVec4(0.78f, 0.78f, 0.78f, 1.0f), t));
+		} else {
+			col_bg = ImGui::GetColorU32(ImLerp(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg), ImVec4(0.40f, 0.70f, 0.40f, 1.0f), t));
+			col_grab = ImGui::GetColorU32(ImLerp(ImGui::GetStyleColorVec4(ImGuiCol_SliderGrab), ImVec4(0.85f, 0.85f, 0.85f, 1.0f), t));
+		}
+
+		draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
+		draw_list->AddCircleFilled(ImVec2(p.x + radius + t * (width - radius * 2.0f), p.y + radius), radius - 1.5f, col_grab);
+
+		return clicked;
+	}
+
 	inline static void ShowLanguagePopup()
 	{
 		// auto& style = Modex::Settings::GetSingleton()->GetStyle();
