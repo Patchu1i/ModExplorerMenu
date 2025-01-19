@@ -89,11 +89,6 @@ namespace Modex
 		ImGui::Text(name.data());
 		ImGui::NewLine();
 
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Stats")));
-		ImGui::Text(_T("Stats"));
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
 		// NPC Specific Item Card details:
 		if constexpr (std::is_same<Object, NPCData>::value) {
 			auto* npc = a_object->GetForm()->As<RE::TESNPC>();

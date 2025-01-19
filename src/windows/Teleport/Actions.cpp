@@ -14,24 +14,21 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText(_TFM("Behavior", ":"));
+		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
-
-		if (ImGui::m_Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "TELE_CLICK_TO_TELEPORT"), b_ClickToTeleport, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_SPAWNED_NPC, "TELE_CLICK_TO_TELEPORT"), b_ClickToTeleport, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 		}
 
-		if (ImGui::m_Selectable(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
 			b_ClickToTeleport = false;
 		}
 
-		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(2);
 
-		ImGui::SeparatorText(_TFM("Favorite", ":"));
+		ImGui::Spacing();
+		ImGui::SubCategoryHeader(_T("Favorite"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
 		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 
 		auto constexpr flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration |
@@ -42,7 +39,7 @@ namespace Modex
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 			for (auto& cell : tempList) {
 				if (cell.favorite) {
-					if (ImGui::m_Button(cell.GetEditorID().data(), a_style, ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+					if (ImGui::GradientButton(cell.GetEditorID().data(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
 						Console::Teleport(cell.GetEditorID().data());
 						Console::StartProcessThread();
 

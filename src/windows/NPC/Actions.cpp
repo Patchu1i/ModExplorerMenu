@@ -14,23 +14,22 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SeparatorText(_TFM("Behavior", ":"));
+		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-		ImGui::PushStyleColor(ImGuiCol_Header, a_style.button);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, a_style.buttonActive);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, a_style.buttonHovered);
-
-		if (ImGui::m_Selectable(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		// Click To Place Toggle
+		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 			b_ClickToSelect = false;
 		}
 
-		if (ImGui::m_Selectable(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), b_ClickToSelect, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		// Click To Select Toggle
+		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), b_ClickToSelect, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
 			b_ClickToPlace = false;
 		}
 
-		if (ImGui::m_Selectable(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, a_style, ImGuiSelectableFlags_SelectOnClick, ImVec2(button_width, button_height))) {
+		// Click To Favorite Toggle
+		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
 			b_ClickToSelect = false;
 			b_ClickToPlace = false;
 		}
@@ -43,22 +42,27 @@ namespace Modex
 			ImGui::InputInt("##NPCPlaceCount", &clickToPlaceCount, 1, 100, ImGuiInputTextFlags_CharsDecimal);
 		}
 
-		ImGui::PopStyleColor(3);
-		ImGui::SeparatorText(_TFM("Actions", ":"));
+		ImGui::Spacing();
+		ImGui::SubCategoryHeader(_T("Actions"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
-		if (ImGui::m_Button(_T("NPC_PLACE_SELECTED"), a_style, ImVec2(button_width, 0))) {
+		if (ImGui::GradientButton(_T("NPC_PLACE_SELECTED"), ImVec2(button_width, 0))) {
 			if (selectedNPC != nullptr) {
 				Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
 				Console::StartProcessThread();
 			}
 		}
 
-		if (ImGui::m_Button(_T("GENERAL_PLACE_ALL"), a_style, ImVec2(button_width, 0))) {
-			for (auto& npc : npcList) {
-				Console::PlaceAtMe(npc->GetFormID(), 1);
+		if (ImGui::GradientButton(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
+			if (npcList.size() > 30) {
+				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
+			} else {
+				for (auto& npc : npcList) {
+					Console::PlaceAtMe(npc->GetFormID(), 1);
+				}
 			}
 
 			Console::StartProcessThread();
@@ -66,11 +70,17 @@ namespace Modex
 
 		ImGui::PopStyleColor(3);  // End of Green Buttons
 
-		if (ImGui::m_Button(_T("GENERAL_GOTO_FAVORITE"), a_style, ImVec2(button_width, 0))) {
+		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
+			for (auto& npc : npcList) {
+				Console::PlaceAtMe(npc->GetFormID(), 1);
+			}
+		});
+
+		if (ImGui::GradientButton(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
 			this->selectedMod = "Favorite";
 			ApplyFilters();
 		}
-		if (ImGui::m_Button(_T("NPC_UPDATE_REFERENCES"), a_style, ImVec2(button_width, 0))) {
+		if (ImGui::GradientButton(_T("NPC_UPDATE_REFERENCES"), ImVec2(button_width, 0))) {
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
 
@@ -85,7 +95,7 @@ namespace Modex
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w - 0.35f));
 			}
 
-			if (ImGui::m_Button(_T("NPC_GOTO_REFERENCE"), a_style, ImVec2(button_width, 0))) {
+			if (ImGui::GradientButton(_T("NPC_GOTO_REFERENCE"), ImVec2(button_width, 0))) {
 				if (selectedNPC != nullptr) {
 					if (selectedNPC->refID != 0) {
 						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
@@ -98,7 +108,7 @@ namespace Modex
 				}
 			}
 
-			if (ImGui::m_Button(_T("NPC_BRING_REFERENCE"), a_style, ImVec2(button_width, 0))) {
+			if (ImGui::GradientButton(_T("NPC_BRING_REFERENCE"), ImVec2(button_width, 0))) {
 				if (selectedNPC != nullptr) {
 					if (selectedNPC->refID != 0) {
 						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
@@ -119,7 +129,8 @@ namespace Modex
 			return;
 		}
 
-		ImGui::SeparatorText(_TFM("Info", ":"));
+		ImGui::Spacing();
+		ImGui::SubCategoryHeader(_T("Preview"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
 

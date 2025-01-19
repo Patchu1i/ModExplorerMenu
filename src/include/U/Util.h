@@ -3,6 +3,9 @@
 #include "include/S/Settings.h"
 #include <PCH.h>
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui_internal.h"
+
 namespace ImGui
 {
 	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
@@ -10,6 +13,97 @@ namespace ImGui
 		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
 		       ImGui::CalcTextSize(text).x / 2;
 	};
+
+	static inline void SubCategoryHeader(const char* label, ImVec4 color = ImVec4(0.22f, 0.22f, 0.22f, 0.5f))
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, color);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+		ImGui::Button(label, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+		ImGui::PopStyleColor(3);
+	}
+
+	static inline bool ColoredButtonV1(const char* label, const ImVec2& size_arg, ImU32 text_color, ImU32 bg_color_1, ImU32 bg_color_2)
+	{
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID(label);
+		const ImVec2 label_size = CalcTextSize(label, NULL, true);
+
+		ImVec2 pos = window->DC.CursorPos;
+		ImVec2 size = CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f, label_size.y + style.FramePadding.y * 2.0f);
+
+		const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+		ItemSize(size, style.FramePadding.y);
+		if (!ItemAdd(bb, id))
+			return false;
+
+		ImGuiButtonFlags flags = ImGuiButtonFlags_None;
+
+		bool hovered, held;
+		bool pressed = ButtonBehavior(bb, id, &hovered, &held, flags);
+
+		// Render
+		const bool is_gradient = bg_color_1 != bg_color_2;
+		if (held || hovered) {
+			// Modify colors (ultimately this can be prebaked in the style)
+			float h_increase = (held || hovered) ? 0.02f : 0.02f;
+			float v_increase = (held || hovered) ? 10.0f : 0.07f;
+
+			ImVec4 bg1f = ColorConvertU32ToFloat4(bg_color_1);
+			ColorConvertRGBtoHSV(bg1f.x, bg1f.y, bg1f.z, bg1f.x, bg1f.y, bg1f.z);
+			bg1f.x = ImMin(bg1f.x + h_increase, 1.0f);
+			bg1f.z = ImMin(bg1f.z + v_increase, 1.0f);
+			ColorConvertHSVtoRGB(bg1f.x, bg1f.y, bg1f.z, bg1f.x, bg1f.y, bg1f.z);
+			bg_color_1 = GetColorU32(bg1f);
+			if (is_gradient) {
+				ImVec4 bg2f = ColorConvertU32ToFloat4(bg_color_2);
+				ColorConvertRGBtoHSV(bg2f.x, bg2f.y, bg2f.z, bg2f.x, bg2f.y, bg2f.z);
+				bg2f.z = ImMin(bg2f.z + h_increase, 1.0f);
+				bg2f.z = ImMin(bg2f.z + v_increase, 1.0f);
+				ColorConvertHSVtoRGB(bg2f.x, bg2f.y, bg2f.z, bg2f.x, bg2f.y, bg2f.z);
+				bg_color_2 = GetColorU32(bg2f);
+			} else {
+				bg_color_2 = bg_color_1;
+			}
+		}
+		RenderNavHighlight(bb, id);
+
+#if 0
+    // V1 : faster but prevents rounding
+    window->DrawList->AddRectFilledMultiColor(bb.Min, bb.Max, bg_color_1, bg_color_1, bg_color_2, bg_color_2);
+    if (g.Style.FrameBorderSize > 0.0f)
+        window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), 0.0f, 0, g.Style.FrameBorderSize);
+#endif
+
+		// V2
+		int vert_start_idx = window->DrawList->VtxBuffer.Size;
+		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
+		int vert_end_idx = window->DrawList->VtxBuffer.Size;
+		if (is_gradient)
+			ShadeVertsLinearColorGradientKeepAlpha(window->DrawList, vert_start_idx, vert_end_idx, bb.Min, bb.GetBL(), bg_color_1, bg_color_2);
+		if (g.Style.FrameBorderSize > 0.0f)
+			window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
+
+		if (g.LogEnabled)
+			LogSetNextTextDecoration("[", "]");
+		PushStyleColor(ImGuiCol_Text, text_color);
+		RenderTextClipped(
+			ImVec2(bb.Min.x + style.FramePadding.x, bb.Min.y + style.FramePadding.y),
+			ImVec2(bb.Max.x - style.FramePadding.x, bb.Max.y - style.FramePadding.y),
+			label, NULL,
+			&label_size,
+			style.ButtonTextAlign,
+			&bb);
+		PopStyleColor();
+
+		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+		return pressed;
+	}
 
 	inline static bool ToggleButton(const char* str_id, bool* v, const float width)
 	{
@@ -156,31 +250,47 @@ namespace ImGui
 	// ImGui Replacements specifically for theme integration.
 	//
 
-	inline static bool m_Button(const char* label, Modex::Settings::Style& style, const ImVec2& size = ImVec2(0, 0))
+	inline static bool GradientButton(const char* label, const ImVec2& size = ImVec2(0, 0))
 	{
-		(void)style;
-
-		// ImGui::PushFont(style.buttonFont.normal);
-		auto result = ImGui::Button(label, size);
-		// ImGui::PopFont();
-		return result;
+		auto col_button = ImGui::GetStyle().Colors[ImGuiCol_Button];
+		auto col_a = ImGui::GetColorU32(col_button);
+		auto col_b = ImGui::GetColorU32(ImVec4(col_button.x * 0.7f, col_button.y * 0.7f, col_button.z * 0.7f, col_button.w));
+		return ImGui::ColoredButtonV1(label, size, IM_COL32(255, 255, 255, 255), col_a, col_b);
 	}
 
-	inline static bool m_Selectable(
-		const char* label,
-		bool& selected,
-		Modex::Settings::Style& style,
-		ImGuiSelectableFlags flag = ImGuiSelectableFlags_None,
-		const ImVec2& size = ImVec2(0, 0))
+	inline static bool GradientSelectableEX(const char* label, bool& selected, const ImVec2& size = ImVec2(0, 0))
 	{
-		auto innerPadding = style.widgetPadding.y;
+		auto col_button = selected ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImGui::GetStyle().Colors[ImGuiCol_FrameBg];
+		auto alpha = selected ? 1.0f : 0.5f;
+		auto col_a = ImGui::GetColorU32(ImVec4(col_button.x, col_button.y, col_button.z, col_button.w * alpha));
+		auto col_b = ImGui::GetColorU32(ImVec4(col_button.x * 0.6f, col_button.y * 0.6f, col_button.z * 0.6f, col_button.w * alpha));
+
+		auto innerPadding = ImGui::GetStyle().FramePadding.y;
 		auto newSize = ImVec2(size.x, size.y + innerPadding);
+		auto pressed = ImGui::ColoredButtonV1(label, newSize, IM_COL32(255, 255, 255, 255 * alpha), col_a, col_b);
 
-		// ImGui::PushFont(style.buttonFont.normal);
-		auto result = ImGui::Selectable(label, &selected, flag, newSize);
-		// ImGui::PopFont();
-		return result;
+		if (pressed) {
+			selected = !selected;
+		}
+
+		return pressed;
 	}
+
+	// inline static bool m_Selectable(
+	// 	const char* label,
+	// 	bool& selected,
+	// 	Modex::Settings::Style& style,
+	// 	ImGuiSelectableFlags flag = ImGuiSelectableFlags_None,
+	// 	const ImVec2& size = ImVec2(0, 0))
+	// {
+	// 	auto innerPadding = style.widgetPadding.y;
+	// 	auto newSize = ImVec2(size.x, size.y + innerPadding);
+
+	// 	// ImGui::PushFont(style.buttonFont.normal);
+	// 	auto result = ImGui::Selectable(label, &selected, flag, newSize);
+	// 	// ImGui::PopFont();
+	// 	return result;
+	// }
 
 	//
 	// End of ImGui Replacements.

@@ -438,11 +438,12 @@ namespace Modex
 	void AddSubCategoryHeader(const char* a_text)
 	{
 		ImGui::Unindent();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		ImGui::Button(_T(a_text), ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-		ImGui::PopStyleColor(3);
+		ImGui::SubCategoryHeader(_T(a_text));
+		// ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		// ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		// ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		// ImGui::Button(_T(a_text), ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+		// ImGui::PopStyleColor(3);
 		ImGui::Indent();
 		ImGui::Spacing();
 	}
