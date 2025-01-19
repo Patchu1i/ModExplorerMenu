@@ -20,6 +20,7 @@ namespace IniHelper
 		ConfigShowMenuModifier,
 		ConfigModListSort,
 		ConfigUIScale,
+		ConfigFullscreen,
 		ConfigPauseGame,
 		ConfigLanguage,
 		ConfigGlyphRange,
@@ -57,6 +58,10 @@ namespace IniHelper
 		{ iComment::ConfigUIScale,
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"
 			"# UI Scale = <int>\n"
+			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #" },
+		{ iComment::ConfigFullscreen,
+			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"
+			"# Fullscreen = <bool> (true, false)\n"
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #" },
 		{ iComment::ConfigPauseGame,
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"

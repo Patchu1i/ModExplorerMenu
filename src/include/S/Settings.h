@@ -78,6 +78,7 @@ namespace Modex
 			int showMenuModifier = 0;
 			int modListSort = 0;  // 0 = Alphabetical, 1 = Installation (WIN ONLY)
 			int uiScale = 100;    // 80, 90, 100, 110, 120 (Should be a slider..)
+			bool fullscreen = false;
 			bool pauseGame = false;
 
 			// Font Stuff

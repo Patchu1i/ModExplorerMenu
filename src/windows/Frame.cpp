@@ -36,11 +36,18 @@ namespace Modex
 
 		WindowProperties window;
 
-		// Apply the user's UI scale config
-		window.panel_w = (displaySize.x * 0.60f) * (config.uiScale / 100.0f);
-		window.panel_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
-		window.sidebar_w = (displaySize.x * 0.10f) * (config.uiScale / 100.0f);
-		window.sidebar_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+		if (!config.fullscreen) {
+			// Apply the user's UI scale config
+			window.panel_w = (displaySize.x * 0.60f) * (config.uiScale / 100.0f);
+			window.panel_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+			window.sidebar_w = (displaySize.x * 0.10f) * (config.uiScale / 100.0f);
+			window.sidebar_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+		} else {
+			window.panel_w = displaySize.x;
+			window.panel_h = displaySize.y;
+			window.sidebar_w = 0;
+			window.sidebar_h = 0;
+		}
 
 		// Calculate window positions post scaling.
 		float center_x = (displaySize.x * 0.5f);

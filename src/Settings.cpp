@@ -98,6 +98,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(_default.showMenuModifier).c_str(), GetComment(iComment::ConfigShowMenuModifier));
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(_default.modListSort).c_str(), GetComment(iComment::ConfigModListSort));
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScale).c_str(), GetComment(iComment::ConfigUIScale));
+			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(_default.fullscreen).c_str(), GetComment(iComment::ConfigFullscreen));
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(_default.pauseGame).c_str(), GetComment(iComment::ConfigPauseGame));
 
 			// Font & Localization
@@ -175,6 +176,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
+			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(Settings::GetSingleton()->user.config.fullscreen).c_str());
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(Settings::GetSingleton()->user.config.pauseGame).c_str());
 
 			// Font & Localization
@@ -210,6 +212,7 @@ namespace Modex
 		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", _default.showMenuModifier, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", _default.modListSort, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", _default.uiScale, a_ini);
+		user.config.fullscreen = GET_VALUE<bool>(rSections[Main], "Fullscreen", _default.fullscreen, a_ini);
 		user.config.pauseGame = GET_VALUE<bool>(rSections[Main], "PauseGame", _default.pauseGame, a_ini);
 
 		user.config.language = GET_VALUE<std::string>(rSections[Main], "Language", _default.language, a_ini);
