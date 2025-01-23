@@ -85,121 +85,108 @@ namespace Modex
 	// Draw search bar for filtering items.
 	void ObjectWindow::ShowSearch()
 	{
-		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Indent();
+		auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
+		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
+		auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
-			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
-			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			auto totalWidth = inputTextWidth + filterWidth + 2.0f;
+		// General search bar for filtering items.
+		ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
+		ImGui::SetNextItemWidth(inputTextWidth);
+		if (ImGui::InputTextWithHint("##ObjectWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
+				IM_ARRAYSIZE(inputBuffer),
+				Frame::INPUT_FLAGS)) {
+			ApplyFilters();
+		}
 
-			// General search bar for filtering items.
-			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(inputTextWidth);
-				if (ImGui::InputTextWithHint("##ObjectWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
-						IM_ARRAYSIZE(inputBuffer),
-						Frame::INPUT_FLAGS)) {
+		ImGui::SameLine();
+
+		// TODO: Candidate for template function.
+		auto currentFilter = InputSearchMap.at(searchKey);
+		auto combo_flags = ImGuiComboFlags_None;
+		ImGui::SetNextItemWidth(filterWidth);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
+		if (ImGui::BeginCombo("##AddItemWindow::InputFilter", _T(currentFilter), combo_flags)) {
+			for (auto& compare : InputSearchMap) {
+				BaseColumn::ID searchID = compare.first;
+				const char* searchValue = compare.second;
+				bool is_selected = (searchKey == searchID);
+
+				if (ImGui::Selectable(_T(searchValue), is_selected)) {
+					searchKey = searchID;
 					ApplyFilters();
 				}
 
-				ImGui::SameLine();
-
-				// TODO: Candidate for template function.
-				auto currentFilter = InputSearchMap.at(searchKey);
-				auto combo_flags = ImGuiComboFlags_None;
-				ImGui::SetNextItemWidth(filterWidth);
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-				if (ImGui::BeginCombo("##AddItemWindow::InputFilter", _T(currentFilter), combo_flags)) {
-					for (auto& compare : InputSearchMap) {
-						BaseColumn::ID searchID = compare.first;
-						const char* searchValue = compare.second;
-						bool is_selected = (searchKey == searchID);
-
-						if (ImGui::Selectable(_T(searchValue), is_selected)) {
-							searchKey = searchID;
-							ApplyFilters();
-						}
-
-						if (is_selected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-
-					ImGui::EndCombo();
+				if (is_selected) {
+					ImGui::SetItemDefaultFocus();
 				}
-				ImGui::NewLine();
-				ImGui::TreePop();
 			}
 
-			// Secondary Filter for object record types.
-			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(totalWidth);
+			ImGui::EndCombo();
+		}
 
-				auto filterName = RE::FormTypeToString(primaryFilter).data();
-				if (ImGui::BeginCombo("##ObjectWindow::FilterByType", _T(filterName))) {
-					if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
-						primaryFilter = RE::FormType::None;
-						ApplyFilters();
-						ImGui::SetItemDefaultFocus();
-					}
+		ImGui::NewLine();
 
-					for (auto& filter : filterList) {
-						bool isSelected = (filter == primaryFilter);
-
-						std::string formName = RE::FormTypeToString(filter).data();
-						if (ImGui::Selectable(_T(formName), isSelected)) {
-							primaryFilter = filter;
-							ApplyFilters();
-						}
-
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-
-					ImGui::EndCombo();
-				}
-
-				ImGui::NewLine();
-				ImGui::TreePop();
+		// Secondary Filter for object record types.
+		ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
+		ImGui::SetNextItemWidth(totalWidth);
+		auto filterName = RE::FormTypeToString(primaryFilter).data();
+		if (ImGui::BeginCombo("##ObjectWindow::FilterByType", _T(filterName))) {
+			if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
+				primaryFilter = RE::FormType::None;
+				ApplyFilters();
+				ImGui::SetItemDefaultFocus();
 			}
 
-			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::OBJECT, primaryFilter);
-			modListVector.insert(modListVector.begin(), "All Mods");
-			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				if (InputTextComboBox("##ObjectWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
-					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::OBJECT);
-					selectedMod = "All Mods";
+			for (auto& filter : filterList) {
+				bool isSelected = (filter == primaryFilter);
 
-					if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+				std::string formName = RE::FormTypeToString(filter).data();
+				if (ImGui::Selectable(_T(formName), isSelected)) {
+					primaryFilter = filter;
+					ApplyFilters();
+				}
+
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::NewLine();
+
+		// Plugin List Filter
+		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::OBJECT, primaryFilter);
+		modListVector.insert(modListVector.begin(), "All Mods");
+		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
+		if (InputTextComboBox("##ObjectWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
+			auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::OBJECT);
+			selectedMod = "All Mods";
+
+			if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+			} else {
+				for (auto& mod : modList) {
+					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+						continue;
+					}
+
+					std::string modName = ValidateTESFileName(mod);
+
+					if (modName == "All Mods") {
 						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-					} else {
-						for (auto& mod : modList) {
-							if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-								continue;
-							}
-
-							std::string modName = ValidateTESFileName(mod);
-
-							if (modName == "All Mods") {
-								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-								break;
-							}
-
-							if (modName.find(modSearchBuffer) != std::string::npos) {
-								selectedMod = modName;
-								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-								break;
-							}
-						}
+						break;
 					}
 
-					ApplyFilters();
+					if (modName.find(modSearchBuffer) != std::string::npos) {
+						selectedMod = modName;
+						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+						break;
+					}
 				}
-
-				ImGui::NewLine();
-				ImGui::TreePop();
 			}
-			ImGui::Unindent();
+
+			ApplyFilters();
 		}
 	}
 }

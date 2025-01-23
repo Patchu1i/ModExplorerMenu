@@ -84,160 +84,78 @@ namespace Modex
 	// Draw search bar for filtering items.
 	void TeleportWindow::ShowSearch()
 	{
-		if (ImGui::CollapsingHeader(_TFM("GENERAL_REFINE_SEARCH", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Indent();
+		auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
+		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
+		// auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
-			auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
-			auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-			// auto totalWidth = inputTextWidth + filterWidth + 2.0f;
+		// Search bar for compare string.
+		ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
+		ImGui::SetNextItemWidth(inputTextWidth);
+		if (ImGui::InputTextWithHint("##TeleportWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
+				IM_ARRAYSIZE(inputBuffer),
+				ImGuiInputTextFlags_EscapeClearsAll)) {
+			ApplyFilters();
+		}
 
-			// Search bar for compare string.
-			if (ImGui::TreeNodeEx(_TFM("GENERAL_SEARCH_RESULTS", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::SetNextItemWidth(inputTextWidth);
-				if (ImGui::InputTextWithHint("##TeleportWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
-						IM_ARRAYSIZE(inputBuffer),
-						ImGuiInputTextFlags_EscapeClearsAll)) {
+		ImGui::SameLine();
+
+		auto searchByValue = InputSearchMap.at(searchKey);
+		auto combo_flags = ImGuiComboFlags_None;
+		ImGui::SetNextItemWidth(filterWidth);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
+		if (ImGui::BeginCombo("##TeleportWindow::InputFilter", _T(searchByValue), combo_flags)) {
+			for (auto& item : InputSearchMap) {
+				auto searchBy = item.first;
+				auto _searchByValue = item.second;
+				bool is_selected = (searchKey == searchBy);
+
+				if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
+					searchKey = searchBy;
 					ApplyFilters();
 				}
 
-				ImGui::SameLine();
-
-				auto searchByValue = InputSearchMap.at(searchKey);
-				auto combo_flags = ImGuiComboFlags_None;
-				ImGui::SetNextItemWidth(filterWidth);
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 5.0f);
-				if (ImGui::BeginCombo("##TeleportWindow::InputFilter", _T(searchByValue), combo_flags)) {
-					for (auto& item : InputSearchMap) {
-						auto searchBy = item.first;
-						auto _searchByValue = item.second;
-						bool is_selected = (searchKey == searchBy);
-
-						if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
-							searchKey = searchBy;
-							ApplyFilters();
-						}
-
-						if (is_selected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-
-					ImGui::EndCombo();
+				if (is_selected) {
+					ImGui::SetItemDefaultFocus();
 				}
-
-				ImGui::NewLine();
-				ImGui::TreePop();
 			}
 
-			// Mod List sort and filter.
-			auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, RE::FormType::None);
-			modListVector.insert(modListVector.begin(), "All Mods");
-			if (ImGui::TreeNodeEx(_TFM("GENERAL_FILTER_MODLIST", ":"), ImGuiTreeNodeFlags_DefaultOpen)) {
-				if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, inputTextWidth)) {
-					auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
-					selectedMod = "All Mods";
+			ImGui::EndCombo();
+		}
 
-					if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+		ImGui::NewLine();
+
+		// Mod List sort and filter.
+		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, RE::FormType::None);
+		modListVector.insert(modListVector.begin(), "All Mods");
+		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
+		if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, inputTextWidth)) {
+			auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
+			selectedMod = "All Mods";
+
+			if (selectedMod.find(modSearchBuffer) != std::string::npos) {
+				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+			} else {
+				for (auto& mod : modList) {
+					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+						continue;
+					}
+
+					std::string modName = ValidateTESFileName(mod);
+
+					if (modName == "All Mods") {
 						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-					} else {
-						for (auto& mod : modList) {
-							if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-								continue;
-							}
-
-							std::string modName = ValidateTESFileName(mod);
-
-							if (modName == "All Mods") {
-								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-								break;
-							}
-
-							if (modName.find(modSearchBuffer) != std::string::npos) {
-								selectedMod = modName;
-								ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-								break;
-							}
-						}
+						break;
 					}
 
-					ApplyFilters();
+					if (modName.find(modSearchBuffer) != std::string::npos) {
+						selectedMod = modName;
+						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+						break;
+					}
 				}
-
-				ImGui::NewLine();
-				ImGui::TreePop();
-				// ImGui::SetNextItemWidth(totalWidth);
-				// ImGui::InputTextWithHint("##TeleportWindow::ModField", _T("GENERAL_CLICK_TO_TYPE"), modListBuffer,
-				// 	IM_ARRAYSIZE(modListBuffer),
-				// 	Frame::INPUT_FLAGS);
-
-				// std::string selectedModName = selectedMod == "Favorite" ? _TICON(ICON_RPG_HEART, selectedMod) :
-				//                               selectedMod == "All Mods" ? _TICON(ICON_RPG_WRENCH, selectedMod) :
-				//                                                           selectedMod;
-
-				// (void)a_config;
-				// auto min = ImVec2(totalWidth, 0.0f);
-				// auto max = ImVec2(totalWidth, ImGui::GetWindowSize().y / 4);
-				// ImGui::SetNextItemWidth(totalWidth);
-				// ImGui::SetNextWindowSizeConstraints(min, max);
-				// if (ImGui::BeginCombo("##TeleportWindow::FilterByMod", selectedModName.c_str())) {
-				// 	if (ImGui::Selectable(_TICON(ICON_RPG_WRENCH, "All Mods"), selectedMod == "All Mods")) {
-				// 		selectedMod = "All Mods";
-				// 		ApplyFilters();
-				// 		ImGui::SetItemDefaultFocus();
-				// 	}
-
-				// 	if (ImGui::Selectable(_TICON(ICON_RPG_HEART, "Favorite"), selectedMod == "Favorite")) {
-				// 		selectedMod = "Favorite";
-				// 		ApplyFilters();
-				// 		ImGui::SetItemDefaultFocus();
-				// 	}
-
-				// 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-				// 	auto modList = Data::GetModList(Data::ITEM_MOD_LIST, a_config.modListSort);
-				// 	for (auto& mod : *modList) {
-				// 		bool bSelected = false;
-
-				// 		if (mod->GetFilename().data() == nullptr) {
-				// 			continue;
-				// 		}
-
-				// 		const char* modName = mod->GetFilename().data();
-
-				// 		if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
-				// 			continue;
-				// 		}
-
-				// 		if (std::strlen(modListBuffer) > 0) {
-				// 			std::string compare = modName;
-				// 			std::string input = modListBuffer;
-
-				// 			std::transform(input.begin(), input.end(), input.begin(),
-				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-				// 			std::transform(compare.begin(), compare.end(), compare.begin(),
-				// 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-				// 			if (compare.find(input) != std::string::npos) {
-				// 				// Do nothing?
-				// 			} else {
-				// 				continue;
-				// 			}
-				// 		}
-
-				// 		if (ImGui::Selectable(modName, selectedMod == modName)) {
-				// 			selectedMod = modName;
-				// 			ApplyFilters();
-				// 		}
-
-				// 		if (bSelected)  // ??
-				// 			ImGui::SetItemDefaultFocus();
-				// 	}
-				// 	ImGui::EndCombo();
-				// }
 			}
 
-			ImGui::Unindent();
+			ApplyFilters();
 		}
 	}
 }
