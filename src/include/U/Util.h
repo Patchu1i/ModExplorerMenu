@@ -10,9 +10,184 @@ namespace ImGui
 {
 	[[nodiscard]] inline static const float GetCenterTextPosX(const char* text)
 	{
-		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 -
-		       ImGui::CalcTextSize(text).x / 2;
+		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 - ImGui::CalcTextSize(text).x / 2;
 	};
+
+	// Specifically used in the Frame Sidebar window.
+	//
+	// @param a_text - The text to display on the button.
+	// @param a_texture - The texture to display on the button.
+	// @param a_imageSize - The size of the texture.
+	// @param a_buttonSize - The size of the button.
+	// @param a_textMod - The text alignment modifier for the button.
+	static inline bool SidebarButton(const char* a_text, ImTextureID a_texture, ImVec2 a_imageSize, ImVec2 a_buttonSize, float& a_textMod)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID(a_text);
+		const ImVec2 label_size = ImGui::CalcTextSize(a_text, NULL, true);
+		const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+
+		// Set gradient colors manually for now...
+		ImU32 bg_color_1 = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		ImU32 bg_color_2 = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+
+		// Calculate size and bounding box of button element.
+		ImVec2 pos = window->DC.CursorPos;
+		ImVec2 size =
+			ImGui::CalcItemSize(ImVec2(a_buttonSize.x, a_buttonSize.y), label_size.x + style.FramePadding.x * 2.0f,
+				label_size.y + style.FramePadding.y * 2.0f);
+
+		const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+		ImGui::ItemSize(size, style.FramePadding.y);
+		if (!ImGui::ItemAdd(bb, id))
+			return false;
+
+		// Emulate button behavior since we're not using ImGui::Button.
+		ImGuiButtonFlags flags = ImGuiButtonFlags_None;
+
+		bool hovered, held;
+		bool expanded = (a_buttonSize.x) > a_imageSize.x * 4.0f;
+		bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, flags);
+
+		const float anim_step = 0.05f;
+
+		if (hovered || held) {
+			if (a_textMod < 0.5f) {
+				a_textMod += anim_step;
+			} else {
+				a_textMod = 0.5f;
+			}
+		} else {
+			if (a_textMod > 0.0f) {
+				a_textMod -= anim_step;
+			} else {
+				a_textMod = 0.0f;
+			}
+		}
+
+		// This code handles the gradient coloring.
+		// https://github.com/ocornut/imgui/issues/4722
+		const bool is_gradient = bg_color_1 != bg_color_2;
+		if (held || hovered) {
+			// Modify colors (ultimately this can be prebaked in the style)
+			float h_increase = (held || hovered) ? 0.02f : 0.02f;
+			float v_increase = (held || hovered) ? 10.0f : 0.07f;
+
+			ImVec4 bg1f = ImGui::ColorConvertU32ToFloat4(bg_color_1);
+			ImGui::ColorConvertRGBtoHSV(bg1f.x, bg1f.y, bg1f.z, bg1f.x, bg1f.y, bg1f.z);
+			bg1f.x = ImMin(bg1f.x + h_increase, 1.0f);
+			bg1f.z = ImMin(bg1f.z + v_increase, 1.0f);
+			ImGui::ColorConvertHSVtoRGB(bg1f.x, bg1f.y, bg1f.z, bg1f.x, bg1f.y, bg1f.z);
+			bg_color_1 = ImGui::GetColorU32(bg1f);
+			if (is_gradient) {
+				ImVec4 bg2f = ImGui::ColorConvertU32ToFloat4(bg_color_2);
+				ImGui::ColorConvertRGBtoHSV(bg2f.x, bg2f.y, bg2f.z, bg2f.x, bg2f.y, bg2f.z);
+				bg2f.z = ImMin(bg2f.z + h_increase, 1.0f);
+				bg2f.z = ImMin(bg2f.z + v_increase, 1.0f);
+				ImGui::ColorConvertHSVtoRGB(bg2f.x, bg2f.y, bg2f.z, bg2f.x, bg2f.y, bg2f.z);
+				bg_color_2 = ImGui::GetColorU32(bg2f);
+			} else {
+				bg_color_2 = bg_color_1;
+			}
+		}
+		ImGui::RenderNavHighlight(bb, id);
+
+		// Calculate image bounding box, relative to the underlying button.
+		const ImVec2 image_size = ImVec2((float)a_imageSize.x * 0.80f, (float)a_imageSize.y * 0.80f);
+		const float image_pos_height = bb.Min.y + (bb.GetHeight() - image_size.y) * 0.5f;  // always centered.
+		const float image_pos_width_min = bb.Min.x + (image_size.x * 0.5f) + style.FramePadding.x;
+		const float image_pos_width_max = image_pos_width_min + image_size.x;
+		const ImVec2 image_pos_min = ImVec2(image_pos_width_min, image_pos_height);
+		const ImVec2 image_pos_max = ImVec2(image_pos_width_max, image_pos_height + image_size.y);
+
+		// Render
+		int vert_start_idx = window->DrawList->VtxBuffer.Size;
+		window->DrawList->AddImage(a_texture, image_pos_min, image_pos_max);
+		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
+		int vert_end_idx = window->DrawList->VtxBuffer.Size;
+		if (is_gradient)
+			ImGui::ShadeVertsLinearColorGradientKeepAlpha(window->DrawList, vert_start_idx, vert_end_idx,
+				bb.Min, bb.GetBL(), bg_color_1, bg_color_2);
+		if (g.Style.FrameBorderSize > 0.0f)
+			window->DrawList->AddRect(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_Border),
+				g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
+
+		// Custom behavior based on whether the button is in an expanded state or not.
+		// This is determined externally by the container this button is in.
+		// (If the size of the button > 4x the size of the image, it's considered expanded.)
+
+		if (expanded) {
+			ImGui::PushStyleColor(ImGuiCol_Text, text_color);
+
+			ImGui::RenderTextClipped(ImVec2(image_pos_width_min + image_size.x + style.FramePadding.x,
+										 bb.Min.y + style.FramePadding.y),
+				ImVec2(bb.Max.x - style.FramePadding.x, bb.Max.y - style.FramePadding.y),
+				a_text, NULL, &label_size, ImVec2(a_textMod, 0.5f),  // alignment
+				&bb);
+			ImGui::PopStyleColor();
+		}
+
+		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+		return pressed;
+	};
+
+	// Source: https://github.com/ocornut/imgui/issues/319
+	// Modified heavily, even though I sort of ended up back at the original code.
+	//
+	// @param a_id - The unique identifier for the splitter.
+	// @param split_vertically - Whether the splitter is vertical or horizontal.
+	// @param target - A pointer to the target transform to modify.
+	// @param edge - A pointer to the edge which the splitter is bound to (for sizing).
+	// @param min_size - The minimum size the target can be.
+	// @param max_size - The maximum size the target can be.
+	// @param add_ext - An optional pointer to an external transform to modify.
+	// @param sub_ext - An optional pointer to an external transform to modify.
+	static inline void DrawSplitter(const char* a_id, bool split_vertically, float* target, float* edge, float min_size, float max_size, float* add_ext = nullptr, float* sub_ext = nullptr)
+	{
+		float width;
+		float height;
+
+		if (split_vertically) {
+			width = *edge;
+			height = 8.0f;
+		} else {
+			width = 8.0f;
+			height = *edge;
+		}
+
+		// Override ImGui button styling.
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));  // We don't draw while active/pressed because as we move the panes the splitter button will be 1 frame late
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 0.10f));
+		ImGui::SetItemAllowOverlap();
+		ImGui::Button(a_id, ImVec2(width, height));
+		ImGui::PopStyleColor(3);
+
+		if (ImGui::IsItemActive()) {
+			float mouse_delta = split_vertically ? ImGui::GetIO().MouseDelta.y : ImGui::GetIO().MouseDelta.x;
+
+			// Minimum pane size
+			if (mouse_delta < min_size - *target)
+				mouse_delta = min_size - *target;
+
+			if (mouse_delta > max_size - *target)
+				mouse_delta = max_size - *target;
+
+			// Apply resize
+			*target += mouse_delta;
+
+			if (add_ext)
+				*add_ext += mouse_delta;
+
+			if (sub_ext)
+				*sub_ext -= mouse_delta;
+		}
+	}
 
 	static inline void SubCategoryHeader(const char* label, ImVec4 color = ImVec4(0.22f, 0.22f, 0.22f, 0.5f))
 	{
@@ -23,6 +198,7 @@ namespace ImGui
 		ImGui::PopStyleColor(3);
 	}
 
+	// Source: https://github.com/ocornut/imgui/issues/4722
 	static inline bool ColoredButtonV1(const char* label, const ImVec2& size_arg, ImU32 text_color, ImU32 bg_color_1, ImU32 bg_color_2)
 	{
 		ImGuiWindow* window = GetCurrentWindow();
@@ -265,9 +441,11 @@ namespace ImGui
 		auto col_a = ImGui::GetColorU32(ImVec4(col_button.x, col_button.y, col_button.z, col_button.w * alpha));
 		auto col_b = ImGui::GetColorU32(ImVec4(col_button.x * 0.6f, col_button.y * 0.6f, col_button.z * 0.6f, col_button.w * alpha));
 
+		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 		auto innerPadding = ImGui::GetStyle().FramePadding.y;
 		auto newSize = ImVec2(size.x, size.y + innerPadding);
 		auto pressed = ImGui::ColoredButtonV1(label, newSize, IM_COL32(255, 255, 255, 255 * alpha), col_a, col_b);
+		ImGui::PopStyleVar();
 
 		if (pressed) {
 			selected = !selected;
