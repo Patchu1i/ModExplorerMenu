@@ -23,6 +23,8 @@ namespace Modex
 		auto arrowSize = ImGui::GetFrameHeight();
 		ImGui::SetNextItemWidth(a_width - arrowSize);
 		result = ImGui::InputTextWithHint(a_label, a_preview.c_str(), a_buffer, a_size, ImGuiInputTextFlags_EnterReturnsTrue);
+
+		auto suffix = std::string("##InputTextCombo::");
 		auto prevItemRectMax = ImGui::GetItemRectMax();
 		auto prevItemRectMin = ImGui::GetItemRectMin();
 		auto prevItemRectSize = ImGui::GetItemRectSize();
@@ -35,12 +37,12 @@ namespace Modex
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		ImGui::SameLine();
-		if (ImGui::ArrowButton("##ModFilterDropDown", ImGuiDir_Down)) {
-			if (ImGui::IsPopupOpen("SuggestionPopup")) {
+		if (ImGui::ArrowButton((suffix + a_label).c_str(), ImGuiDir_Down)) {
+			if (ImGui::IsPopupOpen((suffix + a_label + "Popup").c_str())) {
 				ImGui::CloseCurrentPopup();
 				forceDropdown = false;
 			} else {
-				ImGui::OpenPopup("SuggestionPopup");
+				ImGui::OpenPopup((suffix + a_label + "Popup").c_str());
 				forceDropdown = true;
 			}
 		}
@@ -48,7 +50,7 @@ namespace Modex
 
 		if (inputTextActive) {
 			forceDropdown = false;
-			ImGui::OpenPopup("SuggestionPopup");
+			ImGui::OpenPopup((suffix + a_label + "Popup").c_str());
 		}
 
 		// Position and size popup
@@ -56,16 +58,20 @@ namespace Modex
 
 		ImGuiWindowFlags popup_window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 		popup_window_flags |= ImGuiWindowFlags_NoFocusOnAppearing;
-		popup_window_flags |= ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NavFlattened;
 		popup_window_flags |= ImGuiWindowFlags_NoNav;
 		popup_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 		auto minPopupSize = ImVec2(prevItemRectSize.x, 0);
 		auto maxPopupSize = ImVec2(prevItemRectSize.x, prevItemRectSize.y * 20);  // 20 items max (?)
 		ImGui::SetNextWindowSizeConstraints(minPopupSize, maxPopupSize);
-		if (ImGui::BeginPopupEx(ImGui::GetID("SuggestionPopup"), popup_window_flags)) {
+		if (ImGui::BeginPopupEx(ImGui::GetID((suffix + a_label + "Popup").c_str()), popup_window_flags)) {
 			ImGuiWindow* popup_window = g.CurrentWindow;
 			const bool popup_is_appearing = ImGui::IsWindowAppearing();
+
+			// https://github.com/ocornut/imgui/issues/4461
+			if (popup_is_appearing) {
+				ImGui::BringWindowToDisplayFront(popup_window);
+			}
 
 			// Important: Tracks navigation cursor for keyboard input.
 			const int cursor_idx_prev = ImGui::GetStateStorage()->GetInt(ImGui::GetID("CursorIdx"), -1);
