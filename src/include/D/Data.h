@@ -67,6 +67,11 @@ namespace Modex
 		[[nodiscard]] inline std::set<std::string> 		GetNPCRaceList() 	{ return _npcRaceList; 		}
 		[[nodiscard]] inline std::set<std::string> 		GetNPCFactionList() { return _npcFactionList; 	}
 
+		void 											GenerateItemList();
+		void 											GenerateNPCList();
+		void 											GenerateObjectList();
+		void 											GenerateCellList();
+
 	private:
 		std::vector<ItemData> 							_cache;
 		std::vector<CellData>	 						_cellCache;
@@ -101,10 +106,7 @@ namespace Modex
 		void CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_map);
 		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
 
-		void 											GenerateItemList();
-		void 											GenerateNPCList();
-		void 											GenerateObjectList();
-		void 											GenerateCellList();
+
 
 		// Windows Specific API for File Creation Time
 		[[nodiscard]] std::time_t GetFileCreationTime(const std::filesystem::path& path);

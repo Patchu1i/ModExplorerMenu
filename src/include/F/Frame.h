@@ -7,6 +7,11 @@
 
 namespace Modex
 {
+
+	// Define MIN as constants since they're not constrained
+	// to the sizes of other elements in practice. MAX is typically
+	// based on a ratio of the available content region.
+
 	class Frame
 	{
 	public:
@@ -16,12 +21,31 @@ namespace Modex
 			return &singleton;
 		}
 
+		// GraphicManager::Image -> ImGui conversion.
+		struct SideBarImage
+		{
+			ImTextureID texture;
+			ImVec2 size;
+		};
+
 		Frame() = default;
 		~Frame() = default;
 
 		void 			Draw(bool is_settings_popped = false);
 		void 			Install();
 		void 			RefreshStyle();
+
+		static const ImGuiWindowFlags	WINDOW_FLAGS =
+			ImGuiWindowFlags_NoCollapse  			|
+			ImGuiWindowFlags_NoScrollbar 			|
+			ImGuiWindowFlags_NoScrollWithMouse		| 
+			ImGuiWindowFlags_NoCollapse 			|
+			ImGuiWindowFlags_NoTitleBar				|
+			ImGuiWindowFlags_NoResize				|
+			ImGuiWindowFlags_NoMove;
+
+		static const ImGuiWindowFlags	SIDEBAR_FLAGS = 
+			WINDOW_FLAGS;
 
 		static const ImGuiTableFlags 	TABLE_FLAGS =
 			ImGuiTableFlags_Reorderable 			| ImGuiTableFlags_Sortable |
@@ -53,13 +77,26 @@ namespace Modex
 	private:
 		enum ActiveWindow
 		{
+			kNone,
 			Home,
 			AddItem,
 			Object,
 			NPC,
 			Teleport,
-			Settings
+			Settings,
+			kTotal
 		};
+
+
+		float			sidebar_w;
+		float 			sidebar_h;
+		float 			home_w = 0.0f;
+		float			additem_w = 0.0f;
+		float 			npc_w = 0.0f;
+		float 			object_w = 0.0f;
+		float 			teleport_w = 0.0f;
+		float 			settings_w = 0.0f;
+		float 			exit_w = 0.0f;
 
 		bool 			b_Home 		= true;
 		bool 			b_AddItem 	= false;

@@ -21,7 +21,7 @@ namespace Modex
 		ObjectWindow() = default;
 		~ObjectWindow() = default;
 
-		void 						Draw();
+		void 						Draw(float a_offset);
 		void 						Init();
 		void 						Refresh();
 

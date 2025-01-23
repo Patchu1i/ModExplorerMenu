@@ -10,13 +10,6 @@
 
 namespace Modex
 {
-	struct WindowProperties
-	{
-		float sidebar_w;
-		float sidebar_h;
-		float panel_w;
-		float panel_h;
-	};
 
 	void Frame::Draw(bool is_settings_popped)
 	{
@@ -34,26 +27,16 @@ namespace Modex
 		displaySize.x *= config.screenScaleRatio.x;
 		displaySize.y *= config.screenScaleRatio.y;
 
-		WindowProperties window;
+		const float window_w = config.fullscreen ? displaySize.x : (displaySize.x * 0.80f) * (config.uiScale / 100.0f);
+		const float window_h = config.fullscreen ? displaySize.y : (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
 
-		if (!config.fullscreen) {
-			// Apply the user's UI scale config
-			window.panel_w = (displaySize.x * 0.60f) * (config.uiScale / 100.0f);
-			window.panel_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
-			window.sidebar_w = (displaySize.x * 0.10f) * (config.uiScale / 100.0f);
-			window.sidebar_h = (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
-		} else {
-			window.panel_w = displaySize.x;
-			window.panel_h = displaySize.y;
-			window.sidebar_w = 0;
-			window.sidebar_h = 0;
-		}
+		// const float min_sidebar_width = window_w * 0.060f;
+		const float min_sidebar_width = 64.0f + (ImGui::GetStyle().WindowPadding.x * 2);
+		const float max_sidebar_width = window_w * 0.15f;
 
 		// Calculate window positions post scaling.
-		float center_x = (displaySize.x * 0.5f);
-		float center_y = (displaySize.y * 0.5f) - (window.panel_h * 0.5f);
-		float panel_x = center_x - (window.panel_w * 0.5f) + (window.sidebar_w * 0.5f) + (style.sidebarSpacing / 2);
-		float sidebar_x = panel_x - (window.sidebar_w) - (style.sidebarSpacing);
+		const float center_x = (displaySize.x * 0.5f) - (window_w * 0.5f);
+		const float center_y = (displaySize.y * 0.5f) - (window_h * 0.5f);
 
 		// Draw a transparent black background.
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -62,120 +45,153 @@ namespace Modex
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.35f));
-
 		ImGui::Begin("##Background", NULL, BACKGROUND_FLAGS);
 		ImGui::End();
-
 		ImGui::PopStyleVar(2);
 		ImGui::PopStyleColor(2);
+		// End black background
 
-		// Draw Sidebar Frame
-		static constexpr ImGuiWindowFlags sidebar_flag = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
-		auto noFocus = is_settings_popped ? ImGuiWindowFlags_NoBringToFrontOnFocus : 0;
-		ImGui::SetNextWindowSize(ImVec2(window.sidebar_w, window.sidebar_h));
-		ImGui::SetNextWindowPos(ImVec2(sidebar_x, center_y));
+		// If we're fullscreen, override manual positioning and sizing of the menu.
+		ImGui::SetNextWindowSize(ImVec2(window_w, window_h));
 
-		ImGui::PushStyleColor(ImGuiCol_Header, style.button);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.buttonActive);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.buttonHovered);
-		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-		// ImGui::PushFont(style.buttonFont.normal);
-		if (ImGui::Begin("##AddItemMenuSideBar", NULL, sidebar_flag + noFocus)) {
-			auto iWidth = ImGui::GetContentRegionAvail().x;
-			auto iHeight = ImGui::GetWindowSize().y / 12;
-
-			ImTextureID texture = (ImTextureID)GraphicManager::image_library["logo"].texture;
-			ImGui::Image(texture, ImVec2(iWidth, iHeight));
-
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-			if (config.showHomeMenu) {
-				if (ImGui::Selectable(_T("Home"), &b_Home, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					activeWindow = ActiveWindow::Home;
-					ResetSelectable();
-				}
-			}
-
-			if (config.showAddItemMenu) {
-				if (ImGui::Selectable(_T("Add Item"), &b_AddItem, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					activeWindow = ActiveWindow::AddItem;
-					AddItemWindow::GetSingleton()->Refresh();
-					ResetSelectable();
-				}
-			}
-
-			if (config.showObjectMenu) {
-				if (ImGui::Selectable(_T("Object"), &b_Object, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					activeWindow = ActiveWindow::Object;
-					ObjectWindow::GetSingleton()->Refresh();
-					ResetSelectable();
-				}
-			}
-
-			if (config.showNPCMenu) {
-				if (ImGui::Selectable(_T("NPC"), &b_NPC, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					activeWindow = ActiveWindow::NPC;
-					NPCWindow::GetSingleton()->Refresh();
-					ResetSelectable();
-				}
-			}
-
-			if (config.showTeleportMenu) {
-				if (ImGui::Selectable(_T("Teleport"), &b_Teleport, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-					activeWindow = ActiveWindow::Teleport;
-					TeleportWindow::GetSingleton()->Refresh();
-					ResetSelectable();
-				}
-			}
-
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-			if (ImGui::Selectable(_T("Settings"), &b_Settings, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				activeWindow = ActiveWindow::Settings;
-				ResetSelectable();
-			}
-
-			if (ImGui::Selectable(_T("Exit"), false, ImGuiSelectableFlags_None, ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 1.5f))) {
-				Menu::GetSingleton()->Toggle();
-			}
-
-			ImGui::End();
+		if (sidebar_w == 0.0f || sidebar_h == 0.0f) {
+			sidebar_w = min_sidebar_width;
+			sidebar_h = -1;
+			ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
 		}
-		// ImGui::PopFont();
-		ImGui::PopStyleColor(3);
-		ImGui::PopStyleVar(1);
 
-		// Draw Panel Frame
-		static constexpr ImGuiWindowFlags panel_flag = sidebar_flag;
-		ImGui::SetNextWindowSize(ImVec2(window.panel_w, window.panel_h));
-		ImGui::SetNextWindowPos(ImVec2(panel_x, center_y));
+		if (config.fullscreen) {
+			ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
+		}
 
-		if (ImGui::Begin("##AddItemMenuPanel", NULL, sidebar_flag + noFocus + ImGuiWindowFlags_NoScrollbar + ImGuiWindowFlags_NoScrollWithMouse)) {
+		if (ImGui::Begin("##ModexMenu", NULL, WINDOW_FLAGS)) {
+			ImGui::SetCursorPos(ImVec2(0, 0));
+			if (ImGui::BeginChild("##SideBar", ImVec2(sidebar_w, ImGui::GetContentRegionAvail().y + ImGui::GetStyle().WindowPadding.y), ImGuiChildFlags_Borders, SIDEBAR_FLAGS)) {
+				const float button_width = ImGui::GetContentRegionAvail().x;
+				const float button_height = 40.0f;
+
+				{
+					const float image_width = 120.2f * 1.5f;
+					const float image_height = 35.6f * 1.5f;
+					ImTextureID texture = sidebar_w > (min_sidebar_width) ? (ImTextureID)GraphicManager::image_library["logo"].texture : (ImTextureID)GraphicManager::image_library["logo_single"].texture;
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
+					ImGui::Image(texture, ImVec2(image_width, image_height));
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				}
+
+				SideBarImage home_image = { (ImTextureID)GraphicManager::image_library["IconHome"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage additem_image = { (ImTextureID)GraphicManager::image_library["IconAddItem"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage object_image = { (ImTextureID)GraphicManager::image_library["IconObject"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage npc_image = { (ImTextureID)GraphicManager::image_library["IconNPC"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage teleport_image = { (ImTextureID)GraphicManager::image_library["IconTeleport"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage settings_image = { (ImTextureID)GraphicManager::image_library["IconSettings"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage exit_image = { (ImTextureID)GraphicManager::image_library["IconExit"].texture, ImVec2(32.0f, 32.0f) };
+
+				bool is_expanded = false;
+				const auto ExpandButton = [&]() {
+					if (ImGui::IsWindowHovered() || ImGui::IsItemHovered()) {
+						is_expanded = true;
+					}
+				};
+
+				if (config.showHomeMenu) {
+					if (ImGui::SidebarButton("Home", home_image.texture, home_image.size, ImVec2(button_width, button_height), home_w)) {
+						activeWindow = ActiveWindow::Home;
+					}
+					ExpandButton();
+				}
+
+				if (config.showAddItemMenu) {
+					if (ImGui::SidebarButton("Item", additem_image.texture, additem_image.size, ImVec2(button_width, button_height), additem_w)) {
+						activeWindow = ActiveWindow::AddItem;
+						AddItemWindow::GetSingleton()->Refresh();
+					}
+
+					ExpandButton();
+				}
+
+				if (config.showObjectMenu) {
+					if (ImGui::SidebarButton("Object", object_image.texture, object_image.size, ImVec2(button_width, button_height), object_w)) {
+						activeWindow = ActiveWindow::Object;
+						ObjectWindow::GetSingleton()->Refresh();
+					}
+
+					ExpandButton();
+				}
+
+				if (config.showNPCMenu) {
+					if (ImGui::SidebarButton("NPC", npc_image.texture, npc_image.size, ImVec2(button_width, button_height), npc_w)) {
+						activeWindow = ActiveWindow::NPC;
+						NPCWindow::GetSingleton()->Refresh();
+					}
+
+					ExpandButton();
+				}
+
+				if (config.showTeleportMenu) {
+					if (ImGui::SidebarButton("Teleport", teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), teleport_w)) {
+						activeWindow = ActiveWindow::Teleport;
+						TeleportWindow::GetSingleton()->Refresh();
+					}
+
+					ExpandButton();
+				}
+
+				if (ImGui::SidebarButton("Settings", settings_image.texture, settings_image.size, ImVec2(button_width, button_height), settings_w)) {
+					activeWindow = ActiveWindow::Settings;
+				}
+
+				ExpandButton();
+
+				if (ImGui::SidebarButton("Exit", exit_image.texture, exit_image.size, ImVec2(button_width, button_height), exit_w)) {
+					Menu::GetSingleton()->Close();
+				}
+
+				ExpandButton();
+
+				if (is_expanded) {
+					if (sidebar_w + 20.0f < max_sidebar_width) {
+						sidebar_w += 20.0f;
+					} else {
+						sidebar_w = max_sidebar_width;
+					}
+				} else {
+					if (sidebar_w - 20.0f > min_sidebar_width) {
+						sidebar_w -= 20.0f;
+					} else {
+						sidebar_w = min_sidebar_width;
+					}
+				}
+			}
+
+			ImGui::EndChild();
+			ImGui::SameLine();
+
 			switch (activeWindow) {
 			case ActiveWindow::Home:
 				HomeWindow::Draw();
 				break;
 			case ActiveWindow::AddItem:
-				AddItemWindow::GetSingleton()->Draw();
+				AddItemWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			case ActiveWindow::Object:
-				ObjectWindow::GetSingleton()->Draw();
+				ObjectWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			case ActiveWindow::NPC:
-				NPCWindow::GetSingleton()->Draw();
+				NPCWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			case ActiveWindow::Teleport:
-				TeleportWindow::GetSingleton()->Draw();
+				TeleportWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
 				break;
 			}
 
+			GraphicManager::DrawImage(style.splashImage, ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
+
 			ImGui::End();
 		}
-
-		GraphicManager::DrawImage(style.splashImage, ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
 	}
 
 	void Frame::Install()
@@ -196,9 +212,9 @@ namespace Modex
 	void Frame::RefreshStyle()
 	{
 		// AddItemWindow::RefreshStyle();
-		//HomeWindow::RefreshStyle();
-		//SettingsWindow::RefreshStyle();
+		// HomeWindow::RefreshStyle();
+		// SettingsWindow::RefreshStyle();
 
 		// auto& style = Settings::GetSingleton()->GetStyle();
 	}
-}
+}  // namespace Modex

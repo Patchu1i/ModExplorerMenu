@@ -23,7 +23,7 @@ namespace Modex
 		AddItemWindow() = default;
 		~AddItemWindow() = default;
 
-		void 					Draw();
+		void 					Draw(float a_offset);
 		void 					ShowBookPreview();
 		void 					Refresh();
 		void 					Init();

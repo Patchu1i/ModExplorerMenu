@@ -439,11 +439,6 @@ namespace Modex
 	{
 		ImGui::Unindent();
 		ImGui::SubCategoryHeader(_T(a_text));
-		// ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		// ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		// ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		// ImGui::Button(_T(a_text), ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-		// ImGui::PopStyleColor(3);
 		ImGui::Indent();
 		ImGui::Spacing();
 	}
@@ -472,7 +467,7 @@ namespace Modex
 	static inline ImVec4 modifierHoverTint = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
 	void SettingsWindow::DrawGeneralSettings()
 	{
-		//Settings::Style& style = Settings::GetSingleton()->GetStyle();
+		// Settings::Style& style = Settings::GetSingleton()->GetStyle();
 		Settings::Config& config = Settings::GetSingleton()->GetConfig();
 
 		if (changes.load()) {
@@ -866,8 +861,6 @@ namespace Modex
 
 	void SettingsWindow::Draw()
 	{
-		ImGui::Text(_T("THEME_WELCOME"));
-
 		constexpr auto child_flags = ImGuiChildFlags_Border;
 		constexpr auto header_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
 		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {

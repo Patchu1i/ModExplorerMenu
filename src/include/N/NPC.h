@@ -23,7 +23,7 @@ namespace Modex
 		NPCWindow() = default;
 		~NPCWindow() = default;
 
-		void 					Draw();
+		void 					Draw(float a_offset);
 		void 					Refresh();
 		void 					Init();
 
