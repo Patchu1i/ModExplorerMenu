@@ -14,7 +14,7 @@ namespace Modex
 	void Frame::Draw(bool is_settings_popped)
 	{
 		auto& style = Settings::GetSingleton()->GetStyle();
-		auto& config = Settings::GetSingleton()->GetConfig();
+		const auto& config = Settings::GetSingleton()->GetConfig();
 
 		if (is_settings_popped) {
 			SettingsWindow::DrawPopped();
@@ -45,7 +45,7 @@ namespace Modex
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.35f));
-		ImGui::Begin("##Background", NULL, BACKGROUND_FLAGS);
+		ImGui::Begin("##Background", nullptr, BACKGROUND_FLAGS);
 		ImGui::End();
 		ImGui::PopStyleVar(2);
 		ImGui::PopStyleColor(2);
@@ -64,28 +64,28 @@ namespace Modex
 			ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
 		}
 
-		if (ImGui::Begin("##ModexMenu", NULL, WINDOW_FLAGS)) {
+		if (ImGui::Begin("##ModexMenu", nullptr, WINDOW_FLAGS)) {
 			ImGui::SetCursorPos(ImVec2(0, 0));
 			if (ImGui::BeginChild("##SideBar", ImVec2(sidebar_w, ImGui::GetContentRegionAvail().y + ImGui::GetStyle().WindowPadding.y), ImGuiChildFlags_Borders, SIDEBAR_FLAGS)) {
 				const float button_width = ImGui::GetContentRegionAvail().x;
-				const float button_height = 40.0f;
+				constexpr float button_height = 40.0f;
 
 				{
-					const float image_width = 120.2f * 1.5f;
-					const float image_height = 35.6f * 1.5f;
-					ImTextureID texture = sidebar_w > (min_sidebar_width) ? (ImTextureID)GraphicManager::image_library["logo"].texture : (ImTextureID)GraphicManager::image_library["logo_single"].texture;
+					constexpr float image_width = 120.2f * 1.5f;
+					constexpr float image_height = 35.6f * 1.5f;
+					ImTextureID texture = sidebar_w > (min_sidebar_width) ? reinterpret_cast<ImTextureID>(GraphicManager::image_library["logo"].texture) : reinterpret_cast<ImTextureID>(GraphicManager::image_library["logo_single"].texture);
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
 					ImGui::Image(texture, ImVec2(image_width, image_height));
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				}
 
-				SideBarImage home_image = { (ImTextureID)GraphicManager::image_library["IconHome"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage additem_image = { (ImTextureID)GraphicManager::image_library["IconAddItem"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage object_image = { (ImTextureID)GraphicManager::image_library["IconObject"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage npc_image = { (ImTextureID)GraphicManager::image_library["IconNPC"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage teleport_image = { (ImTextureID)GraphicManager::image_library["IconTeleport"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage settings_image = { (ImTextureID)GraphicManager::image_library["IconSettings"].texture, ImVec2(32.0f, 32.0f) };
-				SideBarImage exit_image = { (ImTextureID)GraphicManager::image_library["IconExit"].texture, ImVec2(32.0f, 32.0f) };
+				SideBarImage home_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconHome"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage additem_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconAddItem"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage object_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconObject"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage npc_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconNPC"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage teleport_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconTeleport"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage settings_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconSettings"].texture), ImVec2(32.0f, 32.0f) };
+				SideBarImage exit_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconExit"].texture), ImVec2(32.0f, 32.0f) };
 
 				bool is_expanded = false;
 				const auto ExpandButton = [&]() {
@@ -186,6 +186,9 @@ namespace Modex
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
 				break;
+			default:
+				AddItemWindow::GetSingleton()->Draw(sidebar_w);
+				break;
 			}
 
 			GraphicManager::DrawImage(style.splashImage, ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
@@ -196,7 +199,7 @@ namespace Modex
 
 	void Frame::Install()
 	{
-		Frame::activeWindow = (ActiveWindow)Settings::GetSingleton()->GetConfig().defaultShow;
+		Frame::activeWindow = static_cast<ActiveWindow>(Settings::GetSingleton()->GetConfig().defaultShow);
 		ResetSelectable();
 
 		// Initalize elements

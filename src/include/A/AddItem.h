@@ -61,6 +61,16 @@ namespace Modex
 		AddItemColumns 			columnList;
 		std::vector<ItemData*> 	itemList;
 
+		// Menu State Variables.
+		enum class Viewport
+		{
+			TableView,
+			BlacklistView,
+			SettingsView // TODO.
+		};
+
+		Viewport 				activeViewport;
+
 		// Description Framework API.
 		DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface;
 

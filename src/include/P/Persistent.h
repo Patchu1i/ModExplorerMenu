@@ -15,7 +15,7 @@ namespace Modex
 			return &singleton;
 		}
 
-		static inline void RemoveModFromBlacklist(RE::TESFile* mod)
+		static inline void RemoveModFromBlacklist(const RE::TESFile* mod)
 		{
 			nlohmann::json json;
 
@@ -61,7 +61,7 @@ namespace Modex
 			}
 		}
 
-		static inline void AddModToBlacklist(RE::TESFile* mod)
+		static inline void AddModToBlacklist(const RE::TESFile* mod)
 		{
 			nlohmann::json json;
 

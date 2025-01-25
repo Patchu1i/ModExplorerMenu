@@ -47,8 +47,7 @@
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"intelliSenseMode": "windows-msvc-x64",
-					"clangTidyChecks": "modernize*,performance*,readability*,portability*,bugprone*,cert*,misc*,clang-analyzer*,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.InnerPointer,-clang-analyzer-cplusplus.VirtualCall,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-cplusplus.UninitializedObject,-clang-analyzer-cplusplus.Move,-clang-analyzer-cplusplus.SmartPtr,-clang-analyzer-cplusplus.VirtualBase,-clang-analyzer-cplusplus.PureVirtualCall,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-cplusplus.InnerPointer,-clang-analyzer-cplusplus.VirtualCall,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-cplusplus.UninitializedObject,-clang-analyzer-cplusplus.Move,-clang-analyzer-cplusplus.SmartPtr,-clang-analyzer-cplusplus.VirtualBase,-clang-analyzer-cplusplus.PureVirtualCall",
-					"enableMicrosoftCodeAnalysis": false,
+					"enableMicrosoftCodeAnalysis": true,
 					"enableClangTidyCodeAnalysis": true
 				}
 			}
