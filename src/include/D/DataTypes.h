@@ -1,4 +1,5 @@
 #pragma once
+#include <PCH.h>
 
 // clang-format off
 
@@ -49,16 +50,16 @@ namespace Modex
 		[[nodiscard]] inline const std::string GetName() const { return name; }
 		[[nodiscard]] inline const std::string_view GetNameView() const { return name; }
 
-		[[nodiscard]] inline const RE::TESFile* GetPlugin(int32_t a_idx = -1) const
+		[[nodiscard]] inline const RE::TESFile* GetPlugin(int32_t a_idx = 0) const
 		{
 			return SafeAccess<const RE::TESFile*>(&RE::TESForm::GetFile, a_idx, nullptr);
 		}
 
-		[[nodiscard]] inline const std::string GetPluginName(int32_t a_idx = -1) const
+		[[nodiscard]] inline const std::string GetPluginName(int32_t a_idx = 0) const
 		{
 			return ValidateTESFileName(GetPlugin(a_idx));
 		}
-		[[nodiscard]] inline const std::string_view GetPluginNameView(int32_t a_idx = -1) const
+		[[nodiscard]] inline const std::string_view GetPluginNameView(int32_t a_idx = 0) const
 		{
 			return ValidateTESFileName(GetPlugin(a_idx));
 		}

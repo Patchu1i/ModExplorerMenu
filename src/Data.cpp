@@ -62,7 +62,7 @@ namespace Modex
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::FormID formid = form->GetFormID();
-			const RE::TESFile* mod = form->GetFile();
+			const RE::TESFile* mod = form->GetFile(0);
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			// RE::TESNPC* npc = form->As<RE::TESNPC>();
@@ -176,7 +176,7 @@ namespace Modex
 
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::FormID formid = form->GetFormID();
-			const RE::TESFile* mod = form->GetFile();
+			const RE::TESFile* mod = form->GetFile(0);
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			// _cache.push_back(Modex::ItemData{ form, formid, mod, favorite });
@@ -241,7 +241,7 @@ namespace Modex
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::FormID formid = form->GetFormID();
-			const RE::TESFile* mod = form->GetFile();
+			const RE::TESFile* mod = form->GetFile(0);
 			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			// _staticCache.push_back(Modex::ObjectData{ form, formid, mod, favorite });
@@ -285,6 +285,7 @@ namespace Modex
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
 	// Modified to include both Interior and Exterior cells, and to also cache fullname record.
+	// TODO: Need to re-implement idx for load order.
 	void Data::CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_cellMap)
 	{
 		auto tesFile = const_cast<RE::TESFile*>(a_file);
@@ -449,7 +450,7 @@ namespace Modex
 			}
 
 			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
-				const RE::TESFile* mod = form->GetFile();
+				const RE::TESFile* mod = form->GetFile(0);
 
 				if (!_cellModList.contains(mod)) {
 					CacheCells(mod, _cellCache);
