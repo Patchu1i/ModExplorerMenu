@@ -116,6 +116,56 @@ namespace Modex
 		return modList;
 	}
 
+	bool Data::IsFormTypeInPlugin(const RE::TESFile* a_plugin, RE::FormType a_formType)
+	{
+		if (a_plugin == nullptr) {
+			return false;
+		}
+
+		switch (a_formType) {
+		case RE::FormType::Armor:
+			return _itemListModFormTypeMap[a_plugin].armor;
+		case RE::FormType::Book:
+			return _itemListModFormTypeMap[a_plugin].book;
+		case RE::FormType::Weapon:
+			return _itemListModFormTypeMap[a_plugin].weapon;
+		case RE::FormType::Misc:
+			return _itemListModFormTypeMap[a_plugin].misc;
+		case RE::FormType::KeyMaster:
+			return _itemListModFormTypeMap[a_plugin].key;
+		case RE::FormType::Ammo:
+			return _itemListModFormTypeMap[a_plugin].ammo;
+		case RE::FormType::AlchemyItem:
+			return _itemListModFormTypeMap[a_plugin].alchemy;
+		case RE::FormType::Ingredient:
+			return _itemListModFormTypeMap[a_plugin].ingredient;
+		case RE::FormType::Scroll:
+			return _itemListModFormTypeMap[a_plugin].scroll;
+		case RE::FormType::SoulGem:
+			return _itemListModFormTypeMap[a_plugin].misc;
+		case RE::FormType::Static:
+			return _itemListModFormTypeMap[a_plugin].staticObject;
+		case RE::FormType::Tree:
+			return _itemListModFormTypeMap[a_plugin].tree;
+		case RE::FormType::Activator:
+			return _itemListModFormTypeMap[a_plugin].activator;
+		case RE::FormType::Container:
+			return _itemListModFormTypeMap[a_plugin].container;
+		case RE::FormType::Door:
+			return _itemListModFormTypeMap[a_plugin].door;
+		case RE::FormType::Light:
+			return _itemListModFormTypeMap[a_plugin].light;
+		case RE::FormType::Furniture:
+			return _itemListModFormTypeMap[a_plugin].furniture;
+		case RE::FormType::NPC:
+			return _itemListModFormTypeMap[a_plugin].npc;
+		case RE::FormType::Cell:
+			return _itemListModFormTypeMap[a_plugin].cell;
+		default:
+			stl::report_and_fail("Invalid FormType passed to IsFormTypeInPlugin");
+		}
+	}
+
 	// Returns an alphabetically sorted vector of plugin names that are cross-compared to the supplied
 	// ItemFilterType filter selected. Primarily used to populate the "Filter By Modlist" list in the
 	// table-view modules.

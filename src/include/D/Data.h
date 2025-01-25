@@ -40,6 +40,7 @@ namespace Modex
 			bool 	door 			= false;
 			bool 	light 			= false;
 			bool 	furniture 		= false;
+			bool	cell			= false;
 		};
 
 		static inline Data* GetSingleton()
@@ -54,6 +55,7 @@ namespace Modex
 		std::vector<const RE::TESFile*> 				GetModulePluginListSorted(PLUGIN_TYPE a_type);
 		std::vector<std::string> 						GetSortedListOfPluginNames();
 		std::vector<std::string> 						GetFilteredListOfPluginNames(PLUGIN_TYPE a_type, RE::FormType a_selectedFilter);
+		bool											IsFormTypeInPlugin(const RE::TESFile* a_plugin, RE::FormType a_formType);
 		void 											CacheNPCRefIds();
 		void 											GenerateNPCClassList();
 		void 											GenerateNPCRaceList();

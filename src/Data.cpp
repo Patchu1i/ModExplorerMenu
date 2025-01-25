@@ -323,6 +323,15 @@ namespace Modex
 							_modList.insert(tesFile);
 						}
 
+						if (_cellModList.contains(tesFile)) {
+							auto it = _itemListModFormTypeMap.find(tesFile);
+							if (it == _itemListModFormTypeMap.end()) {
+								_itemListModFormTypeMap[tesFile] = ModFileItemFlags();
+							}
+
+							_itemListModFormTypeMap[tesFile].cell = true;
+						}
+
 						break;
 					}
 				} while (tesFile->SeekNextSubrecord());
