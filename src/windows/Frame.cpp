@@ -1,5 +1,6 @@
 #include "include/F/Frame.h"
 #include "include/A/AddItem.h"
+#include "include/B/Blacklist.h"
 #include "include/H/Home.h"
 #include "include/M/Menu.h"
 #include "include/N/NPC.h"
@@ -208,6 +209,7 @@ namespace Modex
 		NPCWindow::GetSingleton()->Init();
 		TeleportWindow::GetSingleton()->Init();
 		ObjectWindow::GetSingleton()->Init();
+		Blacklist::GetSingleton()->Init();
 
 		RefreshStyle();
 	}
