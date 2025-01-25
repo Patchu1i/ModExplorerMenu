@@ -1,10 +1,12 @@
 #pragma once
-
+#include "include/I/ISearch.h"
 #include <PCH.h>
+
+// clang-format off
 
 namespace Modex
 {
-	class Blacklist
+	class Blacklist : private ISearch
 	{
 	public:
 		static inline Blacklist* GetSingleton()
@@ -13,6 +15,44 @@ namespace Modex
 			return &singleton;
 		}
 
-		void Draw(float a_offset);
+		void 					Draw(float a_offset);
+		void					Init();
+	
+	private:
+
+		int 					totalPlugins;
+		int 					blacklistedPlugins;
+		int 					nonBlacklistedPlugins;
+		int						hiddenPlugins;
+		bool					updateHidden;
+
+		// Plugin Type Filtering
+		std::vector<RE::FormType> filterList = {
+			{ RE::FormType::Armor },
+			{ RE::FormType::AlchemyItem },
+			{ RE::FormType::Ammo },
+			{ RE::FormType::Book },
+			{ RE::FormType::Ingredient },
+			{ RE::FormType::KeyMaster },
+			{ RE::FormType::Misc },
+			{ RE::FormType::Weapon },
+			{ RE::FormType::NPC },
+			{ RE::FormType::Scroll },
+			{ RE::FormType::SoulGem },
+			{ RE::FormType::Static },
+			{ RE::FormType::Tree },
+			{ RE::FormType::Activator },
+			{ RE::FormType::Container },
+			{ RE::FormType::Door },
+			{ RE::FormType::Light },
+			{ RE::FormType::Furniture },
+			{ RE::FormType::Cell }
+		};
+
+		RE::FormType			primaryFilter;
+
+		// ISearch Interface
+		char 					modSearchBuffer[256];
+		std::string 			selectedMod;
 	};
 }

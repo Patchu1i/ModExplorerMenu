@@ -2,11 +2,12 @@
 
 #include "include/D/Data.h"
 #include "include/D/DataTypes.h"
+#include "include/P/Persistent.h"
 
 namespace Modex
 {
 
-	// Returns the creation time of the file at the specified path.
+	// Returns the creationjj time of the file at the specified path.
 	//
 	// @param path - The path to the file.
 	// @return std::time_t - The creation time of the file.
@@ -176,10 +177,15 @@ namespace Modex
 	{
 		std::vector<const RE::TESFile*> masterList = GetModulePluginListSorted(a_primaryFilter);
 		std::vector<std::string> modList;
+		const auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 		//for (auto& modName : _modListSorted) {
 		for (auto& mod : masterList) {
 			auto modName = Modex::ValidateTESFileName(mod);
+
+			if (blacklist.contains(mod)) {
+				continue;
+			}
 
 			if (a_secondaryFilter == RE::FormType::None) {
 				modList.push_back(modName);
