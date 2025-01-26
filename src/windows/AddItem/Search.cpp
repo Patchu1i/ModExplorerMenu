@@ -70,14 +70,14 @@ namespace Modex
 			// Secondary Filter
 			// Used for Armor Slots exclusively for now.
 			if (secondaryFilter != "All") {
-				if (item.GetFormType() == RE::FormType::Armor) {
+				if (primaryFilter == RE::FormType::Armor && item.GetFormType() == RE::FormType::Armor) {
 					auto armorSlots = Utils::GetArmorSlots(item.GetForm()->As<RE::TESObjectARMO>());
 					if (std::find(armorSlots.begin(), armorSlots.end(), secondaryFilter) == armorSlots.end()) {
 						continue;
 					}
 				}
 
-				if (item.GetFormType() == RE::FormType::Weapon) {
+				if (primaryFilter == RE::FormType::Weapon && item.GetFormType() == RE::FormType::Weapon) {
 					auto weaponType = item.GetForm()->As<RE::TESObjectWEAP>()->GetWeaponType();
 
 					const char* weaponTypes[] = {
@@ -166,6 +166,7 @@ namespace Modex
 		if (ImGui::BeginCombo("##AddItemWindow::FilterByType", _T(filterName), ImGuiComboFlags_HeightLarge)) {
 			if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
 				primaryFilter = RE::FormType::None;
+				secondaryFilter = "All";
 				ApplyFilters();
 				ImGui::SetItemDefaultFocus();
 			}
@@ -176,6 +177,7 @@ namespace Modex
 				std::string formName = RE::FormTypeToString(filter).data();
 				if (ImGui::Selectable(_T(formName), isSelected)) {
 					primaryFilter = filter;
+					secondaryFilter = "All";
 					ApplyFilters();
 				}
 
