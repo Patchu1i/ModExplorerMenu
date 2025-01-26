@@ -190,6 +190,29 @@ namespace Modex
 			InlineInt(ICON_RPG_WEIGHT " WT:", (int)a_object->GetWeight());
 			InlineInt(_TICONM(ICON_RPG_VALUE, "Value", ":"), a_object->GetValue());
 
+			// Load Order Info Pane
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Load Order")));
+			ImGui::Text(_T("Load Order"));
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			const auto sourceFiles = a_object->GetForm()->sourceFiles.array;
+
+			if (sourceFiles) {
+				for (uint32_t i = 0; i < sourceFiles->size(); i++) {
+					if (const auto file = (*sourceFiles)[i]) {
+						auto fileName = ValidateTESFileName(file);
+
+						if (i == 0 && sourceFiles->size() > 1) {
+							ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+						} else if (i == sourceFiles->size() - 1) {
+							ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+						} else {
+							ImGui::Text("%s", fileName.c_str());
+						}
+					}
+				}
+			}
+
 			const std::string desc = Utils::GetItemDescription(a_object->GetForm(), g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
