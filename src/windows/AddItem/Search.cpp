@@ -158,7 +158,8 @@ namespace Modex
 		ImGui::NewLine();
 
 		// Mod List sort and filter.
-		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ITEM, primaryFilter);
+		const auto& config = Settings::GetSingleton()->GetConfig();
+		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ITEM, (Data::SORT_TYPE)config.modListSort, primaryFilter);
 		modListVector.insert(modListVector.begin(), "All Mods");
 		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 		if (InputTextComboBox("##AddItemWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {

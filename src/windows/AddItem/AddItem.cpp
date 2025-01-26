@@ -1,7 +1,5 @@
 #include "include/A/AddItem.h"
 #include "include/B/Blacklist.h"
-#include <imgui.h>
-#include <imgui_internal.h>
 
 namespace Modex
 {
@@ -30,6 +28,7 @@ namespace Modex
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::TableView;
+				Refresh();
 			}
 
 			ImGui::SameLine();

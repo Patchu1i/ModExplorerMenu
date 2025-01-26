@@ -11,9 +11,11 @@ namespace Modex
 	{
 		(void)a_offset;
 
-		const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL);
+		const auto& config = Settings::GetSingleton()->GetConfig();
 
-		auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, RE::FormType::None);
+		const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
+
+		auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
 		pluginListVector.insert(pluginListVector.begin(), "All Mods");
 		const auto blacklist = PersistentData::GetSingleton()->m_blacklist;
 

@@ -21,6 +21,13 @@ namespace Modex
 			CELL,
 		};
 
+		enum SORT_TYPE
+		{
+			ALPHABETICAL = 0,
+			COMPILEINDEX_ASC,
+			COMPILEINDEX_DESC,
+		};
+
 		struct ModFileItemFlags
 		{
 			bool 	alchemy 		= false;
@@ -52,9 +59,9 @@ namespace Modex
 		void Run();
 	
 		std::unordered_set<const RE::TESFile*>			GetModulePluginList(PLUGIN_TYPE a_type);
-		std::vector<const RE::TESFile*> 				GetModulePluginListSorted(PLUGIN_TYPE a_type);
+		std::vector<const RE::TESFile*> 				GetModulePluginListSorted(PLUGIN_TYPE a_type, SORT_TYPE a_sortType);
 		std::vector<std::string> 						GetSortedListOfPluginNames();
-		std::vector<std::string> 						GetFilteredListOfPluginNames(PLUGIN_TYPE a_type, RE::FormType a_selectedFilter);
+		std::vector<std::string> 						GetFilteredListOfPluginNames(PLUGIN_TYPE a_type, SORT_TYPE a_sortType, RE::FormType a_selectedFilter);
 		bool											IsFormTypeInPlugin(const RE::TESFile* a_plugin, RE::FormType a_formType);
 		void 											CacheNPCRefIds();
 		void 											GenerateNPCClassList();

@@ -51,6 +51,17 @@ namespace Modex
 			});
 	}
 
+	// Sort Function for compileIndex aka Load Order used for Plugin Lists.
+	bool CompileIndexCompareTESFileAsc(const RE::TESFile* a, const RE::TESFile* b)
+	{
+		return a->GetCombinedIndex() < b->GetCombinedIndex();
+	}
+
+	bool CompileIndexCompareTESFileDesc(const RE::TESFile* a, const RE::TESFile* b)
+	{
+		return a->GetCombinedIndex() > b->GetCombinedIndex();
+	}
+
 	// Returns a copy of the specified plugin list containing TESFile* pointers. as an unordered_set.
 	// This is primarily used as a quicker lookup than GetModulePluginListSorted (more expensive).
 	//
@@ -78,7 +89,7 @@ namespace Modex
 	//
 	// @param a_type - The type of plugin list to return.
 	// @return std::vector<const RE::TESFile*> - A list of alphabetically sorted TESFile* pointers.
-	std::vector<const RE::TESFile*> Data::GetModulePluginListSorted(PLUGIN_TYPE a_type)
+	std::vector<const RE::TESFile*> Data::GetModulePluginListSorted(PLUGIN_TYPE a_type, SORT_TYPE a_sortType)
 	{
 		std::vector<const RE::TESFile*> copy;
 
@@ -100,7 +111,13 @@ namespace Modex
 			break;
 		}
 
-		std::sort(copy.begin(), copy.end(), CaseInsensitiveCompareTESFile);
+		if (a_sortType == SORT_TYPE::ALPHABETICAL) {
+			std::sort(copy.begin(), copy.end(), CaseInsensitiveCompareTESFile);
+		} else if (a_sortType == SORT_TYPE::COMPILEINDEX_ASC) {
+			std::sort(copy.begin(), copy.end(), CompileIndexCompareTESFileAsc);
+		} else if (a_sortType == SORT_TYPE::COMPILEINDEX_DESC) {
+			std::sort(copy.begin(), copy.end(), CompileIndexCompareTESFileDesc);
+		}
 
 		return copy;
 	}
@@ -172,10 +189,12 @@ namespace Modex
 	// table-view modules.
 	//
 	// @param a_selectedFilter - The selected filter to cross-compare against. (`RE::FormType`)
+	// @param a_sortType - The sort type to use when sorting the list. (`SORT_TYPE`)
+	// @param a_primaryFilter - The primary filter to use when selecting the list. (`RE::FormType`)
 	// @return std::vector<std::string> - A vector of plugin names that match the selected filter.
-	std::vector<std::string> Data::GetFilteredListOfPluginNames(PLUGIN_TYPE a_primaryFilter, RE::FormType a_secondaryFilter)
+	std::vector<std::string> Data::GetFilteredListOfPluginNames(PLUGIN_TYPE a_primaryFilter, SORT_TYPE a_sortType, RE::FormType a_secondaryFilter)
 	{
-		std::vector<const RE::TESFile*> masterList = GetModulePluginListSorted(a_primaryFilter);
+		std::vector<const RE::TESFile*> masterList = GetModulePluginListSorted(a_primaryFilter, a_sortType);
 		std::vector<std::string> modList;
 		const auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
 

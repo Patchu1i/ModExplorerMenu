@@ -485,7 +485,7 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_RECENT" };
+		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_LOAD_ASC", "SETTING_SORT_LOAD_DESC" };
 		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);

@@ -156,7 +156,8 @@ namespace Modex
 		ImGui::NewLine();
 
 		// Plugin List Filter
-		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::OBJECT, primaryFilter);
+		const auto& config = Settings::GetSingleton()->GetConfig();
+		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::OBJECT, (Data::SORT_TYPE)config.modListSort, primaryFilter);
 		modListVector.insert(modListVector.begin(), "All Mods");
 		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 		if (InputTextComboBox("##ObjectWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
