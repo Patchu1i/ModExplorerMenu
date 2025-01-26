@@ -16,7 +16,7 @@ namespace Modex
 		const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
 
 		auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
-		pluginListVector.insert(pluginListVector.begin(), "All Mods");
+		pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
 		const auto blacklist = PersistentData::GetSingleton()->m_blacklist;
 
 		totalPlugins = static_cast<int>(pluginList.size());
@@ -24,13 +24,13 @@ namespace Modex
 		nonBlacklistedPlugins = totalPlugins - blacklistedPlugins;
 
 		if (ImGui::BeginChild("##Blacklist::CompareArea", ImVec2(0, 0), true, ImGuiWindowFlags_NoFocusOnAppearing)) {
-			ImGui::SubCategoryHeader(_T("Refine Plugins Shown Below"));
+			ImGui::SubCategoryHeader(_T("SETTING_BLACKLIST"));
 			ImGui::NewLine();
 			ImGui::BeginColumns("##Blacklist::Column", 2, ImGuiOldColumnFlags_NoBorder);
 			ImGui::Indent();
 
 			// FormType Filter Box.
-			ImGui::Text("Only show plugins with the following FormType(s):");
+			ImGui::Text(_TFM("GENERAL_FILTER_FORMTYPE", ":"));
 			const auto primary_filter_text = RE::FormTypeToString(primaryFilter);
 			if (ImGui::BeginCombo("##Blacklist::PluginType", primary_filter_text.data())) {
 				if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
@@ -69,9 +69,9 @@ namespace Modex
 			ImGui::NewLine();
 
 			// Plugin Name Fuzzy Search
-			ImGui::Text("Prune using Fuzzy Search:");
+			ImGui::Text(_TFM("GENERAL_FILTER_FUZZY", ":"));
 			// ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2);
-			if (ImGui::InputTextWithHint("##Blacklist::ModSearch", _T("GENERAL_SEARCH_FILTER"), modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer))) {
+			if (ImGui::InputTextWithHint("##Blacklist::ModSearch", _T("GENERAL_CLICK_TO_TYPE"), modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer))) {
 				updateHidden = true;
 				hiddenPlugins = 0;
 			}
@@ -89,15 +89,15 @@ namespace Modex
 			ImGui::Indent();
 
 			// Plugin Count
-			ImGui::Text("Total Plugins: %d", totalPlugins);
-			ImGui::Text("Blacklisted: %d", blacklistedPlugins);
-			ImGui::Text("Non-Blacklisted: %d", nonBlacklistedPlugins);
+			ImGui::Text(_TFM("GENERAL_TOTAL_PLUGINS", ": %d"), totalPlugins);
+			ImGui::Text(_TFM("GENERAL_TOTAL_BLACKLIST", ": %d"), blacklistedPlugins);
+			ImGui::Text(_TFM("GENERAL_TOTAL_NOT_BLACKLIST", ": %d"), nonBlacklistedPlugins);
 
 			if (hiddenPlugins > 0) {
-				ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.0f), "Hidden: %d", hiddenPlugins);
-				ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.0f), "Some plugins are hidden due to the current filter settings (!)");
+				ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.0f), _TFM("GENERAL_TOTAL_HIDDEN", ": %d"), hiddenPlugins);
+				ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.0f), _T("GENERAL_TOTAL_HIDDEN_MESSAGE"));
 			} else {
-				ImGui::Text("Hidden: %d", hiddenPlugins);
+				ImGui::Text(_TFM("GENERAL_TOTAL_HIDDEN", ": %d"), hiddenPlugins);
 			}
 
 			ImGui::Unindent();
@@ -190,6 +190,6 @@ namespace Modex
 	{
 		hiddenPlugins = 0;
 		updateHidden = true;
-		selectedMod = "All Mods";
+		selectedMod = _T("All Mods");
 	}
 }
