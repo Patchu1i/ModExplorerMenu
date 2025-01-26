@@ -8,6 +8,7 @@
 #include "include/S/Settings.h"
 #include "include/T/Teleport.h"
 #include "include/U/UserSettings.h"
+#include "include/V/Vortex.h"
 
 namespace Modex
 {
@@ -138,6 +139,13 @@ namespace Modex
 					ExpandButton();
 				}
 
+				if (true) {
+					if (ImGui::SidebarButton("Vortex", teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), teleport_w)) {
+						activeWindow = ActiveWindow::Vortex;
+						// TeleportWindow::GetSingleton()->Refresh();
+					}
+				}
+
 				if (ImGui::SidebarButton("Settings", settings_image.texture, settings_image.size, ImVec2(button_width, button_height), settings_w)) {
 					activeWindow = ActiveWindow::Settings;
 				}
@@ -183,6 +191,9 @@ namespace Modex
 				break;
 			case ActiveWindow::Teleport:
 				TeleportWindow::GetSingleton()->Draw(sidebar_w);
+				break;
+			case ActiveWindow::Vortex:
+				VortexWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();

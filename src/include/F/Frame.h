@@ -84,6 +84,7 @@ namespace Modex
 			NPC,
 			Teleport,
 			Settings,
+			Vortex,
 			kTotal
 		};
 
@@ -104,6 +105,7 @@ namespace Modex
 		bool 			b_NPC 		= false;
 		bool 			b_Settings 	= false;
 		bool 			b_Teleport 	= false;
+		bool			b_Vortex	= false;
 
 		ActiveWindow 	activeWindow = ActiveWindow::Home;
 
@@ -115,6 +117,7 @@ namespace Modex
 			b_NPC 		= (activeWindow == NPC);
 			b_Settings 	= (activeWindow == Settings);
 			b_Teleport 	= (activeWindow == Teleport);
+			b_Vortex 	= (activeWindow == Vortex);
 		}
 	};
 }

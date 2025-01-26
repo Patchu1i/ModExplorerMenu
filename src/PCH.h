@@ -10,11 +10,11 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 #include "SKSE/SKSE.h"
 #include <xbyak/xbyak.h>
 
-#include <imgui_impl_dx11.h>
-#include <imgui_impl_win32.h>
-
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"
+#include <imgui_impl_dx11.h>
+#include <imgui_impl_win32.h>
 
 #ifdef NDEBUG
 #	include <spdlog/sinks/basic_file_sink.h>

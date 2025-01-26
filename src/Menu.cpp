@@ -1,4 +1,5 @@
 #include "include/M/Menu.h"
+#include "extern/imnodes.h"
 #include "include/C/Console.h"
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
@@ -96,6 +97,7 @@ namespace Modex
 		a_swapchain->GetDesc(&desc);
 
 		ImGui::CreateContext();
+		ImNodes::CreateContext();
 
 		RECT rect{};
 		ImVec2 screenScaleRatio;
