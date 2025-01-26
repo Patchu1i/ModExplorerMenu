@@ -10,7 +10,6 @@
     "spdlog",
     "xbyak",
     "catch2",
-    "magic-enum",
     "nlohmann-json",
     "clib-util",
     "simpleini",

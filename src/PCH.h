@@ -98,8 +98,6 @@ namespace util
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-#include <magic_enum.hpp>
-
 #include "SimpleMath.h"
 #include <codecvt>
 #include <cstring>
