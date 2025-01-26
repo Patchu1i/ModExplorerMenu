@@ -107,14 +107,22 @@ namespace Modex
 		const auto cursor = ImGui::GetCursorScreenPos();
 		const auto size = ImGui::GetContentRegionAvail();
 		const auto color = ImGui::GetStyleColorVec4(ImGuiCol_Border);
-		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
-		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 3.5f), ImGui::ColorConvertFloat4ToU32(color));
+		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(ImVec4(0.15f, 0.15f, 0.15f, 0.5f)));
+		draw_list->AddRect(cursor, ImVec2(cursor.x + size.x, cursor.y + ImGui::GetFontSize() * 2.5f), ImGui::ColorConvertFloat4ToU32(color));
 
-		const auto name = obj->GetName();
+		auto name = obj->GetName();
+
+		if (name.empty()) {
+			name = obj->GetEditorID();
+		}
+
 		ImGui::NewLine();
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(name.c_str()));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() / 2);
 		ImGui::Text(name.c_str());
 		ImGui::NewLine();
+		ImGui::PopStyleVar();
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
