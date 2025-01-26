@@ -228,7 +228,32 @@ namespace Modex
 				InlineBar(_TFM("Magicka", ":"), npc->GetMagicka(), 100.0f);
 				InlineBar(_TFM("Stamina", ":"), npc->GetStamina(), 100.0f);
 
+				// Load Order Info Pane
+				// See ItemPreview.h for other implementation.
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Load Order")));
+				ImGui::Text(_T("Load Order"));
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				const auto sourceFiles = npc->GetForm()->sourceFiles.array;
+
+				if (sourceFiles) {
+					for (uint32_t i = 0; i < sourceFiles->size(); i++) {
+						if (const auto file = (*sourceFiles)[i]) {
+							auto fileName = ValidateTESFileName(file);
+
+							if (i == 0 && sourceFiles->size() > 1) {
+								ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+							} else if (i == sourceFiles->size() - 1) {
+								ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+							} else {
+								ImGui::Text("%s", fileName.c_str());
+							}
+						}
+					}
+				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				ImGui::TreePop();
 			}
 

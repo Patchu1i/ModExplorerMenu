@@ -118,6 +118,33 @@ namespace Modex
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
+		// Load Order Info Pane
+		// See ItemPreview.h for other implementation.
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Load Order")));
+		ImGui::Text(_T("Load Order"));
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		const auto sourceFiles = obj->GetForm()->sourceFiles.array;
+
+		if (sourceFiles) {
+			for (uint32_t i = 0; i < sourceFiles->size(); i++) {
+				if (const auto file = (*sourceFiles)[i]) {
+					auto fileName = ValidateTESFileName(file);
+
+					if (i == 0 && sourceFiles->size() > 1) {
+						ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+					} else if (i == sourceFiles->size() - 1) {
+						ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%s", fileName.c_str());
+					} else {
+						ImGui::Text("%s", fileName.c_str());
+					}
+				}
+			}
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		// Model Info
 		auto SplitString = [](std::string a_string, std::string a_delimiter) -> std::vector<std::string> {
 			std::vector<std::string> strings;
 			std::stringstream ss(a_string);
