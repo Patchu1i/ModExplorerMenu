@@ -3,8 +3,8 @@
 #include "include/S/Settings.h"
 #include <PCH.h>
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui_internal.h"
+// #define IMGUI_DEFINE_MATH_OPERATORS
+// #include "imgui_internal.h"
 
 namespace ImGui
 {
@@ -767,6 +767,44 @@ namespace Utils
 			return "Unknown";
 		};
 	};
+
+	inline static const std::vector<std::string> GetArmorSlotList()
+	{
+		return {
+			"35 - Amulet",
+			"32 - Body",
+			"38 - Calves",
+			"42 - Circlet",
+			"51 - Decapitate",
+			"50 - Decapitate Head",
+			"43 - Ears",
+			"37 - Feet",
+			"34 - Forearms",
+			"61 - FX01",
+			"31 - Hair",
+			"33 - Hands",
+			"30 - Head",
+			"41 - Long Hair",
+			"58 - Mod Arm Left",
+			"59 - Mod Arm Right",
+			"47 - Mod Back",
+			"46 - Mod Chest Primary",
+			"56 - Mod Chest Secondary",
+			"55 - Mod Face Jewelry",
+			"54 - Mod Leg Left",
+			"53 - Mod Leg Right",
+			"48 - Mod Misc1",
+			"60 - Mod Misc2",
+			"44 - Mod Mouth",
+			"45 - Mod Neck",
+			"49 - Mod Pelvis Primary",
+			"52 - Mod Pelvis Secondary",
+			"57 - Mod Shoulder",
+			"36 - Ring",
+			"39 - Shield",
+			"40 - Tail"
+		};
+	}
 
 	inline static const char* GetArmorSlotName(RE::BIPED_MODEL::BipedObjectSlot a_slot)
 	{

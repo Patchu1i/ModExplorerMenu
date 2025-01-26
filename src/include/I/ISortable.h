@@ -1,4 +1,6 @@
 #pragma once
+#include "include/U/Util.h"
+#include <PCH.h>
 
 namespace Modex
 {
@@ -19,6 +21,22 @@ namespace Modex
 			auto speed2 = a_rhs->weaponData.speed;
 			return (speed1 < speed2) ? -1 : (speed1 > speed2) ? 1 :
 			                                                    0;
+		}
+
+		static int CompareArmorSlot(RE::TESObjectARMO* a_lhs, RE::TESObjectARMO* a_rhs)
+		{
+			auto slot1 = Utils::GetArmorSlots(a_lhs);
+			auto slot2 = Utils::GetArmorSlots(a_rhs);
+
+			if (slot1.empty() && slot2.empty()) {
+				return 0;
+			} else if (slot1.empty()) {
+				return -1;
+			} else if (slot2.empty()) {
+				return 1;
+			}
+
+			return slot1[0].compare(slot2[0]);
 		}
 
 		static int CompareWeaponDPS(RE::TESObjectWEAP* a_lhs, RE::TESObjectWEAP* a_rhs)
@@ -225,6 +243,19 @@ namespace Modex
 						delta = -1;
 					}
 
+					break;
+				}
+			case BaseColumn::ID::Slot:
+				if constexpr (!std::is_same<Object, ItemData>::value) {
+					break;
+				} else {
+					if (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Armor) {
+						delta = CompareArmorSlot(lhs->GetForm()->As<RE::TESObjectARMO>(), rhs->GetForm()->As<RE::TESObjectARMO>());
+					} else if (lhs->GetFormType() == RE::FormType::Armor) {
+						delta = 1;
+					} else if (rhs->GetFormType() == RE::FormType::Armor) {
+						delta = -1;
+					}
 					break;
 				}
 			case BaseColumn::ID::Speed:
