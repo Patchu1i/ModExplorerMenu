@@ -170,6 +170,14 @@ namespace Modex
 						ImGui::Text(buffer);
 					}
 
+					// Equip Slot
+					ImGui::TableNextColumn();
+					if (item->GetFormType() == RE::FormType::Armor) {
+						auto* armor = item->GetForm()->As<RE::TESObjectARMO>();
+						const auto equipSlots = Utils::GetArmorSlots(armor);
+						ImGui::Text(equipSlots[0].c_str());
+					}
+
 					// Weapon Speed
 					ImGui::TableNextColumn();
 					if (item->GetFormType() == RE::FormType::Weapon) {

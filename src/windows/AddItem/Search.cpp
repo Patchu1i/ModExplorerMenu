@@ -67,6 +67,38 @@ namespace Modex
 				}
 			}
 
+			// Secondary Filter
+			// Used for Armor Slots exclusively for now.
+			if (secondaryFilter != "All") {
+				if (item.GetFormType() == RE::FormType::Armor) {
+					auto armorSlots = Utils::GetArmorSlots(item.GetForm()->As<RE::TESObjectARMO>());
+					if (std::find(armorSlots.begin(), armorSlots.end(), secondaryFilter) == armorSlots.end()) {
+						continue;
+					}
+				}
+
+				if (item.GetFormType() == RE::FormType::Weapon) {
+					auto weaponType = item.GetForm()->As<RE::TESObjectWEAP>()->GetWeaponType();
+
+					const char* weaponTypes[] = {
+						"Hand to Hand",
+						"One Handed Sword",
+						"One Handed Dagger",
+						"One Handed Axe",
+						"One Handed Mace",
+						"Two Handed Greatsword",
+						"Two Handed Battleaxe",
+						"Bow",
+						"Staff",
+						"Crossbow"
+					};
+
+					if (weaponTypes[static_cast<int>(weaponType)] != secondaryFilter) {
+						continue;
+					}
+				}
+			}
+
 			// Input Fuzzy Search
 			if (compareString.find(inputString) != std::string::npos) {
 				itemList.push_back(&item);
@@ -153,6 +185,75 @@ namespace Modex
 			}
 
 			ImGui::EndCombo();
+		}
+
+		// TODO: Localization Fix
+		if (primaryFilter == RE::FormType::Armor) {
+			ImGui::SetNextItemWidth(totalWidth);
+			if (ImGui::BeginCombo("##AddItemWindow::SecondaryFilter", secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
+				if (ImGui::Selectable(_T("All"), secondaryFilter.empty())) {
+					secondaryFilter = "All";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				const auto armorSlots = Utils::GetArmorSlotList();
+
+				for (auto& slot : armorSlots) {
+					bool isSelected = (slot == secondaryFilter);
+
+					if (ImGui::Selectable(_T(slot), isSelected)) {
+						secondaryFilter = slot;
+						ApplyFilters();
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+		}
+
+		if (primaryFilter == RE::FormType::Weapon) {
+			ImGui::SetNextItemWidth(totalWidth);
+			if (ImGui::BeginCombo("##AddItemWindow::SecondaryFilter", secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
+				if (ImGui::Selectable(_T("All"), secondaryFilter.empty())) {
+					secondaryFilter = "All";
+					ApplyFilters();
+					ImGui::SetItemDefaultFocus();
+				}
+
+				// TODO: Refactor and include this with ItemPreview reference.
+				const char* weaponTypes[] = {
+					"Hand to Hand",
+					"One Handed Sword",
+					"One Handed Dagger",
+					"One Handed Axe",
+					"One Handed Mace",
+					"Two Handed Greatsword",
+					"Two Handed Battleaxe",
+					"Bow",
+					"Staff",
+					"Crossbow"
+				};
+
+				for (auto& type : weaponTypes) {
+					bool isSelected = (type == secondaryFilter);
+
+					if (ImGui::Selectable(_T(type), isSelected)) {
+						secondaryFilter = type;
+						ApplyFilters();
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
 		}
 
 		ImGui::NewLine();

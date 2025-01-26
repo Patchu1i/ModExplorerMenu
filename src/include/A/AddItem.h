@@ -58,6 +58,7 @@ namespace Modex
 		int 					clickToAddCount;
 
 		RE::FormType 			primaryFilter;
+		std::string 			secondaryFilter;
 		AddItemColumns 			columnList;
 		std::vector<ItemData*> 	itemList;
 

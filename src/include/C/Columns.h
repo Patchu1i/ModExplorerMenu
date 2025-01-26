@@ -25,7 +25,8 @@ namespace Modex
             CarryWeight, 
             GoldValue, 
             BaseDamage,
-            ArmorRating, 
+            ArmorRating,
+            Slot, 
             Speed, 
             CritDamage, 
             Skill, 
@@ -128,6 +129,7 @@ namespace Modex
             columns.push_back({ _T("Value"), flag, 0.0f, false, BaseColumn::ID::GoldValue});
             columns.push_back({ _T("Damage"), flag, 0.0f, false, BaseColumn::ID::BaseDamage});
             columns.push_back({ _T("Armor"), flag, 0.0f, false, BaseColumn::ID::ArmorRating});
+            columns.push_back({ _T("Slot"), flag, 0.0f, false, BaseColumn::ID::Slot});
             columns.push_back({ _T("Speed"), flag, 0.0f, false, BaseColumn::ID::Speed});
             columns.push_back({ _T("Crit"), flag, 0.0f, false, BaseColumn::ID::CritDamage});
             columns.push_back({ _T("Skill"), flag, 0.0f, false, BaseColumn::ID::Skill});
