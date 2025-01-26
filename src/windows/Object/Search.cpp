@@ -79,6 +79,7 @@ namespace Modex
 
 	void ObjectWindow::Refresh()
 	{
+		itemSelectionList.clear();
 		ApplyFilters();
 	}
 
@@ -95,7 +96,7 @@ namespace Modex
 		if (ImGui::InputTextWithHint("##ObjectWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 				IM_ARRAYSIZE(inputBuffer),
 				Frame::INPUT_FLAGS)) {
-			ApplyFilters();
+			Refresh();
 		}
 
 		ImGui::SameLine();
@@ -113,7 +114,7 @@ namespace Modex
 
 				if (ImGui::Selectable(_T(searchValue), is_selected)) {
 					searchKey = searchID;
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (is_selected) {
@@ -133,7 +134,7 @@ namespace Modex
 		if (ImGui::BeginCombo("##ObjectWindow::FilterByType", _T(filterName))) {
 			if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
 				primaryFilter = RE::FormType::None;
-				ApplyFilters();
+				Refresh();
 				ImGui::SetItemDefaultFocus();
 			}
 
@@ -143,7 +144,7 @@ namespace Modex
 				std::string formName = RE::FormTypeToString(filter).data();
 				if (ImGui::Selectable(_T(formName), isSelected)) {
 					primaryFilter = filter;
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (isSelected) {
@@ -187,7 +188,7 @@ namespace Modex
 				}
 			}
 
-			ApplyFilters();
+			Refresh();
 		}
 	}
 }

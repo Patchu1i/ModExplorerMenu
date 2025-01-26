@@ -10,6 +10,52 @@ namespace Modex
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
+		if (ImGui::Selectable(_T("AIM_ADD"), false, flags)) {
+			if (!itemSelectionList.empty()) {
+				for (auto& item : itemSelectionList) {
+					Console::AddItem(item->GetFormID().c_str(), clickToAddCount);
+				}
+
+				Console::StartProcessThread();
+			} else {
+				Console::AddItem(a_item.GetFormID().c_str(), clickToAddCount);
+				Console::StartProcessThread();
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("AIM_PLACE"), false, flags)) {
+			if (!itemSelectionList.empty()) {
+				for (auto& item : itemSelectionList) {
+					Console::PlaceAtMe(item->GetFormID().c_str(), clickToAddCount);
+				}
+
+				Console::StartProcessThread();
+			} else {
+				Console::PlaceAtMe(a_item.GetFormID().c_str(), clickToAddCount);
+				Console::StartProcessThread();
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
+			if (!itemSelectionList.empty()) {
+				for (auto& item : itemSelectionList) {
+					item->favorite = !item->favorite;
+					PersistentData::GetSingleton()->UpdatePersistentData(item);
+				}
+			} else {
+				a_item.favorite = !a_item.favorite;
+				PersistentData::GetSingleton()->UpdatePersistentData(a_item);
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_item.GetFormID().c_str());
@@ -240,22 +286,29 @@ namespace Modex
 						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
 						!ImGui::IsAnyItemHovered();  // optional
 
+					// Get the rows which the selection box is hovering over.
+					// Two conditions based on inverted selection box.
+					if (isMouseSelecting) {
+						if (mouseDragEnd.y < mouseDragStart.y) {
+							if (row_rect.Overlaps(ImRect(mouseDragEnd, mouseDragStart))) {
+								if (ImGui::IsMouseReleased(0)) {
+									itemSelectionList.insert(item);
+								}
+							}
+						} else if (row_rect.Overlaps(ImRect(mouseDragStart, mouseDragEnd))) {
+							if (ImGui::IsMouseReleased(0)) {
+								itemSelectionList.insert(item);
+							}
+						}
+					}
+
+					if (itemSelectionList.contains(item)) {
+						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border, 0.65f);
+					}
+
 					if (bHover) {
 						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 						itemPreview = item;
-
-						if (ImGui::IsMouseClicked(0)) {
-							if (b_AddToInventory) {
-								Console::AddItem(item->GetFormID().c_str(), clickToAddCount);
-								Console::StartProcessThread();
-							} else if (b_PlaceOnGround) {
-								Console::PlaceAtMe(item->GetFormID().c_str(), clickToAddCount);
-								Console::StartProcessThread();
-							} else if (b_AddToFavorites) {
-								item->favorite = !item->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<ItemData*>(item);
-							}
-						}
 
 						if (ImGui::IsMouseClicked(1, true)) {
 							ImGui::OpenPopup("ShowItemContextMenu");
@@ -268,6 +321,73 @@ namespace Modex
 					}
 
 					ImGui::PopID();
+				}
+			}
+
+			// TODO: This behavior quickly got a little bigger than anticipated.
+			// Should move this system into its own class or interface for table view
+
+			const bool is_popup_open = ImGui::IsPopupOpen("ShowItemContextMenu", ImGuiPopupFlags_AnyPopup);
+
+			if (!is_popup_open) {
+				const ImVec2 mousePos = ImGui::GetMousePos();
+				const float outer_width = table->OuterRect.Max.x - ImGui::GetStyle().ScrollbarSize;
+				const float outer_height = table->OuterRect.Max.y - ImGui::GetStyle().ScrollbarSize;
+
+				if (ImGui::IsMouseDragging(0, 5.0f) && isMouseSelecting == MOUSE_STATE::DRAG_NONE) {
+					if ((mousePos.x > outer_width || mousePos.x < table->OuterRect.Min.x) ||
+						(mousePos.y > outer_height || mousePos.y < table->OuterRect.Min.y)) {
+						isMouseSelecting = MOUSE_STATE::DRAG_IGNORE;
+					} else {
+						isMouseSelecting = MOUSE_STATE::DRAG_SELECT;
+						itemSelectionList.clear();
+						mouseDragStart = ImGui::GetMousePos();
+					}
+				} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					if ((mousePos.x < outer_width && mousePos.x > table->OuterRect.Min.x) &&
+						(mousePos.y < outer_height && mousePos.y > table->OuterRect.Min.y)) {
+						if (ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) {
+							if (itemSelectionList.contains(itemPreview)) {
+								itemSelectionList.erase(itemPreview);
+							} else {
+								itemSelectionList.insert(itemPreview);
+							}
+						} else {
+							itemSelectionList.clear();
+							itemSelectionList.insert(itemPreview);
+						}
+
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+							if (b_AddToInventory) {
+								Console::AddItem(itemPreview->GetFormID().c_str(), clickToAddCount);
+								Console::StartProcessThread();
+							} else if (b_PlaceOnGround) {
+								Console::PlaceAtMe(itemPreview->GetFormID().c_str(), clickToAddCount);
+								Console::StartProcessThread();
+							} else if (b_AddToFavorites) {
+								itemPreview->favorite = !itemPreview->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<ItemData*>(itemPreview);
+							}
+						}
+					}
+				}
+
+				if (isMouseSelecting == MOUSE_STATE::DRAG_SELECT) {
+					if (ImGui::IsMouseDragging(0, 5.0f)) {
+						mouseDragEnd = ImGui::GetMousePos();
+						ImGui::GetWindowDrawList()->AddRect(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 200));
+						ImGui::GetWindowDrawList()->AddRectFilled(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 10));
+					} else {
+						isMouseSelecting = MOUSE_STATE::DRAG_NONE;
+						mouseDragStart = ImVec2(0.0f, 0.0f);
+						mouseDragEnd = ImVec2(0.0f, 0.0f);
+					}
+				}
+
+				if (ImGui::IsMouseReleased(0)) {
+					isMouseSelecting = MOUSE_STATE::DRAG_NONE;
+					mouseDragStart = ImVec2(0.0f, 0.0f);
+					mouseDragEnd = ImVec2(0.0f, 0.0f);
 				}
 			}
 

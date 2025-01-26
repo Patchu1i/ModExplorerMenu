@@ -40,6 +40,19 @@ namespace Modex
 		TeleportColumns 			columnList;
 		CellData* 					selectedCell;
 
+		// Mouse Draggin
+		enum MOUSE_STATE
+		{
+			DRAG_IGNORE,
+			DRAG_SELECT,
+			DRAG_NONE
+		};
+
+		std::unordered_set<CellData*> itemSelectionList;
+		MOUSE_STATE						isMouseSelecting;
+		ImVec2							mouseDragStart;
+		ImVec2							mouseDragEnd;
+
 		// Input Fuzzy Search
 		BaseColumn::ID 				searchKey;
 		char 						inputBuffer[256];

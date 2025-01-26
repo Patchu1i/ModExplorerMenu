@@ -22,18 +22,21 @@ namespace Modex
 		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "AIM_ADD"), b_AddToInventory, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
 			b_AddToFavorites = false;
+			b_AddToInventory = true;
 		};
 
 		// Place On Ground Toggle.
 		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_GRASS, "AIM_PLACE"), b_PlaceOnGround, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_AddToFavorites = false;
+			b_PlaceOnGround = true;
 		}
 
 		// Add To Favorites Toggle.
 		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), b_AddToFavorites, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
 			b_PlaceOnGround = false;
+			b_AddToFavorites = true;
 		}
 
 		if (b_AddToInventory || b_PlaceOnGround) {

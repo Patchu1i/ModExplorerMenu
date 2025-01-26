@@ -43,9 +43,8 @@ namespace Modex
 		};
 		
 		// Filtering State Variables.
-		bool 					b_ClickToSelect;
-		bool 					b_ClickToFavorite;
 		bool 					b_ClickToPlace;
+		bool 					b_ClickToFavorite;
 		int 					clickToPlaceCount;
 
 		bool 					_itemHovered;
@@ -56,6 +55,19 @@ namespace Modex
 		RE::FormType 			primaryFilter;
 		std::vector<NPCData*> 	npcList;
 		NPCColumns 				columnList;
+
+		// Mouse Draggin
+		enum MOUSE_STATE
+		{
+			DRAG_IGNORE,
+			DRAG_SELECT,
+			DRAG_NONE
+		};
+
+		std::unordered_set<NPCData*> 	itemSelectionList;
+		MOUSE_STATE						isMouseSelecting;
+		ImVec2							mouseDragStart;
+		ImVec2							mouseDragEnd;
 
 		// Menu State Variables.
 		enum class Viewport

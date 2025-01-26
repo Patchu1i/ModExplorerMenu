@@ -111,6 +111,7 @@ namespace Modex
 
 	void AddItemWindow::Refresh()
 	{
+		itemSelectionList.clear();
 		ApplyFilters();
 	}
 
@@ -127,7 +128,7 @@ namespace Modex
 		if (ImGui::InputTextWithHint("##AddItemWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 				IM_ARRAYSIZE(inputBuffer),
 				Frame::INPUT_FLAGS)) {
-			ApplyFilters();
+			Refresh();
 		}
 
 		ImGui::SameLine();
@@ -145,7 +146,7 @@ namespace Modex
 
 				if (ImGui::Selectable(_T(searchValue), is_selected)) {
 					searchKey = searchID;
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (is_selected) {
@@ -167,7 +168,7 @@ namespace Modex
 			if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
 				primaryFilter = RE::FormType::None;
 				secondaryFilter = "All";
-				ApplyFilters();
+				Refresh();
 				ImGui::SetItemDefaultFocus();
 			}
 
@@ -178,7 +179,7 @@ namespace Modex
 				if (ImGui::Selectable(_T(formName), isSelected)) {
 					primaryFilter = filter;
 					secondaryFilter = "All";
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (isSelected) {
@@ -195,7 +196,7 @@ namespace Modex
 			if (ImGui::BeginCombo("##AddItemWindow::SecondaryFilter", secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), secondaryFilter.empty())) {
 					secondaryFilter = "All";
-					ApplyFilters();
+					Refresh();
 					ImGui::SetItemDefaultFocus();
 				}
 
@@ -206,7 +207,7 @@ namespace Modex
 
 					if (ImGui::Selectable(_T(slot), isSelected)) {
 						secondaryFilter = slot;
-						ApplyFilters();
+						Refresh();
 					}
 
 					if (isSelected) {
@@ -223,7 +224,7 @@ namespace Modex
 			if (ImGui::BeginCombo("##AddItemWindow::SecondaryFilter", secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), secondaryFilter.empty())) {
 					secondaryFilter = "All";
-					ApplyFilters();
+					Refresh();
 					ImGui::SetItemDefaultFocus();
 				}
 
@@ -246,7 +247,7 @@ namespace Modex
 
 					if (ImGui::Selectable(_T(type), isSelected)) {
 						secondaryFilter = type;
-						ApplyFilters();
+						Refresh();
 					}
 
 					if (isSelected) {
@@ -292,7 +293,7 @@ namespace Modex
 				}
 			}
 
-			ApplyFilters();
+			Refresh();
 		}
 	}
 }

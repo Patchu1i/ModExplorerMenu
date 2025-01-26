@@ -78,6 +78,7 @@ namespace Modex
 
 	void TeleportWindow::Refresh()
 	{
+		itemSelectionList.clear();
 		ApplyFilters();
 	}
 
@@ -94,7 +95,7 @@ namespace Modex
 		if (ImGui::InputTextWithHint("##TeleportWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 				IM_ARRAYSIZE(inputBuffer),
 				ImGuiInputTextFlags_EscapeClearsAll)) {
-			ApplyFilters();
+			Refresh();
 		}
 
 		ImGui::SameLine();
@@ -111,7 +112,7 @@ namespace Modex
 
 				if (ImGui::Selectable(_T(_searchByValue), is_selected)) {
 					searchKey = searchBy;
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (is_selected) {
@@ -129,6 +130,7 @@ namespace Modex
 		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
 		modListVector.insert(modListVector.begin(), "All Mods");
 		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
+		ImGui::SetNextItemWidth(filterWidth);
 		if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, inputTextWidth)) {
 			auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
 			selectedMod = "All Mods";
@@ -156,7 +158,7 @@ namespace Modex
 				}
 			}
 
-			ApplyFilters();
+			Refresh();
 		}
 	}
 }

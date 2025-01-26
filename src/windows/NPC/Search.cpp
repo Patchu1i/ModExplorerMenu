@@ -117,6 +117,7 @@ namespace Modex
 
 	void NPCWindow::Refresh()
 	{
+		itemSelectionList.clear();
 		ApplyFilters();
 	}
 
@@ -148,7 +149,7 @@ namespace Modex
 		if (ImGui::InputTextWithHint("##NPCWindow::InputField", _T("GENERAL_CLICK_TO_TYPE"), inputBuffer,
 				IM_ARRAYSIZE(inputBuffer),
 				ImGuiInputTextFlags_EscapeClearsAll)) {
-			ApplyFilters();
+			Refresh();
 		}
 
 		ImGui::SameLine();
@@ -166,7 +167,7 @@ namespace Modex
 
 				if (ImGui::Selectable(_T(searchValue), is_selected)) {
 					searchKey = searchID;
-					ApplyFilters();
+					Refresh();
 				}
 
 				if (is_selected) {
@@ -189,7 +190,7 @@ namespace Modex
 			if (ImGui::Selectable(_T("None"), primaryFilter == RE::FormType::None)) {
 				primaryFilter = RE::FormType::None;
 				ImGui::SetItemDefaultFocus();
-				ApplyFilters();
+				Refresh();
 			}
 
 			for (auto& filter : filterList) {
@@ -218,7 +219,7 @@ namespace Modex
 						break;
 					}
 
-					ApplyFilters();
+					Refresh();
 					ImGui::SetItemDefaultFocus();
 				}
 			}
@@ -253,7 +254,7 @@ namespace Modex
 							}
 						}
 
-						ApplyFilters();
+						Refresh();
 					}
 				}
 			}
@@ -293,7 +294,7 @@ namespace Modex
 				}
 			}
 
-			ApplyFilters();
+			Refresh();
 		}
 	}
 }

@@ -44,7 +44,6 @@ namespace Modex
 		};
 
 		// Local State Variables.
-		bool 						b_ClickToSelect;
 		bool 						b_ClickToPlace;
 		bool 						b_ClickToFavorite;
 		int 						clickToPlaceCount;
@@ -57,6 +56,19 @@ namespace Modex
 		RE::FormType 				primaryFilter;
 		ObjectColumns 				columnList;
 		std::vector<ObjectData*>	objectList;
+
+		// Mouse Draggin
+		enum MOUSE_STATE
+		{
+			DRAG_IGNORE,
+			DRAG_SELECT,
+			DRAG_NONE
+		};
+
+		std::unordered_set<ObjectData*> itemSelectionList;
+		MOUSE_STATE						isMouseSelecting;
+		ImVec2							mouseDragStart;
+		ImVec2							mouseDragEnd;
 
 		// Menu State Variables.
 		enum class Viewport

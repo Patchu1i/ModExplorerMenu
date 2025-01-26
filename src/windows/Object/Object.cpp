@@ -102,8 +102,7 @@ namespace Modex
 
 	void ObjectWindow::Init()
 	{
-		b_ClickToSelect = true;
-		b_ClickToPlace = false;
+		b_ClickToPlace = true;
 		b_ClickToFavorite = false;
 		clickToPlaceCount = 1;
 

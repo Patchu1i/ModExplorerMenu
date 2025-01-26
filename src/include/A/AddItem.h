@@ -62,6 +62,20 @@ namespace Modex
 		AddItemColumns 			columnList;
 		std::vector<ItemData*> 	itemList;
 
+
+		// Mouse Draggin
+		enum MOUSE_STATE
+		{
+			DRAG_IGNORE,
+			DRAG_SELECT,
+			DRAG_NONE
+		};
+
+		std::unordered_set<ItemData*> 	itemSelectionList;
+		MOUSE_STATE						isMouseSelecting;
+		ImVec2							mouseDragStart;
+		ImVec2							mouseDragEnd;
+
 		// Menu State Variables.
 		enum class Viewport
 		{

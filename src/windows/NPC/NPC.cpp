@@ -96,9 +96,8 @@ namespace Modex
 	{
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
-		b_ClickToSelect = true;
+		b_ClickToPlace = true;
 		b_ClickToFavorite = false;
-		b_ClickToPlace = false;
 		clickToPlaceCount = 1;
 
 		_itemHovered = false;

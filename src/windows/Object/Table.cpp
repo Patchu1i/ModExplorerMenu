@@ -10,6 +10,37 @@ namespace Modex
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
+		if (ImGui::Selectable(_T("OBJECT_PLACE_SELECTED"), false, flags)) {
+			if (!itemSelectionList.empty()) {
+				for (auto& object : itemSelectionList) {
+					Console::PlaceAtMe(object->GetFormID().c_str(), clickToPlaceCount);
+				}
+
+				Console::StartProcessThread();
+			} else {
+				Console::PlaceAtMe(a_object.GetFormID().c_str(), clickToPlaceCount);
+				Console::StartProcessThread();
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
+			if (!itemSelectionList.empty()) {
+				for (auto& object : itemSelectionList) {
+					object->favorite = !object->favorite;
+					PersistentData::GetSingleton()->UpdatePersistentData(object);
+				}
+			} else {
+				a_object.favorite = !a_object.favorite;
+				PersistentData::GetSingleton()->UpdatePersistentData(a_object);
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_object.GetFormID().c_str());
@@ -147,21 +178,29 @@ namespace Modex
 						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
 						!ImGui::IsAnyItemHovered();  // optional
 
+					// Get the rows which the selection box is hovering over.
+					// Two conditions based on inverted selection box.
+					if (isMouseSelecting) {
+						if (mouseDragEnd.y < mouseDragStart.y) {
+							if (row_rect.Overlaps(ImRect(mouseDragEnd, mouseDragStart))) {
+								if (ImGui::IsMouseReleased(0)) {
+									itemSelectionList.insert(obj);
+								}
+							}
+						} else if (row_rect.Overlaps(ImRect(mouseDragStart, mouseDragEnd))) {
+							if (ImGui::IsMouseReleased(0)) {
+								itemSelectionList.insert(obj);
+							}
+						}
+					}
+
+					if (itemSelectionList.contains(obj)) {
+						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border, 0.65f);
+					}
+
 					if (bHover || selectedObject == obj) {
 						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
 						hoveredObject = obj;
-
-						if (ImGui::IsMouseClicked(0)) {
-							if (b_ClickToSelect) {
-								selectedObject = obj;
-							} else if (b_ClickToPlace) {
-								Console::PlaceAtMe(obj->GetFormID().c_str(), clickToPlaceCount);
-								Console::StartProcessThread();
-							} else if (b_ClickToFavorite) {
-								obj->favorite = !obj->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(obj);
-							}
-						}
 
 						if (ImGui::IsMouseClicked(1, true)) {
 							ImGui::OpenPopup("ShowObjectContextMenu");
@@ -174,6 +213,70 @@ namespace Modex
 					}
 
 					ImGui::PopID();
+				}
+			}
+
+			// TODO: This behavior quickly got a little bigger than anticipated.
+			// Should move this system into its own class or interface for table view
+
+			const bool is_popup_open = ImGui::IsPopupOpen("ShowObjectContextMenu", ImGuiPopupFlags_AnyPopup);
+
+			if (!is_popup_open) {
+				const ImVec2 mousePos = ImGui::GetMousePos();
+				const float outer_width = table->OuterRect.Max.x - ImGui::GetStyle().ScrollbarSize;
+				const float outer_height = table->OuterRect.Max.y - ImGui::GetStyle().ScrollbarSize;
+
+				if (ImGui::IsMouseDragging(0, 5.0f) && isMouseSelecting == MOUSE_STATE::DRAG_NONE) {
+					if ((mousePos.x > outer_width || mousePos.x < table->OuterRect.Min.x) ||
+						(mousePos.y > outer_height || mousePos.y < table->OuterRect.Min.y)) {
+						isMouseSelecting = MOUSE_STATE::DRAG_IGNORE;
+					} else {
+						isMouseSelecting = MOUSE_STATE::DRAG_SELECT;
+						itemSelectionList.clear();
+						mouseDragStart = ImGui::GetMousePos();
+					}
+				} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					if ((mousePos.x < outer_width && mousePos.x > table->OuterRect.Min.x) &&
+						(mousePos.y < outer_height && mousePos.y > table->OuterRect.Min.y)) {
+						if (ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) {
+							if (itemSelectionList.contains(hoveredObject)) {
+								itemSelectionList.erase(hoveredObject);
+							} else {
+								itemSelectionList.insert(hoveredObject);
+							}
+						} else {
+							itemSelectionList.clear();
+							itemSelectionList.insert(hoveredObject);
+						}
+
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+							if (b_ClickToPlace) {
+								Console::PlaceAtMe(hoveredObject->GetFormID().c_str(), clickToPlaceCount);
+								Console::StartProcessThread();
+							} else if (b_ClickToFavorite) {
+								hoveredObject->favorite = !hoveredObject->favorite;
+								PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(hoveredObject);
+							}
+						}
+					}
+				}
+
+				if (isMouseSelecting == MOUSE_STATE::DRAG_SELECT) {
+					if (ImGui::IsMouseDragging(0, 5.0f)) {
+						mouseDragEnd = ImGui::GetMousePos();
+						ImGui::GetWindowDrawList()->AddRect(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 200));
+						ImGui::GetWindowDrawList()->AddRectFilled(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 10));
+					} else {
+						isMouseSelecting = MOUSE_STATE::DRAG_NONE;
+						mouseDragStart = ImVec2(0.0f, 0.0f);
+						mouseDragEnd = ImVec2(0.0f, 0.0f);
+					}
+				}
+
+				if (ImGui::IsMouseReleased(0)) {
+					isMouseSelecting = MOUSE_STATE::DRAG_NONE;
+					mouseDragStart = ImVec2(0.0f, 0.0f);
+					mouseDragEnd = ImVec2(0.0f, 0.0f);
 				}
 			}
 

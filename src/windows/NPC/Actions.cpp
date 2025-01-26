@@ -19,19 +19,13 @@ namespace Modex
 		// Click To Place Toggle
 		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
 			b_ClickToFavorite = false;
-			b_ClickToSelect = false;
-		}
-
-		// Click To Select Toggle
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_MULTI_NPC, "GENERAL_CLICK_TO_SELECT"), b_ClickToSelect, ImVec2(button_width, button_height))) {
-			b_ClickToFavorite = false;
-			b_ClickToPlace = false;
+			b_ClickToPlace = true;
 		}
 
 		// Click To Favorite Toggle
 		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
-			b_ClickToSelect = false;
 			b_ClickToPlace = false;
+			b_ClickToFavorite = true;
 		}
 
 		if (b_ClickToPlace) {
