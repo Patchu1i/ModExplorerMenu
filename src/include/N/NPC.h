@@ -56,6 +56,16 @@ namespace Modex
 		RE::FormType 			primaryFilter;
 		std::vector<NPCData*> 	npcList;
 		NPCColumns 				columnList;
+
+		// Menu State Variables.
+		enum class Viewport
+		{
+			TableView,
+			BlacklistView,
+			SettingsView // TODO.
+		};
+
+		Viewport 				activeViewport;
 		
 		// Description Framework API.
 		DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;

@@ -58,6 +58,16 @@ namespace Modex
 		ObjectColumns 				columnList;
 		std::vector<ObjectData*>	objectList;
 
+		// Menu State Variables.
+		enum class Viewport
+		{
+			TableView,
+			BlacklistView,
+			SettingsView // TODO.
+		};
+
+		Viewport 					activeViewport;
+
 
 		// Input Fuzzy Search
 		BaseColumn::ID 				searchKey;
