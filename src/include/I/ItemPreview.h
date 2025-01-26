@@ -139,6 +139,7 @@ namespace Modex
 					return;
 				}
 
+				// TODO: Refactor along with Search.cpp reference.
 				const char* weaponTypes[] = {
 					"Hand to Hand",
 					"One Handed Sword",

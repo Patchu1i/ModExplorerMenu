@@ -7,10 +7,21 @@ namespace Modex
 	// https://github.com/ocornut/imgui/issues/319
 	void AddItemWindow::Draw(float a_offset)
 	{
-		const float MIN_SEARCH_HEIGHT = 175.0f;
+		float MIN_SEARCH_HEIGHT = 175.0f;
 		const float MIN_SEARCH_WIDTH = 200.0f;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
+
+		// I probably should handle this better, but It's kind of nice
+		// that the search data is in this class, so I can reference it for behavior like this.
+		if (primaryFilter == RE::FormType::Armor || primaryFilter == RE::FormType::Weapon) {
+			MIN_SEARCH_HEIGHT = 200.0f;
+
+			// Ensure minimum height after resizing.
+			if (ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
+				ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
+			}
+		}
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
@@ -104,6 +115,7 @@ namespace Modex
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
 		primaryFilter = RE::FormType::None;
+		secondaryFilter = "All";
 		openBook = nullptr;
 		itemPreview = nullptr;
 
