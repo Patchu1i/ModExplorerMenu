@@ -22,6 +22,7 @@ namespace ImGui
 				key != ImGuiKey_RightAlt &&     // Right CTRL key
 				key != ImGuiKey_CapsLock &&     // Left ALT key
 				key != ImGuiKey_Escape &&       // Right ALT key
+				key != ImGuiKey_T &&            // T key (default)
 				key != ImGuiKey_Space           // ALT key
 		);
 	}

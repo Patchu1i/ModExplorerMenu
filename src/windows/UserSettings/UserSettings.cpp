@@ -127,8 +127,8 @@ namespace Modex
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f - style.widgetPadding.x);  // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                       // Center Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - (p_fixedWidth - p_padding) + imageWidth / scale);  // Center Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                            // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
@@ -163,6 +163,12 @@ namespace Modex
 			auto _prevModifier = a_modifier;
 			int _newModifier = 0;
 
+			ImGui::Text(_T("CONFIG_MODIFIER_SET"));
+			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_RESET"));
+			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
+
 			if (ImGui::IsKeyPressed(ImGuiMod_Alt)) {
 				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LMENU);
 			} else if (ImGui::IsKeyPressed(ImGuiMod_Ctrl)) {
@@ -174,35 +180,21 @@ namespace Modex
 			if (_newModifier != 0) {
 				if (_newModifier != _prevModifier) {
 					a_modifier = _newModifier;
-
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
-
-					ImGui::CloseCurrentPopup();
-				} else {
-					ImGui::CloseCurrentPopup();
+					Settings::GetSingleton()->SaveSettings();
 				}
+
+				ImGui::CloseCurrentPopup();
 			} else {
 				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
-					if (a_modifier != defaultKey) {
-						SettingsWindow::changes.store(true);
-						SettingsWindow::file_changes.store(true);
-					}
-
 					a_modifier = defaultKey;
+					Settings::GetSingleton()->SaveSettings();
 					ImGui::CloseCurrentPopup();
 				}
 			}
-
-			ImGui::Text(_T("CONFIG_MODIFIER_SET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_RESET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
 		}
@@ -245,8 +237,8 @@ namespace Modex
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - imageWidth - 10.0f - style.widgetPadding.x);  // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                       // Center Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - (p_fixedWidth - p_padding) + imageWidth / scale);  // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                            // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
@@ -278,10 +270,19 @@ namespace Modex
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
 		if (ImGui::BeginPopup("##KeybindPopup", flags)) {
+			if (ImGui::IsWindowAppearing()) {
+				ImGui::GetIO().ClearInputKeys();
+			}
 			auto _prevKeybind = a_keybind;
 			int _newKeybind = 0;
 
-			for (int key = ImGuiKey_None; key < ImGuiKey_COUNT; key++) {
+			ImGui::Text(_T("CONFIG_HOTKEY_SET"));
+			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_RESET"));
+			ImGui::NewLine();
+			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
+
+			for (int key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END; key++) {
 				ImGuiKey imGuiKey = static_cast<ImGuiKey>(key);
 
 				if (ImGui::IsKeyPressed(imGuiKey)) {
@@ -290,41 +291,31 @@ namespace Modex
 					if (skyrimKey != 0 && ImGui::IsKeyboardWhitelist(imGuiKey)) {
 						_newKeybind = skyrimKey;
 					}
+
+					if (_newKeybind == a_keybind) {
+						ImGui::CloseCurrentPopup();
+					}
 				}
 			}
 
 			if (_newKeybind != 0) {
 				if (_newKeybind != _prevKeybind) {
 					a_keybind = _newKeybind;
-
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
-
-					ImGui::CloseCurrentPopup();
-				} else {
-					ImGui::CloseCurrentPopup();
+					Settings::GetSingleton()->SaveSettings();
 				}
+
+				ImGui::CloseCurrentPopup();
 			} else {
 				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
-					if (a_keybind != defaultKey) {
-						SettingsWindow::changes.store(true);
-						SettingsWindow::file_changes.store(true);
-					}
-
 					a_keybind = defaultKey;
+					Settings::GetSingleton()->SaveSettings();
 					ImGui::CloseCurrentPopup();
 				}
 			}
-
-			ImGui::Text(_T("CONFIG_HOTKEY_SET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_RESET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
 
 			ImGui::EndPopup();
 		}

@@ -55,16 +55,12 @@ namespace Modex
 		// If we're fullscreen, override manual positioning and sizing of the menu.
 		ImGui::SetNextWindowSize(ImVec2(window_w, window_h));
 
-		if (sidebar_w == 0.0f || sidebar_h == 0.0f) {
+		if ((sidebar_w == 0.0f || sidebar_h == 0.0f)) {
 			sidebar_w = min_sidebar_width;
 			sidebar_h = -1;
-			ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
 		}
 
-		if (config.fullscreen) {
-			ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
-		}
-
+		ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
 		if (ImGui::Begin("##ModexMenu", nullptr, WINDOW_FLAGS)) {
 			ImGui::SetCursorPos(ImVec2(0, 0));
 			if (ImGui::BeginChild("##SideBar", ImVec2(sidebar_w, ImGui::GetContentRegionAvail().y + ImGui::GetStyle().WindowPadding.y), ImGuiChildFlags_Borders, SIDEBAR_FLAGS)) {
