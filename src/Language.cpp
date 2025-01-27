@@ -51,18 +51,18 @@ namespace Modex
 	}
 
 	// Subtracting -1 from size results in odd font sizes. Good idea?
-	void FontManager::MergeIconFont(ImGuiIO& io, float size)
-	{
-		ImFontConfig imFontConfig;
-		imFontConfig.MergeMode = true;
-		imFontConfig.GlyphMinAdvanceX = 10.0f;
-		imFontConfig.GlyphExtraSpacing.x = 5.0f;
-		imFontConfig.GlyphOffset.y = 3.0f;
-		imFontConfig.GlyphOffset.x = 1.0f;
+	// void FontManager::MergeIconFont(ImGuiIO& io, float size)
+	// {
+	// 	ImFontConfig imFontConfig;
+	// 	imFontConfig.MergeMode = true;
+	// 	imFontConfig.GlyphMinAdvanceX = 10.0f;
+	// 	imFontConfig.GlyphExtraSpacing.x = 5.0f;
+	// 	imFontConfig.GlyphOffset.y = 3.0f;
+	// 	imFontConfig.GlyphOffset.x = 1.0f;
 
-		static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
-		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/rpgawesome-webfont.ttf", size - 1.0f, &imFontConfig, icon_ranges);
-	}
+	// 	static const ImWchar icon_ranges[] = { ICON_RPG_MIN, ICON_RPG_MAX, 0 };
+	// 	io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/rpgawesome-webfont.ttf", size - 1.0f, &imFontConfig, icon_ranges);
+	// }
 
 	void FontManager::AddDefaultFont()
 	{
@@ -94,9 +94,9 @@ namespace Modex
 			break;
 		}
 
-		if (!style.noIconText) {
-			MergeIconFont(io, imFontConfig.SizePixels);
-		}
+		// if (!style.noIconText) {
+		// 	MergeIconFont(io, imFontConfig.SizePixels);
+		// }
 	}
 
 	// Do not call this function directly. See Menu::RebuildFontAtlas().
@@ -112,9 +112,9 @@ namespace Modex
 		io.Fonts->AddFontFromFileTTF(a_font.fullPath.c_str(), a_size, NULL, glyphRange);
 
 		// TODO: Refresh font when this changes.
-		if (!style.noIconText) {
-			MergeIconFont(io, a_size);
-		}
+		// if (!style.noIconText) {
+		// 	MergeIconFont(io, a_size);
+		// }
 	}
 
 	// Runs after Settings are loaded.
