@@ -13,6 +13,11 @@ namespace ImGui
 		return ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 - ImGui::CalcTextSize(text).x / 2;
 	};
 
+	[[nodiscard]] inline static const float GetCenterTextPosY(const char* text)
+	{
+		return ImGui::GetCursorPosY() + ImGui::GetContentRegionAvail().y / 2 - ImGui::CalcTextSize(text).y / 2;
+	}
+
 	// Specifically used in the Frame Sidebar window.
 	//
 	// @param a_text - The text to display on the button.
@@ -20,7 +25,7 @@ namespace ImGui
 	// @param a_imageSize - The size of the texture.
 	// @param a_buttonSize - The size of the button.
 	// @param a_textMod - The text alignment modifier for the button.
-	static inline bool SidebarButton(const char* a_text, ImTextureID a_texture, ImVec2 a_imageSize, ImVec2 a_buttonSize, float& a_textMod)
+	static inline bool SidebarButton(const char* a_text, bool a_selected, ImTextureID a_texture, ImVec2 a_imageSize, ImVec2 a_buttonSize, float& a_textMod)
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window->SkipItems)
@@ -33,8 +38,15 @@ namespace ImGui
 		const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
 		// Set gradient colors manually for now...
-		ImU32 bg_color_1 = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
-		ImU32 bg_color_2 = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		// auto col_button = a_selected ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImGui::GetStyle().Colors[ImGuiCol_FrameBg];
+		// auto col_button = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
+		auto alpha = a_selected ? 1.0f : 0.5f;
+
+		auto col_a = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f * alpha));
+		auto col_b = ImGui::GetColorU32(ImVec4(0.22f * 0.6f, 0.22f * 0.6f, 0.22f * 0.6f, 0.5f * alpha));
+
+		ImU32 bg_color_1 = col_a;
+		ImU32 bg_color_2 = col_b;
 
 		// Calculate size and bounding box of button element.
 		ImVec2 pos = window->DC.CursorPos;
@@ -107,7 +119,14 @@ namespace ImGui
 
 		// Render
 		int vert_start_idx = window->DrawList->VtxBuffer.Size;
-		window->DrawList->AddImage(a_texture, image_pos_min, image_pos_max);
+		window->DrawList->AddImage(
+			a_texture,
+			image_pos_min,
+			image_pos_max,
+			ImVec2(0, 0),
+			ImVec2(1, 1),
+			text_color);
+
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
 		int vert_end_idx = window->DrawList->VtxBuffer.Size;
 		if (is_gradient)
@@ -541,17 +560,17 @@ namespace ImGui
 		}
 	}
 
-	inline static void HelpMarker(const char* desc)
-	{
-		ImGui::TextDisabled(ICON_RPG_QUESTION);
-		if (ImGui::BeginItemTooltip()) {
-			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-			ImGui::TextUnformatted(desc);
-			ImGui::PopTextWrapPos();
-			ImGui::EndTooltip();
-		}
-		ImGui::SameLine();
-	}
+	// inline static void HelpMarker(const char* desc)
+	// {
+	// 	ImGui::TextDisabled(ICON_RPG_QUESTION);
+	// 	if (ImGui::BeginItemTooltip()) {
+	// 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	// 		ImGui::TextUnformatted(desc);
+	// 		ImGui::PopTextWrapPos();
+	// 		ImGui::EndTooltip();
+	// 	}
+	// 	ImGui::SameLine();
+	// }
 }
 
 namespace Utils
@@ -629,24 +648,27 @@ namespace Utils
 
 	inline static void RemoveHTMLTags(std::string& a_string)
 	{
-		while (a_string.find("<") != std::string::npos) {
-			auto startpos = a_string.find("<");
-			auto endpos = a_string.find(">") + 1;
-
+		size_t pos = 0;
+		while ((pos = a_string.find('<', pos)) != std::string::npos) {
+			size_t endpos = a_string.find('>', pos);
 			if (endpos != std::string::npos) {
-				a_string.erase(startpos, endpos - startpos);
+				a_string.erase(pos, endpos - pos + 1);
 			}
 		}
+	}
 
-		while (a_string.find("[") != std::string::npos) {
-			auto startpos = a_string.find("[");
-			auto endpos = a_string.find("]") + 1;
-
-			if (endpos != std::string::npos) {
-				a_string.erase(startpos, endpos - startpos);
-			}
+	inline static void FormatHTMLTag(std::string& a_string, char open_char, char close_char)
+	{
+		size_t startpos = 0;
+		while ((startpos = a_string.find(open_char, startpos)) != std::string::npos) {
+			a_string.erase(startpos, 1);  // Remove the opening bracket
 		}
-	};
+
+		size_t endpos = 0;
+		while ((endpos = a_string.find(close_char, endpos)) != std::string::npos) {
+			a_string.erase(endpos, 1);  // Remove the closing bracket
+		}
+	}
 
 	static inline std::map<const char*, RE::ActorValue> armorSkillMap = {
 		{ "Light Armor", RE::ActorValue::kLightArmor },
@@ -900,33 +922,41 @@ namespace Utils
 		return slots;
 	}
 
+	inline static void FixDescriptionEncoding(std::string& a_desc)
+	{
+		size_t pos = 0;
+
+		while ((pos = a_desc.find("%", pos)) != std::string::npos) {
+			a_desc.replace(pos, 1, "%%");
+			pos += 2;  // Move past the '%%'
+		}
+	}
+
 	template <class T>
 	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form, T& a_interface = nullptr)
 	{
-		std::string s_descFramework = "";
+		std::string desc;
+
+		// This entirely removes HTML tags in Descriptions from Description Framework
+		// I did not see an instance where a Tag was necessary, so if there is
+		// This will need modified to only remove unecessary HTML tags.
 		if (a_interface != nullptr) {
-			std::string desc = a_interface->GetDescription(form);
+			desc = a_interface->GetDescription(form);
 			if (!desc.empty()) {
 				Utils::RemoveHTMLTags(desc);
-				s_descFramework = std::string(desc) + "\n";
+				return desc;
 			}
 		}
 
-		std::string s_tesDescription = "";
-		if (form->As<RE::TESDescription>() != nullptr) {
-			const auto desc = form->As<RE::TESDescription>();
-			if (desc) {
-				RE::BSString buf;
-				desc->GetDescription(buf, nullptr);
-
-				if (form->formType == RE::FormType::Book) {
-					s_tesDescription = "[Right Click -> Read Me!]";
-				} else if (!buf.empty()) {
-					s_tesDescription = std::string(buf) + "\n";
-				}
-			}
+		if (auto tesDescription = form->As<RE::TESDescription>()) {
+			RE::BSString buf;
+			tesDescription->GetDescription(buf, nullptr);
+			desc = buf.c_str();
+			Utils::FixDescriptionEncoding(desc);
+			Utils::FormatHTMLTag(desc, '[', ']');
+			Utils::FormatHTMLTag(desc, '<', '>');
 		}
 
-		return s_descFramework + s_tesDescription;
+		return desc;
 	}
 }
