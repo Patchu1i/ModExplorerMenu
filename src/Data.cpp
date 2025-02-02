@@ -61,9 +61,7 @@ namespace Modex
 	void Data::CacheNPCs(RE::TESDataHandler* a_data)
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			const RE::FormID formid = form->GetFormID();
 			const RE::TESFile* mod = form->GetFile(0);
-			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
 			// RE::TESNPC* npc = form->As<RE::TESNPC>();
 
@@ -71,8 +69,7 @@ namespace Modex
 				continue;
 			}
 
-			// _npcCache.push_back(NPCData{ form, formid, mod, favorite });
-			_npcCache.push_back(NPCData{ form, favorite });
+			_npcCache.push_back(NPCData{ form });
 
 			if (!_npcModList.contains(mod)) {
 				_npcModList.insert(mod);
@@ -175,12 +172,9 @@ namespace Modex
 		dataPath = Utils::RemoveQuotesInPath(dataPath);
 
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			const RE::FormID formid = form->GetFormID();
 			const RE::TESFile* mod = form->GetFile(0);
-			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
-			// _cache.push_back(Modex::ItemData{ form, formid, mod, favorite });
-			_cache.push_back(ItemData{ form, favorite });
+			_cache.push_back(ItemData{ form });
 
 			//Add mod file to list.
 			if (!_itemModList.contains(mod)) {
@@ -240,12 +234,9 @@ namespace Modex
 	void Data::CacheStaticObjects(RE::TESDataHandler* a_data)
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
-			const RE::FormID formid = form->GetFormID();
 			const RE::TESFile* mod = form->GetFile(0);
-			bool favorite = PersistentData::m_favorites[po3_GetEditorID(formid)];
 
-			// _staticCache.push_back(Modex::ObjectData{ form, formid, mod, favorite });
-			_staticCache.push_back(ObjectData{ form, favorite });
+			_staticCache.push_back(ObjectData{ form });
 
 			if (!_staticModList.contains(mod)) {
 				_staticModList.insert(mod);
@@ -315,9 +306,7 @@ namespace Modex
 					}
 
 					if (gotEDID && gotLUFF) {
-						bool favorite = PersistentData::m_favorites[edid];
-
-						a_cellMap.push_back(CellData(tesFile->fileName, "Unknown", "Unknown", luff, edid, favorite, tesFile));
+						a_cellMap.push_back(CellData(tesFile->fileName, "Unknown", "Unknown", luff, edid, tesFile));
 
 						if (!_cellModList.contains(tesFile)) {
 							_cellModList.insert(tesFile);
@@ -440,13 +429,12 @@ namespace Modex
 				const auto& [_plugin, space, place, name, editorid] = cell;
 				std::string plugin = _plugin + ".esm";
 				const RE::TESFile* modFile = dataHandler->LookupModByName(plugin.c_str());
-				bool favorite = PersistentData::m_favorites[editorid];
 
 				if (!_cellModList.contains(modFile)) {
 					_cellModList.insert(modFile);
 				}
 
-				_cellCache.push_back(CellData(plugin, space, place, name, editorid, favorite, modFile));
+				_cellCache.push_back(CellData(plugin, space, place, name, editorid, modFile));
 			}
 
 			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {

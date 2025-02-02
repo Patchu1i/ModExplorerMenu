@@ -10,7 +10,6 @@ namespace Modex
 	void NPCWindow::ApplyFilters()
 	{
 		npcList.clear();
-		selectedNPC = nullptr;
 
 		auto& cachedNPCList = Data::GetSingleton()->GetNPCList();
 
@@ -58,7 +57,7 @@ namespace Modex
 
 			// Ensure NPC's from Blacklisted Plugins aren't shown.
 			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(npc.GetPlugin())) {
+				if (PersistentData::GetBlacklist().contains(npc.GetPlugin())) {
 					continue;
 				}
 			}
@@ -275,7 +274,7 @@ namespace Modex
 				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
 			} else {
 				for (auto& mod : modList) {
-					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+					if (PersistentData::GetBlacklist().contains(mod)) {
 						continue;
 					}
 

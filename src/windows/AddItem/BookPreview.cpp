@@ -2,6 +2,9 @@
 
 namespace Modex
 {
+	// TODO: There is a [pagebreak] tag that lingers.
+	// Also, potentially use HTML tags for formatting? Could really
+	// improve upon this if desired. Such as adding a table of contents, pages, etc.
 	void AddItemWindow::ShowBookPreview()
 	{
 		auto& io = ImGui::GetIO();

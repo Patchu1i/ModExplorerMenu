@@ -70,7 +70,7 @@ namespace Modex
 	void TeleportWindow::Init()
 	{
 		b_ClickToTeleport = true;
-		b_ClickToFavorite = false;
+		// b_ClickToFavorite = false;
 
 		columnList = TeleportColumns();
 		selectedCell = nullptr;

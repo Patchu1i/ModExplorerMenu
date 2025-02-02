@@ -16,15 +16,8 @@ namespace Modex
 		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 		// Click To Place Toggle
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
-			b_ClickToFavorite = false;
+		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
 			b_ClickToPlace = true;
-		}
-
-		// Click To Favorite Toggle
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
-			b_ClickToPlace = false;
-			b_ClickToFavorite = true;
 		}
 
 		if (b_ClickToPlace) {
@@ -42,8 +35,16 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		if (ImGui::GradientButton(_T("OBJECT_PLACE_SELECTED"), ImVec2(button_width, 0))) {
-			if (selectedObject != nullptr) {
-				Console::PlaceAtMe(selectedObject->GetFormID(), 1);
+			// if (selectedObject != nullptr) {
+			// 	Console::PlaceAtMe(selectedObject->GetFormID(), 1);
+			// 	Console::StartProcessThread();
+			// }
+
+			if (!itemSelectionList.empty()) {
+				for (auto& obj : itemSelectionList) {
+					Console::PlaceAtMe(obj->GetFormID(), clickToPlaceCount);
+				}
+
 				Console::StartProcessThread();
 			}
 		}
@@ -51,7 +52,7 @@ namespace Modex
 		if (ImGui::GradientButton(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
 			if (objectList.size() > 30) {
 				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
-			} else {
+			} else if (!objectList.empty()) {
 				for (auto& obj : objectList) {
 					Console::PlaceAtMe(obj->GetFormID(), 1);
 				}
@@ -68,11 +69,7 @@ namespace Modex
 			}
 		});
 
-		// Goto Favorite List
-		if (ImGui::GradientButton(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
-			selectedMod = "Favorite";
-			ApplyFilters();
-		}
+		const auto& selectedObject = itemSelectionList.empty() ? nullptr : *itemSelectionList.begin();
 
 		if (selectedObject == nullptr && hoveredObject == nullptr) {
 			ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign

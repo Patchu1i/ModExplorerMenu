@@ -1,9 +1,12 @@
 #pragma once
-#include "include/I/IconRpgAwesome.h"
+#include "extern/IconsLucide.h"
 #include <PCH.h>
 
 namespace Modex
 {
+
+	// TODO: Purge wchar_t and string literals
+
 	class Translate
 	{
 	public:
@@ -75,7 +78,7 @@ namespace Modex
 		}
 
 	private:
-		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/User/Language/";
+		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex//Language/";
 
 		Translate() = default;
 		~Translate() = default;
@@ -85,13 +88,13 @@ namespace Modex
 
 #define _T(key) Translate::GetSingleton()->GetTranslation(key)
 #define _TFM(key, suffix) (std::string(_T(key)) + suffix).c_str()
-#define _TICON(icon, key) (Settings::GetSingleton()->GetStyle().noIconText ? _T(key) : (std::string(icon) + _T(key)).c_str())
-#define _TICONM(icon, key, suffix) (Settings::GetSingleton()->GetStyle().noIconText ? _TFM(key, suffix) : (std::string(icon) + _T(key) + suffix).c_str())
+#define _TICON(icon, key) ((std::string(icon) + _T(key)).c_str())
+#define _TICONM(icon, key, suffix) ((std::string(icon) + _T(key) + suffix).c_str())
 
 	class Language
 	{
 	private:
-		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/User/Language/";
+		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/Language/";
 		constexpr inline static const wchar_t* json_font_path = L"Data/Interface/Modex/User/Fonts/";
 
 		Language() = default;

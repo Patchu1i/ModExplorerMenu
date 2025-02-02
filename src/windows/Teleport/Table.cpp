@@ -11,19 +11,19 @@ namespace Modex
 		constexpr auto flags = ImGuiSelectableFlags_DontClosePopups;
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 
-		if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
-			if (!itemSelectionList.empty()) {
-				for (auto& cell : itemSelectionList) {
-					cell->favorite = !cell->favorite;
-					PersistentData::GetSingleton()->UpdatePersistentData(cell);
-				}
-			} else {
-				a_cell.favorite = !a_cell.favorite;
-				PersistentData::GetSingleton()->UpdatePersistentData(a_cell);
-			}
+		// if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
+		// 	if (!itemSelectionList.empty()) {
+		// 		for (auto& cell : itemSelectionList) {
+		// 			cell->favorite = !cell->favorite;
+		// 			// PersistentData::GetSingleton()->UpdatePersistentData(*cell);
+		// 		}
+		// 	} else {
+		// 		a_cell.favorite = !a_cell.favorite;
+		// 		// PersistentData::GetSingleton()->UpdatePersistentData(a_cell);
+		// 	}
 
-			ImGui::CloseCurrentPopup();
-		}
+		// 	ImGui::CloseCurrentPopup();
+		// }
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -118,21 +118,21 @@ namespace Modex
 					ImGui::TableNextColumn();
 
 					// Overwrite color to hide ugly imgui backdrop on image.
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+					// ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+					// ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+					// ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+					// ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+					// ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					if (ImGui::DisabledCheckbox("##TeleportWindow::FavoriteCheckbox", b_ClickToFavorite, cell->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(cell);
-					}
+					// if (ImGui::DisabledCheckbox("##TeleportWindow::FavoriteCheckbox", b_ClickToFavorite, cell->favorite)) {
+					// 	PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(cell);
+					// }
 
-					ImGui::PopStyleColor(3);
-					ImGui::PopStyleVar(2);
+					// ImGui::PopStyleColor(3);
+					// ImGui::PopStyleVar(2);
 
 					//	Plugin
-					ImGui::TableNextColumn();
+					// ImGui::TableNextColumn();
 					ImGui::Text(cell->GetPluginName().data());
 
 					// Space
@@ -244,10 +244,11 @@ namespace Modex
 
 								itemSelectionList.clear();
 								selectedCell = nullptr;
-							} else if (b_ClickToFavorite) {
-								selectedCell->favorite = !selectedCell->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(selectedCell);
 							}
+							// else if (b_ClickToFavorite) {
+							// 	selectedCell->favorite = !selectedCell->favorite;
+							// 	// PersistentData::GetSingleton()->UpdatePersistentData<CellData*>(selectedCell);
+							// }
 						}
 					}
 				}

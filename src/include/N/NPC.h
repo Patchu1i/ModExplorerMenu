@@ -6,6 +6,7 @@
 #include "include/G/Graphic.h"
 #include "include/I/ISearch.h"
 #include "include/I/ISortable.h"
+#include "include/I/InputManager.h"
 
 // clang-format off
 
@@ -44,12 +45,11 @@ namespace Modex
 		
 		// Filtering State Variables.
 		bool 					b_ClickToPlace;
-		bool 					b_ClickToFavorite;
 		int 					clickToPlaceCount;
 
 		bool 					_itemHovered;
 		bool 					_itemSelected;
-		NPCData* 				selectedNPC;
+		// NPCData* 				selectedNPC;
 		NPCData* 				hoveredNPC;
 
 		RE::FormType 			primaryFilter;
@@ -65,9 +65,7 @@ namespace Modex
 		};
 
 		std::unordered_set<NPCData*> 	itemSelectionList;
-		MOUSE_STATE						isMouseSelecting;
-		ImVec2							mouseDragStart;
-		ImVec2							mouseDragEnd;
+		bool							wasMouseInBounds;
 
 		// Menu State Variables.
 		enum class Viewport

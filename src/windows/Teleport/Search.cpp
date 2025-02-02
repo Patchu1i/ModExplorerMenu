@@ -58,15 +58,6 @@ namespace Modex
 				continue;
 			}
 
-			// Don't include Blacklist with Teleport since users will likely
-			// blacklist mods that are landscape or quest mods for AddItem or NPC.
-			//
-			// if (selectedMod == "All Mods") {
-			// 	if (PersistentData::GetSingleton()->m_blacklist.contains(item.GetPluginName())) {
-			// 		continue;
-			// 	}
-			// }
-
 			if (compare.find(input) != std::string::npos) {
 				cellList.push_back(&item);
 				continue;
@@ -139,7 +130,7 @@ namespace Modex
 				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
 			} else {
 				for (auto& mod : modList) {
-					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+					if (PersistentData::GetBlacklist().contains(mod)) {
 						continue;
 					}
 

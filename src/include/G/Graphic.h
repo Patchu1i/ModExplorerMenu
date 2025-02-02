@@ -1,7 +1,7 @@
 #pragma once
 
 #include "d3d11.h"
-#include "include/I/IconRpgAwesome.h"
+#include "extern/IconsLucide.h"
 #include "include/L/Language.h"
 
 // clang-format off

@@ -17,8 +17,9 @@ namespace
 		switch (a_msg->type) {
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			logger::info("Data Loaded");
-			Modex::PersistentData::LoadFromFile();
-			Modex::PersistentData::LoadBlacklist();
+			// Modex::PersistentData::LoadFromFile();
+			// Modex::PersistentData::LoadBlacklist();
+			Modex::PersistentData::GetSingleton()->LoadAllKits();
 			logger::info("Loaded Persistent Data");
 			Modex::Language::GetSingleton()->BuildLanguageList();
 			Modex::FontManager::GetSingleton()->BuildFontLibrary();

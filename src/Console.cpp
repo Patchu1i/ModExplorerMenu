@@ -70,6 +70,44 @@ namespace Modex
 		commandHistory.push(cmd);
 	}
 
+	int InventoryBoundObjects(const RE::TESForm* a_form, RE::TESBoundObject*& out_object, RE::ExtraDataList* out_extra)
+	{
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+		RE::FormType a_type = a_form->GetFormType();
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			thePlayer->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
+
+		auto count = 0;
+		for (const auto& [item, inventoryData] : candidates) {
+			const auto& [num_items, entry] = inventoryData;
+			if (entry->object->formID == a_form->formID) {
+				foundObject = item;
+				count = num_items;
+				auto simpleList = entry->extraLists;
+
+				if (simpleList) {
+					for (auto* extraData : *simpleList) {
+						extraDataCopy.push_back(extraData);
+					}
+				}
+				break;
+			}
+		}
+
+		if (!foundObject) {
+			return 0;
+		}
+
+		if (extraDataCopy.size() > 0) {
+			out_extra = extraDataCopy.back();
+		}
+		out_object = foundObject;
+		return count;
+	}
+
 	// Create, compile, and run a console command (script).
 	// @param cmd: Command to be executed.
 	// @note This function is called from the main thread.
@@ -88,6 +126,46 @@ namespace Modex
 
 			commandHistory.push(cmd);
 			return;
+		}
+
+		logger::info("Sending command: {}", cmd);
+		// intercept <equip_last> command for override.
+		if (cmd == "<equip_last>") {
+			logger::info("Detected <equip_last> command.");
+			if (commandHistory.empty()) {
+				stl::report_and_error("No command history found for <equip_last>.");
+			}
+
+			// Grab FormID from last command.
+			auto lastCommand = commandHistory.top();
+			auto lastID = RE::FormID(GetFormFromCMD(lastCommand));
+
+			// Equip the last FormID.
+			SKSE::GetTaskInterface()->AddTask([lastID]() {
+				logger::info("Running Task");
+				auto* player = RE::PlayerCharacter::GetSingleton();
+				RE::TESForm* form = RE::TESForm::LookupByID(lastID);
+
+				RE::BGSEquipSlot* equipSlot = nullptr;
+				RE::TESBoundObject* equipObject = nullptr;
+				RE::ExtraDataList* extraData = nullptr;
+
+				InventoryBoundObjects(form, equipObject, extraData);
+
+				if (RE::TESObjectWEAP* weapon = form->As<RE::TESObjectWEAP>()) {
+					equipSlot = weapon->GetEquipSlot();
+				} else if (RE::TESObjectARMO* armor = form->As<RE::TESObjectARMO>()) {
+					logger::info("Setting Armor Up");
+					equipSlot = armor->GetEquipSlot();
+				}
+
+				if (player) {
+					logger::info("Equipping Object");
+					RE::ActorEquipManager::GetSingleton()->EquipObject(player, equipObject, extraData, 1, equipSlot);
+				}
+			});
+
+			return;  // Early out.
 		}
 
 		// Intercept <prid_last> command for override.
@@ -262,6 +340,22 @@ namespace Modex
 	{
 		if (IsPlayerLoaded()) [[likely]] {
 			AddToQueue("player.additem " + a_itemFormID + " " + std::to_string(a_count));
+		}
+	}
+
+	// Add an item to the player's inventory
+	// ALT: Uses RE::FormID instead of std::string
+	// @param a_itemFormID: Base Form ID of the item.
+	// @param a_count: Count of the item.
+	// @param a_equip: Equip the item after adding.
+	void Console::AddItemEx(RE::FormID a_itemFormID, int a_count, bool a_equip)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.additem " + std::format("{:08x}", a_itemFormID) + " " + std::to_string(a_count));
+
+			if (a_equip) {
+				AddToQueue("<equip_last>");
+			}
 		}
 	}
 

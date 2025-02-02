@@ -25,20 +25,6 @@ namespace Modex
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
-			if (!itemSelectionList.empty()) {
-				for (auto& npc : itemSelectionList) {
-					npc->favorite = !npc->favorite;
-					PersistentData::GetSingleton()->UpdatePersistentData(npc);
-				}
-			} else {
-				a_npc.favorite = !a_npc.favorite;
-				PersistentData::GetSingleton()->UpdatePersistentData(a_npc);
-			}
-
-			ImGui::CloseCurrentPopup();
-		}
-
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (ImGui::Selectable(_T("GENERAL_COPY_FORM_ID"), false, flags)) {
@@ -139,21 +125,21 @@ namespace Modex
 					ImGui::TableNextColumn();
 
 					// Overwrite color to hide ugly imgui backdrop on image.
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+					// ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+					// ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+					// ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+					// ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+					// ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
-					if (ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<NPCData*>(npc);
-					}
+					// if (ImGui::DisabledCheckbox("##NPCWindow::FavoriteCheckbox", b_ClickToFavorite, npc->favorite)) {
+					// 	PersistentData::GetSingleton()->UpdatePersistentData<NPCData*>(npc);
+					// }
 
-					ImGui::PopStyleColor(3);
-					ImGui::PopStyleVar(2);
+					// ImGui::PopStyleColor(3);
+					// ImGui::PopStyleVar(2);
 
 					//	Plugin
-					ImGui::TableNextColumn();
+					// ImGui::TableNextColumn();
 					ImGui::Text(npc->GetPluginName().data());
 
 					// Form ID
@@ -228,16 +214,28 @@ namespace Modex
 
 					// Get the rows which the selection box is hovering over.
 					// Two conditions based on inverted selection box.
-					if (isMouseSelecting) {
-						if (mouseDragEnd.y < mouseDragStart.y) {
-							if (row_rect.Overlaps(ImRect(mouseDragEnd, mouseDragStart))) {
-								if (ImGui::IsMouseReleased(0)) {
+					if (InputManager::GetMouseState() == InputManager::MOUSE_STATE::kBoxSelection) {
+						// const auto selection_box = ImRect(InputManager::GetMouseSelectionStart(), InputManager::GetMouseSelectionEnd());
+						const auto start = InputManager::GetMouseSelectionStart();
+						const auto end = InputManager::GetMouseSelectionEnd();
+
+						if (start.y > end.y) {
+							if (row_rect.Overlaps(ImRect(end, start))) {
+								if (!itemSelectionList.contains(npc)) {
 									itemSelectionList.insert(npc);
 								}
+							} else {
+								if (itemSelectionList.contains(npc)) {
+									itemSelectionList.erase(npc);
+								}
 							}
-						} else if (row_rect.Overlaps(ImRect(mouseDragStart, mouseDragEnd))) {
-							if (ImGui::IsMouseReleased(0)) {
+						} else if (row_rect.Overlaps(ImRect(start, end))) {
+							if (!itemSelectionList.contains(npc)) {
 								itemSelectionList.insert(npc);
+							}
+						} else {
+							if (itemSelectionList.contains(npc)) {
+								itemSelectionList.erase(npc);
 							}
 						}
 					}
@@ -271,62 +269,87 @@ namespace Modex
 
 			if (!is_popup_open) {
 				const ImVec2 mousePos = ImGui::GetMousePos();
+
+				// We shouldn't have a horizontal scroll bar, so we do not need to account for it.
+				// Doing so results in the last item of the table not being selectable.
 				const float outer_width = table->OuterRect.Max.x - ImGui::GetStyle().ScrollbarSize;
-				const float outer_height = table->OuterRect.Max.y - ImGui::GetStyle().ScrollbarSize;
+				const float outer_height = table->OuterRect.Max.y;
 
-				if (ImGui::IsMouseDragging(0, 5.0f) && isMouseSelecting == MOUSE_STATE::DRAG_NONE) {
-					if ((mousePos.x > outer_width || mousePos.x < table->OuterRect.Min.x) ||
-						(mousePos.y > outer_height || mousePos.y < table->OuterRect.Min.y)) {
-						isMouseSelecting = MOUSE_STATE::DRAG_IGNORE;
-					} else {
-						isMouseSelecting = MOUSE_STATE::DRAG_SELECT;
-						itemSelectionList.clear();
-						mouseDragStart = ImGui::GetMousePos();
-					}
-				} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-					if ((mousePos.x < outer_width && mousePos.x > table->OuterRect.Min.x) &&
-						(mousePos.y < outer_height && mousePos.y > table->OuterRect.Min.y)) {
-						if (ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) {
-							if (itemSelectionList.contains(hoveredNPC)) {
-								itemSelectionList.erase(hoveredNPC);
-							} else {
-								itemSelectionList.insert(hoveredNPC);
-							}
-						} else {
-							itemSelectionList.clear();
-							itemSelectionList.insert(hoveredNPC);
-						}
+				auto IsMouseInBounds = [&]() -> bool {
+					return (mousePos.x < outer_width && mousePos.x > table->OuterRect.Min.x) &&
+					       (mousePos.y < outer_height && mousePos.y > table->OuterRect.Min.y);
+				};
 
-						selectedNPC = hoveredNPC;
+				if (IsMouseInBounds()) {
+					if (ImGui::IsMouseClicked(0)) {
+						InputManager::SetMouseSelectionStart(ImGui::GetMousePos());
+						wasMouseInBounds = true;
 
-						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-							if (b_ClickToPlace) {
-								Console::PlaceAtMe(hoveredNPC->GetFormID().c_str(), clickToPlaceCount);
+						if (ImGui::IsMouseDoubleClicked(0)) {
+							if (hoveredNPC != nullptr) {
+								if (b_ClickToPlace) {
+									Console::PlaceAtMe(hoveredNPC->GetFormID().c_str(), clickToPlaceCount);
+								}
+
 								Console::StartProcessThread();
-							} else if (b_ClickToFavorite) {
-								hoveredNPC->favorite = !hoveredNPC->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<NPCData*>(hoveredNPC);
 							}
 						}
 					}
-				}
 
-				if (isMouseSelecting == MOUSE_STATE::DRAG_SELECT) {
-					if (ImGui::IsMouseDragging(0, 5.0f)) {
-						mouseDragEnd = ImGui::GetMousePos();
-						ImGui::GetWindowDrawList()->AddRect(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 200));
-						ImGui::GetWindowDrawList()->AddRectFilled(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 10));
-					} else {
-						isMouseSelecting = MOUSE_STATE::DRAG_NONE;
-						mouseDragStart = ImVec2(0.0f, 0.0f);
-						mouseDragEnd = ImVec2(0.0f, 0.0f);
+					if (wasMouseInBounds && InputManager::GetMouseState() == InputManager::MOUSE_STATE::kIdle) {
+						if (ImGui::IsMouseDragging(0, 15.0f)) {
+							InputManager::SetMouseState(InputManager::MOUSE_STATE::kBoxSelection);
+							itemSelectionList.clear();
+						}
 					}
 				}
 
 				if (ImGui::IsMouseReleased(0)) {
-					isMouseSelecting = MOUSE_STATE::DRAG_NONE;
-					mouseDragStart = ImVec2(0.0f, 0.0f);
-					mouseDragEnd = ImVec2(0.0f, 0.0f);
+					if (wasMouseInBounds) {
+						switch (InputManager::GetMouseState()) {
+						case InputManager::MOUSE_STATE::kIdle:
+							if (!itemSelectionList.contains(hoveredNPC)) {
+								itemSelectionList.clear();
+								itemSelectionList.insert(hoveredNPC);
+							} else {
+								if (itemSelectionList.size() > 1) {
+									itemSelectionList.clear();
+									itemSelectionList.insert(hoveredNPC);
+								}
+							}
+							break;
+						case InputManager::MOUSE_STATE::kBoxSelection:
+							break;
+						}
+					} else {
+						itemSelectionList.clear();
+					}
+
+					wasMouseInBounds = false;
+					InputManager::ClearMouseState();
+				}
+
+				// Draw Selection Rectangle
+				if (InputManager::GetMouseState() == InputManager::MOUSE_STATE::kBoxSelection) {
+					const auto mouseEnd = ImVec2(
+						std::clamp(
+							ImGui::GetMousePos().x,
+							table->OuterRect.Min.x,
+							table->OuterRect.Max.x - ImGui::GetStyle().ScrollbarSize),
+						std::clamp(
+							ImGui::GetMousePos().y,
+							table->OuterRect.Min.y,
+							table->OuterRect.Max.y - 1.0f));
+
+					// We bound selection box to the table. In the future,
+					// This will solve some issues with handling mouse events.
+					InputManager::SetMouseSelectionEnd(mouseEnd);
+
+					const auto mouseDragStart = InputManager::GetMouseSelectionStart();
+					const auto mouseDragEnd = InputManager::GetMouseSelectionEnd();
+
+					ImGui::GetWindowDrawList()->AddRect(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 200));
+					ImGui::GetWindowDrawList()->AddRectFilled(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 10));
 				}
 			}
 

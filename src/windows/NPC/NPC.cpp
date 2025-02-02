@@ -97,12 +97,11 @@ namespace Modex
 		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
 		b_ClickToPlace = true;
-		b_ClickToFavorite = false;
+		// b_ClickToFavorite = false;
 		clickToPlaceCount = 1;
 
 		_itemHovered = false;
 		_itemSelected = false;
-		selectedNPC = nullptr;
 		hoveredNPC = nullptr;
 
 		primaryFilter = RE::FormType::None;

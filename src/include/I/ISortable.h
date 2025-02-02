@@ -89,10 +89,10 @@ namespace Modex
 			int delta = 0;
 
 			switch (ID) {
-			case BaseColumn::ID::Favorite:
-				delta = (lhs->favorite < rhs->favorite) ? -1 : (lhs->favorite > rhs->favorite) ? 1 :
-				                                                                                 0;
-				break;
+			// case BaseColumn::ID::Favorite:
+			// 	delta = (lhs->favorite < rhs->favorite) ? -1 : (lhs->favorite > rhs->favorite) ? 1 :
+			// 	                                                                                 0;
+			// 	break;
 			case BaseColumn::ID::EditorID:
 				delta = lhs->GetEditorIDView().compare(rhs->GetEditorIDView());
 				break;

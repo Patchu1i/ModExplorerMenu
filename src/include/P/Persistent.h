@@ -1,9 +1,11 @@
 #pragma once
 
+#include "include/D/DataTypes.h"
 #include <PCH.h>
 
 namespace Modex
 {
+	typedef std::unordered_map<std::string, Kit> Collection;
 
 	// TODO: Write a proper class with some helper functions to aid in code readability, jesus.
 	class PersistentData
@@ -15,155 +17,42 @@ namespace Modex
 			return &singleton;
 		}
 
-		static inline void RemoveModFromBlacklist(const RE::TESFile* mod)
+		void LoadBlacklist();
+		void AddPluginToBlacklist(const RE::TESFile* mod);
+		void RemovePluginFromBlacklist(const RE::TESFile* mod);
+
+		void LoadKit(const std::string& a_name);
+		void LoadAllKits();
+		void SaveKitToJSON(const Kit& a_kit);
+		void DeleteKit(const Kit& a_kit);
+		void DeleteKit(const std::string& a_name);
+		Kit RenameKit(Kit& a_kit, const std::string& a_new_name);
+		Kit CopyKit(const Kit& a_kit);
+
+		static inline std::unordered_set<const RE::TESFile*>& GetBlacklist()
 		{
-			nlohmann::json json;
-
-			// Read existing data from the file, catch empty file.
-			std::ifstream inputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-			if (inputFile.is_open()) {
-				try {
-					if (inputFile.peek() != std::ifstream::traits_type::eof()) {
-						inputFile >> json;
-					}
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error reading blacklist file during Update: ") + e.what());
-				}
-				inputFile.close();
-			} else {
-				// If the file does not exist, create it
-				std::ofstream outputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-				if (!outputFile.is_open()) {
-					stl::report_and_fail("[JSON] Unable to create blacklist file for Favorites.");
-				}
-				outputFile.close();
-			}
-
-			if (json["Blacklist"].contains(mod->GetFilename().data())) {
-				json["Blacklist"].erase(mod->GetFilename().data());
-			}
-
-			if (m_blacklist.contains(mod)) {
-				m_blacklist.erase(mod);
-			}
-
-			// Write the updated JSON data back to the file
-			std::ofstream outputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-			if (outputFile.is_open()) {
-				try {
-					outputFile << json.dump(4);
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error writing blacklist file changes: ") + e.what());
-				}
-				outputFile.close();
-			} else {
-				stl::report_and_fail("[JSON] Unable to open blacklist file for writing.");
-			}
+			return GetSingleton()->m_blacklist;
 		}
 
-		static inline void AddModToBlacklist(const RE::TESFile* mod)
+		static inline Collection& GetLoadedKits()
 		{
-			nlohmann::json json;
-
-			// Read existing data from the file, catch empty file.
-			std::ifstream inputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-			if (inputFile.is_open()) {
-				try {
-					if (inputFile.peek() != std::ifstream::traits_type::eof()) {
-						inputFile >> json;
-					}
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error reading blacklist file during Update: ") + e.what());
-				}
-				inputFile.close();
-			} else {
-				// If the file does not exist, create it
-				std::ofstream outputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-				if (!outputFile.is_open()) {
-					stl::report_and_fail("[JSON] Unable to create blacklist file for Favorites.");
-				}
-				outputFile.close();
-			}
-
-			json["Blacklist"][mod->GetFilename().data()] = true;
-
-			if (!m_blacklist.contains(mod)) {
-				m_blacklist.insert(mod);
-			}
-
-			// Write the updated JSON data back to the file
-			std::ofstream outputFile(std::wstring(json_favorite_path) + L"blacklist.json");
-			if (outputFile.is_open()) {
-				try {
-					outputFile << json.dump(4);
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error writing blacklist file changes: ") + e.what());
-				}
-				outputFile.close();
-			} else {
-				stl::report_and_fail("[JSON] Unable to open blacklist file for writing.");
-			}
+			return GetSingleton()->m_kits;
 		}
 
-		// TODO: Is it a good idea to be dumping changes to the file every time a change is made?
-		template <class BaseObject>
-		static inline void UpdatePersistentData(BaseObject& obj)
+		static inline std::vector<std::string> GetLoadedKitNames()
 		{
-			nlohmann::json json;
-
-			// Read existing data from the file, catch empty file.
-			std::ifstream inputFile(std::wstring(json_favorite_path) + L"userdata.json");
-			if (inputFile.is_open()) {
-				try {
-					if (inputFile.peek() != std::ifstream::traits_type::eof()) {
-						inputFile >> json;
-					}
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error reading userdata file during Update: ") + e.what());
-				}
-				inputFile.close();
-			} else {
-				// If the file does not exist, create it
-				std::ofstream outputFile(std::wstring(json_favorite_path) + L"userdata.json");
-				if (!outputFile.is_open()) {
-					stl::report_and_fail("[JSON] Unable to create userdata file for Favorites.");
-				}
-				outputFile.close();
+			std::vector<std::string> names;
+			for (auto& [name, kit] : GetLoadedKits()) {
+				names.emplace_back(name);
 			}
-
-			if (obj->favorite) {
-				json["Favorite"][obj->GetPluginName()][obj->GetEditorID()] = true;
-			} else {
-				if (json["Favorite"].contains(obj->GetPluginName()) && json["Favorite"][obj->GetPluginName()].contains(obj->GetEditorID())) {
-					json["Favorite"][obj->GetPluginName()].erase(obj->GetEditorID());
-
-					// Purge empty filenames in JSON.
-					if (json["Favorite"][obj->GetPluginName()].empty()) {
-						json["Favorite"].erase(obj->GetPluginName());
-					}
-				}
-			}
-
-			// Write the updated JSON data back to the file
-			std::ofstream outputFile(std::wstring(json_favorite_path) + L"userdata.json");
-			if (outputFile.is_open()) {
-				try {
-					outputFile << json.dump(4);
-				} catch (const std::exception& e) {
-					stl::report_and_fail(std::string("[JSON] Error writing userdata file changes: ") + e.what());
-				}
-				outputFile.close();
-			} else {
-				stl::report_and_fail("[JSON] Unable to open userdata file for writing.");
-			}
+			return names;
 		}
 
-		static void LoadBlacklist();
-		static void LoadFromFile();
-		static std::unordered_set<const RE::TESFile*> m_blacklist;
-		static std::unordered_map<std::string, bool> m_favorites;
+	private:
+		std::unordered_set<const RE::TESFile*> m_blacklist;
+		Collection m_kits;
 
-		constexpr inline static const wchar_t* json_favorite_path = L"Data/Interface/Modex/User/";
+		const std::string json_user_path = "Data/Interface/Modex/User/";
 	};
 
 }

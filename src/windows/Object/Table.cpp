@@ -25,19 +25,19 @@ namespace Modex
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
-			if (!itemSelectionList.empty()) {
-				for (auto& object : itemSelectionList) {
-					object->favorite = !object->favorite;
-					PersistentData::GetSingleton()->UpdatePersistentData(object);
-				}
-			} else {
-				a_object.favorite = !a_object.favorite;
-				PersistentData::GetSingleton()->UpdatePersistentData(a_object);
-			}
+		// if (ImGui::Selectable(_T("GENERAL_ADD_FAVORITE"), false, flags)) {
+		// 	if (!itemSelectionList.empty()) {
+		// 		for (auto& object : itemSelectionList) {
+		// 			object->favorite = !object->favorite;
+		// 			// PersistentData::GetSingleton()->UpdatePersistentData(*object);
+		// 		}
+		// 	} else {
+		// 		a_object.favorite = !a_object.favorite;
+		// 		// PersistentData::GetSingleton()->UpdatePersistentData(a_object);
+		// 	}
 
-			ImGui::CloseCurrentPopup();
-		}
+		// 	ImGui::CloseCurrentPopup();
+		// }
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -73,214 +73,145 @@ namespace Modex
 		ImGui::PopStyleVar(1);
 	}
 
+	void ObjectWindow::UpdateLayoutSizes(float avail_width)
+	{
+		ItemSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 2.0f);
+		// Layout: when not stretching: allow extending into right-most spacing.
+		LayoutItemSpacing = ImGui::GetStyle().ItemSpacing.y;
+		LayoutHitSpacing = 0.0f;
+
+		avail_width += floorf(LayoutItemSpacing * 0.5f);
+
+		// Layout: calculate number of icon per line and number of lines
+		LayoutItemSize = ImVec2(floorf(ItemSize.x), floorf(ItemSize.y));
+		LayoutColumnCount = 1;
+		LayoutLineCount = ((int)objectList.size() + LayoutColumnCount - 1) / LayoutColumnCount;
+
+		LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
+		LayoutSelectableSpacing = std::max(floorf(LayoutItemSpacing) - LayoutHitSpacing, 0.0f);
+		LayoutOuterPadding = floorf(LayoutItemSpacing * 0.5f);
+	}
+
+	std::string GetIconType(RE::FormType a_type)
+	{
+		return ICON_LC_ALARM_CLOCK;
+	}
+
+	void ObjectWindow::DrawObject(const ObjectData& a_object, const ImVec2& pos)
+	{
+		const auto& style = Settings::GetSingleton()->GetStyle();
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+		ImVec2 box_min(pos.x - 1, pos.y - 1);
+		ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2);  // Dubious
+
+		bool is_item_select = selectionStorage.Contains(a_object.TableID);
+
+		const ImU32 bg_color = ImGui::ColorConvertFloat4ToU32(style.tableRowBg);
+		const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+		draw_list->AddRectFilled(box_min, box_max, bg_color);  // Background color
+
+		// Draw icon
+		const std::string icon_type = GetIconType(a_object.GetFormType());
+
+		ImVec2 icon_pos = ImVec2(box_min.x + LayoutOuterPadding, box_min.y + LayoutOuterPadding);
+		ImVec2 icon_size = ImVec2(LayoutItemSize.y - LayoutOuterPadding * 2, LayoutItemSize.y - LayoutOuterPadding * 2);
+		draw_list->AddText(icon_pos, text_color, icon_type.c_str());
+	}
+
 	// Draw the table of items
 	void ObjectWindow::ShowFormTable()
 	{
 		auto a_style = Settings::GetSingleton()->GetStyle();
 
-		auto results = std::string("Results (") + std::to_string(objectList.size()) + std::string(")");
-		ImGui::SeparatorText(results.c_str());
+		// auto results = std::string("Results (") + std::to_string(objectList.size()) + std::string(")");
+		// ImGui::SeparatorText(results.c_str());
 
-		auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
+		// auto rowBG = a_style.showTableRowBG ? ImGuiTableFlags_RowBg : 0;
 
-		ImVec2 tableSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, tableSize)) {
-			ImGui::TableSetupScrollFreeze(1, 1);
+		// ImVec2 tableSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+		// if (ImGui::BeginTable("##ObjectWindow::Table", columnList.GetTotalColumns(), Frame::TABLE_FLAGS | rowBG, tableSize)) {
+		if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-			for (auto& column : columnList.columns) {
-				ImGui::TableSetupColumn(column.name.c_str(), column.flags, column.width, column.key);
-			}
+			const float avail_width = ImGui::GetContentRegionAvail().x;
+			UpdateLayoutSizes(avail_width);
 
-			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+			// Rendering parameters
+			const ImU32 icon_type_overlay_colors[3] = { 0, IM_COL32(200, 70, 70, 255), IM_COL32(70, 170, 70, 255) };
+			const ImU32 icon_bg_color = ImGui::GetColorU32(IM_COL32(35, 35, 35, 220));
+			const ImVec2 icon_type_overlay_size = ImVec2(4.0f, 4.0f);
+			const bool display_label = (LayoutItemSize.x >= ImGui::CalcTextSize("999").x);
 
-			int numOfColumn = 0;
-			for (auto& column : columnList.columns) {
-				ImGui::TableSetColumnIndex(numOfColumn);
-				ImGui::PushID(column.key + 10);
-				ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-				ImGui::TableHeader(column.name.c_str());
-				ImGui::PopID();
+			// Calculate and store start position.
+			ImVec2 start_pos = ImGui::GetCursorScreenPos();
+			start_pos = ImVec2(start_pos.x, start_pos.y);
+			ImGui::SetCursorScreenPos(start_pos);
 
-				numOfColumn++;
-			}
+			const int ITEMS_COUNT = static_cast<int>(objectList.size());
+			ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_BoxSelect1d | ImGuiMultiSelectFlags_ScopeWindow;
+			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(flags, selectionStorage.Size, ITEMS_COUNT);
+			selectionStorage.UserData = (void*)&objectList;
+			selectionStorage.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self, int idx) {
+				std::vector<ObjectData*>* p_items = (std::vector<ObjectData*>*)self->UserData;
+				return (*p_items)[idx]->TableID;
+			};  // Index -> ID
 
-			if (dirty) {
-				ImGui::TableGetSortSpecs()->SpecsDirty = true;
-			}
+			selectionStorage.ApplyRequests(ms_io);
 
-			// Sort our data if sort specs have been changed!
-			if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs()) {
-				if (sort_specs->SpecsDirty) {
-					SortColumnsWithSpecs<std::vector<ObjectData*>, ObjectData>(objectList, sort_specs);
-					sort_specs->SpecsDirty = false;
-					dirty = false;
-				}
-			}
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(LayoutSelectableSpacing, LayoutSelectableSpacing));
 
+			const int column_count = LayoutColumnCount;
 			ImGuiListClipper clipper;
-			ImGuiContext& g = *ImGui::GetCurrentContext();
-			ImGuiTable* table = g.CurrentTable;
 
-			int numOfRow = 0;
-			clipper.Begin(static_cast<int>(objectList.size()));
+			clipper.Begin(ITEMS_COUNT);
+			if (ms_io->RangeSrcItem != -1)
+				clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem);  // Ensure RangeSrc item is not clipped.
 			while (clipper.Step()) {
-				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-					auto& obj = objectList[row];
+				const int item_start = clipper.DisplayStart;
+				const int item_end = clipper.DisplayEnd;
 
-					numOfRow++;
-					auto table_id = std::string("##ObjectWindow::TableIndex-") + std::to_string(numOfRow);
-					ImGui::PushID(table_id.c_str());
+				for (int line_idx = item_start; line_idx < item_end; line_idx++) {
+					const int item_min_idx_for_current_line = line_idx * column_count;
+					const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, static_cast<int>(objectList.size()));
 
-					ImGui::TableNextRow();
-					ImGui::TableNextColumn();
+					for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx) {
+						auto& obj = objectList[item_idx];
+						ImGui::PushID((int)obj->TableID);
 
-					// Overwrite color to hide ugly imgui backdrop on image.
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+						// Position item
+						ImVec2 pos = ImVec2(start_pos.x, start_pos.y + line_idx * LayoutItemStep.y);
+						ImGui::SetCursorScreenPos(pos);
 
-					if (ImGui::DisabledCheckbox("##ObjectWindow::FavoriteCheckbox", b_ClickToFavorite, obj->favorite)) {
-						PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(obj);
-					}
+						ImGui::SetNextItemSelectionUserData(item_idx);
+						bool is_item_selected = selectionStorage.Contains(obj->TableID);
+						bool is_item_visible = ImGui::IsRectVisible(LayoutItemSize);
+						ImGui::Selectable("", is_item_selected, ImGuiSelectableFlags_None, LayoutItemSize);
 
-					ImGui::PopStyleColor(3);
-					ImGui::PopStyleVar(2);
+						if (ImGui::IsItemToggledSelection())
+							is_item_selected = !is_item_selected;
 
-					//	Plugin
-					ImGui::TableNextColumn();
-					ImGui::Text(obj->GetPluginName().data());
-
-					// Type
-					ImGui::TableNextColumn();
-					ImGui::Text(obj->GetTypeName().data());
-
-					// FormID
-					ImGui::TableNextColumn();
-					ImGui::Text(obj->GetFormID().data());
-
-					// EditorID
-					ImGui::TableNextColumn();
-					ImGui::Text(obj->GetEditorID().data());
-
-					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
-					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.
-					ImRect row_rect(
-						table->WorkRect.Min.x,
-						table->RowPosY1,
-						table->WorkRect.Max.x,
-						table->RowPosY2);
-					row_rect.ClipWith(table->BgClipRect);
-
-					bool bHover =
-						ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) &&
-						ImGui::IsWindowHovered(ImGuiHoveredFlags_None) &&
-						!ImGui::IsAnyItemHovered();  // optional
-
-					// Get the rows which the selection box is hovering over.
-					// Two conditions based on inverted selection box.
-					if (isMouseSelecting) {
-						if (mouseDragEnd.y < mouseDragStart.y) {
-							if (row_rect.Overlaps(ImRect(mouseDragEnd, mouseDragStart))) {
-								if (ImGui::IsMouseReleased(0)) {
-									itemSelectionList.insert(obj);
-								}
-							}
-						} else if (row_rect.Overlaps(ImRect(mouseDragStart, mouseDragEnd))) {
-							if (ImGui::IsMouseReleased(0)) {
-								itemSelectionList.insert(obj);
-							}
+						if (is_item_visible) {
+							DrawObject(*obj, pos);
 						}
+
+						ImGui::PopID();
 					}
-
-					if (itemSelectionList.contains(obj)) {
-						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border, 0.65f);
-					}
-
-					if (bHover || selectedObject == obj) {
-						table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
-						hoveredObject = obj;
-
-						if (ImGui::IsMouseClicked(1, true)) {
-							ImGui::OpenPopup("ShowObjectContextMenu");
-						}
-					}
-
-					if (ImGui::BeginPopup("ShowObjectContextMenu")) {
-						ShowObjectListContextMenu(*obj);
-						ImGui::EndPopup();
-					}
-
-					ImGui::PopID();
 				}
 			}
+			clipper.End();
 
-			// TODO: This behavior quickly got a little bigger than anticipated.
-			// Should move this system into its own class or interface for table view
+			ImGui::PopStyleVar();
 
-			const bool is_popup_open = ImGui::IsPopupOpen("ShowObjectContextMenu", ImGuiPopupFlags_AnyPopup);
-
-			if (!is_popup_open) {
-				const ImVec2 mousePos = ImGui::GetMousePos();
-				const float outer_width = table->OuterRect.Max.x - ImGui::GetStyle().ScrollbarSize;
-				const float outer_height = table->OuterRect.Max.y - ImGui::GetStyle().ScrollbarSize;
-
-				if (ImGui::IsMouseDragging(0, 5.0f) && isMouseSelecting == MOUSE_STATE::DRAG_NONE) {
-					if ((mousePos.x > outer_width || mousePos.x < table->OuterRect.Min.x) ||
-						(mousePos.y > outer_height || mousePos.y < table->OuterRect.Min.y)) {
-						isMouseSelecting = MOUSE_STATE::DRAG_IGNORE;
-					} else {
-						isMouseSelecting = MOUSE_STATE::DRAG_SELECT;
-						itemSelectionList.clear();
-						mouseDragStart = ImGui::GetMousePos();
-					}
-				} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-					if ((mousePos.x < outer_width && mousePos.x > table->OuterRect.Min.x) &&
-						(mousePos.y < outer_height && mousePos.y > table->OuterRect.Min.y)) {
-						if (ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) {
-							if (itemSelectionList.contains(hoveredObject)) {
-								itemSelectionList.erase(hoveredObject);
-							} else {
-								itemSelectionList.insert(hoveredObject);
-							}
-						} else {
-							itemSelectionList.clear();
-							itemSelectionList.insert(hoveredObject);
-						}
-
-						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-							if (b_ClickToPlace) {
-								Console::PlaceAtMe(hoveredObject->GetFormID().c_str(), clickToPlaceCount);
-								Console::StartProcessThread();
-							} else if (b_ClickToFavorite) {
-								hoveredObject->favorite = !hoveredObject->favorite;
-								PersistentData::GetSingleton()->UpdatePersistentData<ObjectData*>(hoveredObject);
-							}
-						}
-					}
-				}
-
-				if (isMouseSelecting == MOUSE_STATE::DRAG_SELECT) {
-					if (ImGui::IsMouseDragging(0, 5.0f)) {
-						mouseDragEnd = ImGui::GetMousePos();
-						ImGui::GetWindowDrawList()->AddRect(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 200));
-						ImGui::GetWindowDrawList()->AddRectFilled(mouseDragStart, mouseDragEnd, IM_COL32(255, 255, 255, 10));
-					} else {
-						isMouseSelecting = MOUSE_STATE::DRAG_NONE;
-						mouseDragStart = ImVec2(0.0f, 0.0f);
-						mouseDragEnd = ImVec2(0.0f, 0.0f);
-					}
-				}
-
-				if (ImGui::IsMouseReleased(0)) {
-					isMouseSelecting = MOUSE_STATE::DRAG_NONE;
-					mouseDragStart = ImVec2(0.0f, 0.0f);
-					mouseDragEnd = ImVec2(0.0f, 0.0f);
-				}
+			if (ImGui::BeginPopupContextWindow()) {
+				ShowObjectListContextMenu(*objectList[ms_io->RangeSrcItem]);
 			}
 
-			ImGui::EndTable();
+			ms_io = ImGui::EndMultiSelect();
+			selectionStorage.ApplyRequests(ms_io);
+
+			// ImGui::EndTable();
+			ImGui::EndChild();
 		}
 	}
 }

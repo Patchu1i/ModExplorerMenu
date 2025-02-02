@@ -9,7 +9,6 @@ namespace Modex
 	void ObjectWindow::ApplyFilters()
 	{
 		objectList.clear();
-		selectedObject = nullptr;
 
 		auto& cachedObjectList = Data::GetSingleton()->GetObjectList();
 
@@ -57,7 +56,7 @@ namespace Modex
 
 			// Ensure Object's from Blacklisted Plugins aren't shown.
 			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(obj.GetPlugin())) {
+				if (PersistentData::GetBlacklist().contains(obj.GetPlugin())) {
 					continue;
 				}
 			}
@@ -69,6 +68,7 @@ namespace Modex
 			}
 
 			if (compareString.find(inputString) != std::string::npos) {
+				obj.TableID = static_cast<ImGuiID>(objectList.size());
 				objectList.push_back(&obj);
 				continue;
 			}
@@ -79,6 +79,7 @@ namespace Modex
 
 	void ObjectWindow::Refresh()
 	{
+		selectionStorage.Clear();
 		itemSelectionList.clear();
 		ApplyFilters();
 	}
@@ -169,7 +170,7 @@ namespace Modex
 				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
 			} else {
 				for (auto& mod : modList) {
-					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+					if (PersistentData::GetBlacklist().contains(mod)) {
 						continue;
 					}
 

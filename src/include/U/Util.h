@@ -35,14 +35,15 @@ namespace ImGui
 		const ImGuiStyle& style = g.Style;
 		const ImGuiID id = window->GetID(a_text);
 		const ImVec2 label_size = ImGui::CalcTextSize(a_text, NULL, true);
-		const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+		// const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+		ImU32 image_color = a_selected ? ImGui::GetColorU32(ImGuiCol_Text, 1.0f) : ImGui::GetColorU32(ImGuiCol_Text, 0.25f);
 
 		// Set gradient colors manually for now...
-		// auto col_button = a_selected ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImGui::GetStyle().Colors[ImGuiCol_FrameBg];
-		// auto col_button = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f));
 		auto alpha = a_selected ? 1.0f : 0.5f;
+		auto col_a = a_selected ? ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f * alpha)) :
+		                          ImGui::GetColorU32(ImVec4(0.22f * 0.6f, 0.22f * 0.6f, 0.22f * 0.6f, 0.5f * alpha));
 
-		auto col_a = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f * alpha));
+		// auto col_a = ImGui::GetColorU32(ImVec4(0.22f, 0.22f, 0.22f, 0.5f * alpha));
 		auto col_b = ImGui::GetColorU32(ImVec4(0.22f * 0.6f, 0.22f * 0.6f, 0.22f * 0.6f, 0.5f * alpha));
 
 		ImU32 bg_color_1 = col_a;
@@ -90,6 +91,8 @@ namespace ImGui
 			float h_increase = (held || hovered) ? 0.02f : 0.02f;
 			float v_increase = (held || hovered) ? 10.0f : 0.07f;
 
+			image_color = ImGui::GetColorU32(ImGuiCol_Text, 1.0f);
+
 			ImVec4 bg1f = ImGui::ColorConvertU32ToFloat4(bg_color_1);
 			ImGui::ColorConvertRGBtoHSV(bg1f.x, bg1f.y, bg1f.z, bg1f.x, bg1f.y, bg1f.z);
 			bg1f.x = ImMin(bg1f.x + h_increase, 1.0f);
@@ -112,21 +115,14 @@ namespace ImGui
 		// Calculate image bounding box, relative to the underlying button.
 		const ImVec2 image_size = ImVec2((float)a_imageSize.x * 0.80f, (float)a_imageSize.y * 0.80f);
 		const float image_pos_height = bb.Min.y + (bb.GetHeight() - image_size.y) * 0.5f;  // always centered.
-		const float image_pos_width_min = bb.Min.x + (image_size.x * 0.5f) + style.FramePadding.x;
+		const float image_pos_width_min = bb.Min.x + (image_size.x * 0.5f) + 6.0f;         // 6.0f since Icon is fixed padding.
 		const float image_pos_width_max = image_pos_width_min + image_size.x;
 		const ImVec2 image_pos_min = ImVec2(image_pos_width_min, image_pos_height);
 		const ImVec2 image_pos_max = ImVec2(image_pos_width_max, image_pos_height + image_size.y);
 
 		// Render
-		int vert_start_idx = window->DrawList->VtxBuffer.Size;
-		window->DrawList->AddImage(
-			a_texture,
-			image_pos_min,
-			image_pos_max,
-			ImVec2(0, 0),
-			ImVec2(1, 1),
-			text_color);
 
+		int vert_start_idx = window->DrawList->VtxBuffer.Size;
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
 		int vert_end_idx = window->DrawList->VtxBuffer.Size;
 		if (is_gradient)
@@ -136,12 +132,20 @@ namespace ImGui
 			window->DrawList->AddRect(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_Border),
 				g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
 
+		window->DrawList->AddImage(
+			a_texture,
+			image_pos_min,
+			image_pos_max,
+			ImVec2(0, 0),
+			ImVec2(1, 1),
+			image_color);
+
 		// Custom behavior based on whether the button is in an expanded state or not.
 		// This is determined externally by the container this button is in.
 		// (If the size of the button > 4x the size of the image, it's considered expanded.)
 
 		if (expanded) {
-			ImGui::PushStyleColor(ImGuiCol_Text, text_color);
+			ImGui::PushStyleColor(ImGuiCol_Text, image_color);
 
 			ImGui::RenderTextClipped(ImVec2(image_pos_width_min + image_size.x + style.FramePadding.x,
 										 bb.Min.y + style.FramePadding.y),
@@ -208,7 +212,7 @@ namespace ImGui
 		}
 	}
 
-	static inline void SubCategoryHeader(const char* label, ImVec4 color = ImVec4(0.22f, 0.22f, 0.22f, 0.5f))
+	static inline void SubCategoryHeader(const char* label, ImVec4 color = ImVec4(0.22f, 0.22f, 0.22f, 0.9f))
 	{
 		ImGui::PushStyleColor(ImGuiCol_Button, color);
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
@@ -575,6 +579,15 @@ namespace ImGui
 
 namespace Utils
 {
+	inline static float Pulse(float a_time, float a_frequency, float a_amplitude)
+	{
+		return a_amplitude * sin(a_time * a_frequency);
+	}
+
+	inline static float PulseMinMax(float a_time, float a_frequency, float a_amplitude, float a_min, float a_max)
+	{
+		return a_min + (a_max - a_min) * (1.0f + Pulse(a_time, a_frequency, a_amplitude)) * 0.5f;
+	}
 
 	inline static std::vector<std::string> GetSkillNames()
 	{

@@ -6,6 +6,7 @@
 #include "include/G/Graphic.h"
 #include "include/I/ISearch.h"
 #include "include/I/ISortable.h"
+#include "include/I/InputManager.h"
 
 // clang-format off
 
@@ -32,6 +33,9 @@ namespace Modex
 		void 					ApplyFilters();
 		void 					ShowFormTable();
 		void 					ShowActions();
+		void					ShowKitBar();
+		void					ShowKitTable();
+		void					ShowKitPluginView();
 		void 					ShowSearch();
 		void 					ShowItemListContextMenu(ItemData& a_item);
 
@@ -54,7 +58,7 @@ namespace Modex
 		// Local State Variables.
 		bool 					b_AddToInventory;
 		bool 					b_PlaceOnGround;
-		bool 					b_AddToFavorites;
+		bool					b_AddToKit;
 		int 					clickToAddCount;
 
 		RE::FormType 			primaryFilter;
@@ -62,26 +66,16 @@ namespace Modex
 		AddItemColumns 			columnList;
 		std::vector<ItemData*> 	itemList;
 
-
-		// Mouse Draggin
-		enum MOUSE_STATE
-		{
-			DRAG_IGNORE,
-			DRAG_SELECT,
-			DRAG_NONE
-		};
-
 		std::unordered_set<ItemData*> 	itemSelectionList;
-		MOUSE_STATE						isMouseSelecting;
-		ImVec2							mouseDragStart;
-		ImVec2							mouseDragEnd;
+		ItemData*						lastItemSelected;
 
 		// Menu State Variables.
 		enum class Viewport
 		{
-			TableView,
+			TableView = 0,
 			BlacklistView,
-			SettingsView // TODO.
+			KitView,
+			Count
 		};
 
 		Viewport 				activeViewport;
@@ -101,8 +95,36 @@ namespace Modex
 			{ BaseColumn::ID::FormID, "Form ID" }
 		};
 
-		// ISearch Interface
+		// ISearch Plugin Interface
 		char 					modSearchBuffer[256];
 		std::string 			selectedMod;
+
+		// Kit Implementation (WIP)
+		char					kitSearchBuffer[256];
+		char					newKitName[256];
+		std::string				selectedKit;
+		std::unordered_set<std::shared_ptr<KitItem>> kitSelectionList;
+
+		enum class DRAG_TARGET
+		{
+			RemoveFromKit,
+			ReplaceSearch,
+			AddToKit
+		};
+
+		bool						showKitsForPlugin;
+		Kit*						kitHoveredInTableView; // gross
+		std::shared_ptr<KitItem>	kitPreview;
+		std::unordered_set<Kit*> 	kitsFound;
+		KitColumns 					kitColumnList;
+		bool						wasMouseInBounds; // InputManager?
+		bool						wasMouseInBoundsKit;
+		void						ShowDragTarget(DRAG_TARGET a_target);
+		void						RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item);
+		void						AddItemToKit(const std::shared_ptr<KitItem>& a_item);
+		void						ShowKitItemContext(const std::shared_ptr<KitItem>& a_item);
+		std::shared_ptr<KitItem>	CreateKitItem(ItemData* a_item);
+		void						AddKitToInventory(const Kit& a_kit);
+		void						PlaceKitAtMe(const Kit& a_kit);
 	};
 }

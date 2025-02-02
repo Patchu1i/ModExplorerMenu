@@ -16,28 +16,29 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		// ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("Behavior"));
 
 		// Add To Inventory Toggle.
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "AIM_ADD"), b_AddToInventory, ImVec2(button_width, button_height))) {
+		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_CIRCLE_PLUS, "AIM_ADD"), b_AddToInventory, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
-			b_AddToFavorites = false;
+			// b_AddToFavorites = false;
 			b_AddToInventory = true;
 		};
 
 		// Place On Ground Toggle.
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_GRASS, "AIM_PLACE"), b_PlaceOnGround, ImVec2(button_width, button_height))) {
+		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "AIM_PLACE"), b_PlaceOnGround, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
-			b_AddToFavorites = false;
+			// b_AddToFavorites = false;
 			b_PlaceOnGround = true;
 		}
 
 		// Add To Favorites Toggle.
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), b_AddToFavorites, ImVec2(button_width, button_height))) {
-			b_AddToInventory = false;
-			b_PlaceOnGround = false;
-			b_AddToFavorites = true;
-		}
+		// if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), b_AddToFavorites, ImVec2(button_width, button_height))) {
+		// 	b_AddToInventory = false;
+		// 	b_PlaceOnGround = false;
+		// 	// b_AddToFavorites = true;
+		// }
 
 		if (b_AddToInventory || b_PlaceOnGround) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -48,7 +49,8 @@ namespace Modex
 		}
 
 		ImGui::Spacing();
-		ImGui::SubCategoryHeader(_T("Actions"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		// ImGui::SubCategoryHeader(_T("Actions"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("Actions"));
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
@@ -127,16 +129,25 @@ namespace Modex
 			}
 		}
 
-		// Show Favorites
-		if (ImGui::GradientButton(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
-			this->selectedMod = "Favorite";
-			ApplyFilters();
+		if (ImGui::GradientButton("Reset Search", ImVec2(button_width, 0.0f))) {
+			ImFormatString(inputBuffer, IM_ARRAYSIZE(inputBuffer), "");
+			ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
+			selectedMod = "All Mods";
+			primaryFilter = RE::FormType::None;
+			secondaryFilter = "All";
+			Refresh();
+		}
+
+		bool plugin_view_visible = showKitsForPlugin && selectedMod != _T("All Mods");
+		if (ImGui::GradientSelectableEX(_T("KIT_SHOW_IN_PLUGIN_VIEW"), plugin_view_visible, ImVec2(button_width, button_height))) {
+			showKitsForPlugin = !showKitsForPlugin;
 		}
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
 		ImGui::Spacing();
-		ImGui::SubCategoryHeader(_T("Preview"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		// ImGui::SubCategoryHeader(_T("Preview"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("Preview"));
 
 		ShowItemPreview<ItemData>(itemPreview);
 

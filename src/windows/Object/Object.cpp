@@ -103,13 +103,12 @@ namespace Modex
 	void ObjectWindow::Init()
 	{
 		b_ClickToPlace = true;
-		b_ClickToFavorite = false;
+		// b_ClickToFavorite = false;
 		clickToPlaceCount = 1;
 
 		_itemHovered = false;
 		_itemSelected = false;
 		hoveredObject = nullptr;
-		selectedObject = nullptr;
 
 		primaryFilter = RE::FormType::None;
 		columnList = ObjectColumns();

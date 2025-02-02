@@ -55,7 +55,7 @@ namespace Modex
 
 			// Ensure Items from Blacklisted Plugins aren't shown.
 			if (selectedMod == "All Mods") {
-				if (PersistentData::GetSingleton()->m_blacklist.contains(item.GetPlugin())) {
+				if (PersistentData::GetBlacklist().contains(item.GetPlugin())) {
 					continue;
 				}
 			}
@@ -112,6 +112,7 @@ namespace Modex
 	void AddItemWindow::Refresh()
 	{
 		itemSelectionList.clear();
+		kitsFound.clear();
 		ApplyFilters();
 	}
 
@@ -119,8 +120,11 @@ namespace Modex
 	void AddItemWindow::ShowSearch()
 	{
 		auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
-		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
+		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 2.0f - filterWidth;
 		auto totalWidth = inputTextWidth + filterWidth + 2.0f;
+
+		ImGui::BeginColumns("##AddItemWindow::SearchColumns", 2, ImGuiOldColumnFlags_NoBorder);
+		ImGui::SetColumnWidth(0, totalWidth + ImGui::GetStyle().ItemSpacing.x);
 
 		// Search bar for compare string.
 		ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
@@ -274,7 +278,7 @@ namespace Modex
 				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
 			} else {
 				for (auto& mod : modList) {
-					if (PersistentData::GetSingleton()->m_blacklist.contains(mod)) {
+					if (PersistentData::GetBlacklist().contains(mod)) {
 						continue;
 					}
 
@@ -295,5 +299,29 @@ namespace Modex
 
 			Refresh();
 		}
+
+		ImGui::NextColumn();
+
+		ImGui::SubCategoryHeader(_T("GENERAL_TOTAL_HEADER"));
+
+		const float maxWidth = ImGui::GetContentRegionAvail().x;
+		const auto InlineText = [maxWidth](const char* label, const char* text) {
+			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x);
+			ImGui::Text(label);
+			ImGui::SameLine(width);
+			ImGui::Text(text);
+		};
+
+		InlineText(_TICONM(ICON_LC_PACKAGE_PLUS, "GENERAL_TOTAL_PLUGINS", ":"), std::to_string(modListVector.size()).c_str());
+		InlineText(_TICONM(ICON_LC_PACKAGE_SEARCH, "GENERAL_TOTAL_BLACKLIST", ":"), std::to_string(PersistentData::GetBlacklist().size()).c_str());
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		InlineText(_TICONM(ICON_LC_SEARCH, "Search Results", ":"), std::to_string(itemList.size()).c_str());
+		const size_t hidden_items = Data::GetSingleton()->GetAddItemList().size() - itemList.size();
+		InlineText(_TICONM(ICON_LC_EYE_OFF, "GENERAL_TOTAL_HIDDEN", ":"), std::to_string(hidden_items).c_str());
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		InlineText(_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"), std::to_string(PersistentData::GetLoadedKits().size()).c_str());
+		InlineText(_TICONM(ICON_LC_PACKAGE_OPEN, "GENERAL_KITS_IN_PLUGIN", ":"), std::to_string(kitsFound.size()).c_str());
+
+		ImGui::EndColumns();
 	}
 }

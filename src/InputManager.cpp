@@ -29,6 +29,14 @@ namespace Modex
 		UpdateSettings();
 
 		captureInput = false;
+
+		mouseState = MOUSE_STATE::kIdle;
+		mouseSelectionStart = ImVec2(0.0f, 0.0f);
+		mouseSelectionEnd = ImVec2(0.0f, 0.0f);
+
+		mouseKitState = MOUSE_STATE::kIdle;
+		mouseKitSelectionStart = ImVec2(0.0f, 0.0f);
+		mouseKitSelectionEnd = ImVec2(0.0f, 0.0f);
 	}
 
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)
@@ -184,18 +192,18 @@ namespace Modex
 					case RE::INPUT_DEVICE::kKeyboard:
 						{
 							if (scanCode == 0x1 && buttonEvent->IsDown()) {
-								if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
-									io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
-								} else {
-									Menu::GetSingleton()->Close();
-								}
+								// if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
+								// io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
+								// } else {
+								Menu::GetSingleton()->Close();
+								// }
 
 							} else if (scanCode == showMenuKey && buttonEvent->IsDown()) {
 								if (showMenuModifier == 0) {
-									if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
-										io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
-										break;
-									}
+									// if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
+									// io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
+									// break;
+									// }
 
 									Menu::GetSingleton()->Toggle();
 								} else {

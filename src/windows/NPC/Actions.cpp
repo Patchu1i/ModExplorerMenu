@@ -17,15 +17,8 @@ namespace Modex
 		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 		// Click To Place Toggle
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HAND, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
-			b_ClickToFavorite = false;
+		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
 			b_ClickToPlace = true;
-		}
-
-		// Click To Favorite Toggle
-		if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_SPAWNED_NPC, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
-			b_ClickToPlace = false;
-			b_ClickToFavorite = true;
 		}
 
 		if (b_ClickToPlace) {
@@ -44,8 +37,16 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		if (ImGui::GradientButton(_T("NPC_PLACE_SELECTED"), ImVec2(button_width, 0))) {
-			if (selectedNPC != nullptr) {
-				Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
+			// if (selectedNPC != nullptr) {
+			// 	Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
+			// 	Console::StartProcessThread();
+			// }
+
+			if (!itemSelectionList.empty()) {
+				for (auto& npc : itemSelectionList) {
+					Console::PlaceAtMe(npc->GetFormID(), clickToPlaceCount);
+				}
+
 				Console::StartProcessThread();
 			}
 		}
@@ -70,13 +71,11 @@ namespace Modex
 			}
 		});
 
-		if (ImGui::GradientButton(_T("GENERAL_GOTO_FAVORITE"), ImVec2(button_width, 0))) {
-			this->selectedMod = "Favorite";
-			ApplyFilters();
-		}
 		if (ImGui::GradientButton(_T("NPC_UPDATE_REFERENCES"), ImVec2(button_width, 0))) {
 			Data::GetSingleton()->CacheNPCRefIds();
 		}
+
+		const auto& selectedNPC = itemSelectionList.empty() ? nullptr : *itemSelectionList.begin();
 
 		if (selectedNPC != nullptr || hoveredNPC != nullptr) {
 			if ((selectedNPC != nullptr && hoveredNPC == nullptr && selectedNPC->refID != 0) ||

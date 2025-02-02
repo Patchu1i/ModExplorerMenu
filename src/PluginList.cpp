@@ -196,7 +196,7 @@ namespace Modex
 	{
 		std::vector<const RE::TESFile*> masterList = GetModulePluginListSorted(a_primaryFilter, a_sortType);
 		std::vector<std::string> modList;
-		const auto& blacklist = PersistentData::GetSingleton()->m_blacklist;
+		const auto& blacklist = PersistentData::GetBlacklist();
 
 		//for (auto& modName : _modListSorted) {
 		for (auto& mod : masterList) {

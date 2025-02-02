@@ -44,6 +44,7 @@ namespace Modex
 			ImGui::Text("%d", value);
 		};
 
+		// TODO: Really need to abstract this out.
 		const auto InlineText = [maxWidth](const char* label, const char* text) {
 			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x);
 			ImGui::Text(label);
@@ -122,14 +123,14 @@ namespace Modex
 
 				if (armorRating == 0) {
 					// InlineText("Armor Rating:", "None");
-					InlineText(_TICONM(ICON_RPG_ARMOR, "Rating", ":"), _T("None"));
+					InlineText(_TICONM(ICON_LC_SHIELD, "Rating", ":"), _T("None"));
 				} else {
 					// InlineBar("Armor Rating:", armorRating, armorRatingMax);
-					InlineBar(_TICONM(ICON_RPG_ARMOR, "Rating", ":"), armorRating, armorRatingMax);
+					InlineBar(_TICONM(ICON_LC_SHIELD, "Rating", ":"), armorRating, armorRatingMax);
 				}
 
-				InlineText(_TICONM(ICON_RPG_ARMOR, "Type", ":"), _T(armorType));
-				InlineTextMulti(_TICONM(ICON_RPG_ARMOR, "Slot", ":"), equipSlots);
+				InlineText(_TICONM(ICON_LC_TYPE, "Type", ":"), _T(armorType));
+				InlineTextMulti(_TICONM(ICON_LC_PUZZLE, "Slot", ":"), equipSlots);
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {
@@ -163,33 +164,33 @@ namespace Modex
 
 				if (weapon->IsStaff()) {
 					// InlineText("Base Damage:", "N/A");
-					InlineText(ICON_RPG_ATTACK, "N/A");
+					InlineText(ICON_LC_SWORD, "N/A");
 				} else if (weapon->IsBow() || weapon->IsCrossbow()) {
-					InlineBar(_TICONM(ICON_RPG_ATTACK, "DMG", ":"), damage, max_damage);
-					InlineBar(_TICONM(ICON_RPG_ATTACK, "Speed", ":"), speed, 1.5f);
-					InlineInt(_TICONM(ICON_RPG_ATTACK, "DPS", ":"), dps);
+					InlineBar(_TICONM(ICON_LC_SWORD, "DMG", ":"), damage, max_damage);
+					InlineBar(_TICONM(ICON_LC_SWORD, "Speed", ":"), speed, 1.5f);
+					InlineInt(_TICONM(ICON_LC_SWORD, "DPS", ":"), dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineInt(_TICONM(ICON_RPG_ATTACK, "DMG", ":"), critDamage);
-					InlineText(_TICONM(ICON_RPG_SKILL, "Skill", ":"), _T(std::to_string(skill).c_str()));
+					InlineInt(_TICONM(ICON_LC_SWORD, "DMG", ":"), critDamage);
+					InlineText(_TICONM(ICON_LC_SWORDS, "Skill", ":"), _T(std::to_string(skill).c_str()));
 				} else {
 					const float reach = (float)(weapon->weaponData.reach);
 					const float stagger = weapon->weaponData.staggerValue;
-					InlineBar(_TICONM(ICON_RPG_ATTACK, "DMG", ":"), damage, max_damage);
-					InlineBar(_TICONM(ICON_RPG_ATTACK, "Speed", ":"), speed, 1.5f);
-					InlineInt(_TICONM(ICON_RPG_ATTACK, "DPS", ":"), dps);
+					InlineBar(_TICONM(ICON_LC_SWORD, "DMG", ":"), damage, max_damage);
+					InlineBar(_TICONM(ICON_LC_SWORD, "Speed", ":"), speed, 1.5f);
+					InlineInt(_TICONM(ICON_LC_SWORD, "DPS", ":"), dps);
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-					InlineInt(_TICONM(ICON_RPG_ATTACK, "DMG", ":"), critDamage);
-					InlineText(_TICONM(ICON_RPG_SKILL, "Skill", ":"), _T(std::to_string(skill).c_str()));
-					InlineBar(_TICONM(ICON_RPG_WEAPON, "Reach", ":"), reach, 1.5f);
-					InlineBar(_TICONM(ICON_RPG_WEAPON, "Stagger", ":"), stagger, 2.0f);
+					InlineInt(_TICONM(ICON_LC_SWORD, "DMG", ":"), critDamage);
+					InlineText(_TICONM(ICON_LC_BOOK_USER, "Skill", ":"), _T(std::to_string(skill).c_str()));
+					InlineBar(_TICONM(ICON_LC_CHEVRONS_LEFT_RIGHT, "Reach", ":"), reach, 1.5f);
+					InlineBar(_TICONM(ICON_LC_SCALE, "Stagger", ":"), stagger, 2.0f);
 				}
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				InlineText(_TICONM(ICON_RPG_WEAPON_TYPE, "Type", ":"), _T(type));
+				InlineText(_TICONM(ICON_LC_BOOK_USER, "Type", ":"), _T(type));
 			}
 
-			InlineInt(ICON_RPG_WEIGHT " WT:", (int)a_object->GetWeight());
-			InlineInt(_TICONM(ICON_RPG_VALUE, "Value", ":"), a_object->GetValue());
+			InlineInt(ICON_LC_WEIGHT " WT:", (int)a_object->GetWeight());
+			InlineInt(_TICONM(ICON_LC_COINS, "Value", ":"), a_object->GetValue());
 
 			// Load Order Info Pane
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -217,11 +218,11 @@ namespace Modex
 			const std::string desc = Utils::GetItemDescription(a_object->GetForm(), g_DescriptionFrameworkInterface);
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX("Description"));
+				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Description")));
 				ImGui::Text(_T("Description"));
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::PushTextWrapPos(maxWidth);
-				ImGui::TextWrapped(desc.c_str());
+				ImGui::TextWrapped(desc.c_str());  // Archmage Robe Crash
 				ImGui::PopTextWrapPos();
 			}
 

@@ -13,7 +13,7 @@ namespace Modex
 	public:
 		enum ID
 		{
-			Favorite, 
+			// Favorite, 
             Plugin, 
             Type, 
             FormID, 
@@ -42,6 +42,7 @@ namespace Modex
             Level
 		};
 
+        // members
         std::string             name;
 		ImGuiTableColumnFlags   flags;
 
@@ -65,7 +66,7 @@ namespace Modex
 
         TeleportColumns()
         {
-            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ _T("Space"), flag, 0.0f, false, BaseColumn::ID::Space });
             columns.push_back({ _T("Zone"), flag, 0.0f, false, BaseColumn::ID::Zone });
@@ -81,7 +82,7 @@ namespace Modex
 
         ObjectColumns()
         {
-            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ _T("Type"), flag, 0.0f, false, BaseColumn::ID::Type });
             columns.push_back({ _T("Form ID"), flag, 0.0f, false, BaseColumn::ID::FormID });
@@ -96,7 +97,7 @@ namespace Modex
 
         NPCColumns()
         {
-            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ _T("Form ID"), flag, 0.0f, false, BaseColumn::ID::FormID });
             columns.push_back({ _T("Reference ID"), flag, 0.0f, false, BaseColumn::ID::ReferenceID });
@@ -120,7 +121,7 @@ namespace Modex
 
         AddItemColumns()
         {
-            columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
             columns.push_back({ _T("Type"), flag, 0.0f, false, BaseColumn::ID::Type});
             columns.push_back({ _T("Form ID"), flag, 0.0f, false, BaseColumn::ID::FormID});
@@ -137,4 +138,44 @@ namespace Modex
             columns.push_back({ _T("DPS"), flag, 0.0f, false, BaseColumn::ID::DPS});
         }
 	};
+
+    class KitColumns
+    {
+    public:
+        enum KitID
+        {
+            Plugin,
+            Name,
+            Amount,
+            EditorID,
+            Equipped
+        };
+
+        // members
+        std::string             name;
+		ImGuiTableColumnFlags   flags;
+
+		float                   width;
+		bool                    enabled; //unused?
+        KitID                   key;
+
+        // columns
+        std::vector<KitColumns> columns;
+        inline const int GetTotalColumns() const { return static_cast<int>(columns.size()); }
+
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
+        KitColumns(const std::string& name, ImGuiTableColumnFlags flags, float width, bool enabled, KitID key)
+            : name(name), flags(flags), width(width), enabled(enabled), key(key) {}
+
+        KitColumns()
+        {            
+            columns.push_back(KitColumns{ _T("Plugin"), flag, 0.0f, false, KitID::Plugin });
+            columns.push_back(KitColumns{ _T("Name"), flag, 0.0f, false, KitID::Name });
+            columns.push_back(KitColumns{ _T("Editor ID"), flag, 0.0f, false, KitID::EditorID });
+            columns.push_back(KitColumns{ _T("Equipped"), flag, 0.0f, false, KitID::Equipped });
+            columns.push_back(KitColumns{ _T("Amount"), flag, 0.0f, false, KitID::Amount });
+            
+        }
+    };
 }

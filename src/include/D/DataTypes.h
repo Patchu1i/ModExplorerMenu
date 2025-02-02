@@ -24,15 +24,15 @@ namespace Modex
 		const std::string 	formid;
 		const RE::FormID 	baseid;
 
+
 	public:
-		bool 				favorite;
 		RE::FormID 			refID;
+		ImGuiID 			TableID = 0;
 
 		// Initializer which stores key information about the object to avoid cache misses (?)
 		// during SortColumns and other heavy operations. Speeds up iterations and sorting.
-		BaseObject(RE::TESForm* form, bool favorite) :
+		BaseObject(RE::TESForm* form) :
 			TESForm{ form },
-			favorite{ favorite },
 			name{ form != nullptr ? ValidateTESName(form) : "NULL_ERR" },
 			editorid{ form != nullptr ? po3_GetEditorID(form->GetFormID()) : "NULL_ERR" },
 			formid{ form != nullptr ? fmt::format("{:08x}", form->GetFormID()) : "NULL_ERR" },
@@ -42,7 +42,6 @@ namespace Modex
 
 		// TODO: Derefencing char* without safety checks. Danger zone.
 		[[nodiscard]] inline RE::TESForm* GetForm() const { return TESForm; }
-		[[nodiscard]] inline const bool IsFavorite() const { return favorite; }
 		[[nodiscard]] inline const std::string GetFormID() const { return formid; }
 		[[nodiscard]] inline const RE::FormID GetBaseForm() const { return baseid; }
 		[[nodiscard]] inline const std::string GetEditorID() const { return editorid; }
@@ -115,15 +114,15 @@ namespace Modex
 	class ObjectData : public BaseObject
 	{
 	public:
-		ObjectData(RE::TESForm* form, bool favorite) :
-			BaseObject{ form, favorite } {}
+		ObjectData(RE::TESForm* form) :
+			BaseObject{ form } {}
 	};
 
 	class ItemData : public BaseObject
 	{
 	public:
-		ItemData(RE::TESForm* form, bool favorite) :
-			BaseObject{ form, favorite } {}
+		ItemData(RE::TESForm* form ) :
+			BaseObject{ form } {}
 
 		[[nodiscard]] inline float GetWeight() const
 		{
@@ -156,8 +155,8 @@ namespace Modex
 	class NPCData : public BaseObject
 	{
 	public:
-		NPCData(RE::TESForm* form, bool favorite) :
-			BaseObject{ form, favorite } {}
+		NPCData(RE::TESForm* form) :
+			BaseObject{ form } {}
 
 		[[nodiscard]] inline RE::TESNPC* GetTESNPC() const
 		{
@@ -227,7 +226,6 @@ namespace Modex
 		const std::string 	editorid;
 
 		const RE::TESFile* 	mod;
-		bool 				favorite;
 
 		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
 		[[nodiscard]] inline std::string_view GetPluginNameView() const { return filename; }
@@ -236,16 +234,53 @@ namespace Modex
 		[[nodiscard]] inline std::string_view GetCellName() const { return cellName; }
 		[[nodiscard]] inline std::string_view GetEditorIDView() const { return editorid; }
 		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }  // TODO: separate these.
-		[[nodiscard]] inline bool IsFavorite() const { return favorite; }
 
-		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, bool favorite, const RE::TESFile* mod = nullptr) :
+		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
 			filename(filename), 
 			space(space),
 			 zone(zone), 
 			 cellName(cellName), 
 			 editorid(editorid), 
-			 favorite(favorite), 
 			 mod(mod) 
 		{}
+	};
+
+	struct KitBase
+	{
+		std::string  	plugin;
+		std::string 	name;
+		std::string 	editorid;
+	};
+
+	struct KitItem : KitBase
+	{
+		int					amount;
+		bool				equipped;
+	};
+
+	struct KitPerk : KitBase
+	{
+		int					rank;
+	};
+
+	struct KitSpell : KitBase // unused
+	{
+	};
+
+	struct KitShout : KitBase // unused
+	{
+	};
+
+	class Kit
+	{
+	public:
+		std::string 				name; // unique?
+
+    	std::unordered_set<std::shared_ptr<KitItem>> items;
+    	// std::unordered_set<std::shared_ptr<KitPerk>> perks;
+    	// std::unordered_set<std::shared_ptr<KitSpell>> spells;
+    	// std::unordered_set<std::shared_ptr<KitShout>> shouts;
+
+		Kit(std::string name) : name(name) {}
 	};
 }

@@ -4,6 +4,7 @@
 #include "include/F/Frame.h"
 #include "include/I/ISearch.h"
 #include "include/I/ISortable.h"
+#include "include/I/InputManager.h"
 
 // clang-format off
 
@@ -45,13 +46,11 @@ namespace Modex
 
 		// Local State Variables.
 		bool 						b_ClickToPlace;
-		bool 						b_ClickToFavorite;
 		int 						clickToPlaceCount;
 
 		bool 						_itemHovered;
 		bool 						_itemSelected;
 		ObjectData* 				hoveredObject;
-		ObjectData* 				selectedObject;
 
 		RE::FormType 				primaryFilter;
 		ObjectColumns 				columnList;
@@ -65,10 +64,22 @@ namespace Modex
 			DRAG_NONE
 		};
 
+		void							DrawObject(const ObjectData& a_object, const ImVec2& pos);
+		void							UpdateLayoutSizes(float avail_width);
 		std::unordered_set<ObjectData*> itemSelectionList;
-		MOUSE_STATE						isMouseSelecting;
-		ImVec2							mouseDragStart;
-		ImVec2							mouseDragEnd;
+		bool 							wasMouseInBounds;
+		int 							lastItem;
+
+		float LayoutItemSpacing;
+		float LayoutSelectableSpacing;
+		float LayoutOuterPadding;
+		float LayoutHitSpacing;
+		int LayoutColumnCount;
+		int LayoutLineCount;
+		ImVec2 ItemSize;
+		ImVec2 LayoutItemSize;
+		ImVec2 LayoutItemStep;
+
 
 		// Menu State Variables.
 		enum class Viewport
@@ -96,5 +107,8 @@ namespace Modex
 		// ISearch Interface
 		char 						modSearchBuffer[256];
 		std::string 				selectedMod;
+
+
+		static inline ImGuiSelectionBasicStorage selectionStorage;
 	};
 }

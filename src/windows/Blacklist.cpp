@@ -17,7 +17,7 @@ namespace Modex
 
 		auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
 		pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
-		const auto blacklist = PersistentData::GetSingleton()->m_blacklist;
+		const auto& blacklist = PersistentData::GetBlacklist();
 
 		totalPlugins = static_cast<int>(pluginList.size());
 		blacklistedPlugins = static_cast<int>(blacklist.size());
@@ -138,7 +138,7 @@ namespace Modex
 					}
 
 					if (ImGui::Selectable(pluginName.c_str())) {
-						PersistentData::GetSingleton()->AddModToBlacklist(plugin);
+						PersistentData::GetSingleton()->AddPluginToBlacklist(plugin);
 					}
 				}
 			}
@@ -173,7 +173,7 @@ namespace Modex
 					}
 
 					if (ImGui::Selectable(pluginName.c_str())) {
-						PersistentData::GetSingleton()->RemoveModFromBlacklist(plugin);
+						PersistentData::GetSingleton()->RemovePluginFromBlacklist(plugin);
 					}
 				}
 			}

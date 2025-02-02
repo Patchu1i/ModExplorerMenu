@@ -34,7 +34,7 @@ namespace Modex
 
 		// Local State Variables.
 		bool 						b_ClickToTeleport;
-		bool 						b_ClickToFavorite;
+		// bool 						b_ClickToFavorite;
 
 		std::vector<CellData*> 		cellList;
 		TeleportColumns 			columnList;

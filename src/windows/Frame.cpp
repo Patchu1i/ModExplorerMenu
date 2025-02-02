@@ -33,7 +33,8 @@ namespace Modex
 
 		// const float min_sidebar_width = window_w * 0.060f;
 		const float min_sidebar_width = 64.0f + (ImGui::GetStyle().WindowPadding.x * 2);
-		const float max_sidebar_width = window_w * 0.15f;
+		// const float max_sidebar_width = window_w * 0.15f;
+		const float max_sidebar_width = 210.0f;
 
 		// Calculate window positions post scaling.
 		const float center_x = (displaySize.x * 0.5f) - (window_w * 0.5f);
@@ -68,13 +69,37 @@ namespace Modex
 				constexpr float button_height = 40.0f;
 
 				{
-					constexpr float image_width = 120.2f * 1.5f;
-					constexpr float image_height = 35.6f * 1.5f;
-					ImTextureID texture = sidebar_w > (min_sidebar_width) ? reinterpret_cast<ImTextureID>(GraphicManager::image_library["logo"].texture) : reinterpret_cast<ImTextureID>(GraphicManager::image_library["logo_single"].texture);
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
-					ImGui::Image(texture, ImVec2(image_width, image_height));
-					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+					// This is ridiculous, but is required due to Skyrim Upscaler Plugin. Typically, I could just
+					// create a clip rect, or just hide the image behind the child window outside the sidebar. However,
+					// when using Skyrim Upscaler Plugin. The texture clips over the bounds for some reason...
+					ImTextureID texture = reinterpret_cast<ImTextureID>(GraphicManager::image_library["new_logo"].texture);
+
+					// Using a fixed image width and height, since the sidebar is also a fixed width and height.
+					constexpr float image_height = 54.0f;
+					const float image_width = max_sidebar_width;
+					const ImVec2 backup_pos = ImGui::GetCursorPos();
+
+					// Calculate the UV for the image based on the sidebar width.
+					float uv_x = 1.0f - std::min(0.40f, 1.0f - (sidebar_w / max_sidebar_width));
+					uv_x *= (sidebar_w / image_width);
+
+					// Minor tweak because of bad UV calculation.
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 2.0f);
+					ImGui::Image(texture, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f));
+
+					// This is an alternative to doing the same UV scaling to the Y axis on a single image.
+					// Instead, I just overlay a second image on the first one, which yields the same results.
+					if (sidebar_w > min_sidebar_width) {
+						ImTextureID overlay = reinterpret_cast<ImTextureID>(GraphicManager::image_library["new_logo_bottom"].texture);
+						const float image_alpha = std::clamp(sidebar_w / max_sidebar_width, 0.0f, 1.0f);
+						ImGui::SameLine();
+						ImGui::SetCursorPos(backup_pos);
+						ImGui::SetNextItemAllowOverlap();
+						ImGui::Image(overlay, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f), ImVec4(1, image_alpha, image_alpha, image_alpha));
+					}
 				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 				SideBarImage home_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconHome"].texture), ImVec2(32.0f, 32.0f) };
 				SideBarImage additem_image = { reinterpret_cast<ImTextureID>(GraphicManager::image_library["IconAddItem"].texture), ImVec2(32.0f, 32.0f) };
@@ -92,14 +117,14 @@ namespace Modex
 				};
 
 				if (config.showHomeMenu) {
-					if (ImGui::SidebarButton("Home", home_image.texture, home_image.size, ImVec2(button_width, button_height), home_w)) {
+					if (ImGui::SidebarButton("Home", activeWindow == ActiveWindow::Home, home_image.texture, home_image.size, ImVec2(button_width, button_height), home_w)) {
 						activeWindow = ActiveWindow::Home;
 					}
 					ExpandButton();
 				}
 
 				if (config.showAddItemMenu) {
-					if (ImGui::SidebarButton("Item", additem_image.texture, additem_image.size, ImVec2(button_width, button_height), additem_w)) {
+					if (ImGui::SidebarButton("Item", activeWindow == ActiveWindow::AddItem, additem_image.texture, additem_image.size, ImVec2(button_width, button_height), additem_w)) {
 						activeWindow = ActiveWindow::AddItem;
 						AddItemWindow::GetSingleton()->Refresh();
 					}
@@ -108,7 +133,7 @@ namespace Modex
 				}
 
 				if (config.showObjectMenu) {
-					if (ImGui::SidebarButton("Object", object_image.texture, object_image.size, ImVec2(button_width, button_height), object_w)) {
+					if (ImGui::SidebarButton("Object", activeWindow == ActiveWindow::Object, object_image.texture, object_image.size, ImVec2(button_width, button_height), object_w)) {
 						activeWindow = ActiveWindow::Object;
 						ObjectWindow::GetSingleton()->Refresh();
 					}
@@ -117,7 +142,7 @@ namespace Modex
 				}
 
 				if (config.showNPCMenu) {
-					if (ImGui::SidebarButton("NPC", npc_image.texture, npc_image.size, ImVec2(button_width, button_height), npc_w)) {
+					if (ImGui::SidebarButton("NPC", activeWindow == ActiveWindow::NPC, npc_image.texture, npc_image.size, ImVec2(button_width, button_height), npc_w)) {
 						activeWindow = ActiveWindow::NPC;
 						NPCWindow::GetSingleton()->Refresh();
 					}
@@ -126,7 +151,7 @@ namespace Modex
 				}
 
 				if (config.showTeleportMenu) {
-					if (ImGui::SidebarButton("Teleport", teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), teleport_w)) {
+					if (ImGui::SidebarButton("Teleport", activeWindow == ActiveWindow::Teleport, teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), teleport_w)) {
 						activeWindow = ActiveWindow::Teleport;
 						TeleportWindow::GetSingleton()->Refresh();
 					}
@@ -134,13 +159,13 @@ namespace Modex
 					ExpandButton();
 				}
 
-				if (ImGui::SidebarButton("Settings", settings_image.texture, settings_image.size, ImVec2(button_width, button_height), settings_w)) {
+				if (ImGui::SidebarButton("Settings", activeWindow == ActiveWindow::Settings, settings_image.texture, settings_image.size, ImVec2(button_width, button_height), settings_w)) {
 					activeWindow = ActiveWindow::Settings;
 				}
 
 				ExpandButton();
 
-				if (ImGui::SidebarButton("Exit", exit_image.texture, exit_image.size, ImVec2(button_width, button_height), exit_w)) {
+				if (ImGui::SidebarButton("Exit", false, exit_image.texture, exit_image.size, ImVec2(button_width, button_height), exit_w)) {
 					Menu::GetSingleton()->Close();
 				}
 
