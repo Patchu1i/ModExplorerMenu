@@ -152,7 +152,8 @@ namespace Modex
 		}
 
 		a_kit.name = a_new_name;
-		SaveKitToJSON(a_new_name);
+		// SaveKitToJSON(a_new_name);
+		SaveKitToJSON(a_kit);
 
 		// Update runtime kit collection.
 		m_kits.emplace(a_new_name, a_kit);
@@ -182,6 +183,8 @@ namespace Modex
 	}
 
 	// TODO: Safety for nonexistent directory or paths
+	// TODO: This still crashes when we implement a new JSON structure or schema, implying that
+	// something is wrong with our catch statement or handling exceptions.
 	void PersistentData::LoadKit(const std::string& a_name)
 	{
 		nlohmann::json JSON = OpenJSONFile(json_user_path + "/kits/" + a_name);
@@ -193,7 +196,10 @@ namespace Modex
 		}
 
 		for (auto& [kit_name, category] : JSON.items()) {
-			Kit kit(kit_name);
+			Kit kit(kit_name, 0);
+
+			kit.desc = category["Description"].get<std::string>();
+			kit.clearEquipped = category["ClearEquipped"].get<bool>();
 
 			try {
 				for (auto& [item_eid, data] : category["Items"].items()) {
@@ -273,6 +279,8 @@ namespace Modex
 		nlohmann::json JSON = OpenJSONFile(json_user_path + "/kits/" + a_kit.name + ".json");
 
 		JSON[a_kit.name] = {};
+		JSON[a_kit.name]["Description"] = a_kit.desc;
+		JSON[a_kit.name]["ClearEquipped"] = a_kit.clearEquipped;
 		JSON[a_kit.name]["Items"] = {};
 		JSON[a_kit.name]["Spells"] = {};
 		JSON[a_kit.name]["Perks"] = {};

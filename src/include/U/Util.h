@@ -589,6 +589,117 @@ namespace Utils
 		return a_min + (a_max - a_min) * (1.0f + Pulse(a_time, a_frequency, a_amplitude)) * 0.5f;
 	}
 
+	// Send to Utils
+	// inline static std::string GetItemIcon(const BaseObject& a_item)
+	// {
+	// 	const RE::FormType formType = a_item.GetFormType();
+
+	// 	switch (formType) {
+	// 	case RE::FormType::Armor:  // Start of Additem Module
+	// 		return ICON_LC_SHIELD;
+	// 	case RE::FormType::AlchemyItem:
+	// 		return ICON_LC_FLASK_CONICAL;
+	// 	case RE::FormType::Ammo:
+	// 		return ICON_LC_CONTAINER;
+	// 	case RE::FormType::Book:
+	// 		return ICON_LC_BOOK;
+	// 	case RE::FormType::Ingredient:
+	// 		return ICON_LC_TEST_TUBE;
+	// 	case RE::FormType::KeyMaster:
+	// 		return ICON_LC_KEY;
+	// 	case RE::FormType::Misc:
+	// 		return ICON_LC_PUZZLE;
+	// 	case RE::FormType::Weapon:
+	// 		return ICON_LC_SWORDS;
+	// 	case RE::FormType::NPC:  // Start of NPC module
+	// 		return ICON_LC_VENETIAN_MASK;
+	// 	case RE::FormType::Tree:  // Start of Object Module
+	// 		return ICON_LC_TREE_PINE;
+	// 	case RE::FormType::Static:
+	// 		return ICON_LC_SHAPES;
+	// 	case RE::FormType::Container:
+	// 		return ICON_LC_PACKAGE;
+	// 	case RE::FormType::Activator:
+	// 		return ICON_LC_TARGET;
+	// 	case RE::FormType::Light:
+	// 		return ICON_LC_SUN;
+	// 	case RE::FormType::Door:
+	// 		return ICON_LC_DOOR_CLOSED;
+	// 	case RE::FormType::Furniture:
+	// 		return ICON_LC_ARMCHAIR;
+	// 	default:
+	// 		return ICON_LC_BEAKER;
+	// 	}
+	// }
+
+	inline static ImU32 GetFormTypeColor(const RE::FormType& a_type)
+	{
+		switch (a_type) {
+		case RE::FormType::Armor:
+			return IM_COL32(128, 0, 0, 255);  // Maroon
+		case RE::FormType::AlchemyItem:
+			return IM_COL32(0, 128, 128, 255);  // Teal
+		case RE::FormType::Ammo:
+			return IM_COL32(128, 128, 0, 255);  // Olive
+		case RE::FormType::Book:
+			return IM_COL32(139, 69, 19, 255);  // Saddle Brown
+		case RE::FormType::Ingredient:
+			return IM_COL32(34, 139, 34, 255);  // Forest Green
+		case RE::FormType::KeyMaster:
+			return IM_COL32(255, 140, 0, 255);  // Dark Orange
+		case RE::FormType::Misc:
+			return IM_COL32(128, 0, 128, 255);  // Purple
+		case RE::FormType::Weapon:
+			return IM_COL32(178, 34, 34, 255);  // Firebrick
+		case RE::FormType::NPC:
+			return IM_COL32(70, 130, 180, 255);  // Steel Blue
+		case RE::FormType::Tree:
+			return IM_COL32(0, 100, 0, 255);  // Dark Green
+		case RE::FormType::Static:
+			return IM_COL32(75, 0, 130, 255);  // Indigo
+		case RE::FormType::Container:
+			return IM_COL32(139, 0, 0, 255);  // Dark Red
+		case RE::FormType::Activator:
+			return IM_COL32(255, 69, 0, 255);  // Red Orange
+		case RE::FormType::Light:
+			return IM_COL32(255, 215, 0, 255);  // Gold
+		case RE::FormType::Door:
+			return IM_COL32(0, 128, 0, 255);  // Green
+		case RE::FormType::Furniture:
+			return IM_COL32(139, 0, 139, 255);  // Dark Magenta
+		default:
+			return IM_COL32(105, 105, 105, 255);  // Dim Gray
+		}
+	}
+
+	inline static std::string FormatTextWidth(const std::string& a_text, const float& a_width)
+	{
+		const float textWidth = ImGui::CalcTextSize(a_text.c_str()).x;
+
+		if (textWidth > a_width) {
+			const float ellipsisWidth = ImGui::CalcTextSize("...").x;
+
+			std::string result = "";
+			float resultWidth = 0.0f;
+
+			for (const auto& c : a_text) {
+				const float charWidth = ImGui::CalcTextSize(std::string(1, c).c_str()).x;
+
+				if (resultWidth + charWidth + ellipsisWidth > a_width) {
+					result += "...";
+					break;
+				}
+
+				result += c;
+				resultWidth += charWidth;
+			}
+
+			return result;
+		}
+
+		return a_text;
+	}
+
 	inline static std::vector<std::string> GetSkillNames()
 	{
 		return {

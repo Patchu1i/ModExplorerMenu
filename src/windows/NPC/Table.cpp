@@ -194,9 +194,9 @@ namespace Modex
 					ImGui::Text(stamina.c_str());
 
 					// Carry Weight
-					ImGui::TableNextColumn();
-					const auto carry = std::format("{:.0f}", npc->GetCarryWeight());
-					ImGui::Text(carry.c_str());
+					// ImGui::TableNextColumn();
+					// const auto carry = std::format("{:.0f}", npc->GetCarryWeight());
+					// ImGui::Text(carry.c_str());
 
 					// https://github.com/ocornut/imgui/issues/6588#issuecomment-1634424774
 					// Sloppy way to handle row highlighting since ImGui natively doesn't support it.

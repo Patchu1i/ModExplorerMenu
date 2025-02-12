@@ -473,5 +473,10 @@ namespace Modex
 			logger::info("Mod: {}", modName);
 			_modListSorted.insert(modName);
 		}
+
+		// Moved from TableView. 2/4/2025
+		GenerateNPCClassList();
+		GenerateNPCRaceList();
+		GenerateNPCFactionList();
 	}
 }

@@ -16,29 +16,19 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		// ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::SubCategoryHeader(_T("Behavior"));
+		ImGui::SubCategoryHeader(_T("GENERAL_DOUBLE_CLICK_BEHAVIOR"));
 
 		// Add To Inventory Toggle.
 		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_CIRCLE_PLUS, "AIM_ADD"), b_AddToInventory, ImVec2(button_width, button_height))) {
 			b_PlaceOnGround = false;
-			// b_AddToFavorites = false;
 			b_AddToInventory = true;
 		};
 
 		// Place On Ground Toggle.
 		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "AIM_PLACE"), b_PlaceOnGround, ImVec2(button_width, button_height))) {
 			b_AddToInventory = false;
-			// b_AddToFavorites = false;
 			b_PlaceOnGround = true;
 		}
-
-		// Add To Favorites Toggle.
-		// if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "AIM_FAVORITE"), b_AddToFavorites, ImVec2(button_width, button_height))) {
-		// 	b_AddToInventory = false;
-		// 	b_PlaceOnGround = false;
-		// 	// b_AddToFavorites = true;
-		// }
 
 		if (b_AddToInventory || b_PlaceOnGround) {
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
@@ -49,7 +39,6 @@ namespace Modex
 		}
 
 		ImGui::Spacing();
-		// ImGui::SubCategoryHeader(_T("Actions"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::SubCategoryHeader(_T("Actions"));
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
@@ -57,34 +46,16 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		// Add All From Table Shortcut.
-		if (ImGui::GradientButton(_T("AIM_ADD_ALL"), ImVec2(button_width, 0))) {
-			for (auto& item : itemList) {
-				Console::AddItem(item->GetFormID());
-			}
-
-			Console::StartProcessThread();
+		if (ImGui::GradientButton(_T("GENERAL_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
+			// implement me
 		}
 
 		// Place All from Table Shortcut.
-		if (ImGui::GradientButton(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
-			if (itemList.size() > 30) {
-				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
-			} else {
-				for (auto& item : itemList) {
-					Console::PlaceAtMe(item->GetFormID());
-				}
-			}
-
-			Console::StartProcessThread();
+		if (ImGui::GradientButton(_T("GENERAL_PLACE_ON_GROUND"), ImVec2(button_width, 0))) {
+			// implement me
 		}
 
 		ImGui::PopStyleColor(3);  // End of Secondary Buttons
-
-		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
-			for (auto& item : itemList) {
-				Console::PlaceAtMe(item->GetFormID());
-			}
-		});
 
 		// Spawn Container with Table contents
 		if (ImGui::GradientButton(_T("AIM_ADD_TO_CONTAINER"), ImVec2(button_width, 0))) {
@@ -113,7 +84,7 @@ namespace Modex
 
 					if (objHandle) {
 						if (auto ref = objHandle.get()) {
-							for (auto& item : itemList) {
+							for (auto& item : this->tableView.GetTableListRefr()) {
 								RE::ExtraDataList* extraDataList = nullptr;  // ??
 
 								ref->AddObjectToContainer(
@@ -130,26 +101,15 @@ namespace Modex
 		}
 
 		if (ImGui::GradientButton("Reset Search", ImVec2(button_width, 0.0f))) {
-			ImFormatString(inputBuffer, IM_ARRAYSIZE(inputBuffer), "");
-			ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
-			selectedMod = "All Mods";
-			primaryFilter = RE::FormType::None;
-			secondaryFilter = "All";
-			Refresh();
-		}
-
-		bool plugin_view_visible = showKitsForPlugin && selectedMod != _T("All Mods");
-		if (ImGui::GradientSelectableEX(_T("KIT_SHOW_IN_PLUGIN_VIEW"), plugin_view_visible, ImVec2(button_width, button_height))) {
-			showKitsForPlugin = !showKitsForPlugin;
+			tableView.Reset();
 		}
 
 		ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 
 		ImGui::Spacing();
-		// ImGui::SubCategoryHeader(_T("Preview"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::SubCategoryHeader(_T("Preview"));
 
-		ShowItemPreview<ItemData>(itemPreview);
+		ShowItemPreview<ItemData>(tableView.GetItemPreview());
 
 		ImGui::EndChild();
 	}

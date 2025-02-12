@@ -1,4 +1,5 @@
 #pragma once
+#include "include/D/DataTypes.h"
 #include "include/U/Util.h"
 #include <PCH.h>
 
@@ -6,7 +7,7 @@ namespace Modex
 {
 	class ISortable
 	{
-	private:
+	protected:
 		static int CompareWeaponDamage(RE::TESObjectWEAP* a_lhs, RE::TESObjectWEAP* a_rhs)
 		{
 			auto baseDamage1 = Utils::CalcBaseDamage(a_lhs);
@@ -74,6 +75,96 @@ namespace Modex
 			return strcmp(item1, item2);
 		}
 
+	protected:
+		enum class SortType
+		{
+			Plugin,
+			Type,
+			FormID,
+			Name,
+			EditorID,
+			Health,
+			Magicka,
+			Stamina,
+			Value,
+			Weight,
+			Damage,
+			Armor,
+			Slot,
+			Speed,
+			CriticalDamage,
+			Skill,
+			DamagePerSecond,
+			Space,
+			Zone,
+			Cell,
+			ReferenceID,
+			Race,
+			Gender,
+			Class,
+			Level
+
+		};
+
+		// TODO Localation
+		const std::string SortTypeToString(SortType a_type)
+		{
+			switch (a_type) {
+			case SortType::Plugin:
+				return "Plugin";
+			case SortType::Type:
+				return "Type";
+			case SortType::FormID:
+				return "Form ID";
+			case SortType::Name:
+				return "Name";
+			case SortType::EditorID:
+				return "Editor ID";
+			case SortType::Health:
+				return "Health";
+			case SortType::Magicka:
+				return "Magicka";
+			case SortType::Stamina:
+				return "Stamina";
+			case SortType::Weight:
+				return "Carry Weight";
+			case SortType::Value:
+				return "Value";
+			case SortType::Damage:
+				return "Damage";
+			case SortType::Armor:
+				return "Armor";
+			case SortType::Slot:
+				return "Slot";
+			case SortType::Speed:
+				return "Speed";
+			case SortType::CriticalDamage:
+				return "Critical Damage";
+			case SortType::Skill:
+				return "Skill";
+			case SortType::DamagePerSecond:
+				return "DPS";
+			case SortType::Space:
+				return "Space";
+			case SortType::Zone:
+				return "Zone";
+			case SortType::Cell:
+				return "Cell";
+			case SortType::ReferenceID:
+				return "Reference ID";
+			case SortType::Race:
+				return "Race";
+			case SortType::Gender:
+				return "Gender";
+			case SortType::Class:
+				return "Class";
+			case SortType::Level:
+				return "Level";
+			default:
+				return "Unknown";
+			}
+		}
+
 	public:
 		static inline ImGuiTableSortSpecs* s_current_sort_specs;
 
@@ -89,10 +180,6 @@ namespace Modex
 			int delta = 0;
 
 			switch (ID) {
-			// case BaseColumn::ID::Favorite:
-			// 	delta = (lhs->favorite < rhs->favorite) ? -1 : (lhs->favorite > rhs->favorite) ? 1 :
-			// 	                                                                                 0;
-			// 	break;
 			case BaseColumn::ID::EditorID:
 				delta = lhs->GetEditorIDView().compare(rhs->GetEditorIDView());
 				break;
@@ -185,13 +272,13 @@ namespace Modex
 					delta = (lhs->GetStamina() < rhs->GetStamina()) ? -1 : (lhs->GetStamina() > rhs->GetStamina()) ? 1 :
 					                                                                                                 0;
 				break;
-			case BaseColumn::ID::CarryWeight:
-				if constexpr (!std::is_same<Object, NPCData>::value)
-					break;
-				else
-					delta = (lhs->GetCarryWeight() < rhs->GetCarryWeight()) ? -1 : (lhs->GetCarryWeight() > rhs->GetCarryWeight()) ? 1 :
-					                                                                                                                 0;
-				break;
+			// case BaseColumn::ID::CarryWeight:
+			// 	if constexpr (!std::is_same<Object, NPCData>::value)
+			// 		break;
+			// 	else
+			// 		delta = (lhs->GetCarryWeight() < rhs->GetCarryWeight()) ? -1 : (lhs->GetCarryWeight() > rhs->GetCarryWeight()) ? 1 :
+			// 		                                                                                                                 0;
+			// 	break;
 			case BaseColumn::ID::GoldValue:
 				if constexpr (!std::is_same<Object, ItemData>::value)
 					break;
@@ -340,7 +427,7 @@ namespace Modex
 		{
 			s_current_sort_specs = sort_specs;
 			if (a_list.size() > 1)
-				std::sort(a_list.begin(), a_list.end(), [](const Object* a, const Object* b) {
+				std::sort(a_list.begin(), a_list.end(), [](Object* a, Object* b) {
 					return SortColumns<Object>(a, b);
 				});
 			s_current_sort_specs = NULL;

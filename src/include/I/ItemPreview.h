@@ -6,7 +6,7 @@
 namespace Modex
 {
 	template <class Object>
-	void ShowItemPreview(Object* a_object)
+	void ShowItemPreview(const std::unique_ptr<Object>& a_object)
 	{
 		if (a_object == nullptr) {
 			return;
@@ -129,8 +129,8 @@ namespace Modex
 					InlineBar(_TICONM(ICON_LC_SHIELD, "Rating", ":"), armorRating, armorRatingMax);
 				}
 
-				InlineText(_TICONM(ICON_LC_TYPE, "Type", ":"), _T(armorType));
-				InlineTextMulti(_TICONM(ICON_LC_PUZZLE, "Slot", ":"), equipSlots);
+				InlineText(_TICONM(ICON_LC_PUZZLE, "Type", ":"), _T(armorType));
+				InlineTextMulti(_TICONM(ICON_LC_BETWEEN_HORIZONTAL_START, "Slot", ":"), equipSlots);
 			}
 
 			if (a_object->GetFormType() == RE::FormType::Weapon) {

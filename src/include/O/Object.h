@@ -2,6 +2,7 @@
 
 #include "include/C/Columns.h"
 #include "include/F/Frame.h"
+#include "include/G/Graphic.h"
 #include "include/I/ISearch.h"
 #include "include/I/ISortable.h"
 #include "include/I/InputManager.h"

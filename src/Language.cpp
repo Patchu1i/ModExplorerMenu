@@ -57,11 +57,12 @@ namespace Modex
 		imFontConfig.MergeMode = true;
 		imFontConfig.GlyphMinAdvanceX = 10.0f;
 		imFontConfig.GlyphExtraSpacing.x = 5.0f;
-		imFontConfig.GlyphOffset.y = 3.0f;
-		imFontConfig.GlyphOffset.x = 1.0f;
+		imFontConfig.GlyphOffset.y = (size / 2.0f) / 2.0f;
+		// imFontConfig.GlyphOffset.y = size / 6.0f;
+		// imFontConfig.GlyphOffset.x = 1.0f;
 
 		static const ImWchar icon_ranges[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
-		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/lucide.ttf", size - 1.0f, &imFontConfig, icon_ranges);
+		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/lucide.ttf", size + 3.0f, &imFontConfig, icon_ranges);
 	}
 
 	void FontManager::AddDefaultFont()

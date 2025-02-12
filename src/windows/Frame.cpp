@@ -126,7 +126,9 @@ namespace Modex
 				if (config.showAddItemMenu) {
 					if (ImGui::SidebarButton("Item", activeWindow == ActiveWindow::AddItem, additem_image.texture, additem_image.size, ImVec2(button_width, button_height), additem_w)) {
 						activeWindow = ActiveWindow::AddItem;
-						AddItemWindow::GetSingleton()->Refresh();
+						if (AddItemWindow::GetSingleton()->GetTableView().GetTableList().empty()) {
+							AddItemWindow::GetSingleton()->Refresh();
+						}
 					}
 
 					ExpandButton();

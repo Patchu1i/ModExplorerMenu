@@ -18,6 +18,11 @@ namespace Modex
 		void 					Draw(float a_offset);
 		void					Init();
 	
+		// Used in TableView as well. Could this be an abstract class?
+		void                                    BuildPluginList();
+        std::vector<const RE::TESFile*>         pluginList;
+		std::vector<std::string>				pluginListVector;
+
 	private:
 
 		int 					totalPlugins;

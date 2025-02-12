@@ -12,7 +12,7 @@ namespace Modex
 	{
 	public:
 
-		enum PLUGIN_TYPE
+		enum PLUGIN_TYPE : uint32_t
 		{
 			ALL = 0,
 			ITEM,
@@ -80,6 +80,8 @@ namespace Modex
 		void 											GenerateNPCList();
 		void 											GenerateObjectList();
 		void 											GenerateCellList();
+
+		void SortAddItemList();
 
 	private:
 		std::vector<ItemData> 							_cache;
