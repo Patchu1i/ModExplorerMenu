@@ -1,5 +1,6 @@
 #pragma once
 
+#include "extern/DescriptionFrameworkAPI.h"
 #include "include/S/Settings.h"
 #include <PCH.h>
 
@@ -248,7 +249,7 @@ namespace ImGui
 
 		// Render
 		const bool is_gradient = bg_color_1 != bg_color_2;
-		if (held || hovered) {
+		if (hovered && !held) {
 			// Modify colors (ultimately this can be prebaked in the style)
 			float h_increase = (held || hovered) ? 0.02f : 0.02f;
 			float v_increase = (held || hovered) ? 10.0f : 0.07f;
@@ -269,6 +270,12 @@ namespace ImGui
 			} else {
 				bg_color_2 = bg_color_1;
 			}
+		} else if (hovered && held) {
+			ImVec4 bg1f = ColorConvertU32ToFloat4(bg_color_1);
+			bg1f.x = ImMin(bg1f.x + 0.25f, 1.0f);
+			bg1f.y = ImMin(bg1f.y + 0.25f, 1.0f);
+			bg1f.z = ImMin(bg1f.z + 0.25f, 1.0f);
+			bg_color_1 = GetColorU32(bg1f);
 		}
 		RenderNavHighlight(bb, id);
 
@@ -283,7 +290,7 @@ namespace ImGui
 		int vert_start_idx = window->DrawList->VtxBuffer.Size;
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
 		int vert_end_idx = window->DrawList->VtxBuffer.Size;
-		if (is_gradient)
+		if (is_gradient && !held)
 			ShadeVertsLinearColorGradientKeepAlpha(window->DrawList, vert_start_idx, vert_end_idx, bb.Min, bb.GetBL(), bg_color_1, bg_color_2);
 		if (g.Style.FrameBorderSize > 0.0f)
 			window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
@@ -454,7 +461,8 @@ namespace ImGui
 		auto col_button = ImGui::GetStyle().Colors[ImGuiCol_Button];
 		auto col_a = ImGui::GetColorU32(col_button);
 		auto col_b = ImGui::GetColorU32(ImVec4(col_button.x * 0.7f, col_button.y * 0.7f, col_button.z * 0.7f, col_button.w));
-		return ImGui::ColoredButtonV1(label, size, IM_COL32(255, 255, 255, 255), col_a, col_b);
+		auto text_color = ImGui::GetColorU32(ImGuiCol_Text);
+		return ImGui::ColoredButtonV1(label, size, text_color, col_a, col_b);
 	}
 
 	inline static bool GradientSelectableEX(const char* label, bool& selected, const ImVec2& size = ImVec2(0, 0))
@@ -579,6 +587,13 @@ namespace ImGui
 
 namespace Utils
 {
+	static DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+
+	inline static void SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* a_interface)
+	{
+		g_DescriptionFrameworkInterface = a_interface;
+	}
+
 	inline static float Pulse(float a_time, float a_frequency, float a_amplitude)
 	{
 		return a_amplitude * sin(a_time * a_frequency);
@@ -589,86 +604,156 @@ namespace Utils
 		return a_min + (a_max - a_min) * (1.0f + Pulse(a_time, a_frequency, a_amplitude)) * 0.5f;
 	}
 
-	// Send to Utils
-	// inline static std::string GetItemIcon(const BaseObject& a_item)
-	// {
-	// 	const RE::FormType formType = a_item.GetFormType();
+	static inline const char* WeaponTypes[] = {
+		"Hand to Hand",
+		"One Handed Sword",
+		"One Handed Dagger",
+		"One Handed Axe",
+		"One Handed Mace",
+		"Two Handed Greatsword",
+		"Two Handed Battleaxe",
+		"Bow",
+		"Staff",
+		"Crossbow"
+	};
 
-	// 	switch (formType) {
-	// 	case RE::FormType::Armor:  // Start of Additem Module
-	// 		return ICON_LC_SHIELD;
-	// 	case RE::FormType::AlchemyItem:
-	// 		return ICON_LC_FLASK_CONICAL;
-	// 	case RE::FormType::Ammo:
-	// 		return ICON_LC_CONTAINER;
-	// 	case RE::FormType::Book:
-	// 		return ICON_LC_BOOK;
-	// 	case RE::FormType::Ingredient:
-	// 		return ICON_LC_TEST_TUBE;
-	// 	case RE::FormType::KeyMaster:
-	// 		return ICON_LC_KEY;
-	// 	case RE::FormType::Misc:
-	// 		return ICON_LC_PUZZLE;
-	// 	case RE::FormType::Weapon:
-	// 		return ICON_LC_SWORDS;
-	// 	case RE::FormType::NPC:  // Start of NPC module
-	// 		return ICON_LC_VENETIAN_MASK;
-	// 	case RE::FormType::Tree:  // Start of Object Module
-	// 		return ICON_LC_TREE_PINE;
-	// 	case RE::FormType::Static:
-	// 		return ICON_LC_SHAPES;
-	// 	case RE::FormType::Container:
-	// 		return ICON_LC_PACKAGE;
-	// 	case RE::FormType::Activator:
-	// 		return ICON_LC_TARGET;
-	// 	case RE::FormType::Light:
-	// 		return ICON_LC_SUN;
-	// 	case RE::FormType::Door:
-	// 		return ICON_LC_DOOR_CLOSED;
-	// 	case RE::FormType::Furniture:
-	// 		return ICON_LC_ARMCHAIR;
-	// 	default:
-	// 		return ICON_LC_BEAKER;
-	// 	}
-	// }
+	static inline std::string GetWeaponType(const RE::TESObjectWEAP* a_weapon)
+	{
+		return WeaponTypes[static_cast<int>(a_weapon->GetWeaponType())];
+	}
+
+	// This is instantiated here so that if we ever decide to change the Icons we use (likely)
+	// we simply plug in the new values here, instead of fishing through all the files!
+	static inline std::unordered_map<std::string, std::string> IconMap = {
+		// UI Navigation
+		{ "ACCEPT", ICON_LC_CHECK },
+		{ "CANCEL", ICON_LC_X },
+		{ "DELETE", ICON_LC_TRASH },
+		{ "ADD", ICON_LC_PLUS },
+		{ "COPY", ICON_LC_PLUS },
+		{ "REMOVE", ICON_LC_MINUS },
+		{ "EDIT", ICON_LC_PENCIL },
+		{ "SEARCH", ICON_LC_SEARCH },
+		{ "INFO", ICON_LC_INFO },
+		{ "WARNING", ICON_LC_CIRCLE_ALERT },
+		{ "ERROR", ICON_LC_TRIANGLE_ALERT },
+		{ "SUCCESS", ICON_LC_CIRCLE_CHECK },
+		{ "FAILURE", ICON_LC_CIRCLE_X },
+
+		// General
+		{ "EDITORID", ICON_LC_SIGNATURE },
+		{ "KIT", ICON_LC_BOX },
+		{ "ENCHANTED", ICON_LC_SPARKLES },
+		{ "HIDDEN", ICON_LC_EYE },
+
+		// ItemData
+		{ "WEAPON", ICON_LC_SWORD },
+		{ "DAMAGE", ICON_LC_SWORDS },
+		{ "ARMOR", ICON_LC_SHIELD },
+		{ "BOOK", ICON_LC_BOOK },
+		{ "KEY", ICON_LC_KEY },
+		{ "INGREDIENT", ICON_LC_TEST_TUBE },
+		{ "AMMO", ICON_LC_CONTAINER },
+		{ "ALCHEMY", ICON_LC_FLASK_CONICAL },
+		{ "MISC", ICON_LC_PUZZLE },
+		{ "SKILL", ICON_LC_BRAIN },
+		{ "GOLD", ICON_LC_COINS },
+		{ "WEIGHT", ICON_LC_WEIGHT },
+		{ "SLOT", ICON_LC_BETWEEN_HORIZONTAL_START },
+		{ "RANGE", ICON_LC_CHEVRONS_LEFT_RIGHT },
+		{ "STAGGER", ICON_LC_SCALE },
+		{ "SPEED", ICON_LC_ARROW_BIG_UP_DASH },
+		{ "CRIT", ICON_LC_DICES },
+
+		// ObjectData
+		{ "CONTAINER", ICON_LC_PACKAGE },
+		{ "STATIC", ICON_LC_SHAPES },
+		{ "LIGHT", ICON_LC_SUN },
+		{ "DOOR", ICON_LC_DOOR_CLOSED },
+		{ "FURNITURE", ICON_LC_ARMCHAIR },
+		{ "ACTIVATOR", ICON_LC_TARGET },
+		{ "TREE", ICON_LC_TREE_PINE },
+	};
+
+	static inline std::string GetFormTypeIcon(const RE::FormType& a_type)
+	{
+		switch (a_type) {
+		// ItemData
+		case RE::FormType::Armor:
+			return IconMap["ARMOR"];
+		case RE::FormType::AlchemyItem:
+			return IconMap["ALCHEMY"];
+		case RE::FormType::Ammo:
+			return IconMap["AMMO"];
+		case RE::FormType::Book:
+			return IconMap["BOOK"];
+		case RE::FormType::Ingredient:
+			return IconMap["INGREDIENT"];
+		case RE::FormType::KeyMaster:
+			return IconMap["KEY"];
+		case RE::FormType::Misc:
+			return IconMap["MISC"];
+		case RE::FormType::Weapon:
+			return IconMap["WEAPON"];
+
+		// NPCData
+		case RE::FormType::NPC:
+		case RE::FormType::Class:
+		case RE::FormType::Race:
+		case RE::FormType::Faction:
+
+		// ObjectData
+		case RE::FormType::Tree:
+		case RE::FormType::Static:
+		case RE::FormType::Container:
+		case RE::FormType::Activator:
+		case RE::FormType::Light:
+		case RE::FormType::Door:
+		case RE::FormType::Furniture:
+		case RE::FormType::Flora:
+			return "MODEX_MISSING_ICON";
+		}
+
+		return "";
+	}
 
 	inline static ImU32 GetFormTypeColor(const RE::FormType& a_type)
 	{
 		switch (a_type) {
 		case RE::FormType::Armor:
-			return IM_COL32(128, 0, 0, 255);  // Maroon
+			return IM_COL32(255, 182, 193, 255);  // Light Pink
 		case RE::FormType::AlchemyItem:
-			return IM_COL32(0, 128, 128, 255);  // Teal
+			return IM_COL32(144, 238, 144, 255);  // Light Green
 		case RE::FormType::Ammo:
-			return IM_COL32(128, 128, 0, 255);  // Olive
+			return IM_COL32(173, 216, 230, 255);  // Light Blue
 		case RE::FormType::Book:
-			return IM_COL32(139, 69, 19, 255);  // Saddle Brown
+			return IM_COL32(255, 228, 181, 255);  // Moccasin
 		case RE::FormType::Ingredient:
-			return IM_COL32(34, 139, 34, 255);  // Forest Green
+			return IM_COL32(216, 191, 216, 255);  // Thistle
 		case RE::FormType::KeyMaster:
-			return IM_COL32(255, 140, 0, 255);  // Dark Orange
+			return IM_COL32(221, 160, 221, 255);  // Plum
 		case RE::FormType::Misc:
-			return IM_COL32(128, 0, 128, 255);  // Purple
+			return IM_COL32(255, 182, 193, 255);  // Light Pink
 		case RE::FormType::Weapon:
-			return IM_COL32(178, 34, 34, 255);  // Firebrick
+			return IM_COL32(255, 239, 213, 255);  // Papaya Whip
 		case RE::FormType::NPC:
-			return IM_COL32(70, 130, 180, 255);  // Steel Blue
+			return IM_COL32(135, 206, 250, 255);  // Light Sky Blue
 		case RE::FormType::Tree:
-			return IM_COL32(0, 100, 0, 255);  // Dark Green
+			return IM_COL32(144, 238, 144, 255);  // Light Green
 		case RE::FormType::Static:
-			return IM_COL32(75, 0, 130, 255);  // Indigo
+			return IM_COL32(211, 211, 211, 255);  // Light Gray
 		case RE::FormType::Container:
-			return IM_COL32(139, 0, 0, 255);  // Dark Red
+			return IM_COL32(210, 180, 140, 255);  // Tan
 		case RE::FormType::Activator:
-			return IM_COL32(255, 69, 0, 255);  // Red Orange
+			return IM_COL32(255, 182, 193, 255);  // Light Pink
 		case RE::FormType::Light:
-			return IM_COL32(255, 215, 0, 255);  // Gold
+			return IM_COL32(255, 255, 224, 255);  // Light Yellow
 		case RE::FormType::Door:
-			return IM_COL32(0, 128, 0, 255);  // Green
+			return IM_COL32(175, 238, 238, 255);  // Pale Turquoise
 		case RE::FormType::Furniture:
-			return IM_COL32(139, 0, 139, 255);  // Dark Magenta
+			return IM_COL32(244, 164, 96, 255);  // Sandy Brown
 		default:
-			return IM_COL32(105, 105, 105, 255);  // Dim Gray
+			return IM_COL32(211, 211, 211, 255);  // Light Gray
 		}
 	}
 
@@ -699,6 +784,30 @@ namespace Utils
 
 		return a_text;
 	}
+
+	// This is kind of a lazy way of converting RE::ActorValue to a string.
+	// We could use something like a map or some offset calculation in the future
+	// to have it be more robust and compatible with mods that may modify the actor values.
+	inline static std::unordered_map<RE::ActorValue, std::string> SkillMap = {
+		{ RE::ActorValue::kBlock, "Block" },
+		{ RE::ActorValue::kTwoHanded, "Two-Handed" },
+		{ RE::ActorValue::kOneHanded, "One-Handed" },
+		{ RE::ActorValue::kArchery, "Archery" },
+		{ RE::ActorValue::kLightArmor, "Light Armor" },
+		{ RE::ActorValue::kPickpocket, "Pickpocket" },
+		{ RE::ActorValue::kLockpicking, "Lockpicking" },
+		{ RE::ActorValue::kSneak, "Sneak" },
+		{ RE::ActorValue::kAlchemy, "Alchemy" },
+		{ RE::ActorValue::kSpeech, "Speech" },
+		{ RE::ActorValue::kIllusion, "Illusion" },
+		{ RE::ActorValue::kConjuration, "Conjuration" },
+		{ RE::ActorValue::kDestruction, "Destruction" },
+		{ RE::ActorValue::kRestoration, "Restoration" },
+		{ RE::ActorValue::kAlteration, "Alteration" },
+		{ RE::ActorValue::kEnchanting, "Enchanting" },
+		{ RE::ActorValue::kSmithing, "Smithing" },
+		{ RE::ActorValue::kHeavyArmor, "Heavy Armor" }
+	};
 
 	inline static std::vector<std::string> GetSkillNames()
 	{
@@ -1056,16 +1165,15 @@ namespace Utils
 		}
 	}
 
-	template <class T>
-	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form, T& a_interface = nullptr)
+	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form)
 	{
 		std::string desc;
 
 		// This entirely removes HTML tags in Descriptions from Description Framework
 		// I did not see an instance where a Tag was necessary, so if there is
 		// This will need modified to only remove unecessary HTML tags.
-		if (a_interface != nullptr) {
-			desc = a_interface->GetDescription(form);
+		if (g_DescriptionFrameworkInterface != nullptr) {
+			desc = g_DescriptionFrameworkInterface->GetDescription(form);
 			if (!desc.empty()) {
 				Utils::RemoveHTMLTags(desc);
 				return desc;

@@ -32,7 +32,7 @@ namespace Modex
             ModexTableFlag_EnableSearch = 1 << 1,
             ModexTableFlag_EnableEnchantmentSort = 1 << 2,
             ModexTableFlag_EnableNonPlayableSort = 1 << 3,
-            ModexTableFlag_EnableKitView = 1 << 4
+            ModexTableFlag_EnablePluginKitView = 1 << 4
         };
 
         enum DragBehavior {
@@ -58,6 +58,7 @@ namespace Modex
         TableView() {
             this->searchKey = SortType::Name;
             this->sortBy = SortType::Name;
+            this->sortAscending = true;
             this->generalSearchBuffer[0] = '\0';
             this->pluginSearchBuffer[0] = '\0';
 
@@ -71,17 +72,19 @@ namespace Modex
             this->showEditorID = false;
             this->itemPreview = nullptr;
 
-            this->showKitView = false;
+            this->showPluginKitView = false;
             this->generator = nullptr;
             this->selectedKit = nullptr;
+            this->confirmDeleteKit = nullptr;
         }
 
         ~TableView() = default;
 
         // core behaviors
         void                    Draw();
-        void                    KitView();
+        void                    PluginKitView();
         void                    Refresh();
+        // void                    Load();
         void                    Init();
         void                    Reset();
         void                    SyncChangesToKit();
@@ -96,6 +99,7 @@ namespace Modex
         
         // drag n drop behaviors
         void                    AddDragDropTarget(const std::string a_id, TableView* a_view);
+        void                    RemoveDragDropTarget(const std::string a_id);
         void                    AddPayloadItemToKit(const std::unique_ptr<DataType>& a_item);
         void                    RemovePayloadItemFromKit(const std::unique_ptr<DataType>& a_item);
         const std::string       GetDragDropID() const { return dragDropSourceID; }
@@ -107,9 +111,11 @@ namespace Modex
         void                    ShowSort();
 
         // selection
-        void                    RemoveSelected();
+        void                    RemoveSelectedFromKit();
+        void                    AddSelectedToKit();
         void                    AddSelectionToInventory(int a_count);
         void                    PlaceSelectionOnGround(int a_count);
+
         std::vector<DataType>   GetSelection();
         TableItem&              GetItemPreview() { return itemPreview; }
 
@@ -120,6 +126,7 @@ namespace Modex
         void                                    BuildPluginList();
 
     private:
+
         // table meta data
         TableList               tableList;
         TableList               searchList;
@@ -134,12 +141,10 @@ namespace Modex
         TableItem               itemPreview;
 
         // kit specific stuff
-        void                    LoadKitsFromPlugin();
+        void                    LoadKitsFromSelectedPlugin();
         std::string*            selectedKit;
 
         // search and filter behavior
-        void                    ApplyFilters();
-        void                    ApplySearch();
         void                    Filter(const std::vector<DataType>& a_data);
         void                    SecondaryNPCFilter(const std::set<std::string>& a_data, const float& a_width);
         
@@ -156,16 +161,17 @@ namespace Modex
         bool                    secondaryFilterExpanded;
         
         // abstractions for compiling tablelist
-        void                    UpdateMasterList();
-        void                    UpdateSearch();
         void                    UpdateImGuiTableIDs();
+        void                    UpdateKitItemData();
         
         // sorting behavior
+        bool                    SortFnKit(const std::unique_ptr<Kit>& a, const std::unique_ptr<Kit>& b);
         bool                    SortFn(const std::unique_ptr<DataType>& a, const std::unique_ptr<DataType>& b);
         void                    SortListBySpecs();
 
         SortType                sortBy;
         SortTypeList            sortByList;
+        SortTypeList            sortByListKit;
         bool                    sortAscending;
 
         // view behavior
@@ -173,9 +179,10 @@ namespace Modex
         bool                    hideNonPlayable;
         bool                    compactView;
         bool                    showEditorID;
-        bool                    showKitView;
+        bool                    showPluginKitView;
 
         // layout and drawing
+        std::string             GetSortProperty(const DataType& a_item);
         void                    UpdateLayout(float a_width);
         void                    DrawItem(const DataType& a_item, const ImVec2& a_pos, const bool& a_selected);
         void                    DrawKit(const Kit& a_kit, const ImVec2& a_pos, const bool& a_selected);
@@ -200,12 +207,15 @@ namespace Modex
         ImGuiMultiSelectFlags_NoAutoSelect | ImGuiMultiSelectFlags_BoxSelect1d;
     
         ImGuiSelectionBasicStorage selectionStorage;
-        ImGuiSelectionBasicStorage kitSelectionStorage;
+        // ImGuiSelectionBasicStorage kitSelectionStorage;
 
         // This is a new implementation. We are storing pluginList in the instance of table view
         // so that it can be cached for performance. We need to update it if any parameters change.
         // In this case, primaryFilter changes the results of this. Blacklist too?
         std::vector<std::string>                pluginList;
+        std::unordered_set<const RE::TESFile*>  pluginSet;
+        std::ptrdiff_t                          totalGenerated;
+        std::unique_ptr<Kit>                    confirmDeleteKit;
 
         // test
         std::string                             dragDropTooltip;

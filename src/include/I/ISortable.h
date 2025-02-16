@@ -12,7 +12,7 @@ namespace Modex
 		{
 			auto baseDamage1 = Utils::CalcBaseDamage(a_lhs);
 			auto baseDamage2 = Utils::CalcBaseDamage(a_rhs);
-			return (baseDamage1 < baseDamage2) ? -1 : (baseDamage1 > baseDamage2) ? 1 :
+			return (baseDamage1 > baseDamage2) ? -1 : (baseDamage1 < baseDamage2) ? 1 :
 			                                                                        0;
 		}
 
@@ -20,7 +20,7 @@ namespace Modex
 		{
 			auto speed1 = a_lhs->weaponData.speed;
 			auto speed2 = a_rhs->weaponData.speed;
-			return (speed1 < speed2) ? -1 : (speed1 > speed2) ? 1 :
+			return (speed1 > speed2) ? -1 : (speed1 < speed2) ? 1 :
 			                                                    0;
 		}
 
@@ -48,7 +48,7 @@ namespace Modex
 			auto speed2 = a_rhs->weaponData.speed;
 			auto dps1 = (int)(baseDamage1 * speed1);
 			auto dps2 = (int)(baseDamage2 * speed2);
-			return (dps1 < dps2) ? -1 : (dps1 > dps2) ? 1 :
+			return (dps1 > dps2) ? -1 : (dps1 < dps2) ? 1 :
 			                                            0;
 		}
 
@@ -56,7 +56,7 @@ namespace Modex
 		{
 			auto critDamage1 = a_lhs->GetCritDamage();
 			auto critDamage2 = a_rhs->GetCritDamage();
-			return (critDamage1 < critDamage2) ? -1 : (critDamage1 > critDamage2) ? 1 :
+			return (critDamage1 > critDamage2) ? -1 : (critDamage1 < critDamage2) ? 1 :
 			                                                                        0;
 		}
 
@@ -64,7 +64,7 @@ namespace Modex
 		{
 			auto armorRating1 = a_lhs->armorRating;
 			auto armorRating2 = a_rhs->armorRating;
-			return (armorRating1 < armorRating2) ? -1 : (armorRating1 > armorRating2) ? 1 :
+			return (armorRating1 > armorRating2) ? -1 : (armorRating1 < armorRating2) ? 1 :
 			                                                                            0;
 		}
 

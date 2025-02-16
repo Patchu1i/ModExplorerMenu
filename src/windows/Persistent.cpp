@@ -152,7 +152,6 @@ namespace Modex
 		}
 
 		a_kit.name = a_new_name;
-		// SaveKitToJSON(a_new_name);
 		SaveKitToJSON(a_kit);
 
 		// Update runtime kit collection.
@@ -182,9 +181,6 @@ namespace Modex
 		DeleteKit(a_kit.name);
 	}
 
-	// TODO: Safety for nonexistent directory or paths
-	// TODO: This still crashes when we implement a new JSON structure or schema, implying that
-	// something is wrong with our catch statement or handling exceptions.
 	void PersistentData::LoadKit(const std::string& a_name)
 	{
 		nlohmann::json JSON = OpenJSONFile(json_user_path + "/kits/" + a_name);
@@ -198,8 +194,31 @@ namespace Modex
 		for (auto& [kit_name, category] : JSON.items()) {
 			Kit kit(kit_name, 0);
 
-			kit.desc = category["Description"].get<std::string>();
-			kit.clearEquipped = category["ClearEquipped"].get<bool>();
+			// These facilitate exception free loading of the JSON file.
+			// Any additions should follow this directive to prevent JSON parse CTD.
+			if (category.contains("Collection")) {
+				kit.collection = category["Collection"].get<std::string>();
+			} else {
+				kit.collection = kit_name;
+			}
+
+			if (category.contains("Description")) {
+				kit.desc = category["Description"].get<std::string>();
+			} else {
+				kit.desc = "No description.";
+			}
+
+			if (category.contains("ClearEquipped")) {
+				kit.clearEquipped = category["ClearEquipped"].get<bool>();
+			} else {
+				kit.clearEquipped = true;
+			}
+
+			if (category.contains("ReadOnly")) {
+				kit.readOnly = category["ReadOnly"].get<bool>();
+			} else {
+				kit.readOnly = false;
+			}
 
 			try {
 				for (auto& [item_eid, data] : category["Items"].items()) {
@@ -223,68 +242,28 @@ namespace Modex
 				break;
 			}
 
-			// Going to omit the following for now, since they're not implemented.
-			// Will add them back in once they're implemented.
-
-			// try {
-			// 	for (auto& [spell_eid, data] : category["Spells"].items()) {
-			// 		auto spell = std::make_shared<KitSpell>();
-			// 		spell->plugin = data["Plugin"].get<std::string>();
-			// 		spell->name = data["Name"].get<std::string>();
-			// 		spell->editorid = spell_eid;
-			// 		kit.spells.emplace(spell);
-			// 	}
-			// } catch (const nlohmann::json::exception& e) {
-			// 	logger::warn("Failed to load spells from kit {}. (ERROR:  {})", kit_name, e.what());
-			// 	logger::warn("If you manually edited the JSON file, please ensure the format is correct!");
-			// 	break;
-			// }
-
-			// try {
-			// 	for (auto& [perk_eid, data] : category["Perks"].items()) {
-			// 		auto perk = std::make_shared<KitPerk>();
-			// 		perk->plugin = data["Plugin"].get<std::string>();
-			// 		perk->name = data["Name"].get<std::string>();
-			// 		perk->editorid = perk_eid;
-			// 		perk->rank = data["Rank"].get<int>();
-			// 		kit.perks.emplace(perk);
-			// 	}
-
-			// } catch (const nlohmann::json::exception& e) {
-			// 	logger::warn("Failed to load perks from kit {}. (ERROR:  {})", kit_name, e.what());
-			// 	logger::warn("If you manually edited the JSON file, please ensure the format is correct!");
-			// 	break;
-			// }
-
-			// try {
-			// 	for (auto& [shout_eid, data] : category["Shouts"].items()) {
-			// 		auto shout = std::make_shared<KitShout>();
-			// 		shout->plugin = data["Plugin"].get<std::string>();
-			// 		shout->name = data["Name"].get<std::string>();
-			// 		shout->editorid = shout_eid;
-			// 		kit.shouts.emplace(shout);
-			// 	}
-			// } catch (const nlohmann::json::exception& e) {
-			// 	logger::warn("Failed to load shouts from kit {}. (ERROR:  {})", kit_name, e.what());
-			// 	logger::warn("If you manually edited the JSON file, please ensure the format is correct!");
-			// 	break;
-			// }
-
 			collection.emplace(kit_name, kit);
 		}
 	}
 
 	void PersistentData::SaveKitToJSON(const Kit& a_kit)
 	{
-		nlohmann::json JSON = OpenJSONFile(json_user_path + "/kits/" + a_kit.name + ".json");
+		nlohmann::json JSON;
+
+		// Right now, collections are mostly not exposed to the user.
+		// They are used to group kits together in a single file.
+
+		if (a_kit.collection.empty()) {
+			JSON = OpenJSONFile(json_user_path + "/kits/" + a_kit.name + ".json");
+		} else {
+			JSON = OpenJSONFile(json_user_path + "/kits/" + a_kit.collection + ".json");
+		}
 
 		JSON[a_kit.name] = {};
+		JSON[a_kit.name]["Collection"] = a_kit.collection.empty() ? a_kit.name : a_kit.collection;
 		JSON[a_kit.name]["Description"] = a_kit.desc;
 		JSON[a_kit.name]["ClearEquipped"] = a_kit.clearEquipped;
-		JSON[a_kit.name]["Items"] = {};
-		JSON[a_kit.name]["Spells"] = {};
-		JSON[a_kit.name]["Perks"] = {};
-		JSON[a_kit.name]["Shouts"] = {};
+		JSON[a_kit.name]["ReadOnly"] = a_kit.readOnly;
 
 		for (auto& item : a_kit.items) {
 			JSON[a_kit.name]["Items"][item->editorid] = {
@@ -295,33 +274,14 @@ namespace Modex
 			};
 		}
 
-		// Going to omit the following for now, since they're not implemented.
-		// Will add them back in once they're implemented.
-
-		// for (auto& spell : a_kit.spells) {
-		// 	JSON[a_kit.name]["Spells"][spell->editorid] = {
-		// 		{ "Plugin", spell->plugin },
-		// 		{ "Name", spell->name }
-		// 	};
-		// }
-
-		// for (auto& perk : a_kit.perks) {
-		// 	JSON[a_kit.name]["Perks"][perk->editorid] = {
-		// 		{ "Plugin", perk->plugin },
-		// 		{ "Name", perk->name },
-		// 		{ "Rank", perk->rank }
-		// 	};
-		// }
-
-		// for (auto& shout : a_kit.shouts) {
-		// 	JSON[a_kit.name]["Shouts"][shout->editorid] = {
-		// 		{ "Plugin", shout->plugin },
-		// 		{ "Name", shout->name }
-		// 	};
-		// }
-
-		if (!SaveJSONFile(json_user_path + "/kits/" + a_kit.name + ".json", JSON)) {
-			logger::warn("Failed to save changes to kit JSON file.");
+		if (a_kit.collection.empty()) {
+			if (!SaveJSONFile(json_user_path + "/kits/" + a_kit.name + ".json", JSON)) {
+				logger::warn("Failed to save changes to kit JSON file. {}", a_kit.name);
+			}
+		} else {
+			if (!SaveJSONFile(json_user_path + "/kits/" + a_kit.collection + ".json", JSON)) {
+				logger::warn("Failed to save changes to kit with collection name {}.", a_kit.collection);
+			}
 		}
 	}
 

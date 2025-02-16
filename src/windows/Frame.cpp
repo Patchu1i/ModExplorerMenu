@@ -129,6 +129,8 @@ namespace Modex
 						if (AddItemWindow::GetSingleton()->GetTableView().GetTableList().empty()) {
 							AddItemWindow::GetSingleton()->Refresh();
 						}
+
+						AddItemWindow::GetSingleton()->GetTableView().BuildPluginList();
 					}
 
 					ExpandButton();

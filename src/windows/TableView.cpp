@@ -1,4 +1,6 @@
 #include "include/C/Console.h"
+#include "include/I/ItemPreview.h"
+#include "include/M/Menu.h"
 #include "include/T/Table.h"
 #include <execution>
 
@@ -8,6 +10,64 @@ namespace Modex
 	template class TableView<ItemData>;
 	template class TableView<NPCData>;
 	template class TableView<ObjectData>;
+
+	void AddKitToInventory(const std::unique_ptr<Kit>& a_kit)
+	{
+		if (a_kit->items.empty()) {
+			return;
+		}
+
+		if (a_kit->clearEquipped) {
+			Console::ClearEquipped();
+		}
+
+		for (auto& item : a_kit->items) {
+			if (RE::TESForm* form = RE::TESForm::LookupByEditorID(item->editorid)) {
+				Console::AddItemEx(form->GetFormID(), item->amount, item->equipped);
+			}
+		}
+
+		Console::StartProcessThread();
+	}
+
+	void DeleteKit(const std::unique_ptr<Kit>& a_kit)
+	{
+		PersistentData::GetSingleton()->DeleteKit(a_kit->name);
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::AddSelectionToInventory(int a_count)
+	{
+		void* it = NULL;
+		ImGuiID id = 0;
+
+		while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+			if (id < std::ssize(tableList) && id >= 0) {
+				const auto& item = tableList[id];
+				Console::AddItem(item->GetFormID().c_str(), a_count);
+			}
+		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::PlaceSelectionOnGround(int a_count)
+	{
+		void* it = NULL;
+		ImGuiID id = 0;
+
+		while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+			if (id < std::ssize(tableList) && id >= 0) {
+				const auto& item = tableList[id];
+				Console::PlaceAtMe(item->GetFormID().c_str(), a_count);
+			}
+		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
+	}
 
 	// We instantiate a TableView with a specific Module handle so that
 	// some sorting and filtering options are routed correctly, since as of now
@@ -47,6 +107,12 @@ namespace Modex
 			SortType::Skill,
 			SortType::DamagePerSecond
 		};
+
+		this->sortByListKit = {
+			SortType::Name
+		};
+
+		this->BuildPluginList();
 	}
 
 	void TableView<NPCData>::Init()
@@ -73,11 +139,14 @@ namespace Modex
 		};
 
 		this->primaryFilterList = {
-			RE::FormType::Activator,
-			RE::FormType::Flora,
-			RE::FormType::Furniture,
+			RE::FormType::Tree,
 			RE::FormType::Static,
-			RE::FormType::Tree
+			RE::FormType::Container,
+			RE::FormType::Activator,
+			RE::FormType::Light,
+			RE::FormType::Door,
+			RE::FormType::Furniture,
+			RE::FormType::Flora
 		};
 	}
 
@@ -85,6 +154,15 @@ namespace Modex
 	void TableView<DataType>::AddDragDropTarget(const std::string a_id, TableView* a_view)
 	{
 		this->dragDropSourceList[a_id] = a_view;
+	}
+
+	template <class DataType>
+	void TableView<DataType>::RemoveDragDropTarget(const std::string a_id)
+	{
+		auto it = this->dragDropSourceList.find(a_id);
+		if (it != this->dragDropSourceList.end()) {
+			this->dragDropSourceList.erase(it);
+		}
 	}
 
 	template <typename DataType>
@@ -124,6 +202,15 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::AddPayloadItemToKit(const std::unique_ptr<DataType>& a_item)
 	{
+		const auto& collection = PersistentData::GetLoadedKits();
+		if (auto it = collection.find(*this->selectedKit); it != collection.end()) {
+			auto& kit = it->second;
+
+			if (kit.readOnly) {
+				return;
+			}
+		}
+
 		for (auto& item : this->tableList) {
 			if (item->GetEditorID() == a_item->GetEditorID()) {
 				return;
@@ -134,85 +221,76 @@ namespace Modex
 	}
 
 	template <typename DataType>
-	void TableView<DataType>::RemoveSelected()
+	void TableView<DataType>::AddSelectedToKit()
+	{
+		if (auto map = this->dragDropSourceList.find("FROM_KIT"); map != this->dragDropSourceList.end()) {
+			const auto dragDropSourceTable = map->second->GetTableListPtr();
+
+			void* it = NULL;
+			ImGuiID id = 0;
+
+			while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+				if (id < tableList.size() && id >= 0) {
+					const auto& item = this->tableList[id];
+
+					auto iter = std::find_if(dragDropSourceTable->begin(), dragDropSourceTable->end(),
+						[&item](const std::unique_ptr<DataType>& a_item) {
+							return a_item->GetEditorID() == item->GetEditorID();
+						});
+
+					if (iter == dragDropSourceTable->end()) {
+						dragDropSourceTable->emplace_back(std::make_unique<DataType>(*item));
+					}
+				}
+			}
+		}
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::RemoveSelectedFromKit()
 	{
 		if (this->tableList.empty()) {
 			return;
 		}
 
-		auto selectedItems = this->GetSelection();
+		void* it = NULL;
+		ImGuiID id = 0;
 
-		if (selectedItems.empty()) {
-			return;
+		std::vector<std::unique_ptr<DataType>> items_to_remove;
+
+		while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+			if (id < tableList.size() && id >= 0) {
+				items_to_remove.emplace_back(std::make_unique<DataType>(*this->tableList[id]));
+			}
+		}
+
+		for (const auto& item : items_to_remove) {
+			this->RemovePayloadItemFromKit(item);
 		}
 	}
-
-	// Deprecated, moved into Drag Drop operation directly. (?)
 
 	template <typename DataType>
 	void TableView<DataType>::RemovePayloadItemFromKit(const std::unique_ptr<DataType>& a_item)
 	{
-		IM_UNUSED(a_item);
-		// if (this->tableList.empty()) {
-		// 	return;
-		// }
-
-		// this->tableList.erase(
-		// 	std::remove_if(this->tableList.begin(), this->tableList.end(),
-		// 		[&a_item](const std::unique_ptr<DataType>& item) {
-		// 			return item->GetEditorID() == a_item->GetEditorID();
-		// 		}),
-		// 	this->tableList.end());
-	}
-
-	template <typename DataType>
-	void TableView<DataType>::AddSelectionToInventory(int a_count)
-	{
-		// TODO: Fix or implement this better
-		if (a_count < 0) {
-			a_count = 1;
-		}
-
 		if (this->tableList.empty()) {
 			return;
 		}
 
-		auto selectedItems = this->GetSelection();
+		const auto& collection = PersistentData::GetLoadedKits();
+		if (auto it = collection.find(*this->selectedKit); it != collection.end()) {
+			auto& kit = it->second;
 
-		if (selectedItems.empty()) {
-			return;
+			if (kit.readOnly) {
+				return;
+			}
 		}
 
-		for (auto& item : selectedItems) {
-			Console::AddItem(item.GetFormID().c_str(), a_count);
-		}
+		auto it = std::remove_if(this->tableList.begin(), this->tableList.end(),
+			[&a_item](const std::unique_ptr<DataType>& item) {
+				return item->GetEditorID() == a_item->GetEditorID();
+			});
 
-		Console::StartProcessThread();
-	}
-
-	template <typename DataType>
-	void TableView<DataType>::PlaceSelectionOnGround(int a_count)
-	{
-		// TODO: Fix or implement this better
-		if (a_count < 0) {
-			a_count = 1;
-		}
-
-		if (this->tableList.empty()) {
-			return;
-		}
-
-		auto selectedItems = this->GetSelection();
-
-		if (selectedItems.empty()) {
-			return;
-		}
-
-		for (auto& item : selectedItems) {
-			Console::PlaceAtMe(item.GetFormID().c_str(), a_count);
-		}
-
-		Console::StartProcessThread();
+		this->tableList.erase(it, this->tableList.end());
 	}
 
 	template <typename DataType>
@@ -221,70 +299,46 @@ namespace Modex
 		if (this->HasFlag(ModexTableFlag_Kit)) {
 			if (this->selectedKit) {
 				auto& collection = PersistentData::GetLoadedKits();
-				auto& kit = collection.at(*this->selectedKit);
+				if (auto it = collection.find(*this->selectedKit); it != collection.end()) {
+					auto& kit = it->second;
 
-				kit.items.clear();
+					kit.items.clear();
 
-				for (auto& item : this->tableList) {
-					kit.items.emplace(CreateKitItem(*item));
+					if (!this->tableList.empty()) {
+						for (auto& item : this->tableList) {
+							kit.items.emplace(CreateKitItem(*item));
+						}
+					}
+
+					PersistentData::GetSingleton()->SaveKitToJSON(kit);
 				}
-
-				PersistentData::GetSingleton()->SaveKitToJSON(kit);
 			}
 		}
-	}
-
-	// Until we refactor the DataTypes used in tables to be polymorphic or whatever,
-	// we have to write an ApplyFilter behavior for each module individually. Only
-	// a little of the search code is shared between modules, independent of class type.
-	template <typename DataType>
-	void TableView<DataType>::ApplyFilters()
-	{
-		if (this->generator) {
-			this->Filter(this->generator());
-		}
-	}
-
-	template <typename DataType>
-	void TableView<DataType>::UpdateMasterList()
-	{
-		this->tableList.clear();
-		this->ApplyFilters();
-		this->ApplySearch();
-		this->tableList = std::move(this->searchList);
-		this->UpdateImGuiTableIDs();
-	}
-
-	template <typename DataType>
-	void TableView<DataType>::UpdateSearch()
-	{
-		this->searchList.clear();
-		this->ApplySearch();
-		this->tableList = std::move(this->searchList);
-		this->UpdateImGuiTableIDs();
 	}
 
 	template <typename DataType>
 	void TableView<DataType>::Refresh()
 	{
+		assert(this->generator);
+
+		selectionStorage.Clear();
+
 		if (this->HasFlag(ModexTableFlag_Kit)) {
 			if (this->selectedKit) {
-				this->tableList.clear();
-				this->ApplyFilters();
-				// this->tableList = this->filterList;
-				this->tableList = std::move(this->filterList);
+				this->Filter(this->generator());
 
-				// Automatically sort the kit table.
-				// Too heavy for main table.
 				this->SortListBySpecs();
 				this->UpdateImGuiTableIDs();
+				this->UpdateKitItemData();
 			}
 		} else {
-			this->UpdateMasterList();
+			this->Filter(this->generator());
+			this->SortListBySpecs();
+			this->UpdateImGuiTableIDs();
 
 			// In-table kit view is disabled if there are no kits in the plugin.
 			if (this->kitList.empty()) {
-				this->showKitView = false;
+				this->showPluginKitView = false;
 			}
 		}
 	}
@@ -304,81 +358,55 @@ namespace Modex
 		this->Refresh();
 	}
 
-	// Abstracting out search behavior from the filter to hopefully increase performance.
-	// Since filtering is a lot more common than searching, and filtering is expensive, maybe
-	// we can quicken both operations by decoupling them
 	template <typename DataType>
-	void TableView<DataType>::ApplySearch()
+	void TableView<DataType>::Filter(const std::vector<DataType>& a_data)
 	{
-		searchList.clear();
-		searchList.reserve(std::ssize(this->filterList));
+		tableList.clear();
+		tableList.reserve(std::ssize(a_data));
 
-		if (this->generalSearchBuffer[0] == '\0') {
-			// If the search buffer is empty, we just copy the data over.
-			for (const auto& item : this->filterList) {
-				this->searchList.emplace_back(std::make_unique<DataType>(item.get()->GetForm(), 0));
-			}
-
-			return;
-		}
+		this->totalGenerated = std::ssize(a_data);
 
 		std::string inputString = this->generalSearchBuffer;
 		std::transform(inputString.begin(), inputString.end(), inputString.begin(),
 			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		for (const auto& item : this->filterList) {
-			const auto& item_data = item.get();
-			std::string compareString;
-
-			switch (this->searchKey) {
-			case SortType::Name:
-				compareString = item_data->GetNameView();
-				break;
-			case SortType::FormID:
-				compareString = item_data->GetFormID();
-				break;
-			case SortType::EditorID:
-				compareString = item_data->GetEditorID();
-				break;
-			default:
-				compareString = item_data->GetNameView();
-				break;
-			}
-
-			std::transform(compareString.begin(), compareString.end(), compareString.begin(),
-				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-			// If the input is wrapped in quotes, we do an exact match across all parameters.
-			if (!inputString.empty() && inputString.front() == '"' && inputString.back() == '"') {
-				std::string match = inputString.substr(1, inputString.size() - 2);
-
-				if (compareString == match) {
-					this->searchList.emplace_back(std::make_unique<DataType>(item_data->GetForm(), 0));
-				}
-
-				continue;
-			}
-
-			if (compareString.find(inputString) != std::string::npos) {
-				this->searchList.emplace_back(std::make_unique<DataType>(item_data->GetForm(), 0));
-			}
-		}
-	}
-
-	template <typename DataType>
-	void TableView<DataType>::Filter(const std::vector<DataType>& a_data)
-	{
-		filterList.clear();
-		filterList.reserve(std::ssize(a_data));
-
-		// We need to keep track of the items table ID based on whether an item is shown or not.
-		// Table ID is used to identify the item in the table, mostly for multi-selection.
-		// Typically, it corresponds to the row index in the table.
-
 		for (const auto& item : a_data) {
 			if (this->HasFlag(ModexTableFlag_Kit)) {
-				this->filterList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
 				continue;
+			}
+
+			std::string compareString;
+
+			if (!inputString.empty()) {
+				switch (this->searchKey) {
+				case SortType::Name:
+					compareString = item.GetNameView();
+					break;
+				case SortType::FormID:
+					compareString = item.GetFormID();
+					break;
+				case SortType::EditorID:
+					compareString = item.GetEditorID();
+					break;
+				default:
+					compareString = item.GetNameView();
+					break;
+				}
+
+				std::transform(compareString.begin(), compareString.end(), compareString.begin(),
+					[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+				// If the input is wrapped in quotes, we do an exact match across all parameters.
+				if (!inputString.empty() && inputString.front() == '"' && inputString.back() == '"') {
+					std::string match = inputString.substr(1, inputString.size() - 2);
+
+					if (compareString == match) {
+						this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+					}
+
+					continue;
+				}
 			}
 
 			// All Mods vs Selected Mod
@@ -393,24 +421,19 @@ namespace Modex
 				}
 			}
 
-			// Item Specific compile-time Filters
 			if constexpr (std::is_same_v<DataType, ItemData>) {
+				// Non-playable
 				if (this->hideNonPlayable && item.IsNonPlayable()) {
 					continue;
 				}
 
-				if (item.GetFormType() == RE::FormType::Armor && this->hideEnchanted) {
-					if (const auto& armor = item.GetForm()->As<RE::TESObjectARMO>()) {
-						if (this->hideEnchanted && armor->formEnchanting != nullptr) {
-							continue;
-						}
-					}
-				}
-
-				if (item.GetFormType() == RE::FormType::Weapon && this->hideEnchanted) {
-					if (const auto& armor = item.GetForm()->As<RE::TESObjectWEAP>()) {
-						if (this->hideEnchanted && armor->formEnchanting != nullptr) {
-							continue;
+				// Hide Enchanted
+				if (this->hideEnchanted) {
+					if (item.GetFormType() == RE::FormType::Armor || item.GetFormType() == RE::FormType::Weapon) {
+						if (const auto& enchantable = item.GetForm()->As<RE::TESEnchantableForm>()) {
+							if (enchantable->formEnchanting != nullptr) {
+								continue;
+							}
 						}
 					}
 				}
@@ -455,7 +478,13 @@ namespace Modex
 				}
 			}
 
-			this->filterList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+			if (!inputString.empty()) {
+				if (compareString.find(inputString) != std::string::npos) {
+					this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+				}
+			} else {
+				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+			}
 		}
 	}
 
@@ -489,11 +518,24 @@ namespace Modex
 		}
 	}
 
+	// TODO: Do I need to reimplement this for each data type so that the plugin set is correctly attributed?
+	// We removed the correlation between the plugin set and primary form type to speed up filtering when
+	// selecting a primary filter. So reverting this would reintroduce those changes because we'd have to
+	// then build the list everytime we filter, no?
+
+	// This should only be called once when the module is loaded, and then only when the module is selected.
+	// Since the only thing that modifies these members is the blacklist.
+	// We could implement some sort of smart cross-compare to further reduce the calls made to this.
+
+	// 2/12/2025 - Just going to hold off on implementing the FormType filter since it's probably
+	// confusing to users anyways.
+
 	template <class DataType>
 	void TableView<DataType>::BuildPluginList()
 	{
 		const auto& config = Settings::GetSingleton()->GetConfig();
 		this->pluginList = Data::GetSingleton()->GetFilteredListOfPluginNames(this->pluginType, (Data::SORT_TYPE)config.modListSort, this->primaryFilter);
+		this->pluginSet = Data::GetSingleton()->GetModulePluginList(this->pluginType);
 		pluginList.insert(pluginList.begin(), _T("SHOW_ALL_PLUGINS"));
 	}
 
@@ -523,7 +565,7 @@ namespace Modex
 				IM_ARRAYSIZE(this->generalSearchBuffer),
 				Frame::INPUT_FLAGS)) {
 			// Refresh();
-			this->UpdateSearch();
+			this->Refresh();
 		}
 
 		ImGui::SameLine();
@@ -565,7 +607,7 @@ namespace Modex
 				ImGui::SetItemDefaultFocus();
 				this->primaryFilter = RE::FormType::None;
 				this->secondaryFilter = _T("All");
-				this->UpdateMasterList();
+				this->Refresh();
 			}
 
 			for (auto& filter : this->primaryFilterList) {
@@ -575,7 +617,7 @@ namespace Modex
 				if (ImGui::Selectable(option.c_str(), is_selected)) {
 					this->primaryFilter = filter;
 					this->secondaryFilter = _T("All");
-					this->UpdateMasterList();
+					this->Refresh();
 				}
 
 				if (is_selected) {
@@ -597,7 +639,7 @@ namespace Modex
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
 					ImGui::SetItemDefaultFocus();
 					this->secondaryFilter = _T("All");
-					this->UpdateMasterList();
+					this->Refresh();
 				}
 
 				// TODO: Does this need localized? If it does, we also need to
@@ -609,7 +651,7 @@ namespace Modex
 
 					if (ImGui::Selectable(_T(slot), is_selected)) {
 						this->secondaryFilter = slot;
-						this->UpdateMasterList();
+						this->Refresh();
 					}
 
 					if (is_selected) {
@@ -627,7 +669,7 @@ namespace Modex
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
 					ImGui::SetItemDefaultFocus();
 					this->secondaryFilter = _T("All");
-					this->UpdateMasterList();
+					this->Refresh();
 				}
 
 				// TODO: Refactor and include this with ItemPreview reference.
@@ -650,7 +692,7 @@ namespace Modex
 
 					if (ImGui::Selectable(_T(type), is_selected)) {
 						this->secondaryFilter = type;
-						this->UpdateMasterList();
+						this->Refresh();
 					}
 
 					if (is_selected) {
@@ -691,108 +733,102 @@ namespace Modex
 		ImGui::SetCursorPosY(a_height - ImGui::GetFrameHeightWithSpacing() * 2.0f);
 		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
 		if (InputTextComboBox("##Search::Filter::PluginField", this->pluginSearchBuffer, this->selectedPlugin, IM_ARRAYSIZE(this->pluginSearchBuffer), this->pluginList, total_width)) {
-			auto modList = Data::GetSingleton()->GetModulePluginList(this->pluginType);
 			this->selectedPlugin = _T("SHOW_ALL_PLUGINS");
 
 			if (this->selectedPlugin.find(this->pluginSearchBuffer) != std::string::npos) {
 				ImFormatString(this->pluginSearchBuffer, IM_ARRAYSIZE(this->pluginSearchBuffer), "");
 			} else {
-				for (auto& mod : modList) {
-					if (PersistentData::GetBlacklist().contains(mod)) {
+				for (auto& plugin : this->pluginSet) {
+					if (PersistentData::GetBlacklist().contains(plugin)) {
 						continue;
 					}
 
-					std::string modName = Modex::ValidateTESFileName(mod);
+					std::string pluginName = Modex::ValidateTESFileName(plugin);
 
-					if (modName == _T("SHOW_ALL_PLUGINS")) {
+					if (pluginName == _T("SHOW_ALL_PLUGINS")) {
 						ImFormatString(this->pluginSearchBuffer, IM_ARRAYSIZE(this->pluginSearchBuffer), "");
 						break;
 					}
 
-					if (modName.find(this->pluginSearchBuffer) != std::string::npos) {
-						this->selectedPlugin = modName;
+					if (pluginName.find(this->pluginSearchBuffer) != std::string::npos) {
+						this->selectedPlugin = pluginName;
 						ImFormatString(this->pluginSearchBuffer, IM_ARRAYSIZE(this->pluginSearchBuffer), "");
 						break;
 					}
 				}
 			}
 
+			this->LoadKitsFromSelectedPlugin();
+			this->selectionStorage.Clear();
 			this->Refresh();
 		}
 
 		ImGui::NextColumn();
 
-		ImGui::SubCategoryHeader(_T("GENERAL_TOTAL_HEADER"));
-
 		const float maxWidth = ImGui::GetContentRegionAvail().x;
-		const auto InlineText = [maxWidth](const char* label, const char* text) {
+		const auto InlineText = [maxWidth](const char* label, const char* text, const char* tooltip) {
 			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x);
 			ImGui::Text(label);
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip(tooltip);
+			}
 			ImGui::SameLine(width);
 			ImGui::Text(text);
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip(tooltip);
+			}
 		};
 
+		const auto total_plugins = std::ssize(pluginList);
+		const auto total_items = std::ssize(tableList);
+		const auto total_blacklist = std::ssize(PersistentData::GetBlacklist());
+		const auto total_kits = std::ssize(PersistentData::GetLoadedKits());
+		const auto total_kits_in_plugin = std::ssize(this->kitList);
+
+		// Calling this->generator() to compute hidden items should be okay since it's a reference
+		// to a cached table, and we're not re-generating it every frame.
+
+		std::ptrdiff_t empty = 0;
+		std::ptrdiff_t hidden_items = std::max(totalGenerated - total_items, empty);
+		// std::ptrdiff_t hidden_plugins = std::max(std::ssize(pluginList) - total_plugins, empty);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 4.0f));
+		InlineText(
+			_TICONM(ICON_LC_PACKAGE_PLUS, "GENERAL_TOTAL_PLUGINS", ":"),
+			std::to_string(total_plugins).c_str(),
+			_T("TOOLTIP_TOTAL_PLUGIN"));
+
+		InlineText(
+			_TICONM(ICON_LC_PACKAGE_SEARCH, "GENERAL_TOTAL_BLACKLIST", ":"),
+			std::to_string(total_blacklist).c_str(),
+			_T("TOOLTIP_BLACKLIST_PLUGIN"));
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		InlineText(
+			_TICONM(ICON_LC_SEARCH, "Search Results", ":"),
+			std::to_string(total_items).c_str(),
+			_T("TOOLTIP_TOTAL_SEARCH"));
+
+		InlineText(
+			_TICONM(ICON_LC_EYE_OFF, "GENERAL_TOTAL_HIDDEN", ":"),
+			std::to_string(hidden_items).c_str(),
+			_T("TOOLTIP_TOTAL_FILTERED"));
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		InlineText(
+			_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"),
+			std::to_string(total_kits).c_str(),
+			_T("TOOLTIP_TOTAL_KITS"));
+
+		InlineText(
+			_TICONM(ICON_LC_PACKAGE_OPEN, "GENERAL_KITS_IN_PLUGIN", ":"),
+			std::to_string(total_kits_in_plugin).c_str(),
+			_T("TOOLTIP_TOTAL_KITS_IN_PLUGIN"));
+
+		ImGui::PopStyleVar();
 		ImGui::EndColumns();
-
-		// TODO: The hidden_plugins and subsequently other calculations here are probably expensive.
-		// Maybe I can store this information in the Data class and just call it here instead?
-		// No, I can't, because each module will likely have different results?
-
-		// const auto total_plugins = std::ssize(pluginList);
-		// const auto total_items = std::ssize(tableList);
-		// const auto total_blacklist = std::ssize(PersistentData::GetBlacklist());
-		// std::ptrdiff_t hidden_items;
-		// std::ptrdiff_t hidden_plugins;
-		// std::ptrdiff_t empty = 0;
-
-		// // Kinda sloppy
-		// switch (this->pluginType) {
-		// case Data::PLUGIN_TYPE::ITEM:
-		// 	hidden_items = std::max(std::ssize(Data::GetSingleton()->GetAddItemList()) - total_plugins, empty);
-		// 	hidden_plugins = std::max(std::ssize(Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::ITEM)) - total_plugins, empty);
-		// 	break;
-		// case Data::PLUGIN_TYPE::NPC:
-		// 	hidden_items = std::max(std::ssize(Data::GetSingleton()->GetNPCList()) - total_plugins, empty);
-		// 	hidden_plugins = std::max(std::ssize(Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::NPC)) - total_plugins, empty);
-		// 	break;
-		// case Data::PLUGIN_TYPE::OBJECT:
-		// 	hidden_items = std::max(std::ssize(Data::GetSingleton()->GetObjectList()) - total_plugins, empty);
-		// 	hidden_plugins = std::max(std::ssize(Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::OBJECT)) - total_plugins, empty);
-		// 	break;
-		// case Data::PLUGIN_TYPE::CELL:
-		// 	hidden_items = std::max(std::ssize(Data::GetSingleton()->GetTeleportList()) - total_plugins, empty);
-		// 	hidden_plugins = std::max(std::ssize(Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL)) - total_plugins, empty);
-		// 	break;
-		// default:
-		// 	hidden_items = 0;
-		// 	hidden_plugins = 0;
-		// }
-
-		// InlineText(_TICONM(ICON_LC_PACKAGE_PLUS, "GENERAL_TOTAL_PLUGINS", ":"), std::to_string(total_plugins).c_str());
-		// if (ImGui::IsItemHovered()) {
-		// 	ImGui::SetTooltip(_T("TOOLTIP_TOTAL_PLUGIN"));
-		// }
-
-		// InlineText(_TICONM(ICON_LC_PACKAGE_SEARCH, "GENERAL_TOTAL_BLACKLIST", ":"), std::to_string(total_blacklist).c_str());
-		// if (ImGui::IsItemHovered()) {
-		// 	ImGui::SetTooltip(_T("TOOLTIP_BLACKLIST_PLUGIN"));
-		// }
-
-		// InlineText(_TICONM(ICON_LC_PACKAGE_SEARCH, "GENERAL_TOTAL_HIDDEN", ":"), std::to_string(hidden_plugins).c_str());
-		// if (ImGui::IsItemHovered()) {
-		// 	ImGui::SetTooltip(_T("TOOLTIP_HIDDEN_PLUGIN"));
-		// }
-		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-		// InlineText(_TICONM(ICON_LC_SEARCH, "Search Results", ":"), std::to_string(total_items).c_str());
-		// if (ImGui::IsItemHovered()) {
-		// 	ImGui::SetTooltip(_T("TOOLTIP_TOTAL_SEARCH"));
-		// }
-
-		// InlineText(_TICONM(ICON_LC_EYE_OFF, "GENERAL_TOTAL_HIDDEN", ":"), std::to_string(hidden_items).c_str());
-		// if (ImGui::IsItemHovered()) {
-		// 	ImGui::SetTooltip(_T("TOOLTIP_TOTAL_FILTERED"));
-		// }
 
 		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		// // InlineText(_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"), std::to_string(PersistentData::GetLoadedKits().size()).c_str());
@@ -847,39 +883,39 @@ namespace Modex
 	{
 		switch (a_type) {
 		case RE::FormType::Armor:
-			return IM_COL32(128, 0, 0, 255);  // Maroon
+			return IM_COL32(0, 102, 204, 255);  // Medium Blue
 		case RE::FormType::AlchemyItem:
-			return IM_COL32(0, 128, 128, 255);  // Teal
+			return IM_COL32(0, 204, 204, 255);  // Cyan
 		case RE::FormType::Ammo:
-			return IM_COL32(128, 128, 0, 255);  // Olive
+			return IM_COL32(204, 204, 0, 255);  // Yellow
 		case RE::FormType::Book:
-			return IM_COL32(139, 69, 19, 255);  // Saddle Brown
+			return IM_COL32(153, 76, 0, 255);  // Brown
 		case RE::FormType::Ingredient:
-			return IM_COL32(34, 139, 34, 255);  // Forest Green
+			return IM_COL32(0, 153, 0, 255);  // Green
 		case RE::FormType::KeyMaster:
-			return IM_COL32(255, 140, 0, 255);  // Dark Orange
+			return IM_COL32(255, 153, 51, 255);  // Orange
 		case RE::FormType::Misc:
-			return IM_COL32(128, 0, 128, 255);  // Purple
+			return IM_COL32(153, 0, 153, 255);  // Purple
 		case RE::FormType::Weapon:
-			return IM_COL32(178, 34, 34, 255);  // Firebrick
+			return IM_COL32(255, 51, 51, 255);  // Bright Red
 		case RE::FormType::NPC:
-			return IM_COL32(70, 130, 180, 255);  // Steel Blue
+			return IM_COL32(102, 178, 255, 255);  // Light Blue
 		case RE::FormType::Tree:
-			return IM_COL32(0, 100, 0, 255);  // Dark Green
+			return IM_COL32(0, 102, 0, 255);  // Dark Green
 		case RE::FormType::Static:
-			return IM_COL32(75, 0, 130, 255);  // Indigo
+			return IM_COL32(102, 0, 204, 255);  // Violet
 		case RE::FormType::Container:
-			return IM_COL32(139, 0, 0, 255);  // Dark Red
+			return IM_COL32(204, 0, 0, 255);  // Dark Red
 		case RE::FormType::Activator:
-			return IM_COL32(255, 69, 0, 255);  // Red Orange
+			return IM_COL32(255, 102, 0, 255);  // Orange Red
 		case RE::FormType::Light:
-			return IM_COL32(255, 215, 0, 255);  // Gold
+			return IM_COL32(255, 204, 0, 255);  // Gold
 		case RE::FormType::Door:
-			return IM_COL32(0, 128, 0, 255);  // Green
+			return IM_COL32(0, 204, 0, 255);  // Bright Green
 		case RE::FormType::Furniture:
-			return IM_COL32(139, 0, 139, 255);  // Dark Magenta
+			return IM_COL32(153, 0, 153, 255);  // Dark Magenta
 		default:
-			return IM_COL32(105, 105, 105, 255);  // Dim Gray
+			return IM_COL32(169, 169, 169, 255);  // Dark Gray
 		}
 	}
 
@@ -955,6 +991,97 @@ namespace Modex
 	}
 
 	template <typename DataType>
+	std::string TableView<DataType>::GetSortProperty(const DataType& a_item)
+	{
+		if constexpr (std::is_same<DataType, ItemData>::value) {
+			switch (this->sortBy) {
+			case SortType::Name:
+			case SortType::Plugin:
+			case SortType::FormID:
+			case SortType::Value:
+			case SortType::Weight:
+			case SortType::Type:
+				return "";
+			case SortType::EditorID:
+				return a_item.GetEditorID();
+			case SortType::Damage:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						return Utils::IconMap["WEAPON"] + std::to_string(static_cast<int>(Utils::CalcBaseDamage(weapon)));
+					}
+				}
+			case SortType::Armor:
+				if (a_item.GetFormType() == RE::FormType::Armor) {
+					if (const auto& armor = a_item.GetForm()->As<RE::TESObjectARMO>()) {
+						return Utils::IconMap["ARMOR"] + std::to_string(static_cast<int>(Utils::CalcBaseArmorRating(armor)));
+					}
+				}
+			case SortType::Slot:
+				if (a_item.GetFormType() == RE::FormType::Armor) {
+					if (const auto& armor = a_item.GetForm()->As<RE::TESObjectARMO>()) {
+						const auto equipSlots = Utils::GetArmorSlots(armor);
+						if (!equipSlots.empty()) {
+							return Utils::IconMap["SLOT"] + equipSlots[0];
+						}
+					}
+				}
+			case SortType::Speed:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						const float speed = weapon->GetSpeed();
+						const std::string out = std::format("{:.2f}", speed);
+						return Utils::IconMap["SPEED"] + out;
+					}
+				}
+			case SortType::CriticalDamage:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						float critical_damage = weapon->GetCritDamage();
+						const std::string out = std::format("{:.2f}", critical_damage);
+						return Utils::IconMap["CRIT"] + out;
+					}
+				}
+			case SortType::Skill:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						return Utils::IconMap["SKILL"] + Utils::GetWeaponType(weapon);
+					}
+				}
+			case SortType::DamagePerSecond:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						const float damage = Utils::CalcBaseDamage(weapon);
+						const float speed = weapon->GetSpeed();
+						const float dps = (damage * speed);
+						const std::string out = std::format("{:.2}", dps);
+						return Utils::IconMap["DAMAGE"] + out;
+					}
+				}
+			}
+		}
+
+		return "";
+	}
+
+	template <typename DataType>
+	bool TableView<DataType>::SortFnKit(const std::unique_ptr<Kit>& lhs, const std::unique_ptr<Kit>& rhs)
+	{
+		int delta = 0;
+		switch (sortBy) {
+		case SortType::Name:
+			delta = lhs->name.compare(rhs->name);
+			break;
+		}
+
+		if (delta > 0)
+			return sortAscending ? false : true;
+		if (delta < 0)
+			return sortAscending ? true : false;
+
+		return false;
+	}
+
+	template <typename DataType>
 	bool TableView<DataType>::SortFn(const std::unique_ptr<DataType>& lhs, const std::unique_ptr<DataType>& rhs)
 	{
 		int delta = 0;
@@ -976,14 +1103,14 @@ namespace Modex
 			if constexpr (!std::is_base_of<BaseObject, DataType>::value)
 				break;
 			else
-				delta = (lhs->GetBaseForm() < rhs->GetBaseForm()) ? -1 : (lhs->GetBaseForm() > rhs->GetBaseForm()) ? 1 :
+				delta = (lhs->GetBaseForm() > rhs->GetBaseForm()) ? -1 : (lhs->GetBaseForm() < rhs->GetBaseForm()) ? 1 :
 				                                                                                                     0;
 			break;
 		case SortType::ReferenceID:
 			if constexpr (!std::is_base_of<BaseObject, DataType>::value)
 				break;
 			else
-				delta = (lhs->refID < rhs->refID) ? -1 : (lhs->refID > rhs->refID) ? 1 :
+				delta = (lhs->refID > rhs->refID) ? -1 : (lhs->refID < rhs->refID) ? 1 :
 				                                                                     0;
 			break;
 		case SortType::Name:
@@ -1027,7 +1154,7 @@ namespace Modex
 			} else {
 				auto lhsLevel = lhs->GetLevel();
 				auto rhsLevel = rhs->GetLevel();
-				delta = (lhsLevel < rhsLevel) ? -1 : (lhsLevel > rhsLevel) ? 1 :
+				delta = (lhsLevel > rhsLevel) ? -1 : (lhsLevel < rhsLevel) ? 1 :
 				                                                             0;
 				break;
 			}
@@ -1035,21 +1162,21 @@ namespace Modex
 			if constexpr (!std::is_same<DataType, NPCData>::value)
 				break;
 			else
-				delta = (lhs->GetHealth() < rhs->GetHealth()) ? -1 : (lhs->GetHealth() > rhs->GetHealth()) ? 1 :
+				delta = (lhs->GetHealth() > rhs->GetHealth()) ? -1 : (lhs->GetHealth() < rhs->GetHealth()) ? 1 :
 				                                                                                             0;
 			break;
 		case SortType::Magicka:
 			if constexpr (!std::is_same<DataType, NPCData>::value)
 				break;
 			else
-				delta = (lhs->GetMagicka() < rhs->GetMagicka()) ? -1 : (lhs->GetMagicka() > rhs->GetMagicka()) ? 1 :
+				delta = (lhs->GetMagicka() > rhs->GetMagicka()) ? -1 : (lhs->GetMagicka() < rhs->GetMagicka()) ? 1 :
 				                                                                                                 0;
 			break;
 		case SortType::Stamina:
 			if constexpr (!std::is_same<DataType, NPCData>::value)
 				break;
 			else
-				delta = (lhs->GetStamina() < rhs->GetStamina()) ? -1 : (lhs->GetStamina() > rhs->GetStamina()) ? 1 :
+				delta = (lhs->GetStamina() > rhs->GetStamina()) ? -1 : (lhs->GetStamina() < rhs->GetStamina()) ? 1 :
 				                                                                                                 0;
 			break;
 		// case SortType::CarryWeight:
@@ -1063,7 +1190,7 @@ namespace Modex
 			if constexpr (!std::is_same<DataType, ItemData>::value)
 				break;
 			else
-				delta = (lhs->GetValue() < rhs->GetValue()) ? -1 : (lhs->GetValue() > rhs->GetValue()) ? 1 :
+				delta = (lhs->GetValue() > rhs->GetValue()) ? -1 : (lhs->GetValue() < rhs->GetValue()) ? 1 :
 				                                                                                         0;
 			break;
 		case SortType::Space:
@@ -1091,9 +1218,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = CompareWeaponDamage(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
 				} else if (lhs->GetFormType() == RE::FormType::Weapon) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
+					delta = 1;
 				}
 
 				break;
@@ -1105,9 +1232,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Armor) {
 					delta = CompareArmorRating(lhs->GetForm()->As<RE::TESObjectARMO>(), rhs->GetForm()->As<RE::TESObjectARMO>());
 				} else if (lhs->GetFormType() == RE::FormType::Armor) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Armor) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Armor) {
+					delta = 1;
 				}
 
 				break;
@@ -1119,9 +1246,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Armor) {
 					delta = CompareArmorSlot(lhs->GetForm()->As<RE::TESObjectARMO>(), rhs->GetForm()->As<RE::TESObjectARMO>());
 				} else if (lhs->GetFormType() == RE::FormType::Armor) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Armor) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Armor) {
+					delta = 1;
 				}
 				break;
 			}
@@ -1132,9 +1259,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = CompareWeaponSpeed(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
 				} else if (lhs->GetFormType() == RE::FormType::Weapon) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
+					delta = 1;
 				}
 
 				break;
@@ -1146,9 +1273,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = CompareCritDamage(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
 				} else if (lhs->GetFormType() == RE::FormType::Weapon) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
+					delta = 1;
 				}
 
 				break;
@@ -1157,7 +1284,7 @@ namespace Modex
 			if constexpr (!std::is_same<DataType, ItemData>::value) {
 				break;
 			} else {
-				delta = (lhs->GetWeight() < rhs->GetWeight()) ? -1 : (lhs->GetWeight() > rhs->GetWeight()) ? 1 :
+				delta = (lhs->GetWeight() > rhs->GetWeight()) ? -1 : (lhs->GetWeight() < rhs->GetWeight()) ? 1 :
 				                                                                                             0;
 				break;
 			}
@@ -1168,9 +1295,9 @@ namespace Modex
 				if (lhs->GetFormType() == RE::FormType::Weapon && rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = CompareWeaponDPS(lhs->GetForm()->As<RE::TESObjectWEAP>(), rhs->GetForm()->As<RE::TESObjectWEAP>());
 				} else if (lhs->GetFormType() == RE::FormType::Weapon) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Weapon) {
+					delta = 1;
 				}
 
 				break;
@@ -1185,9 +1312,9 @@ namespace Modex
 					(lhs->GetFormType() == RE::FormType::Armor && rhs->GetFormType() == RE::FormType::Weapon)) {
 					delta = CompareSkill(lhs->GetForm(), rhs->GetForm());
 				} else if (lhs->GetFormType() == RE::FormType::Weapon || lhs->GetFormType() == RE::FormType::Armor) {
-					delta = 1;
-				} else if (rhs->GetFormType() == RE::FormType::Weapon || rhs->GetFormType() == RE::FormType::Armor) {
 					delta = -1;
+				} else if (rhs->GetFormType() == RE::FormType::Weapon || rhs->GetFormType() == RE::FormType::Armor) {
+					delta = 1;
 				}
 
 				break;
@@ -1205,31 +1332,55 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::SortListBySpecs()
 	{
-		std::sort(tableList.begin(), tableList.end(), [this](const std::unique_ptr<DataType>& a, const std::unique_ptr<DataType>& b) {
-			return this->SortFn(a, b);
-		});
-
-		// if (!sortAscending) {
-		// 	std::reverse(tableList.begin(), tableList.end());
-		// }
-
-		// for (int i = 0; i < std::ssize(tableList); ++i) {
-		// 	tableList[i]->TableID = i;
-		// }
-
-		this->UpdateImGuiTableIDs();
+		if (!this->showPluginKitView) {
+			std::sort(tableList.begin(), tableList.end(), [this](const std::unique_ptr<DataType>& a, const std::unique_ptr<DataType>& b) {
+				return this->SortFn(a, b);
+			});
+		} else {
+			std::sort(kitList.begin(), kitList.end(), [this](const std::unique_ptr<Kit>& a, const std::unique_ptr<Kit>& b) {
+				return this->SortFnKit(a, b);
+			});
+		}
 	}
 
 	template <typename DataType>
 	void TableView<DataType>::UpdateImGuiTableIDs()
 	{
-		for (int i = 0; i < std::ssize(tableList); ++i) {
-			tableList[i]->TableID = i;
+		if (!this->showPluginKitView) {
+			for (int i = 0; i < std::ssize(tableList); i++) {
+				tableList[i]->TableID = i;
+			}
+		} else {
+			for (int i = 0; i < std::ssize(kitList); i++) {
+				kitList[i]->TableID = i;
+			}
+		}
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::UpdateKitItemData()
+	{
+		if (!this->selectedKit) {
+			return;
 		}
 
-		// std::for_each(std::execution::par_unseq, tableList.begin(), tableList.end(), [i = 0](auto& item) mutable {
-		// 	item->TableID = i++;
-		// });
+		const auto& collection = PersistentData::GetLoadedKits();
+		if (const auto it = collection.find(*this->selectedKit); it != collection.end()) {
+			const auto& kit = it->second;
+
+			if (kit.items.empty()) {
+				return;
+			}
+
+			for (const auto& kit_item : kit.items) {
+				for (const auto& table_item : tableList) {
+					if (table_item->GetEditorID() == kit_item->editorid) {
+						table_item->kitAmount = kit_item->amount;
+						table_item->kitEquipped = kit_item->equipped;
+					}
+				}
+			}
+		}
 	}
 
 	template <typename DataType>
@@ -1275,24 +1426,27 @@ namespace Modex
 		}
 		ImGui::PopStyleColor();
 
-		if (this->HasFlag(ModexTableFlag_EnableKitView)) {
+		if (this->HasFlag(ModexTableFlag_EnablePluginKitView)) {
 			ImGui::SameLine();
 
 			const std::string showKit = ICON_LC_BOX;
 			bool pluginHasKits = !this->kitList.empty();
 
-			if (pluginHasKits && !this->showKitView) {
+			if (pluginHasKits && !this->showPluginKitView) {
 				float pulse = Utils::PulseMinMax((float)ImGui::GetTime(), 5.0f, 0.5f, 0.0f, 1.0f);
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, pulse));
-			} else if (pluginHasKits && this->showKitView) {
+			} else if (pluginHasKits && this->showPluginKitView) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 			} else {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 			}
 
-			if (IconButton(showKit.c_str(), "", this->showKitView)) {
+			if (IconButton(showKit.c_str(), "", this->showPluginKitView)) {
 				if (!pluginHasKits) {
-					this->showKitView = false;
+					this->showPluginKitView = false;
+				} else {
+					this->SortListBySpecs();
+					this->UpdateImGuiTableIDs();
 				}
 			}
 
@@ -1326,7 +1480,9 @@ namespace Modex
 		ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - preview_size.x + button_offset - (ImGui::GetStyle().FramePadding.x));
 		ImGui::SetNextItemWidth(preview_size.x);
 		if (ImGui::BeginCombo("##TableView::Sort::Combo", SortTypeToString(this->sortBy).c_str(), combo_flags)) {
-			for (auto& sort : sortByList) {
+			const auto& sort_list = this->showPluginKitView ? sortByListKit : sortByList;
+
+			for (auto& sort : sort_list) {
 				const bool is_selected = (this->sortBy == sort);
 				const std::string sort_text = SortTypeToString(sort);
 
@@ -1372,18 +1528,20 @@ namespace Modex
 		}
 	}
 
+	// This is called when we select a plugin from the plugin list to alter the view. This updates the
+	// KitList member to populate using a compare algorithm against all selected kits. So we also call it
+	// when updating changes to our current kit.
+
 	template <typename DataType>
-	void TableView<DataType>::LoadKitsFromPlugin()
+	void TableView<DataType>::LoadKitsFromSelectedPlugin()
 	{
-		if (this->HasFlag(ModexTableFlag_EnableKitView)) {
+		if (this->HasFlag(ModexTableFlag_EnablePluginKitView)) {
 			kitList.clear();
 
-			if (selectedPlugin == _T("SHOW_ALL_PLUGINS")) {
-				return;
-			}
-
-			const std::string header_label = "Kits found in: " + selectedPlugin;
-			ImGui::SubCategoryHeader(header_label.c_str());
+			// // We don't need to correlate kits to All Plugins since it's not a valid plugin.
+			// if (selectedPlugin == _T("SHOW_ALL_PLUGINS")) {
+			// 	return;
+			// }
 
 			auto& kits = PersistentData::GetLoadedKits();
 
@@ -1397,13 +1555,37 @@ namespace Modex
 					}
 				}
 				if (!kitExists) {
+					// We first need to check if any item in any given kit is from the selected plugin.
+					// We iterate over the items inside every kit to identify this. So far at 500+ kits this is not an issue.
+					// Once we detected that this kit *should* show inside the Plugin Kit View, we then create
+					// the meta data for the kit by iterating over its items again. The key point is that we
+					// early out of the first iteration on the first item found. So we don't actually iterate
+					// over the entire kit twice. We use one to match, then the other to build.
+
 					for (auto& item : kit.items) {
-						if (item->plugin == selectedPlugin) {
-							// auto newKit = std::make_shared<Kit>(kit);
-							// newKit->TableID = static_cast<int>(std::ssize(kitList));
-							// kitList.push_back(newKit);
+						if (selectedPlugin == _T("SHOW_ALL_PLUGINS") || item->plugin == selectedPlugin) {
 							kit.TableID = table_id;
+
+							kit.weaponCount = 0;
+							kit.armorCount = 0;
+							kit.miscCount = 0;
+
+							for (auto& found : kit.items) {
+								const auto& form = RE::TESForm::LookupByEditorID(found->editorid);
+
+								if (form) {
+									if (form->IsWeapon()) {
+										kit.weaponCount++;
+									} else if (form->IsArmor()) {
+										kit.armorCount++;
+									} else {
+										kit.miscCount++;
+									}
+								}
+							}
+
 							this->kitList.emplace_back(std::make_unique<Kit>(kit));
+
 							table_id++;
 							break;
 						}
@@ -1416,7 +1598,6 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::DrawKit(const Kit& a_kit, const ImVec2& a_pos, const bool& a_selected)
 	{
-		(void)a_kit;
 		(void)a_selected;  // If we want to handle selection visuals manually.
 
 		const auto& style = Settings::GetSingleton()->GetStyle();
@@ -1448,7 +1629,7 @@ namespace Modex
 		// Outline
 		DrawList->AddRect(bb.Min, bb.Max, outline_color, style.tableRowRounding, 0, style.tableRowThickness);
 
-		const float spacing = LayoutItemSize.x / 5.0f;
+		const float spacing = LayoutItemSize.x / 3.0f;
 		const float top_align = bb.Min.y + LayoutOuterPadding;
 		const float bot_align = bb.Max.y - LayoutOuterPadding - fontSize;
 		const float center_align = bb.Min.y + ((LayoutOuterPadding + LayoutItemSize.y) / 2) - (fontSize / 2.0f);
@@ -1462,8 +1643,36 @@ namespace Modex
 		const ImVec2 center_right_align = ImVec2(right_align, center_align);
 
 		// Draw the kit name for now
-		const std::string name_string = a_kit.name;
-		DrawList->AddText(top_left_align, text_color, name_string.c_str());
+		// const std::string name_string = a_kit.name;
+		const std::string name_string = FormatTextWidth(a_kit.name, spacing);
+		if (!this->compactView) {
+			DrawList->AddText(top_left_align, text_color, name_string.c_str());
+		} else {
+			DrawList->AddText(center_left_align, text_color, name_string.c_str());
+		}
+
+		const std::string weaponCount = a_kit.weaponCount == 0 ? _T("None") : std::to_string(a_kit.weaponCount);
+		const std::string armorCount = a_kit.armorCount == 0 ? _T("None") : std::to_string(a_kit.armorCount);
+		const std::string miscCount = a_kit.miscCount == 0 ? _T("None") : std::to_string(a_kit.miscCount);
+		const std::string totalCount = std::to_string(a_kit.weaponCount + a_kit.armorCount + a_kit.miscCount);
+
+		// Draw the kit meta data
+		if (!this->compactView) {
+			const ImVec2 weapon_count_pos = ImVec2(left_align + spacing, top_align);
+			const ImVec2 armor_count_pos = ImVec2(left_align + spacing, center_align);
+			const ImVec2 misc_count_pos = ImVec2(left_align + spacing, bot_align);
+			const std::string weapon_count_string = ICON_LC_SWORDS + weaponCount;
+			const std::string armor_count_string = ICON_LC_SHIELD + armorCount;
+			const std::string misc_count_string = ICON_LC_PUZZLE + miscCount;
+
+			DrawList->AddText(weapon_count_pos, a_kit.weaponCount == 0 ? ImGui::GetColorU32(ImGuiCol_TextDisabled) : text_color, weapon_count_string.c_str());
+			DrawList->AddText(armor_count_pos, a_kit.armorCount == 0 ? ImGui::GetColorU32(ImGuiCol_TextDisabled) : text_color, armor_count_string.c_str());
+			DrawList->AddText(misc_count_pos, a_kit.miscCount == 0 ? ImGui::GetColorU32(ImGuiCol_TextDisabled) : text_color, misc_count_string.c_str());
+		} else {
+			const ImVec2 total_count_pos = ImVec2(left_align + spacing, center_align);
+			const std::string total_count_string = ICON_LC_BOX + totalCount;
+			DrawList->AddText(total_count_pos, text_color, total_count_string.c_str());
+		}
 
 		const std::string desc_string = a_kit.desc;
 
@@ -1479,9 +1688,9 @@ namespace Modex
 	}
 
 	template <typename DataType>
-	void TableView<DataType>::KitView()
+	void TableView<DataType>::PluginKitView()
 	{
-		if (!this->HasFlag(ModexTableFlag_EnableKitView)) {
+		if (!this->HasFlag(ModexTableFlag_EnablePluginKitView)) {
 			return;
 		}
 
@@ -1500,19 +1709,21 @@ namespace Modex
 			const int ITEMS_COUNT = static_cast<int>(std::ssize(kitList));
 
 			ImGuiListClipper clipper;
-			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, kitSelectionStorage.Size, ITEMS_COUNT);
-			kitSelectionStorage.UserData = (void*)&kitList;
-			kitSelectionStorage.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self, int idx) {
-				KitList* a_items = (KitList*)self->UserData;
-				return (*a_items)[idx]->TableID;  // Index -> TableID
-			};
-			kitSelectionStorage.ApplyRequests(ms_io);
+			// ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, kitSelectionStorage.Size, ITEMS_COUNT);
+			// kitSelectionStorage.UserData = (void*)&kitList;
+			// kitSelectionStorage.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self, int idx) {
+			// 	KitList* a_items = (KitList*)self->UserData;
+			// 	return (*a_items)[idx]->TableID;  // Index -> TableID
+			// };
+			// kitSelectionStorage.ApplyRequests(ms_io);
 
 			// Start clipper and iterate through table's item list.
 			clipper.Begin(ITEMS_COUNT, LayoutItemStep.y);
-			if (ms_io->RangeSrcItem != -1) {
-				clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem);  // Ensure RangeSrc item is not clipped.
-			}
+
+			// if (ms_io->RangeSrcItem != -1) {
+			// 	clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem);  // Ensure RangeSrc item is not clipped.
+			// }
+
 			while (clipper.Step()) {
 				const int item_start = clipper.DisplayStart;
 				const int item_end = clipper.DisplayEnd;
@@ -1530,29 +1741,116 @@ namespace Modex
 						ImGui::SetCursorScreenPos(pos);
 
 						// set next item selection user data
-						ImGui::SetNextItemSelectionUserData(kit_idx);
-						bool is_item_selected = kitSelectionStorage.Contains(item_data->TableID);
+						// ImGui::SetNextItemSelectionUserData(kit_idx);
+						// bool is_item_selected = kitSelectionStorage.Contains(item_data->TableID);
 						bool is_item_visible = ImGui::IsRectVisible(LayoutItemSize);
+						const float button_width = std::max(LayoutItemSize.x / 7.0f, 100.0f);
 
 						// If we implement a grid or gapped layout, this will be needed.
 						// For now, it just removes the spacing so the selection is within the bounds of the item.
 						ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(LayoutSelectableSpacing, LayoutSelectableSpacing));
-						ImGui::Selectable("", is_item_selected, ImGuiSelectableFlags_None, LayoutItemSize);
+						bool is_selected = false;
+						ImGui::GradientSelectableEX("", is_selected, ImVec2(LayoutItemSize.x - (button_width), LayoutItemSize.y));
 						ImGui::PopStyleVar();
 
-						if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-								// Console::AddItem(item_data->GetFormID().c_str(), 1);
-								// Console::StartProcessThread();
-							}
-						}
-
-						if (ImGui::IsItemToggledSelection()) {
-							is_item_selected = !is_item_selected;
-						}
+						// if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+						// 	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+						// 		// Anything?
+						// 	}
+						// }
 
 						if (is_item_visible) {
-							DrawKit(*item_data, pos, is_item_selected);
+							DrawKit(*item_data, pos, false);
+
+							ImVec2 use_size;
+
+							if (this->compactView) {
+								use_size = ImVec2(button_width, LayoutItemSize.y);
+							} else {
+								use_size = ImVec2(button_width, LayoutItemSize.y / 2.0f);
+							}
+
+							const ImVec2 use_pos = ImVec2(pos.x + (LayoutItemSize.x - use_size.x), pos.y);
+							const ImVec2 delete_pos = ImVec2(use_pos.x, use_pos.y + use_size.y);
+
+							ImGui::SetCursorScreenPos(use_pos);
+
+							ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+							ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+
+							ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 0.50f));
+							if (ImGui::GradientButton(ICON_LC_CHECK "Use", use_size)) {
+								AddKitToInventory(item_data);
+							}
+							ImGui::PopStyleColor();
+
+							if (!this->compactView) {
+								ImGui::SetCursorScreenPos(delete_pos);
+								// ImGui::SetCursorPosY(ImGui::GetCursorPosY() + use_size.y);
+								ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.3f, 0.50f));
+								if (ImGui::GradientButton(ICON_LC_TRASH "Delete", use_size)) {
+									confirmDeleteKit = std::make_unique<Kit>(*item_data);
+									ImGui::OpenPopup("##KitPluginView::Delete::Confirmation");
+								}
+								ImGui::PopStyleColor();
+							}
+
+							ImGui::PopStyleVar(2);
+						}
+
+						constexpr auto popup_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+						// Have to create and destroy this popup within the context of the table Pop and Push ID because
+						// otherwise the Popup ID won't register.
+
+						if (confirmDeleteKit) {
+							if (ImGui::BeginPopupModal("##KitPluginView::Delete::Confirmation", nullptr, popup_flags)) {
+								ImGui::SubCategoryHeader(_T("KIT_DELETE_CONFIRMATION"));
+								ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+								ImGui::NewLine();
+
+								float center_text = ImGui::GetCenterTextPosX(confirmDeleteKit->name.c_str());
+								ImGui::SetCursorPosX(center_text);
+								ImGui::Text(confirmDeleteKit->name.c_str());
+
+								ImGui::NewLine();
+
+								if (ImGui::IsKeyPressed(ImGuiKey_Y, false)) {
+									PersistentData::GetSingleton()->DeleteKit(confirmDeleteKit->name);
+									// selectedKit = _T("None");
+									this->LoadKitsFromSelectedPlugin();
+									this->SortListBySpecs();
+									this->UpdateImGuiTableIDs();
+
+									confirmDeleteKit = nullptr;
+
+									ImGui::CloseCurrentPopup();
+								}
+
+								if (ImGui::IsKeyPressed(ImGuiKey_N, false)) {
+									ImGui::CloseCurrentPopup();
+								}
+
+								if (ImGui::Button("(Y)es", ImVec2(250.0f, 0))) {
+									PersistentData::GetSingleton()->DeleteKit(confirmDeleteKit->name);
+									this->LoadKitsFromSelectedPlugin();
+									this->SortListBySpecs();
+									this->UpdateImGuiTableIDs();
+
+									confirmDeleteKit = nullptr;
+
+									ImGui::CloseCurrentPopup();
+								}
+
+								ImGui::SameLine();
+
+								if (ImGui::Button("(N)o", ImVec2(250.0f, 0))) {
+									ImGui::CloseCurrentPopup();
+								}
+
+								ImGui::EndPopup();
+							}
 						}
 
 						ImGui::PopID();
@@ -1562,8 +1860,8 @@ namespace Modex
 
 			clipper.End();
 
-			ms_io = ImGui::EndMultiSelect();
-			kitSelectionStorage.ApplyRequests(ms_io);
+			// ms_io = ImGui::EndMultiSelect();
+			// kitSelectionStorage.ApplyRequests(ms_io);
 		}
 	}
 
@@ -1626,7 +1924,8 @@ namespace Modex
 
 		// Draw Type:FormID
 		if (!compactView) {
-			const std::string type_formid = "[" + a_item.GetTypeName() + "] " + a_item.GetFormID();
+			const std::string type_icon = Utils::GetFormTypeIcon(a_item.GetFormType());
+			const std::string type_formid = type_icon + "[" + a_item.GetTypeName() + "] " + a_item.GetFormID();
 			DrawList->AddText(top_left_align, text_color, type_formid.c_str());
 		}
 
@@ -1635,7 +1934,7 @@ namespace Modex
 			const std::string plugin_name = FormatTextWidth(a_item.GetPluginName(), spacing * 1.25f);
 			DrawList->AddText(bot_left_align, text_color, plugin_name.c_str());
 		} else {
-			const std::string plugin_name = FormatTextWidth(a_item.GetPluginName(), spacing * 1.0f);
+			const std::string plugin_name = Utils::GetFormTypeIcon(a_item.GetFormType()) + FormatTextWidth(a_item.GetPluginName(), (spacing * 1.0f) - fontSize * 2.0f);
 			DrawList->AddText(center_left_align, text_color, plugin_name.c_str());
 		}
 
@@ -1688,7 +1987,7 @@ namespace Modex
 
 						const std::string rating_string = ICON_LC_SHIELD + std::to_string(static_cast<int>(armorRating));
 						const std::string type_string = _TICON(ICON_LC_PUZZLE, armorType);
-						const std::string slot_string = ICON_LC_BETWEEN_HORIZONTAL_START + equipSlots[0];
+						// const std::string slot_string = ICON_LC_BETWEEN_HORIZONTAL_START + equipSlots[0];
 
 						if (!compactView) {
 							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
@@ -1696,15 +1995,9 @@ namespace Modex
 
 							const ImVec2 armorType_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
 							DrawList->AddText(armorType_pos, text_color, type_string.c_str());
-
-							const ImVec2 equipSlot_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, bot_align);
-							DrawList->AddText(equipSlot_pos, text_color, slot_string.c_str());
 						} else {
 							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
 							DrawList->AddText(armorRating_pos, text_color, rating_string.c_str());
-
-							const ImVec2 equipSlot_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
-							DrawList->AddText(equipSlot_pos, text_color, slot_string.c_str());
 						}
 
 						if (armor->formEnchanting != nullptr) {
@@ -1719,24 +2012,31 @@ namespace Modex
 								enchantment_color,
 								IM_COL32(0, 0, 0, 0),
 								IM_COL32(0, 0, 0, 0));
+						}
+					}
+				}
 
-							// // Left to Right Gradient
-							// DrawList->AddRectFilledMultiColor(
-							// 	ImVec2(bb.Min.x, bb.Min.y),
-							// 	ImVec2(bb.Min.x + ((bb.Max.x / 8.0f)), bb.Max.y),
-							// 	enchantment_color,
-							// 	IM_COL32(0, 0, 0, 0),
-							// 	IM_COL32(0, 0, 0, 0),
-							// 	enchantment_color);
+				if (itemData->GetFormType() == RE::FormType::Book) {
+					const auto& book = itemData->GetForm()->As<RE::TESObjectBOOK>();
 
-							// // Right to Left Gradient
-							// DrawList->AddRectFilledMultiColor(
-							// 	ImVec2(bb.Max.x - ((bb.Max.x / 8.0f)), bb.Min.y),
-							// 	ImVec2(bb.Max.x, bb.Max.y),
-							// 	IM_COL32(0, 0, 0, 0),
-							// 	enchantment_color,
-							// 	enchantment_color,
-							// 	IM_COL32(0, 0, 0, 0));
+					if (book != nullptr) {
+						const auto teaches_skill = book->TeachesSkill();
+						const auto teaches_spell = book->TeachesSpell();
+
+						ImVec2 teach_pos;
+
+						if (!compactView) {
+							teach_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
+						} else {
+							teach_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
+						}
+
+						if (teaches_skill) {
+							const std::string skill_string = ICON_LC_BRAIN + Utils::SkillMap[book->GetSkill()];
+							DrawList->AddText(teach_pos, text_color, skill_string.c_str());
+						} else if (teaches_spell) {
+							const std::string spell_string = ICON_LC_WAND + std::string(book->GetSpell()->GetFullName());
+							DrawList->AddText(teach_pos, text_color, spell_string.c_str());
 						}
 					}
 				}
@@ -1769,31 +2069,39 @@ namespace Modex
 
 						if (!compactView) {
 							const ImVec2 damage_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
-							const ImVec2 skill_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
-							const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
+							const ImVec2 skill_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
+							// const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
 
 							DrawList->AddText(damage_pos, text_color, damage_string.c_str());
 							DrawList->AddText(skill_pos, text_color, skill_string.c_str());
-							DrawList->AddText(type_pos, text_color, type_string.c_str());
+							// DrawList->AddText(type_pos, text_color, type_string.c_str());
 						} else {
 							const ImVec2 damage_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
-							const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
+							// const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
 							DrawList->AddText(damage_pos, text_color, damage_string.c_str());
-							DrawList->AddText(type_pos, text_color, type_string.c_str());
+							// DrawList->AddText(type_pos, text_color, type_string.c_str());
 						}
 					}
 				}
 			}
 		}
 
+		const std::string sort_text = GetSortProperty(a_item);
+
 		// Since the name is conditional based on a few things, we draw it last.
 		// For example, we need to first dynamic_cast and check for enchantment to append the symbol.
 		if (!compactView) {
 			const ImVec2 name_pos = ImVec2(bb.Min.x + spacing, top_align);
 			DrawList->AddText(name_pos, text_color, name_string.c_str());
+
+			const ImVec2 sort_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, bot_align);
+			DrawList->AddText(sort_pos, text_color, sort_text.c_str());
 		} else {
 			const ImVec2 name_pos = ImVec2(bb.Min.x + spacing, center_align);
 			DrawList->AddText(name_pos, text_color, name_string.c_str());
+
+			const ImVec2 sort_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
+			DrawList->AddText(sort_pos, text_color, sort_text.c_str());
 		}
 	}
 
@@ -1832,8 +2140,8 @@ namespace Modex
 	void TableView<DataType>::Draw()
 	{
 		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
-			if (showKitView) {
-				KitView();
+			if (this->showPluginKitView) {
+				PluginKitView();
 				ImGui::EndChild();
 				return;
 			}
@@ -1876,7 +2184,15 @@ namespace Modex
 					const int item_max_idx_for_current_line = std::min((line_idx + 1) * COLUMN_COUNT, ITEMS_COUNT);
 
 					for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx) {
-						auto& item_data = tableList[item_idx];
+						if (item_idx >= tableList.size()) {
+							continue;
+						}
+
+						if (!tableList[item_idx]) {
+							continue;
+						}
+
+						auto& item_data = tableList.at(item_idx);
 						ImGui::PushID((int)item_data->TableID);
 
 						// position item at start
@@ -1901,6 +2217,34 @@ namespace Modex
 						if (ImGui::IsItemHovered()) {
 							// itemPreview = std::move(item_data);
 							itemPreview = std::make_unique<DataType>(*item_data);
+
+							if (this->HasFlag(ModexTableFlag_Kit)) {
+								const auto& g = *GImGui;
+								if (g.MouseStationaryTimer > 0.6f) {
+									ImGui::SetNextWindowSize(ImVec2(300.0f, 0));
+									ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - 300.0f, ImGui::GetMousePos().y));
+									if (ImGui::BeginTooltip()) {
+										if constexpr (std::is_same_v<DataType, ItemData>) {
+											ShowItemPreview<DataType>(item_data);
+										}
+										ImGui::EndTooltip();
+									}
+								}
+							} else {
+								if (auto it = this->dragDropSourceList.find("FROM_KIT"); it != this->dragDropSourceList.end()) {
+									const auto& g = *GImGui;
+									if (g.MouseStationaryTimer > 0.6f) {
+										ImGui::SetNextWindowSize(ImVec2(300.0f, 0));
+										ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - 300.0f, ImGui::GetMousePos().y));
+										if (ImGui::BeginTooltip()) {
+											if constexpr (std::is_same_v<DataType, ItemData>) {
+												ShowItemPreview<DataType>(item_data);
+											}
+											ImGui::EndTooltip();
+										}
+									}
+								}
+							}
 						}
 
 						if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -1930,11 +2274,15 @@ namespace Modex
 								ImVector<ImGuiID> payload_items;
 								void* it = NULL;
 								ImGuiID id = 0;
-								if (!is_item_selected)
+								if (!is_item_selected) {
 									payload_items.push_back(item_data->TableID);
-								else
-									while (selectionStorage.GetNextSelectedItem(&it, &id))
-										payload_items.push_back(id);
+								} else {
+									if (id < tableList.size() && id >= 0) {
+										while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+											payload_items.push_back(id);
+										}
+									}
+								}
 								ImGui::SetDragDropPayload(this->dragDropSourceID.c_str(), payload_items.Data, (size_t)payload_items.size_in_bytes());
 							}
 
@@ -1968,65 +2316,56 @@ namespace Modex
 
 								ImGui::SetCursorScreenPos(equippable_pos);
 
-								auto& collection = PersistentData::GetLoadedKits();
-								auto& kit = collection.at(*this->selectedKit);
+								const auto alpha = item_data->kitEquipped ? 1.0f : 0.25f;
+								const auto text = item_data->kitEquipped ? _T("Equip") : _T("Equip");
+								const auto icon = item_data->kitEquipped ? ICON_LC_CHECK : ICON_LC_X;
+								const auto equip_size = ImVec2(LayoutItemSize.x / 7.0f, LayoutItemSize.y);
+								const auto color = ImGui::GetColorU32(ImGuiCol_Button, alpha);
+								const auto padding = 5.0f;
 
-								for (auto& kit_item : kit.items) {
-									if (kit_item->editorid == item_data->GetEditorID()) {
-										const auto alpha = kit_item->equipped ? 1.0f : 0.25f;
-										const auto text = kit_item->equipped ? _T("Equip") : _T("Equip");
-										const auto icon = kit_item->equipped ? ICON_LC_CHECK : ICON_LC_X;
-										const auto equip_size = ImVec2(LayoutItemSize.x / 7.0f, LayoutItemSize.y);
-										const auto color = ImGui::GetColorU32(ImGuiCol_Button, alpha);
-										const auto padding = 5.0f;
+								ImGui::PushStyleColor(ImGuiCol_Button, color);
+								ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+								ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
-										ImGui::PushStyleColor(ImGuiCol_Button, color);
-										ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-										ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+								// TODO: Implement a check for readOnly kits. A problem though, is that if I do it
+								// here directly, I will be iterating over the entire kit list and pulling out the
+								// selected kit reference everytime which is kind of costly. Need a more uniform
+								// way to track the kit state or reference.
 
-										if (item_data->GetForm()->Is(RE::FormType::Armor) || item_data->GetForm()->Is(RE::FormType::Weapon)) {
-											if (ImGui::GradientButton((std::string(icon) + text).c_str(), equip_size)) {
-												kit_item->equipped = !kit_item->equipped;
-												PersistentData::GetSingleton()->SaveKitToJSON(kit);
-											}
-
-											ImGui::SameLine(0.0f, padding);
-										} else {
-											const auto form_type_text = RE::FormTypeToString(item_data->GetFormType());
-											if (ImGui::GradientButton(form_type_text.data(), equip_size)) {
-												// nothing?
-											}
-											ImGui::SameLine(0.0f, padding);
-										}
-
-										ImGui::PopStyleColor();
-										ImGui::PopStyleVar(2);
-
-										ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutOuterPadding);
-
-										ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - LayoutOuterPadding);
-										if (ImGui::InputInt("##EquipCount", &kit_item->amount, 0, 0)) {
-											PersistentData::GetSingleton()->SaveKitToJSON(kit);
-										}
-
-										if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
-											ImGui::SetTooltip(_T("TOOLTIP_AMOUNT_ADD"));
-										}
-
-										// item_data->equippable = kit_item->equippable;
-										break;
+								if (item_data->GetForm()->Is(RE::FormType::Armor) || item_data->GetForm()->Is(RE::FormType::Weapon)) {
+									if (ImGui::GradientButton((std::string(icon) + text).c_str(), equip_size)) {
+										item_data->kitEquipped = !item_data->kitEquipped;
+										this->SyncChangesToKit();
 									}
+
+									ImGui::SameLine(0.0f, padding);
+								} else {
+									const auto form_type_text = RE::FormTypeToString(item_data->GetFormType());
+									if (ImGui::GradientButton(form_type_text.data(), equip_size)) {
+										// nothing?
+									}
+									ImGui::SameLine(0.0f, padding);
+								}
+
+								ImGui::PopStyleColor();
+								ImGui::PopStyleVar(2);
+
+								ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutOuterPadding);
+
+								ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - LayoutOuterPadding);
+								if (ImGui::InputInt("##EquipCount", &item_data->kitAmount, 0, 0)) {
+									this->SyncChangesToKit();
+								}
+
+								if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
+									ImGui::SetTooltip(_T("TOOLTIP_AMOUNT_ADD"));
 								}
 							}
 						}
 
 						if (ImGui::BeginPopup("TableViewContextMenu")) {
 							if (const ItemData* itemData = dynamic_cast<const ItemData*>(item_data.get())) {
-								void* it = NULL;
-								ImGuiID id = 0;
-
-								// Add to kit?
-								// These need to be abstracted out to Single Purpose Functions
+								// TODO: Implement clickToAdd amounts
 
 								if (ImGui::MenuItem(_T("AIM_ADD"))) {
 									if (selectionStorage.Size == 0) {
@@ -2035,46 +2374,164 @@ namespace Modex
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::AddItem(item_data->GetFormID().c_str(), 1);
 										} else {
+											void* it = NULL;
+											ImGuiID id = 0;
+
 											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-												const auto& item = tableList[id];
-												Console::AddItem(item->GetFormID().c_str(), 1);
+												if (id < tableList.size() && id >= 0) {
+													const auto& item = tableList[id];
+													Console::AddItem(item->GetFormID().c_str(), 1);
+												}
 											}
+
+											this->selectionStorage.Clear();
 										}
 									}
 
 									Console::StartProcessThread();
+								}
+
+								if (itemData->GetFormType() == RE::FormType::Armor || itemData->GetFormType() == RE::FormType::Weapon) {
+									if (ImGui::MenuItem(_T("AIM_EQUIP"))) {
+										if (selectionStorage.Size == 0) {
+											Console::AddItemEx(item_data->GetBaseForm(), 1, true);
+										} else {
+											if (item_data == itemPreview && !is_item_selected) {
+												Console::AddItemEx(item_data->GetBaseForm(), 1, true);
+											} else {
+												void* it = NULL;
+												ImGuiID id = 0;
+
+												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+													if (id < tableList.size() && id >= 0) {
+														const auto& item = tableList[id];
+														Console::AddItemEx(item->GetBaseForm(), 1, true);
+													}
+												}
+
+												this->selectionStorage.Clear();
+											}
+										}
+
+										Console::StartProcessThread();
+									}
 								}
 
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
 										Console::PlaceAtMe(item_data->GetFormID().c_str(), 1);
 									} else {
-										while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-											const auto& item = tableList[id];
-											Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+										if (item_data == itemPreview && !is_item_selected) {
+											Console::PlaceAtMe(item_data->GetFormID().c_str(), 1);
+										} else {
+											void* it = NULL;
+											ImGuiID id = 0;
+
+											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+												if (id < tableList.size() && id >= 0) {
+													const auto& item = tableList[id];
+													Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+												}
+											}
+
+											this->selectionStorage.Clear();
 										}
 									}
 
 									Console::StartProcessThread();
 								}
 
-								ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+								if (itemData->GetFormType() == RE::FormType::Book) {
+									ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+									if (ImGui::MenuItem(_T("GENERAL_READ_ME"))) {
+										Console::ReadBook(itemData->GetFormID());
+										Console::StartProcessThread();
+										Menu::GetSingleton()->Close();
+									}
+								}
+
+								if (this->selectedKit) {
+									const std::string selected_kit = *this->selectedKit;
+
+									if (!selected_kit.empty() && selected_kit != _T("None")) {
+										ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+										if (ImGui::MenuItem(_T("KIT_REMOVE"))) {
+											if (selectionStorage.Size == 0) {
+												this->RemovePayloadItemFromKit(item_data);
+											} else {
+												if (item_data == itemPreview && !is_item_selected) {
+													this->RemovePayloadItemFromKit(item_data);
+												} else {
+													this->RemoveSelectedFromKit();
+												}
+											}
+
+											this->SyncChangesToKit();
+
+											if (auto it = this->dragDropSourceList.find("FROM_KIT"); it != this->dragDropSourceList.end()) {
+												const auto dragDropSourceTable = it->second;
+
+												dragDropSourceTable->LoadKitsFromSelectedPlugin();
+											}
+
+											this->Refresh();
+
+											this->selectionStorage.Clear();
+										}
+									}
+								}
+
+								if (auto it = this->dragDropSourceList.find("FROM_KIT"); it != this->dragDropSourceList.end()) {
+									const auto dragDropSourceTable = it->second;
+
+									if (dragDropSourceTable->selectedKit) {
+										const std::string selected_kit = *dragDropSourceTable->selectedKit;
+
+										if (!selected_kit.empty() && selected_kit != _T("None")) {
+											ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+											if (ImGui::MenuItem(_T("KIT_ADD"))) {
+												if (selectionStorage.Size == 0) {
+													dragDropSourceTable->AddPayloadItemToKit(item_data);
+												} else {
+													if (item_data == itemPreview && !is_item_selected) {
+														dragDropSourceTable->AddPayloadItemToKit(item_data);
+													} else {
+														this->AddSelectedToKit();
+													}
+												}
+
+												dragDropSourceTable->SyncChangesToKit();
+												this->LoadKitsFromSelectedPlugin();
+												dragDropSourceTable->Refresh();
+
+												this->selectionStorage.Clear();
+											}
+										}
+									}
+								}
 							}
 
-							if (ImGui::MenuItem("Copy FormID")) {
-								ImGui::SetClipboardText(item_data->GetFormID().c_str());
-							}
+							ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-							if (ImGui::MenuItem("Copy EditorID")) {
-								ImGui::SetClipboardText(item_data->GetEditorID().c_str());
-							}
+							if (ImGui::BeginMenu(_T("Copy"))) {
+								if (ImGui::MenuItem("Copy FormID")) {
+									ImGui::SetClipboardText(item_data->GetFormID().c_str());
+								}
 
-							if (ImGui::MenuItem("Copy Name")) {
-								ImGui::SetClipboardText(item_data->GetName().c_str());
-							}
+								if (ImGui::MenuItem("Copy EditorID")) {
+									ImGui::SetClipboardText(item_data->GetEditorID().c_str());
+								}
 
-							if (ImGui::MenuItem("Copy Plugin")) {
-								ImGui::SetClipboardText(item_data->GetPluginName().c_str());
+								if (ImGui::MenuItem("Copy Name")) {
+									ImGui::SetClipboardText(item_data->GetName().c_str());
+								}
+
+								if (ImGui::MenuItem("Copy Plugin")) {
+									ImGui::SetClipboardText(item_data->GetPluginName().c_str());
+								}
+
+								ImGui::EndMenu();
 							}
 
 							ImGui::EndPopup();
@@ -2107,24 +2564,15 @@ namespace Modex
 						}
 
 						for (const auto& payload_item : payload_items) {
-							dragDropSourceTable->GetTableListPtr()->erase(
-								std::remove_if(dragDropSourceTable->GetTableListPtr()->begin(), dragDropSourceTable->GetTableListPtr()->end(),
-									[&payload_item](const std::unique_ptr<DataType>& item) {
-										return item->GetEditorID() == payload_item->GetEditorID();
-									}),
-								dragDropSourceTable->GetTableListPtr()->end());
+							dragDropSourceTable->RemovePayloadItemFromKit(payload_item);
 						}
 
 						dragDropSourceTable->SyncChangesToKit();
+						this->LoadKitsFromSelectedPlugin();
 						dragDropSourceTable->Refresh();
 
-						// We previously did this in Refresh() but really the only time this condition
-						// would change, is when adding or removing items from a kit
-						this->LoadKitsFromPlugin();
-
-						// In-table kit view is disabled if there are no kits in the plugin.
 						if (this->kitList.empty()) {
-							this->showKitView = false;
+							this->showPluginKitView = false;
 						}
 					}
 
@@ -2158,26 +2606,21 @@ namespace Modex
 								}
 
 								this->SyncChangesToKit();
+								dragDropSourceTable->LoadKitsFromSelectedPlugin();
 								this->Refresh();
-
-								// We previously did this in Refresh() but really the only time this condition
-								// would change, is when adding or removing items from a kit
-								dragDropSourceTable->LoadKitsFromPlugin();
 
 								// In-table kit view is disabled if there are no kits in the plugin.
 								if (dragDropSourceTable->kitList.empty()) {
-									dragDropSourceTable->showKitView = false;
+									dragDropSourceTable->showPluginKitView = false;
 								}
 							}
 
 							if (payload->IsPreview()) {
-								// ImGui::SetTooltip("Add to Kit");
 								this->DrawDragDropPayload(DragBehavior_Add);
 							}
 						}
 					} else {
 						this->DrawDragDropPayload(DragBehavior_Invalid);
-						// ImGui::SetTooltip("You need to create and/or select a Kit before dragging items here.");
 					}
 				}
 
@@ -2185,7 +2628,7 @@ namespace Modex
 			}
 
 			selectionStorage.Clear();
-			kitSelectionStorage.Clear();
+			// kitSelectionStorage.Clear();
 		}
 	}
 }

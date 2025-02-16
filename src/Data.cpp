@@ -478,5 +478,7 @@ namespace Modex
 		GenerateNPCClassList();
 		GenerateNPCRaceList();
 		GenerateNPCFactionList();
+
+		Utils::SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001());
 	}
 }

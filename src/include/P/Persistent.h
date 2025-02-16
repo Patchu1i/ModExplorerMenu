@@ -65,6 +65,11 @@ namespace Modex
 			for (auto& [name, kit] : GetLoadedKits()) {
 				names.emplace_back(name);
 			}
+
+			if (!names.empty()) {
+				std::sort(names.begin(), names.end());
+			}
+
 			return names;
 		}
 

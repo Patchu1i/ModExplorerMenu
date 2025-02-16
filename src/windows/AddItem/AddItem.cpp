@@ -11,7 +11,7 @@ namespace Modex
 		const float MIN_KITBAR_HEIGHT = MIN_SEARCH_HEIGHT;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
-		const float MAX_KITBAR_HEIGHT = 300.0f;
+		const float MAX_KITBAR_HEIGHT = 400.0f;
 
 		// I probably should handle this better, but It's kind of nice
 		// that the search data is in this class, so I can reference it for behavior like this.
@@ -47,19 +47,22 @@ namespace Modex
 				}
 
 				this->tableView.BuildPluginList();
+				this->tableView.RemoveDragDropTarget(kitTableView.GetDragDropID());
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Selectable("Blacklist", activeViewport == Viewport::BlacklistView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::BlacklistView;
-				Blacklist::GetSingleton()->BuildPluginList();
+				Blacklist::GetSingleton()->BuildPluginList();  // TODO: Need to track this in some global state, along with other stuff..
+				this->tableView.RemoveDragDropTarget(kitTableView.GetDragDropID());
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Selectable("Kit Editor", activeViewport == Viewport::KitView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::KitView;
+				this->tableView.AddDragDropTarget(kitTableView.GetDragDropID(), &kitTableView);
 			}
 
 			ImGui::PopStyleVar();
@@ -213,10 +216,9 @@ namespace Modex
 		tableView.SetGenerator([]() { return Data::GetSingleton()->GetAddItemList(); });
 		tableView.SetupSearch(Data::PLUGIN_TYPE::ITEM);
 		tableView.SetDragDropID("FROM_TABLE");
-		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableKitView);
+		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnablePluginKitView);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableEnchantmentSort);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableNonPlayableSort);
-		tableView.BuildPluginList();
 		tableView.Init();
 
 		kitTableView.SetGenerator([this]() { return PersistentData::GetKitItems(selectedKit); });
@@ -230,7 +232,6 @@ namespace Modex
 		// when enacting a drag 'n drop event in order to create the ItemData object on either side.
 		// Since the table is indexed by ImGuiID, and we utilize ImGuiID for the drag payload.
 		// It's easy to just index the original table for the item data based on the ImGuiID provided.
-		tableView.AddDragDropTarget(kitTableView.GetDragDropID(), &kitTableView);
 		kitTableView.AddDragDropTarget(tableView.GetDragDropID(), &tableView);
 	}
 }  // namespace Modex

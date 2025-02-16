@@ -47,7 +47,7 @@ namespace Modex
 
 		// Add All From Table Shortcut.
 		if (ImGui::GradientButton(_T("GENERAL_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
-			// implement me
+			this->tableView.AddSelectionToInventory(clickToAddCount);
 		}
 
 		// Place All from Table Shortcut.

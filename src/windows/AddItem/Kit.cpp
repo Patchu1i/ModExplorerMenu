@@ -23,6 +23,10 @@ namespace Modex
 			return;
 		}
 
+		if (a_kit.clearEquipped) {
+			Console::ClearEquipped();
+		}
+
 		for (auto& item : a_kit.items) {
 			if (RE::TESForm* form = RE::TESForm::LookupByEditorID(item->editorid)) {
 				Console::AddItemEx(form->GetFormID(), item->amount, item->equipped);
@@ -47,54 +51,98 @@ namespace Modex
 		Console::StartProcessThread();
 	}
 
-	void AddItemWindow::RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item)
+	// If we ever change or expose the option to configure the GetFile(0) command
+	// We will need to reimplement those changes here, so that kits aren't created with
+	// the incorrect plugin assignment (not that it really matters).
+	void AddItemWindow::CreateKitFromEquipped()
 	{
-		auto& collection = PersistentData::GetLoadedKits();
-		auto& kit = collection.at(selectedKit);
+		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		if (kit.items.empty()) {
+		if (!player) {
 			return;
 		}
 
-		for (auto it = kit.items.begin(); it != kit.items.end();) {
-			if ((*it)->editorid == a_item->editorid) {
-				it = kit.items.erase(it);
-			} else {
-				++it;
+		auto& collection = PersistentData::GetLoadedKits();
+
+		if (auto it = collection.find(selectedKit); it != collection.end()) {
+			auto& kit = it->second;
+
+			for (auto& item : player->GetInventory()) {
+				// auto& boundObject = item.first->As<RE::TESObjectREFR>();
+				auto& boundObject = item.first;
+				auto& pair = item.second;
+
+				if (pair.second.get() && pair.second->IsWorn()) {
+					auto kitItem = std::make_shared<KitItem>();
+					kitItem->plugin = boundObject->GetFile(0)->GetFilename();
+					kitItem->name = boundObject->GetName();
+					kitItem->editorid = po3_GetEditorID(boundObject->GetFormID());
+					kitItem->amount = pair.first;
+					kitItem->equipped = true;
+
+					if (kit.items.contains(kitItem)) {
+						continue;
+					} else {
+						kit.items.emplace(kitItem);
+					}
+				} else {
+					continue;
+				}
 			}
+
+			PersistentData::GetSingleton()->SaveKitToJSON(kit);
+			this->kitTableView.Refresh();
 		}
-
-		PersistentData::GetSingleton()->SaveKitToJSON(kit);
 	}
 
-	std::shared_ptr<KitItem> AddItemWindow::CreateKitItem(const ItemData* a_item)
-	{
-		assert(a_item);
+	// void AddItemWindow::RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item)
+	// {
+	// 	auto& collection = PersistentData::GetLoadedKits();
+	// 	auto& kit = collection.at(selectedKit);
 
-		auto newItem = std::make_shared<KitItem>();
-		newItem->plugin = a_item->GetPluginName();
-		newItem->name = a_item->GetName();
-		newItem->editorid = a_item->GetEditorID();
-		newItem->amount = 1;
-		newItem->equipped = false;
+	// 	if (kit.items.empty()) {
+	// 		return;
+	// 	}
 
-		return newItem;
-	}
+	// 	for (auto it = kit.items.begin(); it != kit.items.end();) {
+	// 		if ((*it)->editorid == a_item->editorid) {
+	// 			it = kit.items.erase(it);
+	// 		} else {
+	// 			++it;
+	// 		}
+	// 	}
 
-	void AddItemWindow::AddItemToKit(const std::shared_ptr<KitItem>& a_item)
-	{
-		assert(a_item);
+	// 	PersistentData::GetSingleton()->SaveKitToJSON(kit);
+	// }
 
-		auto& collection = PersistentData::GetLoadedKits();
-		auto& kit = collection.at(selectedKit);
+	// std::shared_ptr<KitItem> AddItemWindow::CreateKitItem(const ItemData* a_item)
+	// {
+	// 	assert(a_item);
 
-		if (kit.items.contains(a_item)) {
-			return;
-		}
+	// 	auto newItem = std::make_shared<KitItem>();
+	// 	newItem->plugin = a_item->GetPluginName();
+	// 	newItem->name = a_item->GetName();
+	// 	newItem->editorid = a_item->GetEditorID();
+	// 	newItem->amount = a_item->kitAmount;
+	// 	newItem->equipped = a_item->kitEquipped;
 
-		kit.items.emplace(a_item);
-		PersistentData::GetSingleton()->SaveKitToJSON(kit);
-	}
+	// 	return newItem;
+	// }
+
+	// void AddItemWindow::AddItemToKit(const std::shared_ptr<KitItem>& a_item)
+	// {
+	// 	assert(a_item);
+
+	// 	auto& collection = PersistentData::GetLoadedKits();
+	// 	auto& kit = collection.at(selectedKit);
+
+	// 	if (kit.items.contains(a_item)) {
+	// 		return;
+	// 	}
+
+	// 	kit.items.emplace(a_item);
+	// 	PersistentData::GetSingleton()->SaveKitToJSON(kit);
+	// }
 
 	/*
 --------------------------------------------------------------------------------
@@ -258,6 +306,75 @@ namespace Modex
 				// Display Kit Actions
 				ImGui::SubCategoryHeader(_T("KIT_ACTIONS"));
 
+				if (ImGui::GradientButton(_T("GENERAL_CLEAR_INVENTORY"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+					ImGui::OpenPopup("##Kit::ClearInventory::Confirmation");
+				}
+
+				if (ImGui::BeginPopupModal(_T("##Kit::ClearInventory::Confirmation"), nullptr, popup_flags)) {
+					ImGui::SubCategoryHeader(_T("GENERAL_CLEAR_INVENTORY"));
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+					ImGui::NewLine();
+
+					const std::string instruction = _T("GENERAL_CLEAR_INVENTORY_INSTRUCTION");
+					float center_text = ImGui::GetCenterTextPosX(instruction.c_str());
+					ImGui::SetCursorPosX(center_text);
+					ImGui::Text(instruction.c_str());
+
+					ImGui::NewLine();
+
+					bool confirm = false;
+					if (ImGui::IsKeyPressed(ImGuiKey_Y, false)) {
+						confirm = true;
+					}
+
+					if (ImGui::IsKeyPressed(ImGuiKey_N, false)) {
+						ImGui::CloseCurrentPopup();
+					}
+
+					if (ImGui::Button("(Y)es", ImVec2(button_width, 0))) {
+						confirm = true;
+					}
+
+					ImGui::SameLine();
+
+					if (ImGui::Button("(N)o", ImVec2(button_width, 0))) {
+						ImGui::CloseCurrentPopup();
+					}
+
+					if (confirm) {
+						Console::ClearInventory();
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::EndPopup();
+				}
+
+				if (kit.readOnly) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 0.25f));
+					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+				}
+
+				if (ImGui::GradientButton(_T("KIT_ADD_EQUIPPED"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+					if (!kit.readOnly) {
+						CreateKitFromEquipped();
+					}
+				}
+
+				if (kit.readOnly) {
+					ImGui::PopStyleColor(2);
+				}
+
+				if (ImGui::IsItemHovered()) {
+					if (!kit.readOnly) {
+						ImGui::SetTooltip(_T("KIT_ADD_EQUIPPED"));
+					} else {
+						ImGui::SetTooltip(_T("KIT_IS_READ_ONLY"));
+					}
+				}
+
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 				if (ImGui::GradientButton(_T("Copy"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
 					auto new_kit = PersistentData::GetSingleton()->CopyKit(kit);
 					selectedKit = new_kit.name;
@@ -265,16 +382,33 @@ namespace Modex
 					kit = new_kit;
 					ImFormatString(kitSearchBuffer, IM_ARRAYSIZE(kitSearchBuffer), "");
 				}
+
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
 					ImGui::SetTooltip(_T("TOOLTIP_KIT_COPY"));
 				}
 
-				if (ImGui::GradientButton(_T("Rename"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-					ImFormatString(kitSearchBuffer, IM_ARRAYSIZE(kitSearchBuffer), selectedKit.c_str());
-					ImGui::OpenPopup(_T("Rename"));
+				if (kit.readOnly) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 0.25f));
+					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 				}
+
+				if (ImGui::GradientButton(_T("Rename"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+					if (!kit.readOnly) {
+						ImFormatString(kitSearchBuffer, IM_ARRAYSIZE(kitSearchBuffer), selectedKit.c_str());
+						ImGui::OpenPopup(_T("Rename"));
+					}
+				}
+
+				if (kit.readOnly) {
+					ImGui::PopStyleColor(2);
+				}
+
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
-					ImGui::SetTooltip(_T("TOOLTIP_KIT_RENAME"));
+					if (!kit.readOnly) {
+						ImGui::SetTooltip(_T("TOOLTIP_KIT_RENAME"));
+					} else {
+						ImGui::SetTooltip(_T("KIT_IS_READ_ONLY"));
+					}
 				}
 
 				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -312,8 +446,26 @@ namespace Modex
 					ImGui::EndPopup();
 				}
 
+				if (kit.readOnly) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 0.25f));
+					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+				}
 				if (ImGui::GradientButton(_T("Clear"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-					ImGui::OpenPopup(_T("Clear"));
+					if (!kit.readOnly) {
+						ImGui::OpenPopup(_T("Clear"));
+					}
+				}
+
+				if (kit.readOnly) {
+					ImGui::PopStyleColor(2);
+				}
+
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
+					if (!kit.readOnly) {
+						ImGui::SetTooltip(_T("TOOLTIP_KIT_CLEAR"));
+					} else {
+						ImGui::SetTooltip(_T("KIT_IS_READ_ONLY"));
+					}
 				}
 
 				if (ImGui::BeginPopupModal(_T("Clear"), nullptr, popup_flags)) {
@@ -356,10 +508,6 @@ namespace Modex
 					}
 
 					ImGui::EndPopup();
-				}
-
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary)) {
-					ImGui::SetTooltip(_T("TOOLTIP_KIT_CLEAR"));
 				}
 
 				if (ImGui::GradientButton(_T("Dependencies"), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
@@ -424,6 +572,10 @@ namespace Modex
 					ImGui::Text(_T("KIT_CLEAR_EQUIPPED"));
 					ImGui::SameLine(ImGui::GetContentRegionMax().x - width);
 					ImGui::ToggleButton("##ToggleClearEquip", &kit_ref.clearEquipped, width);
+
+					ImGui::Text(_T("KIT_READ_ONLY"));
+					ImGui::SameLine(ImGui::GetContentRegionMax().x - width);
+					ImGui::ToggleButton("##ToggleReadOnly", &kit_ref.readOnly, width);
 				}
 			}
 		}

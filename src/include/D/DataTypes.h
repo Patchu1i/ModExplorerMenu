@@ -31,17 +31,6 @@ namespace Modex
 				return *this;
 			}
 
-			// BaseObject(other.TESForm, other.TableID);
-
-			// TESForm = other.TESForm;
-			// name = other.name;
-			// editorid = other.editorid;
-			// plugin = other.plugin;
-			// formid = other.formid;
-			// baseid = other.baseid;
-			// refID = other.refID;
-			// TableID = other.TableID;
-
 			TESForm = other.TESForm;
 			refID = other.refID;
 			TableID = other.TableID;
@@ -55,6 +44,18 @@ namespace Modex
 	public:
 		RE::FormID 			refID;
 		ImGuiID 			TableID = 0;
+
+		// I'm storing this kit "meta" data in the base object class because when I instantiate kit
+		// items during sync, I need to reference kit specific information. Since the kit table is
+		// a vector of ItemData and not KitItem, this additional data is required.
+
+		// With this implementation, Kit data is only used in conversions to and from JSON really.
+		// I instantiate ItemData objects for the Kit table view, and then manually update these
+		// variables by doing a match against the KitItem editorID in the current TableList.
+
+		// It's not a very efficient model, but I can't imagine Kit's being large enough to care.
+		bool				kitEquipped = false;
+		int					kitAmount = 1;
 
 		// Initializer which stores key information about the object to avoid cache misses (?)
 		// during SortColumns and other heavy operations. Speeds up iterations and sorting.
@@ -327,16 +328,21 @@ namespace Modex
 	public:
 		// serialized
 		std::string 				name; // unique?
+		std::string					collection;
 		std::string					desc;
 		bool						clearEquipped;
+		bool						readOnly;
 
     	std::unordered_set<std::shared_ptr<KitItem>> items;
     	// std::unordered_set<std::shared_ptr<KitPerk>> perks;
     	// std::unordered_set<std::shared_ptr<KitSpell>> spells;
     	// std::unordered_set<std::shared_ptr<KitShout>> shouts;
 
-		// not serialized
+		// not serialized - meta data
 		ImGuiID 					TableID;
+		int							weaponCount;
+		int							armorCount;
+		int							miscCount;
 
 
 		// constructor
@@ -350,8 +356,8 @@ namespace Modex
 		new_item->plugin = a_item.GetPluginName();
 		new_item->name = a_item.GetName();
 		new_item->editorid = a_item.GetEditorID();
-		new_item->amount = 1;
-		new_item->equipped = false;
+		new_item->amount = a_item.kitAmount;
+		new_item->equipped = a_item.kitEquipped;
 
 		return new_item;
 	}

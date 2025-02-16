@@ -1,5 +1,6 @@
 #pragma once
 #include <include/D/Data.h>
+#include <include/U/Util.h>
 
 // TODO: Not sure why this is its own header.
 
@@ -75,7 +76,15 @@ namespace Modex
 		};
 
 		// Name Bar
-		const auto name = a_object->GetName();
+		auto name = a_object->GetName();
+
+		// TODO: Instead of manually assigning EditorID when missing a name, we should do this
+		// in the constructor of ItemData automatically. That way we don't need to add these
+		// conditions everywhere.
+
+		if (name.empty()) {
+			name = a_object->GetEditorID();
+		}
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		const auto cursor = ImGui::GetCursorScreenPos();
@@ -215,19 +224,21 @@ namespace Modex
 				}
 			}
 
-			const std::string desc = Utils::GetItemDescription(a_object->GetForm(), g_DescriptionFrameworkInterface);
+			const std::string desc = Utils::GetItemDescription(a_object->GetForm());
+
 			if (!desc.empty()) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Description")));
 				ImGui::Text(_T("Description"));
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-				ImGui::PushTextWrapPos(maxWidth);
-				ImGui::TextWrapped(desc.c_str());  // Archmage Robe Crash
-				ImGui::PopTextWrapPos();
-			}
-
-			if (a_object->GetFormType() == RE::FormType::Book) {
-				ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(desc.c_str()));  // Read Me!
+				if (a_object->GetFormType() == RE::FormType::Book) {
+					ImGui::SetCursorPosX(ImGui::GetCenterTextPosX(_T("Read Me!")));
+					ImGui::Text(_T("Read Me!"));
+				} else {
+					ImGui::PushTextWrapPos(maxWidth);
+					ImGui::TextWrapped(desc.c_str());  // Archmage Robe Crash
+					ImGui::PopTextWrapPos();
+				}
 			}
 		}
 	}

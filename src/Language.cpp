@@ -57,7 +57,7 @@ namespace Modex
 		imFontConfig.MergeMode = true;
 		imFontConfig.GlyphMinAdvanceX = 10.0f;
 		imFontConfig.GlyphExtraSpacing.x = 5.0f;
-		imFontConfig.GlyphOffset.y = (size / 2.0f) / 2.0f;
+		imFontConfig.GlyphOffset.y = (size / 2.0f) / 1.5f;
 		// imFontConfig.GlyphOffset.y = size / 6.0f;
 		// imFontConfig.GlyphOffset.x = 1.0f;
 

@@ -68,11 +68,12 @@ namespace Modex
 		char					newKitName[256];
 		std::string				selectedKit;
 
-		void						RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item);
-		void						AddItemToKit(const std::shared_ptr<KitItem>& a_item);
-		std::shared_ptr<KitItem>	CreateKitItem(const ItemData* a_item);
+		// void						RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item);
+		// void						AddItemToKit(const std::shared_ptr<KitItem>& a_item);
+		// std::shared_ptr<KitItem>	CreateKitItem(const ItemData* a_item);
 		void						AddKitToInventory(const Kit& a_kit);
 		void						PlaceKitAtMe(const Kit& a_kit);
+		void						CreateKitFromEquipped();
 
 
 		TableView<ItemData>			tableView;
