@@ -435,6 +435,44 @@ namespace Modex
 		}
 	}
 
+	// Bring an NPC using their reference ID
+	// @param a_refID: Reference FormID of the NPC.
+	void Console::BringNPC(RE::FormID a_refID, bool a_closeMenu)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			if (a_refID != 0) {
+				if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+					if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(a_refID)) {
+						ref->MoveTo(playerREF);
+
+						if (a_closeMenu) {
+							Menu::GetSingleton()->Close();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Move player to an NPC using their reference ID
+	// @param a_refID: Reference FormID of the NPC.
+	void Console::GotoNPC(RE::FormID a_refID, bool a_closeMenu)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			if (a_refID != 0) {
+				if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+					if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(a_refID)) {
+						playerREF->MoveTo(ref);
+
+						if (a_closeMenu) {
+							Menu::GetSingleton()->Close();
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Place a item at the player's location.
 	// @param std::string a_itemFormID: Base Form ID of the item.
 	// @param a_count: Count of objects

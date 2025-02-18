@@ -108,6 +108,8 @@ namespace Modex
 	// Hroki in Markarth Silverblood-inn is an example of this.
 	void Data::CacheNPCRefIds()
 	{
+		// This is shared so that it's lifetime persists until the SKSE task is complete.
+		// Passing solely by reference does not seem to work, causes a CTD.
 		auto npc_ref_map = std::make_shared<std::unordered_map<RE::FormID, RE::FormID>>();
 
 		SKSE::GetTaskInterface()->AddTask([npc_ref_map]() {
@@ -269,6 +271,9 @@ namespace Modex
 
 				if (_itemListModFormTypeMap[mod].furniture == false)
 					_itemListModFormTypeMap[mod].furniture = form->GetFormType() == RE::FormType::Furniture;
+
+				if (_itemListModFormTypeMap[mod].flora == false)
+					_itemListModFormTypeMap[mod].flora = form->GetFormType() == RE::FormType::Flora;
 			}
 		}
 	}
@@ -414,6 +419,7 @@ namespace Modex
 			CacheStaticObjects<RE::TESObjectSTAT>(dataHandler);
 			CacheStaticObjects<RE::TESObjectCONT>(dataHandler);
 			CacheStaticObjects<RE::TESObjectLIGH>(dataHandler);
+			CacheStaticObjects<RE::TESFlora>(dataHandler);
 			CacheStaticObjects<RE::TESFurniture>(dataHandler);
 		}
 	}

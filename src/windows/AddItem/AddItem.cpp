@@ -192,18 +192,11 @@ namespace Modex
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchWidth"), search_width);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
 		}
-
-		// Book Prompt
-		if (openBook != nullptr) {
-			ShowBookPreview();
-		}
 	}
 
 	void AddItemWindow::Init()
 	{
-		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-
-		openBook = nullptr;
+		// g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
 		b_AddToInventory = true;
 		b_PlaceOnGround = false;
@@ -216,6 +209,7 @@ namespace Modex
 		tableView.SetGenerator([]() { return Data::GetSingleton()->GetAddItemList(); });
 		tableView.SetupSearch(Data::PLUGIN_TYPE::ITEM);
 		tableView.SetDragDropID("FROM_TABLE");
+		tableView.SetClickAmount(&clickToAddCount);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnablePluginKitView);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableEnchantmentSort);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableNonPlayableSort);
@@ -232,6 +226,7 @@ namespace Modex
 		// when enacting a drag 'n drop event in order to create the ItemData object on either side.
 		// Since the table is indexed by ImGuiID, and we utilize ImGuiID for the drag payload.
 		// It's easy to just index the original table for the item data based on the ImGuiID provided.
+
 		kitTableView.AddDragDropTarget(tableView.GetDragDropID(), &tableView);
 	}
 }  // namespace Modex

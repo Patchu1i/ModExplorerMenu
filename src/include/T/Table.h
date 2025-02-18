@@ -32,7 +32,9 @@ namespace Modex
             ModexTableFlag_EnableSearch = 1 << 1,
             ModexTableFlag_EnableEnchantmentSort = 1 << 2,
             ModexTableFlag_EnableNonPlayableSort = 1 << 3,
-            ModexTableFlag_EnablePluginKitView = 1 << 4
+            ModexTableFlag_EnableUniqueSort = 1 << 4,
+            ModexTableFlag_EnableEssentialSort = 1 << 5,
+            ModexTableFlag_EnablePluginKitView = 1 << 6
         };
 
         enum DragBehavior {
@@ -76,6 +78,7 @@ namespace Modex
             this->generator = nullptr;
             this->selectedKit = nullptr;
             this->confirmDeleteKit = nullptr;
+            this->clickAmount = nullptr;
         }
 
         ~TableView() = default;
@@ -94,6 +97,7 @@ namespace Modex
         void                    SetupSearch(const Data::PLUGIN_TYPE& a_pluginType);
         void                    SetKitPointer(std::string* a_kit) { selectedKit = a_kit; }
         void                    SetDragDropID(const std::string& a_id);
+        void                    SetClickAmount(int* a_amount) { clickAmount = a_amount; }
 
         void                    SetCompactView(bool a_compact) { compactView = a_compact; }
         
@@ -115,6 +119,7 @@ namespace Modex
         void                    AddSelectedToKit();
         void                    AddSelectionToInventory(int a_count);
         void                    PlaceSelectionOnGround(int a_count);
+        void                    PlaceAll();
 
         std::vector<DataType>   GetSelection();
         TableItem&              GetItemPreview() { return itemPreview; }
@@ -143,6 +148,7 @@ namespace Modex
         // kit specific stuff
         void                    LoadKitsFromSelectedPlugin();
         std::string*            selectedKit;
+        int*                    clickAmount;
 
         // search and filter behavior
         void                    Filter(const std::vector<DataType>& a_data);
@@ -177,6 +183,8 @@ namespace Modex
         // view behavior
         bool                    hideEnchanted;
         bool                    hideNonPlayable;
+        bool                    hideNonUnique;
+        bool                    hideNonEssential;
         bool                    compactView;
         bool                    showEditorID;
         bool                    showPluginKitView;

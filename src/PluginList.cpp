@@ -295,6 +295,10 @@ namespace Modex
 					if (pluginFormTypeFlag.light) {
 						modList.push_back(modName);
 					}
+				case RE::FormType::Flora:
+					if (pluginFormTypeFlag.flora) {
+						modList.push_back(modName);
+					}
 					break;
 				default:
 					stl::report_and_fail("Invalid PriamryFilter FormType passed to GetFilteredListOfPlugins");

@@ -41,7 +41,7 @@ namespace Modex
 			const_cast<RE::FormID&>(baseid) = other.baseid;
 			return *this;
 		}
-	public:
+
 		RE::FormID 			refID;
 		ImGuiID 			TableID = 0;
 
@@ -59,20 +59,23 @@ namespace Modex
 
 		// Initializer which stores key information about the object to avoid cache misses (?)
 		// during SortColumns and other heavy operations. Speeds up iterations and sorting.
-		BaseObject(RE::TESForm* form, ImGuiID a_id = 0) :
+		BaseObject(RE::TESForm* form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
 			TESForm{ form },
 			TableID{ a_id },
+			refID{ a_refID },
 			name{ form != nullptr ? ValidateTESName(form) : "NULL_ERR" },
 			editorid{ form != nullptr ? po3_GetEditorID(form->GetFormID()) : "NULL_ERR" },
 			formid{ form != nullptr ? fmt::format("{:08x}", form->GetFormID()) : "NULL_ERR" },
-			baseid{ form != nullptr ? form->GetFormID() : 0 },
-			refID{ 0 }
+			baseid{ form != nullptr ? form->GetFormID() : 0 }
 		{}
 
 		virtual ~BaseObject() = default;
 		
 		// TODO: Derefencing char* without safety checks. Danger zone.
 		[[nodiscard]] inline RE::TESForm* GetForm() const { return TESForm; }
+		[[nodiscard]] inline const std::string GetTableID() const { return fmt::format("{:08x}", TableID); }
+		// [[nodiscard]] inline const std::string GetPlugin() const { return plugin; }
+		[[nodiscard]] inline const std::string_view GetPluginView() const { return plugin; }
 		[[nodiscard]] inline const std::string GetFormID() const { return formid; }
 		[[nodiscard]] inline const RE::FormID GetBaseForm() const { return baseid; }
 		[[nodiscard]] inline const std::string GetEditorID() const { return editorid; }
@@ -151,8 +154,8 @@ namespace Modex
 	class ObjectData : public BaseObject
 	{
 	public:
-		ObjectData(RE::TESForm* a_form, ImGuiID a_id = 0) :
-			BaseObject{ a_form, a_id } {}
+		ObjectData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
 
 
 	};
@@ -160,8 +163,8 @@ namespace Modex
 	class ItemData : public BaseObject
 	{
 	public:
-		ItemData(RE::TESForm* a_form, ImGuiID a_id = 0) :
-			BaseObject{ a_form, a_id } {}
+		ItemData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
 
 		[[nodiscard]] inline float GetWeight() const
 		{
@@ -196,8 +199,8 @@ namespace Modex
 	class NPCData : public BaseObject
 	{
 	public:
-		NPCData(RE::TESForm* a_form, ImGuiID a_id = 0) :
-			BaseObject{ a_form, a_id } {}
+		NPCData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
 
 
 		[[nodiscard]] inline RE::TESNPC* GetTESNPC() const
@@ -330,8 +333,9 @@ namespace Modex
 		std::string 				name; // unique?
 		std::string					collection;
 		std::string					desc;
-		bool						clearEquipped;
-		bool						readOnly;
+		
+		bool						clearEquipped = true;
+		bool						readOnly = false;
 
     	std::unordered_set<std::shared_ptr<KitItem>> items;
     	// std::unordered_set<std::shared_ptr<KitPerk>> perks;

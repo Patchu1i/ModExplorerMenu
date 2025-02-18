@@ -20,6 +20,8 @@ namespace Modex
 		static void ClearEquipped();
 		static void ClearInventory();
 		static void ReadBook(std::string a_bookFormID);
+		static void BringNPC(RE::FormID a_refID, bool a_closeMenu = false);
+		static void GotoNPC(RE::FormID a_refID, bool a_closeMenu = false);
 		static void PlaceAtMe(std::string a_itemFormID, int a_count = 1);
 		static void PlaceAtMeFormID(RE::FormID a_npcBaseID, int a_count = 1);
 		static void PridLast();

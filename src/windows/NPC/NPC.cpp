@@ -26,13 +26,18 @@ namespace Modex
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::TableView;
-				Refresh();
+				if (this->tableView.GetTableList().empty()) {
+					this->tableView.Refresh();
+				}
+
+				this->tableView.BuildPluginList();
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Selectable("Blacklist", activeViewport == Viewport::BlacklistView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::BlacklistView;
+				Blacklist::GetSingleton()->BuildPluginList();
 			}
 			ImGui::PopStyleVar();
 		}
@@ -51,7 +56,7 @@ namespace Modex
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			backup_pos = ImGui::GetCursorPos();
 			if (ImGui::BeginChild("##Object::SearchArea", ImVec2(search_width + 1.0f, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				ShowSearch();
+				this->tableView.ShowSearch(search_height);
 			}
 			ImGui::EndChild();
 
@@ -65,7 +70,8 @@ namespace Modex
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
 			if (ImGui::BeginChild("##NPC::TableArea", ImVec2(search_width, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				ShowFormTable();
+				this->tableView.ShowSort();
+				this->tableView.Draw();
 			}
 			ImGui::EndChild();
 
@@ -94,23 +100,18 @@ namespace Modex
 
 	void NPCWindow::Init()
 	{
-		g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
+		// g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
 		b_ClickToPlace = true;
-		// b_ClickToFavorite = false;
 		clickToPlaceCount = 1;
 
-		_itemHovered = false;
-		_itemSelected = false;
-		hoveredNPC = nullptr;
+		activeViewport = Viewport::TableView;
 
-		primaryFilter = RE::FormType::None;
-		searchKey = BaseColumn::ID::Name;
-		dirty = true;
-
-		selectedMod = "All Mods";
-
-		columnList = NPCColumns();
-		ApplyFilters();
+		tableView.SetGenerator([]() { return Data::GetSingleton()->GetNPCList(); });
+		tableView.AddFlag(TableView<NPCData>::ModexTableFlag_EnableUniqueSort);
+		tableView.AddFlag(TableView<NPCData>::ModexTableFlag_EnableEssentialSort);
+		tableView.SetupSearch(Data::PLUGIN_TYPE::NPC);
+		tableView.SetClickAmount(&clickToPlaceCount);
+		tableView.Init();
 	}
 }

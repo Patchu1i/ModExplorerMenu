@@ -324,7 +324,7 @@ namespace ImGui
 		ImGui::InvisibleButton(str_id, ImVec2(width, height));
 		if (ImGui::IsItemClicked()) {
 			*v = !*v;
-			clicked = *v;
+			clicked = true;
 		}
 
 		float t = *v ? 1.0f : 0.0f;
@@ -645,6 +645,7 @@ namespace Utils
 		{ "KIT", ICON_LC_BOX },
 		{ "ENCHANTED", ICON_LC_SPARKLES },
 		{ "HIDDEN", ICON_LC_EYE },
+		{ "REFID", ICON_LC_SIGNPOST },
 
 		// ItemData
 		{ "WEAPON", ICON_LC_SWORD },
@@ -662,8 +663,22 @@ namespace Utils
 		{ "SLOT", ICON_LC_BETWEEN_HORIZONTAL_START },
 		{ "RANGE", ICON_LC_CHEVRONS_LEFT_RIGHT },
 		{ "STAGGER", ICON_LC_SCALE },
-		{ "SPEED", ICON_LC_ARROW_BIG_UP_DASH },
+		{ "SPEED", ICON_LC_GAUGE },
 		{ "CRIT", ICON_LC_DICES },
+
+		// NPCData
+		{ "NPC", ICON_LC_USER_ROUND },
+		{ "CLASS", ICON_LC_GRADUATION_CAP },
+		{ "RACE", ICON_LC_DRAMA },
+		{ "GENDER", ICON_LC_PERSON_STANDING },
+		{ "FACTION", ICON_LC_USERS_ROUND },
+		{ "LEVEL", ICON_LC_ARROW_BIG_UP_DASH },
+		{ "HEALTH", ICON_LC_HEART },
+		{ "MAGICKA", ICON_LC_SPARKLES },
+		{ "STAMINA", ICON_LC_DUMBBELL },
+		{ "SPELL", ICON_LC_WAND },
+		{ "UNIQUE", ICON_LC_GEM },
+		{ "ESSENTIAL", ICON_LC_SHIELD_ALERT },
 
 		// ObjectData
 		{ "CONTAINER", ICON_LC_PACKAGE },
@@ -673,6 +688,7 @@ namespace Utils
 		{ "FURNITURE", ICON_LC_ARMCHAIR },
 		{ "ACTIVATOR", ICON_LC_TARGET },
 		{ "TREE", ICON_LC_TREE_PINE },
+		{ "FLOWER", ICON_LC_FLOWER }
 	};
 
 	static inline std::string GetFormTypeIcon(const RE::FormType& a_type)
@@ -698,62 +714,75 @@ namespace Utils
 
 		// NPCData
 		case RE::FormType::NPC:
+			return IconMap["NPC"];
 		case RE::FormType::Class:
+			return IconMap["CLASS"];
 		case RE::FormType::Race:
+			return IconMap["RACE"];
 		case RE::FormType::Faction:
+			return IconMap["FACTION"];
+		case RE::FormType::Spell:
+			return IconMap["SPELL"];
 
 		// ObjectData
 		case RE::FormType::Tree:
+			return IconMap["TREE"];
 		case RE::FormType::Static:
+			return IconMap["STATIC"];
 		case RE::FormType::Container:
+			return IconMap["CONTAINER"];
 		case RE::FormType::Activator:
+			return IconMap["ACTIVATOR"];
 		case RE::FormType::Light:
+			return IconMap["LIGHT"];
 		case RE::FormType::Door:
+			return IconMap["DOOR"];
 		case RE::FormType::Furniture:
+			return IconMap["FURNITURE"];
 		case RE::FormType::Flora:
-			return "MODEX_MISSING_ICON";
+			return IconMap["FLOWER"];
 		}
 
-		return "";
+		return "MODEX_MISSING_ICON";
 	}
 
 	inline static ImU32 GetFormTypeColor(const RE::FormType& a_type)
 	{
 		switch (a_type) {
 		case RE::FormType::Armor:
-			return IM_COL32(255, 182, 193, 255);  // Light Pink
+			return IM_COL32(0, 102, 204, 255);  // Medium Blue
 		case RE::FormType::AlchemyItem:
-			return IM_COL32(144, 238, 144, 255);  // Light Green
+			return IM_COL32(0, 204, 204, 255);  // Cyan
 		case RE::FormType::Ammo:
-			return IM_COL32(173, 216, 230, 255);  // Light Blue
+			return IM_COL32(204, 204, 0, 255);  // Yellow
 		case RE::FormType::Book:
-			return IM_COL32(255, 228, 181, 255);  // Moccasin
+			return IM_COL32(153, 76, 0, 255);  // Brown
 		case RE::FormType::Ingredient:
-			return IM_COL32(216, 191, 216, 255);  // Thistle
+			return IM_COL32(0, 153, 0, 255);  // Green
 		case RE::FormType::KeyMaster:
-			return IM_COL32(221, 160, 221, 255);  // Plum
+			return IM_COL32(255, 153, 51, 255);  // Orange
 		case RE::FormType::Misc:
-			return IM_COL32(255, 182, 193, 255);  // Light Pink
+			return IM_COL32(153, 0, 153, 255);  // Purple
 		case RE::FormType::Weapon:
-			return IM_COL32(255, 239, 213, 255);  // Papaya Whip
+			return IM_COL32(255, 51, 51, 255);  // Bright Red
 		case RE::FormType::NPC:
-			return IM_COL32(135, 206, 250, 255);  // Light Sky Blue
+			return IM_COL32(102, 178, 255, 255);  // Light Blue
 		case RE::FormType::Tree:
-			return IM_COL32(144, 238, 144, 255);  // Light Green
+			return IM_COL32(0, 102, 0, 255);  // Dark Green
 		case RE::FormType::Static:
-			return IM_COL32(211, 211, 211, 255);  // Light Gray
+			return IM_COL32(102, 0, 204, 255);  // Violet
 		case RE::FormType::Container:
-			return IM_COL32(210, 180, 140, 255);  // Tan
+			return IM_COL32(204, 0, 0, 255);  // Dark Red
 		case RE::FormType::Activator:
-			return IM_COL32(255, 182, 193, 255);  // Light Pink
+			return IM_COL32(255, 102, 0, 255);  // Orange Red
 		case RE::FormType::Light:
-			return IM_COL32(255, 255, 224, 255);  // Light Yellow
+			return IM_COL32(255, 204, 0, 255);  // Gold
 		case RE::FormType::Door:
-			return IM_COL32(175, 238, 238, 255);  // Pale Turquoise
+			return IM_COL32(0, 204, 0, 255);  // Bright Green
 		case RE::FormType::Furniture:
-			return IM_COL32(244, 164, 96, 255);  // Sandy Brown
+			return IM_COL32(153, 0, 153, 255);  // Dark Magenta
 		default:
-			return IM_COL32(211, 211, 211, 255);  // Light Gray
+			return IM_COL32(169, 169, 169, 255);  // Dark Gray
 		}
 	}
 

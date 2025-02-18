@@ -47,6 +47,7 @@ namespace Modex
 			bool 	door 			= false;
 			bool 	light 			= false;
 			bool 	furniture 		= false;
+			bool	flora			= false;
 			bool	cell			= false;
 		};
 

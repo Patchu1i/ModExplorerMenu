@@ -11,8 +11,6 @@ namespace Modex
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 
-		ImGui::BeginChild("##AddItemWindow::Actions", ImVec2(ImGui::GetContentRegionAvail()), ImGuiChildFlags_AlwaysUseWindowPadding);
-
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
@@ -52,7 +50,7 @@ namespace Modex
 
 		// Place All from Table Shortcut.
 		if (ImGui::GradientButton(_T("GENERAL_PLACE_ON_GROUND"), ImVec2(button_width, 0))) {
-			// implement me
+			this->tableView.PlaceSelectionOnGround(clickToAddCount);
 		}
 
 		ImGui::PopStyleColor(3);  // End of Secondary Buttons
@@ -110,7 +108,5 @@ namespace Modex
 		ImGui::SubCategoryHeader(_T("Preview"));
 
 		ShowItemPreview<ItemData>(tableView.GetItemPreview());
-
-		ImGui::EndChild();
 	}
 }

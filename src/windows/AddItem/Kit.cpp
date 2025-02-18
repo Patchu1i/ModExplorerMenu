@@ -297,6 +297,22 @@ namespace Modex
 			ImGui::EndPopup();
 		}
 
+		ImGui::NewLine();
+
+#ifdef DEBUG
+		if (ImGui::Button("Patcher", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			auto& collection = PersistentData::GetLoadedKits();
+
+			for (auto& pair : collection) {
+				auto& kit = pair.second;
+
+				kit.readOnly = true;
+
+				PersistentData::GetSingleton()->SaveKitToJSON(kit);
+			}
+		}
+#endif
+
 		if (selectedKit != "None") {
 			auto& collection = PersistentData::GetLoadedKits();
 			if (collection.find(selectedKit) != collection.end()) {
@@ -571,11 +587,23 @@ namespace Modex
 					const float width = 100.0f;
 					ImGui::Text(_T("KIT_CLEAR_EQUIPPED"));
 					ImGui::SameLine(ImGui::GetContentRegionMax().x - width);
-					ImGui::ToggleButton("##ToggleClearEquip", &kit_ref.clearEquipped, width);
+					if (!kit.readOnly) {
+						if (ImGui::ToggleButton("##ToggleClearEquip", &kit_ref.clearEquipped, width)) {
+							PersistentData::GetSingleton()->SaveKitToJSON(kit_ref);
+						}
+					} else {
+						ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetColorU32(ImGuiCol_FrameBg, 0.25f));
+						ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImGui::GetColorU32(ImGuiCol_SliderGrab, 0.25f));
+						bool locked = kit_ref.clearEquipped;
+						ImGui::ToggleButton("##ToggleClearEquip", &locked, width);
+						ImGui::PopStyleColor(2);
+					}
 
 					ImGui::Text(_T("KIT_READ_ONLY"));
 					ImGui::SameLine(ImGui::GetContentRegionMax().x - width);
-					ImGui::ToggleButton("##ToggleReadOnly", &kit_ref.readOnly, width);
+					if (ImGui::ToggleButton("##ToggleReadOnly", &kit_ref.readOnly, width)) {
+						PersistentData::GetSingleton()->SaveKitToJSON(kit_ref);
+					}
 				}
 			}
 		}

@@ -69,6 +69,17 @@ namespace Modex
 		this->selectionStorage.Clear();
 	}
 
+	template <typename DataType>
+	void TableView<DataType>::PlaceAll()
+	{
+		for (auto& item : tableList) {
+			Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
+	}
+
 	// We instantiate a TableView with a specific Module handle so that
 	// some sorting and filtering options are routed correctly, since as of now
 	// we store the BaseObject instead of a more polymorphic type.
@@ -128,6 +139,23 @@ namespace Modex
 			RE::FormType::Race,
 			RE::FormType::Faction
 		};
+
+		this->sortByList = {
+			SortType::Plugin,
+			SortType::FormID,
+			SortType::Name,
+			SortType::EditorID,
+			SortType::Class,
+			SortType::Race,
+			SortType::Gender,
+			SortType::Level,
+			SortType::ReferenceID,
+			SortType::Health,
+			SortType::Magicka,
+			SortType::Stamina
+		};
+
+		this->BuildPluginList();
 	}
 
 	void TableView<ObjectData>::Init()
@@ -148,6 +176,15 @@ namespace Modex
 			RE::FormType::Furniture,
 			RE::FormType::Flora
 		};
+
+		this->sortByList = {
+			SortType::Plugin,
+			SortType::FormID,
+			SortType::Name,
+			SortType::EditorID
+		};
+
+		this->BuildPluginList();
 	}
 
 	template <typename DataType>
@@ -372,7 +409,7 @@ namespace Modex
 
 		for (const auto& item : a_data) {
 			if (this->HasFlag(ModexTableFlag_Kit)) {
-				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0, item.refID));
 				continue;
 			}
 
@@ -402,7 +439,7 @@ namespace Modex
 					std::string match = inputString.substr(1, inputString.size() - 2);
 
 					if (compareString == match) {
-						this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+						this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0, item.refID));
 					}
 
 					continue;
@@ -439,51 +476,105 @@ namespace Modex
 				}
 			}
 
-			// Primary Filter
-			if (this->primaryFilter != RE::FormType::None) {
-				if (item.GetFormType() != this->primaryFilter) {
+			if constexpr (std::is_same_v<DataType, NPCData>) {
+				if (this->hideNonUnique && !item.GetTESNPC()->IsUnique()) {
+					continue;
+				}
+
+				if (this->hideNonEssential && !item.GetTESNPC()->IsEssential()) {
 					continue;
 				}
 			}
 
-			// Secondary Filter
-			if (this->secondaryFilter != _T("All")) {
-				if (this->primaryFilter == RE::FormType::Armor && item.GetFormType() == RE::FormType::Armor) {
-					auto armorSlots = Utils::GetArmorSlots(item.GetForm()->As<RE::TESObjectARMO>());
-					if (std::find(armorSlots.begin(), armorSlots.end(), this->secondaryFilter) == armorSlots.end()) {
+			// Primary Filter
+			if (this->primaryFilter != RE::FormType::None) {
+				if constexpr (std::is_same_v<DataType, ItemData>) {
+					if (item.GetFormType() != this->primaryFilter) {
 						continue;
 					}
 				}
 
-				if (this->primaryFilter == RE::FormType::Weapon && item.GetFormType() == RE::FormType::Weapon) {
-					auto weaponType = item.GetForm()->As<RE::TESObjectWEAP>()->GetWeaponType();
-
-					// We gonna just keep pasting this everywhere I guess..
-					const char* weaponTypes[] = {
-						"Hand to Hand",
-						"One Handed Sword",
-						"One Handed Dagger",
-						"One Handed Axe",
-						"One Handed Mace",
-						"Two Handed Greatsword",
-						"Two Handed Battleaxe",
-						"Bow",
-						"Staff",
-						"Crossbow"
-					};
-
-					if (weaponTypes[static_cast<int>(weaponType)] != this->secondaryFilter) {
+				if constexpr (std::is_same_v<DataType, ObjectData>) {
+					if (item.GetFormType() != this->primaryFilter) {
 						continue;
+					}
+				}
+			}
+
+			// Secondary Filter
+			if (this->primaryFilter != RE::FormType::None && this->secondaryFilter != _T("All")) {
+				if constexpr (std::is_same_v<DataType, ItemData>) {
+					if (this->primaryFilter == RE::FormType::Armor && item.GetFormType() == RE::FormType::Armor) {
+						auto armorSlots = Utils::GetArmorSlots(item.GetForm()->As<RE::TESObjectARMO>());
+						if (std::find(armorSlots.begin(), armorSlots.end(), this->secondaryFilter) == armorSlots.end()) {
+							continue;
+						}
+					}
+
+					if (this->primaryFilter == RE::FormType::Weapon && item.GetFormType() == RE::FormType::Weapon) {
+						auto weaponType = item.GetForm()->As<RE::TESObjectWEAP>()->GetWeaponType();
+
+						// We gonna just keep pasting this everywhere I guess..
+						const char* weaponTypes[] = {
+							"Hand to Hand",
+							"One Handed Sword",
+							"One Handed Dagger",
+							"One Handed Axe",
+							"One Handed Mace",
+							"Two Handed Greatsword",
+							"Two Handed Battleaxe",
+							"Bow",
+							"Staff",
+							"Crossbow"
+						};
+
+						if (weaponTypes[static_cast<int>(weaponType)] != this->secondaryFilter) {
+							continue;
+						}
+					}
+				}
+
+				if constexpr (std::is_same_v<DataType, NPCData>) {
+					if (this->primaryFilter == RE::FormType::Class) {
+						auto npcClass = item.GetClass();
+
+						if (npcClass != this->secondaryFilter) {
+							continue;
+						}
+					}
+
+					if (this->primaryFilter == RE::FormType::Race) {
+						auto npcRace = item.GetRace();
+
+						if (npcRace != this->secondaryFilter) {
+							continue;
+						}
+					}
+
+					if (this->primaryFilter == RE::FormType::Faction) {
+						auto npcFaction = item.GetFactions();
+
+						bool skip = true;
+						for (auto& faction : npcFaction) {
+							if (ValidateTESName(faction.faction) == this->secondaryFilter) {
+								skip = false;
+								break;
+							}
+						}
+
+						if (skip) {
+							continue;
+						}
 					}
 				}
 			}
 
 			if (!inputString.empty()) {
 				if (compareString.find(inputString) != std::string::npos) {
-					this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+					this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0, item.refID));
 				}
 			} else {
-				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0));
+				this->tableList.emplace_back(std::make_unique<DataType>(item.GetForm(), 0, item.refID));
 			}
 		}
 	}
@@ -502,18 +593,20 @@ namespace Modex
 			if (this->secondaryFilter.find(this->secondaryFilterBuffer) != std::string::npos) {
 				ImFormatString(this->secondaryFilterBuffer, IM_ARRAYSIZE(this->secondaryFilterBuffer), "");
 			} else {
-				for (auto& item : list) {
-					if (item.empty()) {
+				for (auto& filter : list) {
+					if (filter.empty()) {
 						continue;
 					}
 
-					if (item.find(this->secondaryFilterBuffer) != std::string::npos) {
-						this->secondaryFilter = item;
-						ImFormatString(this->secondaryFilterBuffer, IM_ARRAYSIZE(this->secondaryFilterBuffer), "");
+					if (filter.find(this->secondaryFilterBuffer) != std::string::npos) {
+						this->secondaryFilter = filter;
+						ImFormatString(this->secondaryFilterBuffer, IM_ARRAYSIZE(this->secondaryFilterBuffer), "%s", this->secondaryFilter.c_str());
+						break;
 					}
 				}
 			}
 
+			this->selectionStorage.Clear();
 			this->Refresh();
 		}
 	}
@@ -549,7 +642,9 @@ namespace Modex
 		// This is kind of a lazy method to detect if the secondary filter is present
 		// That way we can expand / reposition the primary filter drop-down to center align
 		// it within the context window.
-		if (this->primaryFilter == RE::FormType::Armor || this->primaryFilter == RE::FormType::Weapon) {
+		if (this->primaryFilter == RE::FormType::Armor || this->primaryFilter == RE::FormType::Weapon ||
+			this->primaryFilter == RE::FormType::Class || this->primaryFilter == RE::FormType::Race ||
+			this->primaryFilter == RE::FormType::Faction) {
 			secondaryFilterExpanded = true;
 		} else {
 			secondaryFilterExpanded = false;
@@ -706,25 +801,16 @@ namespace Modex
 
 		if (this->primaryFilter == RE::FormType::Class) {
 			const auto classList = Data::GetSingleton()->GetNPCClassList();
-			std::vector<std::string> list(classList.begin(), classList.end());
-			list.insert(list.begin(), _T("All"));
-
 			this->SecondaryNPCFilter(classList, total_width);
 		}
 
 		if (this->primaryFilter == RE::FormType::Race) {
 			const auto raceList = Data::GetSingleton()->GetNPCRaceList();
-			std::vector<std::string> list(raceList.begin(), raceList.end());
-			list.insert(list.begin(), _T("All"));
-
 			this->SecondaryNPCFilter(raceList, total_width);
 		}
 
 		if (this->primaryFilter == RE::FormType::Faction) {
 			const auto factionList = Data::GetSingleton()->GetNPCFactionList();
-			std::vector<std::string> list(factionList.begin(), factionList.end());
-			list.insert(list.begin(), _T("All"));
-
 			this->SecondaryNPCFilter(factionList, total_width);
 		}
 
@@ -815,17 +901,19 @@ namespace Modex
 			std::to_string(hidden_items).c_str(),
 			_T("TOOLTIP_TOTAL_FILTERED"));
 
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		if (this->HasFlag(ModexTableFlag_EnablePluginKitView)) {
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		InlineText(
-			_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"),
-			std::to_string(total_kits).c_str(),
-			_T("TOOLTIP_TOTAL_KITS"));
+			InlineText(
+				_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"),
+				std::to_string(total_kits).c_str(),
+				_T("TOOLTIP_TOTAL_KITS"));
 
-		InlineText(
-			_TICONM(ICON_LC_PACKAGE_OPEN, "GENERAL_KITS_IN_PLUGIN", ":"),
-			std::to_string(total_kits_in_plugin).c_str(),
-			_T("TOOLTIP_TOTAL_KITS_IN_PLUGIN"));
+			InlineText(
+				_TICONM(ICON_LC_PACKAGE_OPEN, "GENERAL_KITS_IN_PLUGIN", ":"),
+				std::to_string(total_kits_in_plugin).c_str(),
+				_T("TOOLTIP_TOTAL_KITS_IN_PLUGIN"));
+		}
 
 		ImGui::PopStyleVar();
 		ImGui::EndColumns();
@@ -879,88 +967,6 @@ namespace Modex
 		LayoutOuterPadding = floorf(LayoutRowSpacing * 0.5f);
 	}
 
-	ImU32 GetFormTypeColor(const RE::FormType& a_type)
-	{
-		switch (a_type) {
-		case RE::FormType::Armor:
-			return IM_COL32(0, 102, 204, 255);  // Medium Blue
-		case RE::FormType::AlchemyItem:
-			return IM_COL32(0, 204, 204, 255);  // Cyan
-		case RE::FormType::Ammo:
-			return IM_COL32(204, 204, 0, 255);  // Yellow
-		case RE::FormType::Book:
-			return IM_COL32(153, 76, 0, 255);  // Brown
-		case RE::FormType::Ingredient:
-			return IM_COL32(0, 153, 0, 255);  // Green
-		case RE::FormType::KeyMaster:
-			return IM_COL32(255, 153, 51, 255);  // Orange
-		case RE::FormType::Misc:
-			return IM_COL32(153, 0, 153, 255);  // Purple
-		case RE::FormType::Weapon:
-			return IM_COL32(255, 51, 51, 255);  // Bright Red
-		case RE::FormType::NPC:
-			return IM_COL32(102, 178, 255, 255);  // Light Blue
-		case RE::FormType::Tree:
-			return IM_COL32(0, 102, 0, 255);  // Dark Green
-		case RE::FormType::Static:
-			return IM_COL32(102, 0, 204, 255);  // Violet
-		case RE::FormType::Container:
-			return IM_COL32(204, 0, 0, 255);  // Dark Red
-		case RE::FormType::Activator:
-			return IM_COL32(255, 102, 0, 255);  // Orange Red
-		case RE::FormType::Light:
-			return IM_COL32(255, 204, 0, 255);  // Gold
-		case RE::FormType::Door:
-			return IM_COL32(0, 204, 0, 255);  // Bright Green
-		case RE::FormType::Furniture:
-			return IM_COL32(153, 0, 153, 255);  // Dark Magenta
-		default:
-			return IM_COL32(169, 169, 169, 255);  // Dark Gray
-		}
-	}
-
-	std::string GetItemIcon(const BaseObject& a_item)
-	{
-		const RE::FormType formType = a_item.GetFormType();
-
-		switch (formType) {
-		case RE::FormType::Armor:  // Start of Additem Module
-			return ICON_LC_SHIELD;
-		case RE::FormType::AlchemyItem:
-			return ICON_LC_FLASK_CONICAL;
-		case RE::FormType::Ammo:
-			return ICON_LC_CONTAINER;
-		case RE::FormType::Book:
-			return ICON_LC_BOOK;
-		case RE::FormType::Ingredient:
-			return ICON_LC_TEST_TUBE;
-		case RE::FormType::KeyMaster:
-			return ICON_LC_KEY;
-		case RE::FormType::Misc:
-			return ICON_LC_PUZZLE;
-		case RE::FormType::Weapon:
-			return ICON_LC_SWORDS;
-		case RE::FormType::NPC:  // Start of NPC module
-			return ICON_LC_VENETIAN_MASK;
-		case RE::FormType::Tree:  // Start of Object Module
-			return ICON_LC_TREE_PINE;
-		case RE::FormType::Static:
-			return ICON_LC_SHAPES;
-		case RE::FormType::Container:
-			return ICON_LC_PACKAGE;
-		case RE::FormType::Activator:
-			return ICON_LC_TARGET;
-		case RE::FormType::Light:
-			return ICON_LC_SUN;
-		case RE::FormType::Door:
-			return ICON_LC_DOOR_CLOSED;
-		case RE::FormType::Furniture:
-			return ICON_LC_ARMCHAIR;
-		default:
-			return ICON_LC_BEAKER;
-		}
-	}
-
 	// Should we newline instead of ellipsis?
 	std::string FormatTextWidth(const std::string& a_text, const float& a_width)
 	{
@@ -993,29 +999,52 @@ namespace Modex
 	template <typename DataType>
 	std::string TableView<DataType>::GetSortProperty(const DataType& a_item)
 	{
-		if constexpr (std::is_same<DataType, ItemData>::value) {
+		if constexpr (std::is_base_of<BaseObject, DataType>::value) {
 			switch (this->sortBy) {
 			case SortType::Name:
 			case SortType::Plugin:
 			case SortType::FormID:
-			case SortType::Value:
-			case SortType::Weight:
+				return "";
 			case SortType::Type:
+				if (a_item.GetFormType() == RE::FormType::Weapon) {
+					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
+						return Utils::IconMap["WEAPON"] + Utils::GetWeaponType(weapon);
+					}
+				}
+
+				if (a_item.GetFormType() == RE::FormType::Armor) {
+					if (const auto& armor = a_item.GetForm()->As<RE::TESObjectARMO>()) {
+						return Utils::IconMap["ARMOR"] + Utils::GetArmorType(armor);
+					}
+				}
+
 				return "";
 			case SortType::EditorID:
 				return a_item.GetEditorID();
+			}
+		}
+
+		if constexpr (std::is_same<DataType, ItemData>::value) {
+			switch (this->sortBy) {
+			case SortType::Value:
+			case SortType::Weight:
+				return "";
 			case SortType::Damage:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
 						return Utils::IconMap["WEAPON"] + std::to_string(static_cast<int>(Utils::CalcBaseDamage(weapon)));
 					}
 				}
+
+				return "";
 			case SortType::Armor:
 				if (a_item.GetFormType() == RE::FormType::Armor) {
 					if (const auto& armor = a_item.GetForm()->As<RE::TESObjectARMO>()) {
 						return Utils::IconMap["ARMOR"] + std::to_string(static_cast<int>(Utils::CalcBaseArmorRating(armor)));
 					}
 				}
+
+				return "";
 			case SortType::Slot:
 				if (a_item.GetFormType() == RE::FormType::Armor) {
 					if (const auto& armor = a_item.GetForm()->As<RE::TESObjectARMO>()) {
@@ -1025,6 +1054,8 @@ namespace Modex
 						}
 					}
 				}
+
+				return "";
 			case SortType::Speed:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
@@ -1033,6 +1064,8 @@ namespace Modex
 						return Utils::IconMap["SPEED"] + out;
 					}
 				}
+
+				return "";
 			case SortType::CriticalDamage:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
@@ -1041,12 +1074,16 @@ namespace Modex
 						return Utils::IconMap["CRIT"] + out;
 					}
 				}
+
+				return "";
 			case SortType::Skill:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
-						return Utils::IconMap["SKILL"] + Utils::GetWeaponType(weapon);
+						return Utils::IconMap["SKILL"] + std::to_string(weapon->weaponData.skill.get());
 					}
 				}
+
+				return "";
 			case SortType::DamagePerSecond:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
@@ -1057,10 +1094,84 @@ namespace Modex
 						return Utils::IconMap["DAMAGE"] + out;
 					}
 				}
+
+				return "";
 			}
 		}
 
-		return "";
+		if constexpr (std::is_same<DataType, NPCData>::value) {
+			switch (this->sortBy) {
+			case SortType::Class:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						return Utils::IconMap["CLASS"] + a_item.GetClass();
+					}
+				}
+
+				return "";
+			case SortType::Race:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						return Utils::IconMap["RACE"] + a_item.GetRace();
+					}
+				}
+
+				return "";
+			case SortType::Gender:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						return Utils::IconMap["GENDER"] + a_item.GetGender();
+					}
+				}
+
+				return "";
+			case SortType::Level:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						return Utils::IconMap["LEVEL"] + std::to_string(a_item.GetLevel());
+					}
+				}
+
+				return "";
+			case SortType::Health:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						int health = static_cast<int>(a_item.GetHealth());
+						return Utils::IconMap["HEALTH"] + std::to_string(health);
+					}
+				}
+
+				return "";
+			case SortType::Magicka:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						int magicka = static_cast<int>(a_item.GetMagicka());
+						return Utils::IconMap["MAGICKA"] + std::to_string(magicka);
+					}
+				}
+
+				return "";
+			case SortType::Stamina:
+				if constexpr (std::is_same<DataType, NPCData>::value) {
+					if (a_item.GetFormType() == RE::FormType::NPC) {
+						int stamina = static_cast<int>(a_item.GetStamina());
+						return Utils::IconMap["STAMINA"] + std::to_string(stamina);
+					}
+				}
+
+				return "";
+			case SortType::ReferenceID:
+				if (a_item.GetFormType() == RE::FormType::NPC) {
+					if (a_item.refID != 0) {
+						return Utils::IconMap["REFID"] + std::format("{:08x}", a_item.refID);
+					} else {
+						return "";
+					}
+				}
+			}
+		}
+
+		return "MISSING_SORT_PROPERTY";
 	}
 
 	template <typename DataType>
@@ -1107,11 +1218,18 @@ namespace Modex
 				                                                                                                     0;
 			break;
 		case SortType::ReferenceID:
-			if constexpr (!std::is_base_of<BaseObject, DataType>::value)
+			if constexpr (!std::is_base_of<BaseObject, DataType>::value) {
 				break;
-			else
-				delta = (lhs->refID > rhs->refID) ? -1 : (lhs->refID < rhs->refID) ? 1 :
-				                                                                     0;
+			} else {
+				if (lhs->refID != 0 && rhs->refID != 0) {
+					delta = (lhs->refID > rhs->refID) ? -1 : (lhs->refID < rhs->refID) ? 1 :
+					                                                                     0;
+				} else if (lhs->refID != 0) {
+					delta = -1;
+				} else if (rhs->refID != 0) {
+					delta = 1;
+				}
+			}
 			break;
 		case SortType::Name:
 			if constexpr (!std::is_base_of<BaseObject, DataType>::value)
@@ -1123,29 +1241,21 @@ namespace Modex
 			if constexpr (!std::is_same<DataType, NPCData>::value) {
 				break;
 			} else {
-				std::string_view lhsClass = lhs->GetClass();
-				std::string_view rhsClass = rhs->GetClass();
-
-				delta = lhsClass.compare(rhsClass);
+				delta = lhs->GetClass().compare(rhs->GetClass());
 				break;
 			}
 		case SortType::Gender:
 			if constexpr (!std::is_same<DataType, NPCData>::value) {
 				break;
 			} else {
-				std::string_view lhsGender = lhs->GetGender();
-				std::string_view rhsGender = rhs->GetGender();
-				delta = lhsGender.compare(rhsGender);
+				delta = lhs->GetGender().compare(rhs->GetGender());
 				break;
 			}
 		case SortType::Race:
 			if constexpr (!std::is_same<DataType, NPCData>::value) {
 				break;
 			} else {
-				std::string_view lhsRace = lhs->GetRace();
-				std::string_view rhsRace = rhs->GetRace();
-
-				delta = lhsRace.compare(rhsRace);
+				delta = lhs->GetRace().compare(rhs->GetRace());
 				break;
 			}
 		case SortType::Level:
@@ -1412,6 +1522,8 @@ namespace Modex
 			return pressed;
 		};
 
+		float button_offset = 0.0f;
+
 		const std::string compact = this->compactView ? ICON_LC_ROWS_2 : ICON_LC_ROWS_4;
 		if (IconButton(compact.c_str(), "Enable/Disable Compact View", compactView)) {
 			// nothing?
@@ -1459,26 +1571,43 @@ namespace Modex
 					ImGui::SetTooltip("No Kits Found in this Plugin");
 				}
 			}
+
+			button_offset -= ImGui::GetFrameHeightWithSpacing() * 0.5f;
 		}
 
 		ImGui::SameLine();
 
 		constexpr auto combo_flags = ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge;
-		const auto preview_size = ImGui::CalcTextSize(SortTypeToString(this->sortBy).c_str());
+		const auto preview_size = ImGui::CalcTextSize(SortTypeToString(this->sortBy).c_str()).x;
 
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 1.0f));
 
-		float button_offset = ImGui::GetFrameHeightWithSpacing() * 0.5f;
-
 		if (this->HasFlag(ModexTableFlag_Kit)) {
-			button_offset = ImGui::GetFrameHeightWithSpacing() * 1.5f;
+			button_offset += ImGui::GetFrameHeightWithSpacing() * 1.5f;
 		}
 
-		ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - preview_size.x + button_offset - (ImGui::GetStyle().FramePadding.x));
-		ImGui::SetNextItemWidth(preview_size.x);
+		// Surely a better way to do this, lol..
+		// 2/18/2025 GOOD ENOUGH STOP TOUCHING IT FFS.
+
+		if (this->HasFlag(ModexTableFlag_EnableEnchantmentSort)) {
+			button_offset += ImGui::GetFrameHeightWithSpacing() * 0.5f;
+		} else if (this->HasFlag(ModexTableFlag_EnableNonPlayableSort)) {
+			button_offset += ImGui::GetFrameHeightWithSpacing() * 0.5f;
+		}
+
+		if (this->HasFlag(ModexTableFlag_EnableUniqueSort)) {
+			button_offset += ImGui::GetFrameHeightWithSpacing() * 0.5f;
+		}
+
+		if (this->HasFlag(ModexTableFlag_EnableEssentialSort)) {
+			button_offset += ImGui::GetFrameHeightWithSpacing() * 0.5f;
+		}
+
+		ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - preview_size - button_offset);
+		ImGui::SetNextItemWidth(preview_size + 5.0f);
 		if (ImGui::BeginCombo("##TableView::Sort::Combo", SortTypeToString(this->sortBy).c_str(), combo_flags)) {
 			const auto& sort_list = this->showPluginKitView ? sortByListKit : sortByList;
 
@@ -1525,6 +1654,32 @@ namespace Modex
 			if (IconButton(hidden.c_str(), "Show Hidden Items", this->hideNonPlayable)) {
 				this->Refresh();
 			}
+		}
+
+		if (this->HasFlag(ModexTableFlag_EnableUniqueSort)) {
+			ImGui::SameLine();
+
+			const std::string tooltip = this->hideNonUnique ? "Show Non-Unique NPC's" : "Hide Non-Unique NPC's";
+			const ImU32 icon_color = this->hideNonUnique ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
+			if (IconButton(Utils::IconMap["UNIQUE"].c_str(), tooltip.c_str(), this->hideNonUnique)) {
+				this->Refresh();
+			}
+			ImGui::PopStyleColor();
+		}
+
+		if (this->HasFlag(ModexTableFlag_EnableEssentialSort)) {
+			ImGui::SameLine();
+
+			const std::string tooltip = this->hideNonEssential ? "Show Non-Essential NPC's" : "Hide Non-Essential NPC's";
+			const ImU32 icon_color = this->hideNonEssential ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
+			if (IconButton(Utils::IconMap["ESSENTIAL"].c_str(), tooltip.c_str(), this->hideNonEssential)) {
+				this->Refresh();
+			}
+			ImGui::PopStyleColor();
 		}
 	}
 
@@ -1904,12 +2059,12 @@ namespace Modex
 		DrawList->AddRectFilled(
 			ImVec2(bb.Min.x + LayoutOuterPadding, bb.Min.y + LayoutOuterPadding),
 			ImVec2(bb.Min.x + LayoutOuterPadding + type_pillar_width, bb.Max.y - LayoutOuterPadding),
-			GetFormTypeColor(a_item.GetFormType()));
+			Utils::GetFormTypeColor(a_item.GetFormType()));
 
 		// We need to adjust the bounding box to account for the type pillar.
 		bb.Min.x += type_pillar_width * 2.0f;
 
-		const float spacing = LayoutItemSize.x / 5.0f;
+		const float spacing = LayoutItemSize.x / 6.0f;
 		const float top_align = bb.Min.y + LayoutOuterPadding;
 		const float bot_align = bb.Max.y - LayoutOuterPadding - fontSize;
 		const float center_align = bb.Min.y + ((LayoutOuterPadding + LayoutItemSize.y) / 2) - (fontSize / 2.0f);
@@ -1929,16 +2084,8 @@ namespace Modex
 			DrawList->AddText(top_left_align, text_color, type_formid.c_str());
 		}
 
-		// Draw Plugin (Bottom Align)
-		if (!compactView) {
-			const std::string plugin_name = FormatTextWidth(a_item.GetPluginName(), spacing * 1.25f);
-			DrawList->AddText(bot_left_align, text_color, plugin_name.c_str());
-		} else {
-			const std::string plugin_name = Utils::GetFormTypeIcon(a_item.GetFormType()) + FormatTextWidth(a_item.GetPluginName(), (spacing * 1.0f) - fontSize * 2.0f);
-			DrawList->AddText(center_left_align, text_color, plugin_name.c_str());
-		}
-
 		std::string name_string = "";
+		float name_offset = 5.0f;  // initial offset
 
 		// Initial name formatting based on valid name and width cutoff.
 		if (!showEditorID) {
@@ -1951,9 +2098,76 @@ namespace Modex
 			name_string = FormatTextWidth(a_item.GetEditorID(), spacing * 1.5f);
 		}
 
-		// Draw Weapon Specific Stuff
-		// Check if a_item is of type ItemData
+		// Only apply below drawing to main table, not kit table.
 		if (!this->HasFlag(ModexTableFlag_Kit)) {
+			// Draw NPCData specific stuff
+			if (const NPCData* npcData = dynamic_cast<const NPCData*>(&a_item)) {
+				if (npcData->GetFormType() == RE::FormType::NPC) {
+					const auto& npc = npcData->GetForm()->As<RE::TESNPC>();
+
+					if (npc != nullptr) {
+						const ImU32 unique_color = IM_COL32(255, 179, 102, 20);
+						const ImU32 essential_color = IM_COL32(204, 153, 255, 20);
+
+						const ImVec2 unique_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, this->compactView ? center_align : top_align);
+						const ImVec2 essential_pos = ImVec2(unique_pos.x + fontSize + 2.0f, unique_pos.y);
+
+						const std::string unique_string = Utils::IconMap["UNIQUE"];
+						const std::string essential_string = Utils::IconMap["ESSENTIAL"];
+
+						if (npc->IsUnique() && !npc->IsEssential()) {
+							DrawList->AddText(unique_pos, text_color, unique_string.c_str());
+							DrawList->AddRectFilledMultiColor(
+								ImVec2(bb.Min.x, bb.Min.y),
+								ImVec2(bb.Max.x, bb.Max.y),
+								unique_color,
+								unique_color,
+								IM_COL32(0, 0, 0, 0),
+								IM_COL32(0, 0, 0, 0));
+						} else if (npc->IsEssential() && !npc->IsUnique()) {
+							DrawList->AddText(unique_pos, text_color, essential_string.c_str());
+							DrawList->AddRectFilledMultiColor(
+								ImVec2(bb.Min.x, bb.Min.y),
+								ImVec2(bb.Max.x, bb.Max.y),
+								essential_color,
+								essential_color,
+								IM_COL32(0, 0, 0, 0),
+								IM_COL32(0, 0, 0, 0));
+						} else if (npc->IsEssential() && npc->IsUnique()) {
+							DrawList->AddText(unique_pos, text_color, unique_string.c_str());
+							DrawList->AddText(essential_pos, text_color, essential_string.c_str());
+							DrawList->AddRectFilledMultiColor(
+								ImVec2(bb.Min.x, bb.Min.y),
+								ImVec2(bb.Max.x, bb.Max.y),
+								unique_color,
+								unique_color,
+								essential_color,
+								essential_color);
+						}
+
+						if (ImGui::IsMouseHoveringRect(unique_pos, ImVec2(unique_pos.x + fontSize, unique_pos.y + fontSize))) {
+							if (npc->IsUnique()) {
+								ImGui::SetTooltip(_T("TOOLTIP_UNIQUE"));
+							} else if (npc->IsEssential()) {
+								ImGui::SetTooltip(_T("TOOLTIP_ESSENTIAL"));
+							}
+						}
+
+						if (ImGui::IsMouseHoveringRect(essential_pos, ImVec2(essential_pos.x + fontSize, essential_pos.y + fontSize))) {
+							if (npc->IsEssential()) {
+								ImGui::SetTooltip(_T("TOOLTIP_ESSENTIAL"));
+							}
+						}
+					}
+
+					if (npcData->refID != 0) {
+						name_offset += ImGui::CalcTextSize(Utils::IconMap["REFID"].c_str()).x;
+						name_string = FormatTextWidth(Utils::IconMap["REFID"] + name_string, (spacing * 1.5f) + name_offset);
+					}
+				}
+			}
+
+			// Draw ItemData specific stuff
 			if (const ItemData* itemData = dynamic_cast<const ItemData*>(&a_item)) {
 				{  // Draw Value (Top-Right Align)
 					const std::string string = itemData->GetValueString() + ICON_LC_COINS;
@@ -1990,18 +2204,19 @@ namespace Modex
 						// const std::string slot_string = ICON_LC_BETWEEN_HORIZONTAL_START + equipSlots[0];
 
 						if (!compactView) {
-							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
+							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
 							DrawList->AddText(armorRating_pos, text_color, rating_string.c_str());
 
-							const ImVec2 armorType_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
+							const ImVec2 armorType_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, bot_align);
 							DrawList->AddText(armorType_pos, text_color, type_string.c_str());
 						} else {
-							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
+							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, center_align);
 							DrawList->AddText(armorRating_pos, text_color, rating_string.c_str());
 						}
 
 						if (armor->formEnchanting != nullptr) {
-							name_string = ICON_LC_SPARKLES + name_string;
+							name_offset = ImGui::CalcTextSize(Utils::IconMap["ENCHANTED"].c_str()).x;
+							name_string = FormatTextWidth(Utils::IconMap["ENCHANTED"] + name_string, (spacing * 1.5f) + name_offset);
 							const ImU32 enchantment_color = IM_COL32(0, 255, 255, 20);
 
 							// Top to Bottom Gradient
@@ -2026,9 +2241,9 @@ namespace Modex
 						ImVec2 teach_pos;
 
 						if (!compactView) {
-							teach_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
+							teach_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
 						} else {
-							teach_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
+							teach_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, center_align);
 						}
 
 						if (teaches_skill) {
@@ -2068,15 +2283,15 @@ namespace Modex
 						const std::string type_string = _TICON(ICON_LC_PUZZLE, type);
 
 						if (!compactView) {
-							const ImVec2 damage_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, top_align);
-							const ImVec2 skill_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
+							const ImVec2 damage_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
+							const ImVec2 skill_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, bot_align);
 							// const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
 
 							DrawList->AddText(damage_pos, text_color, damage_string.c_str());
 							DrawList->AddText(skill_pos, text_color, skill_string.c_str());
 							// DrawList->AddText(type_pos, text_color, type_string.c_str());
 						} else {
-							const ImVec2 damage_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, center_align);
+							const ImVec2 damage_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, center_align);
 							// const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
 							DrawList->AddText(damage_pos, text_color, damage_string.c_str());
 							// DrawList->AddText(type_pos, text_color, type_string.c_str());
@@ -2086,21 +2301,27 @@ namespace Modex
 			}
 		}
 
+		if (compactView) {
+			const std::string plugin_name = Utils::GetFormTypeIcon(a_item.GetFormType()) + FormatTextWidth(a_item.GetPluginName(), ((spacing * 1.5f) - fontSize * 2.0f) - name_offset);
+			DrawList->AddText(center_left_align, text_color, plugin_name.c_str());
+		} else {
+			const std::string plugin_name = a_item.GetPluginName();
+			DrawList->AddText(bot_left_align, text_color, plugin_name.c_str());
+		}
+
 		const std::string sort_text = GetSortProperty(a_item);
 
-		// Since the name is conditional based on a few things, we draw it last.
-		// For example, we need to first dynamic_cast and check for enchantment to append the symbol.
-		if (!compactView) {
-			const ImVec2 name_pos = ImVec2(bb.Min.x + spacing, top_align);
+		if (compactView) {
+			const ImVec2 name_pos = ImVec2(bb.Min.x + (spacing * 1.5f) - name_offset, center_align);
 			DrawList->AddText(name_pos, text_color, name_string.c_str());
 
-			const ImVec2 sort_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, bot_align);
+			const ImVec2 sort_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 2.5f, center_align);
 			DrawList->AddText(sort_pos, text_color, sort_text.c_str());
 		} else {
-			const ImVec2 name_pos = ImVec2(bb.Min.x + spacing, center_align);
+			const ImVec2 name_pos = ImVec2(bb.Min.x + (spacing * 1.5f) - name_offset, top_align);
 			DrawList->AddText(name_pos, text_color, name_string.c_str());
 
-			const ImVec2 sort_pos = ImVec2(bb.Min.x + spacing + spacing * 2.5f, center_align);
+			const ImVec2 sort_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 2.5f, bot_align);
 			DrawList->AddText(sort_pos, text_color, sort_text.c_str());
 		}
 	}
@@ -2195,6 +2416,10 @@ namespace Modex
 						auto& item_data = tableList.at(item_idx);
 						ImGui::PushID((int)item_data->TableID);
 
+						// Double-click add amount behavior.
+						const int click_amount = HasFlag(ModexTableFlag_Kit) ? item_data->kitAmount : clickAmount ? *clickAmount :
+						                                                                                            1;
+
 						// position item at start
 						ImVec2 pos = ImVec2(start_pos.x, start_pos.y + line_idx * LayoutItemStep.y);
 						ImGui::SetCursorScreenPos(pos);
@@ -2253,7 +2478,7 @@ namespace Modex
 
 						if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
 							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-								Console::AddItem(item_data->GetFormID().c_str(), 1);
+								Console::AddItem(item_data->GetFormID().c_str(), click_amount);
 								Console::StartProcessThread();
 							}
 						}
@@ -2365,14 +2590,12 @@ namespace Modex
 
 						if (ImGui::BeginPopup("TableViewContextMenu")) {
 							if (const ItemData* itemData = dynamic_cast<const ItemData*>(item_data.get())) {
-								// TODO: Implement clickToAdd amounts
-
 								if (ImGui::MenuItem(_T("AIM_ADD"))) {
 									if (selectionStorage.Size == 0) {
-										Console::AddItem(item_data->GetFormID().c_str(), 1);
+										Console::AddItem(item_data->GetFormID().c_str(), click_amount);
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
-											Console::AddItem(item_data->GetFormID().c_str(), 1);
+											Console::AddItem(item_data->GetFormID().c_str(), click_amount);
 										} else {
 											void* it = NULL;
 											ImGuiID id = 0;
@@ -2380,7 +2603,7 @@ namespace Modex
 											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
 												if (id < tableList.size() && id >= 0) {
 													const auto& item = tableList[id];
-													Console::AddItem(item->GetFormID().c_str(), 1);
+													Console::AddItem(item->GetFormID().c_str(), click_amount);
 												}
 											}
 
@@ -2394,10 +2617,10 @@ namespace Modex
 								if (itemData->GetFormType() == RE::FormType::Armor || itemData->GetFormType() == RE::FormType::Weapon) {
 									if (ImGui::MenuItem(_T("AIM_EQUIP"))) {
 										if (selectionStorage.Size == 0) {
-											Console::AddItemEx(item_data->GetBaseForm(), 1, true);
+											Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
 										} else {
 											if (item_data == itemPreview && !is_item_selected) {
-												Console::AddItemEx(item_data->GetBaseForm(), 1, true);
+												Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
 											} else {
 												void* it = NULL;
 												ImGuiID id = 0;
@@ -2405,7 +2628,7 @@ namespace Modex
 												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
 													if (id < tableList.size() && id >= 0) {
 														const auto& item = tableList[id];
-														Console::AddItemEx(item->GetBaseForm(), 1, true);
+														Console::AddItemEx(item->GetBaseForm(), click_amount, true);
 													}
 												}
 
@@ -2419,10 +2642,10 @@ namespace Modex
 
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
-										Console::PlaceAtMe(item_data->GetFormID().c_str(), 1);
+										Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
-											Console::PlaceAtMe(item_data->GetFormID().c_str(), 1);
+											Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
 										} else {
 											void* it = NULL;
 											ImGuiID id = 0;
@@ -2430,7 +2653,7 @@ namespace Modex
 											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
 												if (id < tableList.size() && id >= 0) {
 													const auto& item = tableList[id];
-													Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+													Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
 												}
 											}
 
@@ -2512,6 +2735,87 @@ namespace Modex
 								}
 							}
 
+							// TODO: Should we close menu?
+							if (const NPCData* npc_data = dynamic_cast<const NPCData*>(item_data.get())) {
+								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
+									if (selectionStorage.Size == 0) {
+										Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
+									} else {
+										if (item_data == itemPreview && !is_item_selected) {
+											Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
+										} else {
+											void* it = NULL;
+											ImGuiID id = 0;
+
+											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+												if (id < tableList.size() && id >= 0) {
+													const auto& item = tableList[id];
+													Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
+												}
+											}
+
+											this->selectionStorage.Clear();
+										}
+									}
+
+									Console::StartProcessThread();
+								}
+
+								// TODO: What if we have a selection that contains some npcs with references
+								// and some without? This relies on the user hovering over a valid ref at the
+								// time of the context window. It will work regardless of the above case.
+
+								if (npc_data->refID != 0) {
+									if (ImGui::MenuItem(_T("NPC_BRING_REFERENCE"))) {
+										if (selectionStorage.Size == 0) {
+											Console::BringNPC(npc_data->refID, true);
+										} else {
+											if (item_data == itemPreview && !is_item_selected) {
+												Console::BringNPC(npc_data->refID, true);
+											} else {
+												void* it = NULL;
+												ImGuiID id = 0;
+
+												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+													if (id < tableList.size() && id >= 0) {
+														const auto& item = tableList[id];
+														Console::BringNPC(item->refID, true);
+													}
+												}
+
+												this->selectionStorage.Clear();
+											}
+										}
+									}
+								}
+
+								if (npc_data->refID != 0) {
+									if (ImGui::MenuItem(_T("NPC_GOTO_REFERENCE"))) {
+										if (selectionStorage.Size == 0) {
+											Console::GotoNPC(npc_data->refID, true);
+										} else {
+											if (item_data == itemPreview && !is_item_selected) {
+												Console::GotoNPC(npc_data->refID, true);
+											} else {
+												void* it = NULL;
+												ImGuiID id = 0;
+
+												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+													if (id < tableList.size() && id >= 0) {
+														const auto& item = tableList[id];
+														Console::GotoNPC(item->refID, true);
+
+														break;  // Because how else do we handle multiple cases?
+													}
+												}
+
+												this->selectionStorage.Clear();
+											}
+										}
+									}
+								}
+							}
+
 							ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 							if (ImGui::BeginMenu(_T("Copy"))) {
@@ -2530,6 +2834,14 @@ namespace Modex
 								if (ImGui::MenuItem("Copy Plugin")) {
 									ImGui::SetClipboardText(item_data->GetPluginName().c_str());
 								}
+
+								if (item_data->GetFormType() == RE::FormType::NPC) {
+									if (ImGui::MenuItem("Copy Reference ID")) {
+										ImGui::SetClipboardText(std::format("{:08x}", item_data->refID).c_str());
+									}
+								}
+
+								// TODO: Implement additional options for item types and NPC data.
 
 								ImGui::EndMenu();
 							}

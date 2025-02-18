@@ -18,11 +18,39 @@ namespace Modex
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Teleport::SearchHeight"), MIN_SEARCH_HEIGHT);
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Teleport::SearchWidth"), MAX_SEARCH_WIDTH);
+		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchHeight"), MIN_SEARCH_HEIGHT);
+		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchWidth"), MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
+		const float button_width = ImGui::GetContentRegionAvail().x / 2.0f;
+		const float button_height = ImGui::GetFontSize() * 1.5f;
+		const float tab_bar_height = button_height + (window_padding * 2);
 
-		// Search Input Area
+		// Tab Button Area
+		ImGui::SameLine();
+		ImGui::SetCursorPosY(window_padding);
+		ImVec2 backup_pos = ImGui::GetCursorPos();
+		if (ImGui::BeginChild("##AddItem::Blacklist", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
+				activeViewport = Viewport::TableView;
+				if (this->tableView.GetTableList().empty()) {
+					this->tableView.Refresh();
+				}
+
+				this->tableView.BuildPluginList();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Selectable("Blacklist", activeViewport == Viewport::BlacklistView, 0, ImVec2(button_width, 0.0f))) {
+				activeViewport = Viewport::BlacklistView;
+				Blacklist::GetSingleton()->BuildPluginList();
+			}
+			ImGui::PopStyleVar();
+		}
+		ImGui::EndChild();
+
+				// Search Input Area
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
 		const ImVec2 backup_pos = ImGui::GetCursorPos();
