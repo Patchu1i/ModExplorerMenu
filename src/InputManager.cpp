@@ -192,19 +192,14 @@ namespace Modex
 					case RE::INPUT_DEVICE::kKeyboard:
 						{
 							if (scanCode == 0x1 && buttonEvent->IsDown()) {
-								// if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
-								// io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
-								// } else {
-								Menu::GetSingleton()->Close();
-								// }
+								if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
+									io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
+									break;
+								}
 
+								Menu::GetSingleton()->Close();
 							} else if (scanCode == showMenuKey && buttonEvent->IsDown()) {
 								if (showMenuModifier == 0) {
-									// if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
-									// io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
-									// break;
-									// }
-
 									Menu::GetSingleton()->Toggle();
 								} else {
 									if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && shiftDown) {

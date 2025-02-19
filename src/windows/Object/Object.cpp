@@ -30,7 +30,7 @@ namespace Modex
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
 		ImVec2 backup_pos = ImGui::GetCursorPos();
-		if (ImGui::BeginChild("##AddItem::Blacklist", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
+		if (ImGui::BeginChild("##Object::Blacklist", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::TableView;

@@ -280,8 +280,10 @@ namespace Modex
 
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
 	// Absolute unit of code here. Super grateful for the author.
-	// Modified to include both Interior and Exterior cells, and to also cache fullname record.
-	// TODO: Need to re-implement idx for load order.
+	// NOTE: This doesn't seem to collect all cells, specifically cells under worldspaces which are typically
+	// exterior cells. Can't find a work around as of 2/19/2025. Since worldspace cellmap hash only contains
+	// a grid of loaded cells, not every cell. Still need to figure a more reliable method out.
+	// TODO: Need to re-implement idx for load order (?)
 	void Data::CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_cellMap)
 	{
 		auto tesFile = const_cast<RE::TESFile*>(a_file);
@@ -310,8 +312,12 @@ namespace Modex
 						break;
 					}
 
-					if (gotEDID && gotLUFF) {
-						a_cellMap.push_back(CellData(tesFile->fileName, "Unknown", "Unknown", luff, edid, tesFile));
+					if (gotEDID) {
+						if (gotLUFF) {
+							a_cellMap.push_back(CellData(ValidateTESFileName(tesFile), "Unknown", "Unknown", luff, edid, tesFile));
+						} else {
+							a_cellMap.push_back(CellData(ValidateTESFileName(tesFile), "Unknown", "Unknown", "Unknown", edid, tesFile));
+						}
 
 						if (!_cellModList.contains(tesFile)) {
 							_cellModList.insert(tesFile);
@@ -476,7 +482,6 @@ namespace Modex
 
 		for (auto& file : _modList) {
 			std::string modName = ValidateTESFileName(file);
-			logger::info("Mod: {}", modName);
 			_modListSorted.insert(modName);
 		}
 

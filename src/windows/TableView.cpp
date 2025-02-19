@@ -187,6 +187,26 @@ namespace Modex
 		this->BuildPluginList();
 	}
 
+	void TableView<CellData>::Init()
+	{
+		this->inputSearchMap = {
+			{ SortType::Name, "Name" },
+			{ SortType::EditorID, "Editor ID" },
+			{ SortType::FormID, "Form ID" }
+		};
+
+		this->primaryFilterList = {
+			RE::FormType::None
+		};
+
+		this->sortByList = {
+			SortType::Plugin,
+			SortType::Name
+		};
+
+		this->BuildPluginList();
+	}
+
 	template <typename DataType>
 	void TableView<DataType>::AddDragDropTarget(const std::string a_id, TableView* a_view)
 	{
@@ -1303,24 +1323,24 @@ namespace Modex
 				delta = (lhs->GetValue() > rhs->GetValue()) ? -1 : (lhs->GetValue() < rhs->GetValue()) ? 1 :
 				                                                                                         0;
 			break;
-		case SortType::Space:
-			if constexpr (!std::is_same<DataType, CellData>::value)
-				break;
-			else
-				delta = lhs->space.compare(rhs->space);
-			break;
-		case SortType::Zone:
-			if constexpr (!std::is_same<DataType, CellData>::value)
-				break;
-			else
-				delta = lhs->zone.compare(rhs->zone);
-			break;
-		case SortType::Cell:
-			if constexpr (!std::is_same<DataType, CellData>::value)
-				break;
-			else
-				delta = lhs->cellName.compare(rhs->cellName);
-			break;
+		// case SortType::Space:
+		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
+		// 		break;
+		// 	else
+		// 		delta = lhs->space.compare(rhs->space);
+		// 	break;
+		// case SortType::Zone:
+		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
+		// 		break;
+		// 	else
+		// 		delta = lhs->zone.compare(rhs->zone);
+		// 	break;
+		// case SortType::Cell:
+		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
+		// 		break;
+		// 	else
+		// 		delta = lhs->cellName.compare(rhs->cellName);
+		// 	break;
 		case SortType::Damage:
 			if constexpr (!std::is_same<DataType, ItemData>::value) {
 				break;
@@ -2527,7 +2547,7 @@ namespace Modex
 						}
 
 						// if the item is visible, offload drawing to the table's draw function
-						if (is_item_visible) {
+						if (is_item_visible && item_data != nullptr) {
 							DrawItem(*item_data, pos, is_item_selected);
 
 							if (this->HasFlag(ModexTableFlag_Kit)) {

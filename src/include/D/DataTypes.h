@@ -106,6 +106,10 @@ namespace Modex
 		// Categorize SoulGem's as Misc.
 		[[nodiscard]] inline const RE::FormType GetFormType() const
 		{
+			if (GetForm() == nullptr) {
+				return RE::FormType::None;
+			}
+			
 			if (GetForm()->GetFormType() == RE::FormType::SoulGem) {
 				return RE::FormType::Misc;
 			} else {

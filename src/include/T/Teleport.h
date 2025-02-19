@@ -70,7 +70,5 @@ namespace Modex
 		// ISearch Interface
 		char 						modSearchBuffer[256];
 		std::string 				selectedMod;
-
-		TableView<CellData>			tableView;
 	};
 }

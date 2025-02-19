@@ -39,8 +39,8 @@ namespace Modex
 		enum class Viewport
 		{
 			TableView,
-			BlacklistView,
-			SettingsView // TODO.
+			BlacklistView
+			// Settings View
 		};
 
 		Viewport 					activeViewport;
