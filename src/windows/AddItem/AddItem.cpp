@@ -222,6 +222,7 @@ namespace Modex
 		tableView.SetupSearch(Data::PLUGIN_TYPE::ITEM);
 		tableView.SetDragDropID("FROM_TABLE");
 		tableView.SetClickAmount(&clickToAddCount);
+		tableView.SetDoubleClickBehavior(&b_AddToInventory);  // This is binary, what if we need other behaviors?
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnablePluginKitView);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableEnchantmentSort);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableNonPlayableSort);

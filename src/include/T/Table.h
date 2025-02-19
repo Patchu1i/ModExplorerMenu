@@ -99,6 +99,7 @@ namespace Modex
         void                    SetKitPointer(std::string* a_kit) { selectedKit = a_kit; }
         void                    SetDragDropID(const std::string& a_id);
         void                    SetClickAmount(int* a_amount) { clickAmount = a_amount; }
+        void                    SetDoubleClickBehavior(bool* a_clickToAdd) { clickToAdd = a_clickToAdd; }
 
         void                    SetCompactView(bool a_compact) { compactView = a_compact; }
         
@@ -150,6 +151,7 @@ namespace Modex
         void                    LoadKitsFromSelectedPlugin();
         std::string*            selectedKit;
         int*                    clickAmount;
+        bool*                   clickToAdd;
 
         // search and filter behavior
         void                    Filter(const std::vector<DataType>& a_data);
@@ -216,7 +218,6 @@ namespace Modex
         ImGuiMultiSelectFlags_NoAutoSelect | ImGuiMultiSelectFlags_BoxSelect1d;
     
         ImGuiSelectionBasicStorage selectionStorage;
-        // ImGuiSelectionBasicStorage kitSelectionStorage;
 
         // This is a new implementation. We are storing pluginList in the instance of table view
         // so that it can be cached for performance. We need to update it if any parameters change.

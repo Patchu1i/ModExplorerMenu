@@ -2520,8 +2520,27 @@ namespace Modex
 
 						if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
 							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-								Console::AddItem(item_data->GetFormID().c_str(), click_amount);
-								Console::StartProcessThread();
+								if constexpr (std::is_same_v<DataType, ItemData>) {
+									if (this->clickToAdd != nullptr) {
+										if (*this->clickToAdd == true) {
+											Console::AddItem(item_data->GetFormID().c_str(), click_amount);
+											Console::StartProcessThread();
+										} else {
+											Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
+											Console::StartProcessThread();
+										}
+									}
+								}
+
+								if constexpr (std::is_same_v<DataType, NPCData>) {
+									Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
+									Console::StartProcessThread();
+								}
+
+								if constexpr (std::is_same_v<DataType, ObjectData>) {
+									Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
+									Console::StartProcessThread();
+								}
 							}
 						}
 
