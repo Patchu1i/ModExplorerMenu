@@ -1,5 +1,6 @@
 #pragma once
 
+#include "extern/DescriptionFrameworkAPI.h"
 #include "include/S/Settings.h"
 #include <PCH.h>
 
@@ -248,7 +249,7 @@ namespace ImGui
 
 		// Render
 		const bool is_gradient = bg_color_1 != bg_color_2;
-		if (held || hovered) {
+		if (hovered && !held) {
 			// Modify colors (ultimately this can be prebaked in the style)
 			float h_increase = (held || hovered) ? 0.02f : 0.02f;
 			float v_increase = (held || hovered) ? 10.0f : 0.07f;
@@ -269,6 +270,12 @@ namespace ImGui
 			} else {
 				bg_color_2 = bg_color_1;
 			}
+		} else if (hovered && held) {
+			ImVec4 bg1f = ColorConvertU32ToFloat4(bg_color_1);
+			bg1f.x = ImMin(bg1f.x + 0.25f, 1.0f);
+			bg1f.y = ImMin(bg1f.y + 0.25f, 1.0f);
+			bg1f.z = ImMin(bg1f.z + 0.25f, 1.0f);
+			bg_color_1 = GetColorU32(bg1f);
 		}
 		RenderNavHighlight(bb, id);
 
@@ -283,7 +290,7 @@ namespace ImGui
 		int vert_start_idx = window->DrawList->VtxBuffer.Size;
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color_1, g.Style.FrameRounding);
 		int vert_end_idx = window->DrawList->VtxBuffer.Size;
-		if (is_gradient)
+		if (is_gradient && !held)
 			ShadeVertsLinearColorGradientKeepAlpha(window->DrawList, vert_start_idx, vert_end_idx, bb.Min, bb.GetBL(), bg_color_1, bg_color_2);
 		if (g.Style.FrameBorderSize > 0.0f)
 			window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border), g.Style.FrameRounding, 0, g.Style.FrameBorderSize);
@@ -317,7 +324,7 @@ namespace ImGui
 		ImGui::InvisibleButton(str_id, ImVec2(width, height));
 		if (ImGui::IsItemClicked()) {
 			*v = !*v;
-			clicked = *v;
+			clicked = true;
 		}
 
 		float t = *v ? 1.0f : 0.0f;
@@ -454,7 +461,8 @@ namespace ImGui
 		auto col_button = ImGui::GetStyle().Colors[ImGuiCol_Button];
 		auto col_a = ImGui::GetColorU32(col_button);
 		auto col_b = ImGui::GetColorU32(ImVec4(col_button.x * 0.7f, col_button.y * 0.7f, col_button.z * 0.7f, col_button.w));
-		return ImGui::ColoredButtonV1(label, size, IM_COL32(255, 255, 255, 255), col_a, col_b);
+		auto text_color = ImGui::GetColorU32(ImGuiCol_Text);
+		return ImGui::ColoredButtonV1(label, size, text_color, col_a, col_b);
 	}
 
 	inline static bool GradientSelectableEX(const char* label, bool& selected, const ImVec2& size = ImVec2(0, 0))
@@ -579,6 +587,13 @@ namespace ImGui
 
 namespace Utils
 {
+	static DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+
+	inline static void SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* a_interface)
+	{
+		g_DescriptionFrameworkInterface = a_interface;
+	}
+
 	inline static float Pulse(float a_time, float a_frequency, float a_amplitude)
 	{
 		return a_amplitude * sin(a_time * a_frequency);
@@ -588,6 +603,240 @@ namespace Utils
 	{
 		return a_min + (a_max - a_min) * (1.0f + Pulse(a_time, a_frequency, a_amplitude)) * 0.5f;
 	}
+
+	static inline const char* WeaponTypes[] = {
+		"Hand to Hand",
+		"One Handed Sword",
+		"One Handed Dagger",
+		"One Handed Axe",
+		"One Handed Mace",
+		"Two Handed Greatsword",
+		"Two Handed Battleaxe",
+		"Bow",
+		"Staff",
+		"Crossbow"
+	};
+
+	static inline std::string GetWeaponType(const RE::TESObjectWEAP* a_weapon)
+	{
+		return WeaponTypes[static_cast<int>(a_weapon->GetWeaponType())];
+	}
+
+	// This is instantiated here so that if we ever decide to change the Icons we use (likely)
+	// we simply plug in the new values here, instead of fishing through all the files!
+	static inline std::unordered_map<std::string, std::string> IconMap = {
+		// UI Navigation
+		{ "ACCEPT", ICON_LC_CHECK },
+		{ "CANCEL", ICON_LC_X },
+		{ "DELETE", ICON_LC_TRASH },
+		{ "ADD", ICON_LC_PLUS },
+		{ "COPY", ICON_LC_PLUS },
+		{ "REMOVE", ICON_LC_MINUS },
+		{ "EDIT", ICON_LC_PENCIL },
+		{ "SEARCH", ICON_LC_SEARCH },
+		{ "INFO", ICON_LC_INFO },
+		{ "WARNING", ICON_LC_CIRCLE_ALERT },
+		{ "ERROR", ICON_LC_TRIANGLE_ALERT },
+		{ "SUCCESS", ICON_LC_CIRCLE_CHECK },
+		{ "FAILURE", ICON_LC_CIRCLE_X },
+
+		// General
+		{ "EDITORID", ICON_LC_SIGNATURE },
+		{ "KIT", ICON_LC_BOX },
+		{ "ENCHANTED", ICON_LC_SPARKLES },
+		{ "HIDDEN", ICON_LC_EYE },
+		{ "REFID", ICON_LC_SIGNPOST },
+
+		// ItemData
+		{ "WEAPON", ICON_LC_SWORD },
+		{ "DAMAGE", ICON_LC_SWORDS },
+		{ "ARMOR", ICON_LC_SHIELD },
+		{ "BOOK", ICON_LC_BOOK },
+		{ "KEY", ICON_LC_KEY },
+		{ "INGREDIENT", ICON_LC_TEST_TUBE },
+		{ "AMMO", ICON_LC_CONTAINER },
+		{ "ALCHEMY", ICON_LC_FLASK_CONICAL },
+		{ "MISC", ICON_LC_PUZZLE },
+		{ "SKILL", ICON_LC_BRAIN },
+		{ "GOLD", ICON_LC_COINS },
+		{ "WEIGHT", ICON_LC_WEIGHT },
+		{ "SLOT", ICON_LC_BETWEEN_HORIZONTAL_START },
+		{ "RANGE", ICON_LC_CHEVRONS_LEFT_RIGHT },
+		{ "STAGGER", ICON_LC_SCALE },
+		{ "SPEED", ICON_LC_GAUGE },
+		{ "CRIT", ICON_LC_DICES },
+
+		// NPCData
+		{ "NPC", ICON_LC_USER_ROUND },
+		{ "CLASS", ICON_LC_GRADUATION_CAP },
+		{ "RACE", ICON_LC_DRAMA },
+		{ "GENDER", ICON_LC_PERSON_STANDING },
+		{ "FACTION", ICON_LC_USERS_ROUND },
+		{ "LEVEL", ICON_LC_ARROW_BIG_UP_DASH },
+		{ "HEALTH", ICON_LC_HEART },
+		{ "MAGICKA", ICON_LC_SPARKLES },
+		{ "STAMINA", ICON_LC_DUMBBELL },
+		{ "SPELL", ICON_LC_WAND },
+		{ "UNIQUE", ICON_LC_GEM },
+		{ "ESSENTIAL", ICON_LC_SHIELD_ALERT },
+
+		// ObjectData
+		{ "CONTAINER", ICON_LC_PACKAGE },
+		{ "STATIC", ICON_LC_SHAPES },
+		{ "LIGHT", ICON_LC_SUN },
+		{ "DOOR", ICON_LC_DOOR_CLOSED },
+		{ "FURNITURE", ICON_LC_ARMCHAIR },
+		{ "ACTIVATOR", ICON_LC_TARGET },
+		{ "TREE", ICON_LC_TREE_PINE },
+		{ "FLOWER", ICON_LC_FLOWER }
+	};
+
+	static inline std::string GetFormTypeIcon(const RE::FormType& a_type)
+	{
+		switch (a_type) {
+		// ItemData
+		case RE::FormType::Armor:
+			return IconMap["ARMOR"];
+		case RE::FormType::AlchemyItem:
+			return IconMap["ALCHEMY"];
+		case RE::FormType::Ammo:
+			return IconMap["AMMO"];
+		case RE::FormType::Book:
+			return IconMap["BOOK"];
+		case RE::FormType::Ingredient:
+			return IconMap["INGREDIENT"];
+		case RE::FormType::KeyMaster:
+			return IconMap["KEY"];
+		case RE::FormType::Misc:
+			return IconMap["MISC"];
+		case RE::FormType::Weapon:
+			return IconMap["WEAPON"];
+
+		// NPCData
+		case RE::FormType::NPC:
+			return IconMap["NPC"];
+		case RE::FormType::Class:
+			return IconMap["CLASS"];
+		case RE::FormType::Race:
+			return IconMap["RACE"];
+		case RE::FormType::Faction:
+			return IconMap["FACTION"];
+		case RE::FormType::Spell:
+			return IconMap["SPELL"];
+
+		// ObjectData
+		case RE::FormType::Tree:
+			return IconMap["TREE"];
+		case RE::FormType::Static:
+			return IconMap["STATIC"];
+		case RE::FormType::Container:
+			return IconMap["CONTAINER"];
+		case RE::FormType::Activator:
+			return IconMap["ACTIVATOR"];
+		case RE::FormType::Light:
+			return IconMap["LIGHT"];
+		case RE::FormType::Door:
+			return IconMap["DOOR"];
+		case RE::FormType::Furniture:
+			return IconMap["FURNITURE"];
+		case RE::FormType::Flora:
+			return IconMap["FLOWER"];
+		}
+
+		return "MODEX_MISSING_ICON";
+	}
+
+	inline static ImU32 GetFormTypeColor(const RE::FormType& a_type)
+	{
+		switch (a_type) {
+		case RE::FormType::Armor:
+			return IM_COL32(0, 102, 204, 255);  // Medium Blue
+		case RE::FormType::AlchemyItem:
+			return IM_COL32(0, 204, 204, 255);  // Cyan
+		case RE::FormType::Ammo:
+			return IM_COL32(204, 204, 0, 255);  // Yellow
+		case RE::FormType::Book:
+			return IM_COL32(153, 76, 0, 255);  // Brown
+		case RE::FormType::Ingredient:
+			return IM_COL32(0, 153, 0, 255);  // Green
+		case RE::FormType::KeyMaster:
+			return IM_COL32(255, 153, 51, 255);  // Orange
+		case RE::FormType::Misc:
+			return IM_COL32(153, 0, 153, 255);  // Purple
+		case RE::FormType::Weapon:
+			return IM_COL32(255, 51, 51, 255);  // Bright Red
+		case RE::FormType::NPC:
+			return IM_COL32(102, 178, 255, 255);  // Light Blue
+		case RE::FormType::Tree:
+			return IM_COL32(0, 102, 0, 255);  // Dark Green
+		case RE::FormType::Static:
+			return IM_COL32(102, 0, 204, 255);  // Violet
+		case RE::FormType::Container:
+			return IM_COL32(204, 0, 0, 255);  // Dark Red
+		case RE::FormType::Activator:
+			return IM_COL32(255, 102, 0, 255);  // Orange Red
+		case RE::FormType::Light:
+			return IM_COL32(255, 204, 0, 255);  // Gold
+		case RE::FormType::Door:
+			return IM_COL32(0, 204, 0, 255);  // Bright Green
+		case RE::FormType::Furniture:
+			return IM_COL32(153, 0, 153, 255);  // Dark Magenta
+		default:
+			return IM_COL32(169, 169, 169, 255);  // Dark Gray
+		}
+	}
+
+	inline static std::string FormatTextWidth(const std::string& a_text, const float& a_width)
+	{
+		const float textWidth = ImGui::CalcTextSize(a_text.c_str()).x;
+
+		if (textWidth > a_width) {
+			const float ellipsisWidth = ImGui::CalcTextSize("...").x;
+
+			std::string result = "";
+			float resultWidth = 0.0f;
+
+			for (const auto& c : a_text) {
+				const float charWidth = ImGui::CalcTextSize(std::string(1, c).c_str()).x;
+
+				if (resultWidth + charWidth + ellipsisWidth > a_width) {
+					result += "...";
+					break;
+				}
+
+				result += c;
+				resultWidth += charWidth;
+			}
+
+			return result;
+		}
+
+		return a_text;
+	}
+
+	// This is kind of a lazy way of converting RE::ActorValue to a string.
+	// We could use something like a map or some offset calculation in the future
+	// to have it be more robust and compatible with mods that may modify the actor values.
+	inline static std::unordered_map<RE::ActorValue, std::string> SkillMap = {
+		{ RE::ActorValue::kBlock, "Block" },
+		{ RE::ActorValue::kTwoHanded, "Two-Handed" },
+		{ RE::ActorValue::kOneHanded, "One-Handed" },
+		{ RE::ActorValue::kArchery, "Archery" },
+		{ RE::ActorValue::kLightArmor, "Light Armor" },
+		{ RE::ActorValue::kPickpocket, "Pickpocket" },
+		{ RE::ActorValue::kLockpicking, "Lockpicking" },
+		{ RE::ActorValue::kSneak, "Sneak" },
+		{ RE::ActorValue::kAlchemy, "Alchemy" },
+		{ RE::ActorValue::kSpeech, "Speech" },
+		{ RE::ActorValue::kIllusion, "Illusion" },
+		{ RE::ActorValue::kConjuration, "Conjuration" },
+		{ RE::ActorValue::kDestruction, "Destruction" },
+		{ RE::ActorValue::kRestoration, "Restoration" },
+		{ RE::ActorValue::kAlteration, "Alteration" },
+		{ RE::ActorValue::kEnchanting, "Enchanting" },
+		{ RE::ActorValue::kSmithing, "Smithing" },
+		{ RE::ActorValue::kHeavyArmor, "Heavy Armor" }
+	};
 
 	inline static std::vector<std::string> GetSkillNames()
 	{
@@ -945,16 +1194,15 @@ namespace Utils
 		}
 	}
 
-	template <class T>
-	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form, T& a_interface = nullptr)
+	[[nodiscard]] inline static std::string GetItemDescription(RE::TESForm* form)
 	{
 		std::string desc;
 
 		// This entirely removes HTML tags in Descriptions from Description Framework
 		// I did not see an instance where a Tag was necessary, so if there is
 		// This will need modified to only remove unecessary HTML tags.
-		if (a_interface != nullptr) {
-			desc = a_interface->GetDescription(form);
+		if (g_DescriptionFrameworkInterface != nullptr) {
+			desc = g_DescriptionFrameworkInterface->GetDescription(form);
 			if (!desc.empty()) {
 				Utils::RemoveHTMLTags(desc);
 				return desc;

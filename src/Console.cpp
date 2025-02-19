@@ -128,10 +128,58 @@ namespace Modex
 			return;
 		}
 
-		logger::info("Sending command: {}", cmd);
+		if (cmd == "<read_last>") {
+			if (commandHistory.empty()) {
+				stl::report_and_error("No command history found for <read_last>.");
+			}
+
+			auto lastCommand = commandHistory.top();
+			auto lastID = RE::FormID(GetFormFromCMD(lastCommand));
+
+			SKSE::GetTaskInterface()->AddTask([lastID]() {
+				// auto* player = RE::PlayerCharacter::GetSingleton();
+				RE::TESForm* form = RE::TESForm::LookupByID(lastID);
+
+				if (form == nullptr) {
+					return;
+				}
+
+				RE::TESObjectBOOK* book = form->As<RE::TESObjectBOOK>();
+
+				if (book == nullptr) {
+					return;
+				}
+
+				RE::NiPoint3 defaultPos{};
+				RE::BSString buf;
+				book->GetDescription(buf, nullptr);
+
+				// The commented code below simply performs the Read action on a book.
+				// causing any relative skill or spell to be learned, and the book flagged
+				// as read. It does nothing to open the book itself.
+
+				// if (form) {
+				// 	if (auto book = form->As<RE::TESObjectBOOK>()) {
+				// 		book->Read(player);
+				//	 }
+				// }
+
+				RE::TESBoundObject* equipObject = nullptr;
+				RE::ExtraDataList* extraData = nullptr;
+				InventoryBoundObjects(form, equipObject, extraData);
+
+				RE::TESObjectREFR* bookRef = equipObject->As<RE::TESObjectREFR>();
+
+				if (bookRef != nullptr) {
+					RE::BookMenu::OpenBookMenu(buf, extraData, bookRef, book, defaultPos, defaultPos, 1.0f, true);
+				}
+			});
+
+			return;
+		}
+
 		// intercept <equip_last> command for override.
 		if (cmd == "<equip_last>") {
-			logger::info("Detected <equip_last> command.");
 			if (commandHistory.empty()) {
 				stl::report_and_error("No command history found for <equip_last>.");
 			}
@@ -343,8 +391,26 @@ namespace Modex
 		}
 	}
 
+	// Clear's all items the player is equipping
+	void Console::ClearEquipped()
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.unequipall");
+		}
+
+		Console::StartProcessThread();
+	}
+
+	void Console::ClearInventory()
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.removeallitems");
+		}
+
+		Console::StartProcessThread();
+	}
+
 	// Add an item to the player's inventory
-	// ALT: Uses RE::FormID instead of std::string
 	// @param a_itemFormID: Base Form ID of the item.
 	// @param a_count: Count of the item.
 	// @param a_equip: Equip the item after adding.
@@ -355,6 +421,54 @@ namespace Modex
 
 			if (a_equip) {
 				AddToQueue("<equip_last>");
+			}
+		}
+	}
+
+	// Add a book, and open it.
+	void Console::ReadBook(std::string a_formid)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			AddToQueue("player.additem " + a_formid + " 1");
+
+			AddToQueue("<read_last>");
+		}
+	}
+
+	// Bring an NPC using their reference ID
+	// @param a_refID: Reference FormID of the NPC.
+	void Console::BringNPC(RE::FormID a_refID, bool a_closeMenu)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			if (a_refID != 0) {
+				if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+					if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(a_refID)) {
+						ref->MoveTo(playerREF);
+
+						if (a_closeMenu) {
+							Menu::GetSingleton()->Close();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Move player to an NPC using their reference ID
+	// @param a_refID: Reference FormID of the NPC.
+	void Console::GotoNPC(RE::FormID a_refID, bool a_closeMenu)
+	{
+		if (IsPlayerLoaded()) [[likely]] {
+			if (a_refID != 0) {
+				if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+					if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(a_refID)) {
+						playerREF->MoveTo(ref);
+
+						if (a_closeMenu) {
+							Menu::GetSingleton()->Close();
+						}
+					}
+				}
 			}
 		}
 	}

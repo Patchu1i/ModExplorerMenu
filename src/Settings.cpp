@@ -265,7 +265,6 @@ namespace Modex
 		a_out.tableHeaderBg = style.Colors[ImGuiCol_TableHeaderBg];
 		a_out.tableBorderStrong = style.Colors[ImGuiCol_TableBorderStrong];
 		a_out.tableBorderLight = style.Colors[ImGuiCol_TableBorderLight];
-		a_out.tableRowBg = style.Colors[ImGuiCol_TableRowBg];
 		a_out.textSelectedBg = style.Colors[ImGuiCol_TextSelectedBg];
 
 		a_out.windowPadding = style.WindowPadding;
@@ -290,6 +289,10 @@ namespace Modex
 		a_out.showTableRowBG = true;
 
 		a_out.splashImage;
+
+		// changes below
+		a_out.tableRowBg = style.Colors[ImGuiCol_TableRowBg];
+		a_out.tableAltRowBg = style.Colors[ImGuiCol_TableRowBgAlt];
 	}
 
 	// Call inside GetIni() to load the theme from the ini file into the user values.
@@ -328,7 +331,6 @@ namespace Modex
 		user.style.tableHeaderBg = GET_VALUE<ImVec4>(rSections[Table], "TableHeaderBGColor", def.style.tableHeaderBg, a_ini);
 		user.style.tableBorderStrong = GET_VALUE<ImVec4>(rSections[Table], "TableBorderStrongColor", def.style.tableBorderStrong, a_ini);
 		user.style.tableBorderLight = GET_VALUE<ImVec4>(rSections[Table], "TableBorderLightColor", def.style.tableBorderLight, a_ini);
-		user.style.tableRowBg = GET_VALUE<ImVec4>(rSections[Table], "TableRowBGColor", def.style.tableRowBg, a_ini);
 		user.style.textSelectedBg = GET_VALUE<ImVec4>(rSections[Text], "TextSelectedBGColor", def.style.textSelectedBg, a_ini);
 
 		user.style.sidebarSpacing = GET_VALUE<float>(rSections[Window], "SidebarSpacing", def.style.sidebarSpacing, a_ini);
@@ -353,6 +355,10 @@ namespace Modex
 		user.style.showTableRowBG = GET_VALUE<bool>(rSections[Table], "ShowTableRowBG", def.style.showTableRowBG, a_ini);
 
 		user.style.splashImage = GET_VALUE<GraphicManager::Image>(rSections[Images], "SplashImage", def.style.splashImage, a_ini);
+
+		// changes below
+		user.style.tableRowBg = GET_VALUE<ImVec4>(rSections[Table], "TableRowBGColor", def.style.tableRowBg, a_ini);
+		user.style.tableAltRowBg = GET_VALUE<ImVec4>(rSections[Table], "TableAltRowBGColor", def.style.tableAltRowBg, a_ini);
 	}
 
 	// Export theme and style values to a standalone ini file.
@@ -394,7 +400,6 @@ namespace Modex
 			a_ini.SetValue(rSections[Table], "TableHeaderBGColor", Settings::ToString(a_user.tableHeaderBg, false).c_str());
 			a_ini.SetValue(rSections[Table], "TableBorderStrongColor", Settings::ToString(a_user.tableBorderStrong, false).c_str());
 			a_ini.SetValue(rSections[Table], "TableBorderLightColor", Settings::ToString(a_user.tableBorderLight, false).c_str());
-			a_ini.SetValue(rSections[Table], "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
 			a_ini.SetValue(rSections[Text], "TextSelectedBGColor", Settings::ToString(a_user.textSelectedBg, false).c_str());
 
 			a_ini.SetValue(rSections[Window], "SidebarSpacing", Settings::ToString(a_user.sidebarSpacing, false).c_str());
@@ -419,6 +424,10 @@ namespace Modex
 			a_ini.SetValue(rSections[Text], "NoIconText", Settings::ToString(a_user.noIconText, false).c_str());
 
 			a_ini.SetValue(rSections[Images], "SplashImage", Settings::ToString(a_user.splashImage, false).c_str());
+
+			// changes below
+			a_ini.SetValue(rSections[Table], "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
+			a_ini.SetValue(rSections[Table], "TableAltRowBGColor", Settings::ToString(a_user.tableAltRowBg, false).c_str());
 		});
 	};
 }

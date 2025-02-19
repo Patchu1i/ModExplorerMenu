@@ -12,7 +12,7 @@ namespace Modex
 {
 	void TeleportWindow::Draw(float a_offset)
 	{
-		const float MIN_SEARCH_HEIGHT = 175.0f;
+		const float MIN_SEARCH_HEIGHT = 150.0f;
 		const float MIN_SEARCH_WIDTH = 200.0f;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;

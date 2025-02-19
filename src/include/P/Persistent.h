@@ -39,12 +39,37 @@ namespace Modex
 			return GetSingleton()->m_kits;
 		}
 
+		// Handles conversion from KitItem to ItemData
+		static inline std::vector<ItemData> GetKitItems(const std::string& a_name)
+		{
+			std::vector<ItemData> items;
+
+			if (GetLoadedKits().find(a_name) != GetLoadedKits().end()) {
+				for (auto& item : GetLoadedKits().at(a_name).items) {
+					RE::TESForm* form = RE::TESForm::LookupByEditorID(item->editorid);
+
+					if (form == nullptr) {
+						continue;
+					}
+
+					items.push_back(ItemData(form, 0));
+				}
+			}
+
+			return items;
+		}
+
 		static inline std::vector<std::string> GetLoadedKitNames()
 		{
 			std::vector<std::string> names;
 			for (auto& [name, kit] : GetLoadedKits()) {
 				names.emplace_back(name);
 			}
+
+			if (!names.empty()) {
+				std::sort(names.begin(), names.end());
+			}
+
 			return names;
 		}
 

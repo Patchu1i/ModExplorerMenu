@@ -24,30 +24,70 @@ namespace Modex
 		const std::string 	formid;
 		const RE::FormID 	baseid;
 
-
 	public:
+		BaseObject& operator=(const BaseObject& other)
+		{
+			if (this == &other) {
+				return *this;
+			}
+
+			TESForm = other.TESForm;
+			refID = other.refID;
+			TableID = other.TableID;
+			const_cast<std::string&>(name) = other.name;
+			const_cast<std::string&>(editorid) = other.editorid;
+			const_cast<std::string&>(plugin) = other.plugin;
+			const_cast<std::string&>(formid) = other.formid;
+			const_cast<RE::FormID&>(baseid) = other.baseid;
+			return *this;
+		}
+
 		RE::FormID 			refID;
 		ImGuiID 			TableID = 0;
 
+		// I'm storing this kit "meta" data in the base object class because when I instantiate kit
+		// items during sync, I need to reference kit specific information. Since the kit table is
+		// a vector of ItemData and not KitItem, this additional data is required.
+
+		// With this implementation, Kit data is only used in conversions to and from JSON really.
+		// I instantiate ItemData objects for the Kit table view, and then manually update these
+		// variables by doing a match against the KitItem editorID in the current TableList.
+
+		// It's not a very efficient model, but I can't imagine Kit's being large enough to care.
+		bool				kitEquipped = false;
+		int					kitAmount = 1;
+
 		// Initializer which stores key information about the object to avoid cache misses (?)
 		// during SortColumns and other heavy operations. Speeds up iterations and sorting.
-		BaseObject(RE::TESForm* form) :
+		BaseObject(RE::TESForm* form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
 			TESForm{ form },
+			TableID{ a_id },
+			refID{ a_refID },
 			name{ form != nullptr ? ValidateTESName(form) : "NULL_ERR" },
 			editorid{ form != nullptr ? po3_GetEditorID(form->GetFormID()) : "NULL_ERR" },
 			formid{ form != nullptr ? fmt::format("{:08x}", form->GetFormID()) : "NULL_ERR" },
-			baseid{ form != nullptr ? form->GetFormID() : 0 },
-			refID{ 0 }
+			baseid{ form != nullptr ? form->GetFormID() : 0 }
 		{}
 
+		virtual ~BaseObject() = default;
+		
 		// TODO: Derefencing char* without safety checks. Danger zone.
 		[[nodiscard]] inline RE::TESForm* GetForm() const { return TESForm; }
+		[[nodiscard]] inline const std::string GetTableID() const { return fmt::format("{:08x}", TableID); }
+		// [[nodiscard]] inline const std::string GetPlugin() const { return plugin; }
+		[[nodiscard]] inline const std::string_view GetPluginView() const { return plugin; }
 		[[nodiscard]] inline const std::string GetFormID() const { return formid; }
 		[[nodiscard]] inline const RE::FormID GetBaseForm() const { return baseid; }
 		[[nodiscard]] inline const std::string GetEditorID() const { return editorid; }
 		[[nodiscard]] inline const std::string_view GetEditorIDView() const { return editorid; }
 		[[nodiscard]] inline const std::string GetName() const { return name; }
-		[[nodiscard]] inline const std::string_view GetNameView() const { return name; }
+		[[nodiscard]] inline const std::string_view GetNameView() const { 
+			if (!name.empty()) {
+				return name;
+			} else {
+				return editorid;
+			}
+		}
 
 		[[nodiscard]] inline const RE::TESFile* GetPlugin(int32_t a_idx = 0) const
 		{
@@ -66,6 +106,10 @@ namespace Modex
 		// Categorize SoulGem's as Misc.
 		[[nodiscard]] inline const RE::FormType GetFormType() const
 		{
+			if (GetForm() == nullptr) {
+				return RE::FormType::None;
+			}
+			
 			if (GetForm()->GetFormType() == RE::FormType::SoulGem) {
 				return RE::FormType::Misc;
 			} else {
@@ -114,15 +158,17 @@ namespace Modex
 	class ObjectData : public BaseObject
 	{
 	public:
-		ObjectData(RE::TESForm* form) :
-			BaseObject{ form } {}
+		ObjectData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
+
+
 	};
 
 	class ItemData : public BaseObject
 	{
 	public:
-		ItemData(RE::TESForm* form ) :
-			BaseObject{ form } {}
+		ItemData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
 
 		[[nodiscard]] inline float GetWeight() const
 		{
@@ -146,6 +192,8 @@ namespace Modex
 			switch (formType) {
 			case RE::FormType::Weapon:
 				return GetForm()->As<RE::TESObjectWEAP>()->weaponData.flags.any(RE::TESObjectWEAP::Data::Flag::kNonPlayable);
+			case RE::FormType::Armor:
+				return GetForm()->As<RE::TESObjectARMO>()->GetFormFlags() & RE::TESObjectARMO::RecordFlags::kNonPlayable;
 			default:
 				return false;
 			};
@@ -155,8 +203,9 @@ namespace Modex
 	class NPCData : public BaseObject
 	{
 	public:
-		NPCData(RE::TESForm* form) :
-			BaseObject{ form } {}
+		NPCData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
+			BaseObject{ a_form, a_id, a_refID } {}
+
 
 		[[nodiscard]] inline RE::TESNPC* GetTESNPC() const
 		{
@@ -184,10 +233,11 @@ namespace Modex
 		{
 			return SafeAccessNPC<float>(&RE::TESNPC::GetBaseActorValue, RE::ActorValue::kStamina, 0.0f);
 		}
-		[[nodiscard]] inline float GetCarryWeight() const
-		{
-			return SafeAccessNPC<float>(&RE::TESNPC::GetBaseActorValue, RE::ActorValue::kCarryWeight, 0.0f);
-		}
+
+		// [[nodiscard]] inline float GetCarryWeight() const
+		// {
+		// 	return SafeAccessNPC<float>(&RE::TESNPC::GetBaseActorValue, RE::ActorValue::kCarryWeight, 0.0f);
+		// }
 
 		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const
 		{
@@ -250,12 +300,21 @@ namespace Modex
 		std::string  	plugin;
 		std::string 	name;
 		std::string 	editorid;
+
+		ImGuiID 		TableID;
 	};
 
 	struct KitItem : KitBase
 	{
 		int					amount;
 		bool				equipped;
+		ItemData*			ref;
+
+		// Custom comparator for equality based on editorid
+		bool operator==(const KitItem& other) const
+		{
+			return this->editorid == other.editorid;
+		}
 	};
 
 	struct KitPerk : KitBase
@@ -274,13 +333,40 @@ namespace Modex
 	class Kit
 	{
 	public:
+		// serialized
 		std::string 				name; // unique?
+		std::string					collection;
+		std::string					desc;
+		
+		bool						clearEquipped = true;
+		bool						readOnly = false;
 
     	std::unordered_set<std::shared_ptr<KitItem>> items;
     	// std::unordered_set<std::shared_ptr<KitPerk>> perks;
     	// std::unordered_set<std::shared_ptr<KitSpell>> spells;
     	// std::unordered_set<std::shared_ptr<KitShout>> shouts;
 
-		Kit(std::string name) : name(name) {}
+		// not serialized - meta data
+		ImGuiID 					TableID;
+		int							weaponCount;
+		int							armorCount;
+		int							miscCount;
+
+
+		// constructor
+		Kit(std::string name, ImGuiID id) : name(name), TableID(id) {}
 	};
+
+	template <typename DataType>
+	static std::shared_ptr<KitItem> CreateKitItem(const DataType& a_item)
+	{
+		auto new_item = std::make_shared<KitItem>();
+		new_item->plugin = a_item.GetPluginName();
+		new_item->name = a_item.GetName();
+		new_item->editorid = a_item.GetEditorID();
+		new_item->amount = a_item.kitAmount;
+		new_item->equipped = a_item.kitEquipped;
+
+		return new_item;
+	}
 }

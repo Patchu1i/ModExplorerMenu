@@ -7,19 +7,29 @@
 namespace Modex
 {
 
+	void Blacklist::BuildPluginList()
+	{
+		this->pluginList.clear();
+		this->pluginListVector.clear();
+
+		const auto& config = Settings::GetSingleton()->GetConfig();
+		this->pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
+		this->pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
+		pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
+	}
+
 	void Blacklist::Draw(float a_offset)
 	{
 		(void)a_offset;
 
-		const auto& config = Settings::GetSingleton()->GetConfig();
+		// const auto& config = Settings::GetSingleton()->GetConfig();
+		// const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
+		// auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
+		// pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
 
-		const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
-
-		auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
-		pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
 		const auto& blacklist = PersistentData::GetBlacklist();
 
-		totalPlugins = static_cast<int>(pluginList.size());
+		totalPlugins = static_cast<int>(this->pluginList.size());
 		blacklistedPlugins = static_cast<int>(blacklist.size());
 		nonBlacklistedPlugins = totalPlugins - blacklistedPlugins;
 

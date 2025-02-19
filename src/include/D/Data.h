@@ -12,7 +12,7 @@ namespace Modex
 	{
 	public:
 
-		enum PLUGIN_TYPE
+		enum PLUGIN_TYPE : uint32_t
 		{
 			ALL = 0,
 			ITEM,
@@ -47,6 +47,7 @@ namespace Modex
 			bool 	door 			= false;
 			bool 	light 			= false;
 			bool 	furniture 		= false;
+			bool	flora			= false;
 			bool	cell			= false;
 		};
 
@@ -80,6 +81,9 @@ namespace Modex
 		void 											GenerateNPCList();
 		void 											GenerateObjectList();
 		void 											GenerateCellList();
+		// void											GenerateCellTESTList();
+
+		void SortAddItemList();
 
 	private:
 		std::vector<ItemData> 							_cache;
@@ -115,6 +119,7 @@ namespace Modex
 		void CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_map);
 		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
 
+		// void CacheCellsTEST(RE::TESDataHandler* a_data);
 
 
 		// Windows Specific API for File Creation Time

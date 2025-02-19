@@ -14,7 +14,7 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("GENERAL_DOUBLE_CLICK_BEHAVIOR"));
 
 		// Click To Place Toggle
 		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "GENERAL_CLICK_TO_PLACE"), b_ClickToPlace, ImVec2(button_width, button_height))) {
@@ -30,57 +30,31 @@ namespace Modex
 		}
 
 		ImGui::Spacing();
-		ImGui::SubCategoryHeader(_T("Actions"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("Actions"));
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.secondaryButton.x, a_style.secondaryButton.y, a_style.secondaryButton.z, a_style.secondaryButton.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
 		if (ImGui::GradientButton(_T("NPC_PLACE_SELECTED"), ImVec2(button_width, 0))) {
-			// if (selectedNPC != nullptr) {
-			// 	Console::PlaceAtMe(selectedNPC->GetFormID(), 1);
-			// 	Console::StartProcessThread();
-			// }
-
-			if (!itemSelectionList.empty()) {
-				for (auto& npc : itemSelectionList) {
-					Console::PlaceAtMe(npc->GetFormID(), clickToPlaceCount);
-				}
-
-				Console::StartProcessThread();
-			}
-		}
-
-		if (ImGui::GradientButton(_T("GENERAL_PLACE_ALL"), ImVec2(button_width, 0))) {
-			if (npcList.size() > 30) {
-				ImGui::OpenPopup(_T("AIM_LARGE_QUERY"));
-			} else {
-				for (auto& npc : npcList) {
-					Console::PlaceAtMe(npc->GetFormID(), 1);
-				}
-			}
-
-			Console::StartProcessThread();
+			this->tableView.PlaceSelectionOnGround(clickToPlaceCount);
 		}
 
 		ImGui::PopStyleColor(3);  // End of Green Buttons
 
-		ImGui::ShowWarningPopup(_T("AIM_LARGE_QUERY"), [&]() {
-			for (auto& npc : npcList) {
-				Console::PlaceAtMe(npc->GetFormID(), 1);
-			}
-		});
-
 		if (ImGui::GradientButton(_T("NPC_UPDATE_REFERENCES"), ImVec2(button_width, 0))) {
 			Data::GetSingleton()->CacheNPCRefIds();
+			this->tableView.Refresh();
 		}
 
-		const auto& selectedNPC = itemSelectionList.empty() ? nullptr : *itemSelectionList.begin();
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip(_T("TOOLTIP_NPC_UPDATE"));
+		}
 
-		if (selectedNPC != nullptr || hoveredNPC != nullptr) {
-			if ((selectedNPC != nullptr && hoveredNPC == nullptr && selectedNPC->refID != 0) ||
-				(selectedNPC != nullptr && hoveredNPC != nullptr && hoveredNPC->refID != 0) ||
-				(hoveredNPC != nullptr && selectedNPC == nullptr && hoveredNPC->refID != 0)) {
+		const auto& selectedNPC = this->GetTableView().GetItemPreview();
+
+		if (selectedNPC != nullptr) {
+			if (selectedNPC->refID != 0) {
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(a_style.button.x, a_style.button.y, a_style.button.z, a_style.button.w));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.buttonHovered.x, a_style.buttonHovered.y, a_style.buttonHovered.z, a_style.buttonHovered.w));
 			} else {
@@ -89,26 +63,22 @@ namespace Modex
 			}
 
 			if (ImGui::GradientButton(_T("NPC_GOTO_REFERENCE"), ImVec2(button_width, 0))) {
-				if (selectedNPC != nullptr) {
-					if (selectedNPC->refID != 0) {
-						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
-							if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
-								playerREF->MoveTo(ref);
-								Menu::GetSingleton()->Close();
-							}
+				if (selectedNPC->refID != 0) {
+					if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+						if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
+							playerREF->MoveTo(ref);
+							Menu::GetSingleton()->Close();
 						}
 					}
 				}
 			}
 
 			if (ImGui::GradientButton(_T("NPC_BRING_REFERENCE"), ImVec2(button_width, 0))) {
-				if (selectedNPC != nullptr) {
-					if (selectedNPC->refID != 0) {
-						if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
-							if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
-								ref->MoveTo(playerREF);
-								Menu::GetSingleton()->Close();
-							}
+				if (selectedNPC->refID != 0) {
+					if (auto playerREF = RE::PlayerCharacter::GetSingleton()->AsReference()) {
+						if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(selectedNPC->refID)) {
+							ref->MoveTo(playerREF);
+							Menu::GetSingleton()->Close();
 						}
 					}
 				}
@@ -117,13 +87,13 @@ namespace Modex
 			ImGui::PopStyleColor(2);
 		}
 
-		if (selectedNPC == nullptr && hoveredNPC == nullptr) {
+		if (selectedNPC == nullptr) {
 			ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
 			return;
 		}
 
 		ImGui::Spacing();
-		ImGui::SubCategoryHeader(_T("Preview"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("Preview"));
 
 		ImVec2 barSize = ImVec2(100.0f, ImGui::GetFontSize());
 
@@ -164,13 +134,7 @@ namespace Modex
 			ImGui::Text(text);
 		};
 
-		NPCData* npc = nullptr;
-
-		if (hoveredNPC != nullptr) {
-			npc = hoveredNPC;
-		} else if (selectedNPC != nullptr) {
-			npc = selectedNPC;
-		}
+		NPCData* npc = selectedNPC.get();
 
 		if (npc == nullptr) {
 			ImGui::PopStyleVar(2);  // End of SelectableTextAlign and ButtonTextAlign
@@ -207,19 +171,19 @@ namespace Modex
 		                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
 
 		if (ImGui::BeginChild("##NPCInfoScroll", ImVec2(ImGui::GetContentRegionAvail().x, 0), false, flags)) {
-			if (ImGui::TreeNode(_T("Info"))) {
+			if (ImGui::TreeNode(_TICON(Utils::IconMap["INFO"], "Info"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				InlineText(_TFM("Class", ":"), npc->GetClass().data());
-				InlineText(_TFM("Race", ":"), npc->GetRace().data());
-				InlineText(_TFM("Gender", ":"), npc->GetGender().data());
-				InlineBar(_TFM("Level", ":"), npc->GetLevel(), 100.0f);
+				InlineText(_TICONM(Utils::GetFormTypeIcon(RE::FormType::Class), "Class", ":"), npc->GetClass().data());
+				InlineText(_TICONM(Utils::GetFormTypeIcon(RE::FormType::Race), "Race", ":"), npc->GetRace().data());
+				InlineText(_TICONM(Utils::IconMap["GENDER"], "Gender", ":"), npc->GetGender().data());
+				InlineBar(_TICONM(Utils::IconMap["LEVEL"], "Level", ":"), npc->GetLevel(), 100.0f);
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				InlineBar(_TFM("Health", ":"), npc->GetHealth(), 100.0f);
-				InlineBar(_TFM("Magicka", ":"), npc->GetMagicka(), 100.0f);
-				InlineBar(_TFM("Stamina", ":"), npc->GetStamina(), 100.0f);
+				InlineBar(_TICONM(Utils::IconMap["HEALTH"], "Health", ":"), npc->GetHealth(), 100.0f);
+				InlineBar(_TICONM(Utils::IconMap["MAGICKA"], "Magicka", ":"), npc->GetMagicka(), 100.0f);
+				InlineBar(_TICONM(Utils::IconMap["STAMINA"], "Stamina", ":"), npc->GetStamina(), 100.0f);
 
 				// Load Order Info Pane
 				// See ItemPreview.h for other implementation.
@@ -251,7 +215,7 @@ namespace Modex
 			}
 
 			// Faction
-			if (ImGui::TreeNode(_T("Faction"))) {
+			if (ImGui::TreeNode(_TICON(Utils::GetFormTypeIcon(RE::FormType::Faction), "Faction"))) {
 				auto factions = npc->GetFactions();
 
 				if (factions.size() > 0) {
@@ -275,16 +239,10 @@ namespace Modex
 				ImGui::TreePop();
 			}
 
-			if (ImGui::TreeNode(_T("NPC_SKILLS"))) {
+			if (ImGui::TreeNode(_TICON(Utils::IconMap["SKILL"], "NPC_SKILLS"))) {
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-				RE::TESNPC::Skills skills;
-
-				if (hoveredNPC != nullptr) {
-					skills = hoveredNPC->GetSkills();
-				} else if (selectedNPC != nullptr) {
-					skills = selectedNPC->GetSkills();
-				}
+				RE::TESNPC::Skills skills = selectedNPC->GetSkills();
 
 				const auto skillNames = Utils::GetSkillNames();
 				for (int i = 0; i < 18; i++) {
@@ -298,11 +256,11 @@ namespace Modex
 				ImGui::TreePop();
 			}
 
-			if (ImGui::TreeNode(_T("NPC_SPELLS"))) {
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+			if (ImGui::TreeNode(_TICON(Utils::IconMap["SPELL"], "NPC_SPELLS"))) {
 				auto spellData = npc->GetTESNPC()->GetSpellList();
 
-				if (spellData != nullptr) {
+				if (spellData != nullptr && spellData->numSpells > 0) {
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 					for (uint32_t i = 0; i < spellData->numSpells; i++) {
 						if (spellData->spells[i] == nullptr)
 							continue;
@@ -325,18 +283,18 @@ namespace Modex
 							float costPercent = cost / npc->GetMagicka() * 100.0f;
 							std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
-							InlineText(_TFM("NPC_CAST_TYPE", ":"), castType);
-							InlineText(_TFM("NPC_SPELL_TYPE", ":"), spellType);
-							InlineText(_TFM("NPC_DELIVERY_TYPE", ":"), delType);
-							InlineText(_TFM("Cost", ":"), std::format("{:.0f}", cost).c_str());
-							InlineText((std::string(_T("Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
+							InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_CAST_TYPE", ":"), castType);
+							InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_SPELL_TYPE", ":"), spellType);
+							InlineText(_TICONM(Utils::IconMap["SPELL"], "NPC_DELIVERY_TYPE", ":"), delType);
+							InlineText(_TICONM(Utils::IconMap["MAGICKA"], "Cost", ":"), std::format("{:.0f}", cost).c_str());
+							InlineText((std::string(_TICON(Utils::IconMap["MAGICKA"], "Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
 
 							ImGui::TreePop();
 						}
 					}
+					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				}
 
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				ImGui::TreePop();
 			}
 			ImGui::EndChild();

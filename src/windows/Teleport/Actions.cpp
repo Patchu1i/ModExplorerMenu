@@ -14,17 +14,11 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::SubCategoryHeader(_T("Behavior"), ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::SubCategoryHeader(_T("GENERAL_DOUBLE_CLICK_BEHAVIOR"));
 
 		if (ImGui::GradientSelectableEX(_TICON(ICON_LC_MAP_PIN_PLUS, "TELE_CLICK_TO_TELEPORT"), b_ClickToTeleport, ImVec2(button_width, button_height))) {
-			// b_ClickToFavorite = false;
 			b_ClickToTeleport = true;
 		}
-
-		// if (ImGui::GradientSelectableEX(_TICON(ICON_RPG_HEART, "GENERAL_CLICK_TO_FAVORITE"), b_ClickToFavorite, ImVec2(button_width, button_height))) {
-		// 	b_ClickToTeleport = false;
-		// 	b_ClickToFavorite = true;
-		// }
 
 		ImGui::PopStyleVar(2);
 

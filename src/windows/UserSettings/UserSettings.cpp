@@ -795,6 +795,8 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		AddColorPicker("THEME_TABLE_ROW_BG_COLOR", style.tableRowBg);
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		AddColorPicker("THEME_TABLE_ALT_ROW_BG_COLOR", style.tableAltRowBg);
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		AddToggleButton("THEME_TABLE_ROW_ALTERNATING_BG", style.showTableRowBG);
 
 		AddSubCategoryHeader(_T("THEME_BUTTONS_WIDGET_STYLE"));

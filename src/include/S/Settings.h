@@ -137,7 +137,6 @@ namespace Modex
 			ImVec4 tableHeaderBg = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
 			ImVec4 tableBorderStrong = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
 			ImVec4 tableBorderLight = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
-			ImVec4 tableRowBg = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 			ImVec4 textSelectedBg = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 
 			ImVec2 windowPadding = ImVec2(8.00f, 8.00f);
@@ -157,6 +156,15 @@ namespace Modex
 			float scrollbarSize = 14;
 			float grabMinSize = 10;
 			float grabRounding = 3;
+
+			// New Table Specific Settings:
+			float tableRowHeight = 26.0f;  // minimum
+			float tableRowSpacing = 5.0f;  // minimum
+			float tableRowRounding = 0;
+			float tableRowThickness = 1.0f;
+			ImVec4 tableRowBg = ImVec4(0.0f, 0.0f, 0.0f, 0.25f);
+			ImVec4 tableAltRowBg = ImVec4(0.15f, 0.15f, 0.15f, 0.25f);
+			ImVec4 tableRowOutlineColor = ImVec4(0.43f, 0.43f, 0.50f, 1.00f);
 
 			bool showTableRowBG = true;
 			bool noIconText = false;

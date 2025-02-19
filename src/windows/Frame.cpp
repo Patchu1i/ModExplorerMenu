@@ -126,7 +126,11 @@ namespace Modex
 				if (config.showAddItemMenu) {
 					if (ImGui::SidebarButton("Item", activeWindow == ActiveWindow::AddItem, additem_image.texture, additem_image.size, ImVec2(button_width, button_height), additem_w)) {
 						activeWindow = ActiveWindow::AddItem;
-						AddItemWindow::GetSingleton()->Refresh();
+						if (AddItemWindow::GetSingleton()->GetTableView().GetTableList().empty()) {
+							AddItemWindow::GetSingleton()->Refresh();
+						}
+
+						AddItemWindow::GetSingleton()->GetTableView().BuildPluginList();
 					}
 
 					ExpandButton();
@@ -135,7 +139,11 @@ namespace Modex
 				if (config.showObjectMenu) {
 					if (ImGui::SidebarButton("Object", activeWindow == ActiveWindow::Object, object_image.texture, object_image.size, ImVec2(button_width, button_height), object_w)) {
 						activeWindow = ActiveWindow::Object;
-						ObjectWindow::GetSingleton()->Refresh();
+						if (ObjectWindow::GetSingleton()->GetTableView().GetTableList().empty()) {
+							ObjectWindow::GetSingleton()->Refresh();
+						}
+
+						NPCWindow::GetSingleton()->GetTableView().BuildPluginList();
 					}
 
 					ExpandButton();
@@ -144,7 +152,11 @@ namespace Modex
 				if (config.showNPCMenu) {
 					if (ImGui::SidebarButton("NPC", activeWindow == ActiveWindow::NPC, npc_image.texture, npc_image.size, ImVec2(button_width, button_height), npc_w)) {
 						activeWindow = ActiveWindow::NPC;
-						NPCWindow::GetSingleton()->Refresh();
+						if (NPCWindow::GetSingleton()->GetTableView().GetTableList().empty()) {
+							NPCWindow::GetSingleton()->Refresh();
+						}
+
+						NPCWindow::GetSingleton()->GetTableView().BuildPluginList();
 					}
 
 					ExpandButton();

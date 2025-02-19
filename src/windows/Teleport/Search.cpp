@@ -77,8 +77,8 @@ namespace Modex
 	void TeleportWindow::ShowSearch()
 	{
 		auto filterWidth = ImGui::GetContentRegionAvail().x / 8.0f;
-		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.5f - filterWidth;
-		// auto totalWidth = inputTextWidth + filterWidth + 2.0f;
+		auto inputTextWidth = ImGui::GetContentRegionAvail().x / 1.85f - filterWidth;
+		auto totalWidth = inputTextWidth + filterWidth + 2.0f;
 
 		// Search bar for compare string.
 		ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
@@ -121,8 +121,7 @@ namespace Modex
 		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
 		modListVector.insert(modListVector.begin(), "All Mods");
 		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
-		ImGui::SetNextItemWidth(filterWidth);
-		if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, inputTextWidth)) {
+		if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
 			auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
 			selectedMod = "All Mods";
 
@@ -151,5 +150,9 @@ namespace Modex
 
 			Refresh();
 		}
+
+		ImGui::NewLine();
+
+		ImGui::Text("Developer Note: Had to gut some features in this module for now. Consider this WIP.");
 	}
 }
