@@ -6,6 +6,11 @@ namespace Modex
 {
 	void InputManager::OnFocusKill()
 	{
+		// Issue #48 - Fix focus kill on menu close for Simple IME compatability.
+		if (ImGui::GetCurrentContext() == nullptr) {
+			return;
+		}
+
 		auto& io = ImGui::GetIO();
 		io.ClearInputKeys();
 		io.ClearEventsQueue();
@@ -41,6 +46,11 @@ namespace Modex
 
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)
 	{
+		// Since inputs can be listened to outside of the menu.
+		if (ImGui::GetCurrentContext() == nullptr) {
+			return;
+		}
+
 		ImGuiIO& io = ImGui::GetIO();
 
 		// Loop through inputEvents incrementally.
