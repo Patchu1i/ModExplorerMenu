@@ -77,8 +77,7 @@ namespace Modex
 	private:
 		enum ActiveWindow
 		{
-			kNone,
-			Home,
+			Home = 0,
 			AddItem,
 			Object,
 			NPC,

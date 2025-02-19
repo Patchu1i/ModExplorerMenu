@@ -22,7 +22,9 @@ namespace Modex
 		~TeleportWindow() = default;
 
 		void 			Draw(float a_offset);
-		void 			Init();
+		void 			Init(bool is_default);
+		void			Unload();
+		void			Load();
 		void 			Refresh();
 
 	private:

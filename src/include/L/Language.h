@@ -273,6 +273,15 @@ namespace Modex
 			}
 
 			std::sort(fonts.begin(), fonts.end());
+
+			// If we start the game with the Default font, it will duplicate since
+			// we create a default font by indexing the library (?). So we only need to
+			// insert the "Default" font option if it doesn't exist (when custom font is loaded).
+
+			if (font_library.find("Default") == font_library.end()) {
+				fonts.insert(fonts.begin(), "Default");
+			}
+
 			return fonts;
 		}
 

@@ -67,7 +67,20 @@ namespace Modex
 		ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Teleport::SearchHeight"), search_height);
 	}
 
-	void TeleportWindow::Init()
+	void TeleportWindow::Unload()
+	{
+		cellList.clear();
+		selectedCell = nullptr;
+		selectedMod = "All Mods";
+	}
+
+	void TeleportWindow::Load()
+	{
+		Data::GetSingleton()->GenerateCellList();
+		this->Refresh();
+	}
+
+	void TeleportWindow::Init(bool is_default)
 	{
 		b_ClickToTeleport = true;
 		// b_ClickToFavorite = false;
@@ -80,6 +93,8 @@ namespace Modex
 
 		selectedMod = "All Mods";
 
-		ApplyFilters();
+		if (is_default) {
+			this->Refresh();
+		}
 	}
 }

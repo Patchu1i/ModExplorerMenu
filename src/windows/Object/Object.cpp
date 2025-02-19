@@ -106,7 +106,17 @@ namespace Modex
 		}
 	}
 
-	void ObjectWindow::Init()
+	void ObjectWindow::Unload()
+	{
+		tableView.Unload();
+	}
+
+	void ObjectWindow::Load()
+	{
+		tableView.Load();
+	}
+
+	void ObjectWindow::Init(bool is_default)
 	{
 		b_ClickToPlace = true;
 		clickToPlaceCount = 1;
@@ -117,5 +127,10 @@ namespace Modex
 		tableView.SetupSearch(Data::PLUGIN_TYPE::OBJECT);
 		tableView.SetClickAmount(&clickToPlaceCount);
 		tableView.Init();
+
+		if (is_default) {
+			tableView.Refresh();
+			tableView.BuildPluginList();
+		}
 	}
 }

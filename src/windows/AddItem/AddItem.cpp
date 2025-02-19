@@ -31,7 +31,7 @@ namespace Modex
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionAvail().x / static_cast<int>(Viewport::Count);
 		const float button_height = ImGui::GetFontSize() * 1.5f;
-		const float tab_bar_height = button_height + (window_padding * 2);
+		const float tab_bar_height = button_height + (window_padding * 2.0f);
 
 		// Tab Button Area
 		ImGui::SameLine();
@@ -194,7 +194,19 @@ namespace Modex
 		}
 	}
 
-	void AddItemWindow::Init()
+	void AddItemWindow::Unload()
+	{
+		tableView.Unload();
+		kitTableView.Unload();
+	}
+
+	void AddItemWindow::Load()
+	{
+		tableView.Load();
+		kitTableView.Load();
+	}
+
+	void AddItemWindow::Init(bool is_default)
 	{
 		// g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
@@ -214,6 +226,11 @@ namespace Modex
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableEnchantmentSort);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableNonPlayableSort);
 		tableView.Init();
+
+		if (is_default) {
+			tableView.Refresh();
+			tableView.BuildPluginList();
+		}
 
 		kitTableView.SetGenerator([this]() { return PersistentData::GetKitItems(selectedKit); });
 		kitTableView.SetKitPointer(&selectedKit);

@@ -26,7 +26,9 @@ namespace Modex
 
 		void 						Draw(float a_offset);
 		void 						ShowActions();
-		void 						Init();
+		void 						Init(bool is_default);
+		void						Unload();
+		void						Load();
 		void 						Refresh() {tableView.Refresh(); }
 		TableView<ObjectData>&		GetTableView() { return tableView; }
 
@@ -38,8 +40,9 @@ namespace Modex
 		// Menu State Variables.
 		enum class Viewport
 		{
-			TableView,
-			BlacklistView
+			TableView = 0,
+			BlacklistView,
+			Count
 			// Settings View
 		};
 

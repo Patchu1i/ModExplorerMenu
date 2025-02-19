@@ -126,6 +126,7 @@ namespace Modex
 		if (std::filesystem::exists(fontData.fullPath) == true) {
 			logger::info("[Font Manager] Loading custom font: {}", fontData.name);
 			LoadCustomFont(fontData, (float)config.globalFontSize);
+
 		} else {
 			logger::info("[Font Manager] No Custom font specified. Loading default font.");
 			AddDefaultFont();

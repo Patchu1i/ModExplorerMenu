@@ -98,7 +98,17 @@ namespace Modex
 		}
 	}
 
-	void NPCWindow::Init()
+	void NPCWindow::Unload()
+	{
+		tableView.Unload();
+	}
+
+	void NPCWindow::Load()
+	{
+		tableView.Load();
+	}
+
+	void NPCWindow::Init(bool is_default)
 	{
 		// g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
 
@@ -113,5 +123,10 @@ namespace Modex
 		tableView.SetupSearch(Data::PLUGIN_TYPE::NPC);
 		tableView.SetClickAmount(&clickToPlaceCount);
 		tableView.Init();
+
+		if (is_default) {
+			tableView.Refresh();
+			tableView.BuildPluginList();
+		}
 	}
 }

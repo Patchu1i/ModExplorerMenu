@@ -165,6 +165,7 @@ namespace Modex
 				if (config.showTeleportMenu) {
 					if (ImGui::SidebarButton("Teleport", activeWindow == ActiveWindow::Teleport, teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), teleport_w)) {
 						activeWindow = ActiveWindow::Teleport;
+
 						TeleportWindow::GetSingleton()->Refresh();
 					}
 
@@ -221,7 +222,6 @@ namespace Modex
 				SettingsWindow::Draw();
 				break;
 			default:
-				AddItemWindow::GetSingleton()->Draw(sidebar_w);
 				break;
 			}
 
@@ -237,12 +237,15 @@ namespace Modex
 		ResetSelectable();
 
 		// Initalize elements
-		AddItemWindow::GetSingleton()->Init();
-		HomeWindow::Init();
-		NPCWindow::GetSingleton()->Init();
-		TeleportWindow::GetSingleton()->Init();
-		ObjectWindow::GetSingleton()->Init();
+		AddItemWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::AddItem);
+		NPCWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::NPC);
+		TeleportWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::Teleport);
+		ObjectWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::Object);
+
 		Blacklist::GetSingleton()->Init();
+
+		HomeWindow::Init();
+		SettingsWindow::Init();
 
 		RefreshStyle();
 	}

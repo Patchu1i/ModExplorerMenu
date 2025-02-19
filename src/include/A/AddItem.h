@@ -32,7 +32,9 @@ namespace Modex
 
 		void 					Draw(float a_offset);
 		void					Refresh() { tableView.Refresh(); }
-		void 					Init();
+		void 					Init(bool is_default);
+		void					Unload();
+		void					Load();
 		TableView<ItemData>&	GetTableView() { return tableView; }
 
 	private:

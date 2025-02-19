@@ -208,6 +208,21 @@ namespace Modex
 	}
 
 	template <typename DataType>
+	void TableView<DataType>::Unload()
+	{
+		this->tableList.clear();
+		this->pluginList.clear();
+		this->selectionStorage.Clear();
+		this->dragDropSourceList.clear();
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::Load()
+	{
+		this->Reset();
+	}
+
+	template <typename DataType>
 	void TableView<DataType>::AddDragDropTarget(const std::string a_id, TableView* a_view)
 	{
 		this->dragDropSourceList[a_id] = a_view;
@@ -2383,6 +2398,13 @@ namespace Modex
 		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
 			if (this->showPluginKitView) {
 				PluginKitView();
+				ImGui::EndChild();
+				return;
+			}
+
+			if (std::ssize(this->pluginList) <= 1) {
+				ImGui::TextColored(ImVec4(1.0f, 0.1f, 0.1f, 1.0f), "Error: Moduled failed to load. Try clicking the Sidebar Button for this module!");
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "If you don't see a button for this module in the sidebar, it's because it's disabled! You have to enable it in settings!");
 				ImGui::EndChild();
 				return;
 			}

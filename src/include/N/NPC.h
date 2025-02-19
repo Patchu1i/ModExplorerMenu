@@ -27,7 +27,9 @@ namespace Modex
 
 		void 					Draw(float a_offset);
 		void 					ShowActions();
-		void 					Init();
+		void 					Init(bool is_default);
+		void					Unload();
+		void					Load();
 		void 					Refresh() {tableView.Refresh(); }
 		TableView<NPCData>&		GetTableView() { return tableView; }
 
@@ -41,7 +43,8 @@ namespace Modex
 		enum class Viewport
 		{
 			TableView = 0,
-			BlacklistView
+			BlacklistView,
+			Count
 		};
 
 		Viewport 				activeViewport;

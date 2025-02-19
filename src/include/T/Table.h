@@ -87,7 +87,8 @@ namespace Modex
         void                    Draw();
         void                    PluginKitView();
         void                    Refresh();
-        // void                    Load();
+        void                    Unload();
+        void                    Load();
         void                    Init();
         void                    Reset();
         void                    SyncChangesToKit();

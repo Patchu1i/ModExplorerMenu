@@ -21,6 +21,15 @@ namespace Modex
 
 		static inline int _uiScale = 100;
 		static inline int _fontSize = 14;
+
+		enum class Viewport
+		{
+			UserSettings = 0,
+			ThemeSettings,
+			Count
+		};
+
+		static inline Viewport			activeViewport = Viewport::UserSettings;
 	};
 
 	// ToDo implement a builder pattern for this class.

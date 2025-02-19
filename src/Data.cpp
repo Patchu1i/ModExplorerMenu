@@ -470,6 +470,10 @@ namespace Modex
 
 		if (config.showNPCMenu) {
 			GenerateNPCList();
+
+			GenerateNPCClassList();
+			GenerateNPCRaceList();
+			GenerateNPCFactionList();
 		}
 
 		if (config.showObjectMenu) {
@@ -484,11 +488,6 @@ namespace Modex
 			std::string modName = ValidateTESFileName(file);
 			_modListSorted.insert(modName);
 		}
-
-		// Moved from TableView. 2/4/2025
-		GenerateNPCClassList();
-		GenerateNPCRaceList();
-		GenerateNPCFactionList();
 
 		Utils::SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001());
 	}

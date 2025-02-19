@@ -324,19 +324,22 @@ namespace Modex
 	bool AddToggleButton(const char* a_text, bool& a_boolRef)
 	{
 		// const float width = ImGui::GetFrameHeight() * 3.55f;
-		bool result;
+		bool result = false;
 
 		ImGui::Spacing();
 		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);
-		result = ImGui::ToggleButton(a_text, &a_boolRef, p_fixedWidth);
+		if (ImGui::ToggleButton(a_text, &a_boolRef, p_fixedWidth)) {
+			result = true;
+		}
 		ImGui::Spacing();
 
 		return result;
 	}
 
-	void AddSelectionDropdown(const char* a_text, int& a_selection, const std::vector<std::string>& a_items)
+	bool AddSelectionDropdown(const char* a_text, int& a_selection, const std::vector<std::string>& a_items)
 	{
+		bool result = false;
 		auto id = "##SelectionDropdown" + std::string(a_text);
 		ImGui::Spacing();
 		ImGui::Text(_T(a_text));
@@ -346,20 +349,24 @@ namespace Modex
 			for (int i = 0; i < a_items.size(); ++i) {
 				if (ImGui::Selectable(_T(a_items[i]))) {
 					a_selection = i;
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+					// SettingsWindow::changes.store(true);
+					// SettingsWindow::file_changes.store(true);
+					result = true;
 				}
 			}
 			ImGui::EndCombo();
 		}
 		ImGui::Spacing();
 		ImGui::PopItemWidth();
+
+		return result;
 	}
 
-	void AddImageDropdown(const char* a_text, GraphicManager::Image* a_imageRef)
+	bool AddImageDropdown(const char* a_text, GraphicManager::Image* a_imageRef)
 	{
 		auto id = "##ImageDropdown" + std::string(a_text);
 		auto imageName = GraphicManager::GetImageName(*a_imageRef);
+		bool result = false;
 		constexpr auto flags = ImGuiComboFlags_None;
 
 		ImGui::Spacing();
@@ -372,6 +379,7 @@ namespace Modex
 			for (const auto& image : images) {
 				if (ImGui::Selectable(image.first.c_str())) {
 					*a_imageRef = image.second;
+					result = true;
 					SettingsWindow::changes.store(true);
 					SettingsWindow::file_changes.store(true);
 				}
@@ -381,12 +389,16 @@ namespace Modex
 		}
 		ImGui::Spacing();
 		ImGui::PopItemWidth();
+
+		return result;
 	}
 
-	void AddFontDropdown(const char* a_text, std::string* a_font)
+	bool AddFontDropdown(const char* a_text, std::string* a_font)
 	{
-		ImGui::Spacing();
 		auto id = "##FontDropdown" + std::string(a_text);
+		bool result = false;
+
+		ImGui::Spacing();
 		ImGui::Text(_T(a_text));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);
 		ImGui::PushItemWidth(p_fixedWidth);
@@ -397,10 +409,11 @@ namespace Modex
 				if (ImGui::Selectable(font.c_str())) {
 					*a_font = font;
 
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+					// SettingsWindow::changes.store(true);
+					// SettingsWindow::file_changes.store(true);
 
 					Menu::GetSingleton()->RefreshFont();
+					result = true;
 				}
 			}
 			ImGui::PopID();
@@ -408,6 +421,8 @@ namespace Modex
 		}
 		ImGui::Spacing();
 		ImGui::PopItemWidth();
+
+		return result;
 	}
 
 	void SaveThemeToFile(std::string a_path, Settings::Style& a_style)
@@ -477,7 +492,9 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		std::vector<std::string> sorts = { "SETTING_SORT_ALPHA", "SETTING_SORT_LOAD_ASC", "SETTING_SORT_LOAD_DESC" };
-		AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts);
+		if (AddSelectionDropdown("SETTING_SORT", config.modListSort, sorts)) {
+			Settings::GetSingleton()->SaveSettings();
+		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -491,8 +508,9 @@ namespace Modex
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			config.uiScale = _uiScale;
 
-			SettingsWindow::changes.store(true);
-			SettingsWindow::file_changes.store(true);
+			// SettingsWindow::changes.store(true);
+			// SettingsWindow::file_changes.store(true);
+			Settings::GetSingleton()->SaveSettings();
 		}
 		ImGui::Spacing();
 		ImGui::PopItemWidth();
@@ -502,11 +520,14 @@ namespace Modex
 
 		if (AddToggleButton("SETTINGS_FULLSCREEN", config.fullscreen)) {
 			Frame::GetSingleton()->RefreshStyle();
+			Settings::GetSingleton()->SaveSettings();
 		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		AddToggleButton("SETTINGS_PAUSE_GAME", config.pauseGame);
+		if (AddToggleButton("SETTINGS_PAUSE_GAME", config.pauseGame)) {
+			Settings::GetSingleton()->SaveSettings();
+		}
 
 		AddSubCategoryHeader(_T("SETTING_FONT_AND_LANGUAGE"));
 
@@ -523,10 +544,11 @@ namespace Modex
 				if (ImGui::Selectable(language.c_str())) {
 					config.language = language;
 
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+					// SettingsWindow::changes.store(true);
+					// SettingsWindow::file_changes.store(true);
 
 					Translate::GetSingleton()->RefreshLanguage(config.language);
+					Settings::GetSingleton()->SaveSettings();
 				}
 			}
 			ImGui::EndCombo();
@@ -550,10 +572,11 @@ namespace Modex
 				if (ImGui::Selectable(glyph.data())) {
 					config.glyphRange = Language::GetGlyphRange(glyph);
 
-					SettingsWindow::changes.store(true);
-					SettingsWindow::file_changes.store(true);
+					// SettingsWindow::changes.store(true);
+					// SettingsWindow::file_changes.store(true);
 
 					Menu::GetSingleton()->RefreshFont();
+					Settings::GetSingleton()->SaveSettings();
 				}
 			}
 			ImGui::EndCombo();
@@ -563,7 +586,9 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		AddFontDropdown("SETTING_FONT", &config.globalFont);
+		if (AddFontDropdown("SETTING_FONT", &config.globalFont)) {
+			Settings::GetSingleton()->SaveSettings();
+		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
@@ -578,10 +603,11 @@ namespace Modex
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			config.globalFontSize = _fontSize;
 
-			SettingsWindow::changes.store(true);
-			SettingsWindow::file_changes.store(true);
+			// SettingsWindow::changes.store(true);
+			// SettingsWindow::file_changes.store(true);
 
 			Menu::GetSingleton()->RefreshFont();
+			Settings::GetSingleton()->SaveSettings();
 		}
 		ImGui::Spacing();
 		ImGui::PopItemWidth();
@@ -591,45 +617,67 @@ namespace Modex
 
 		AddSubCategoryHeader(_T("SETTING_MODULE"));
 
-		AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" });
+		if (AddSelectionDropdown("SETTING_DEFAULT_SHOW", config.defaultShow, { "Home", "Add Item", "Object", "NPC", "Teleport", "Settings" })) {
+			Settings::GetSingleton()->SaveSettings();
+		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		AddToggleButton("SETTING_SHOW_HOME", config.showHomeMenu);
+		if (AddToggleButton("SETTING_SHOW_HOME", config.showHomeMenu)) {
+			Settings::GetSingleton()->SaveSettings();
+		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (AddToggleButton("SETTING_SHOW_ADDITEM", config.showAddItemMenu)) {
-			if (Data::GetSingleton()->GetAddItemList().empty()) {
+			Settings::GetSingleton()->SaveSettings();
+
+			if (config.showAddItemMenu) {
 				Data::GetSingleton()->GenerateItemList();
-				AddItemWindow::GetSingleton()->Refresh();
+				AddItemWindow::GetSingleton()->Load();
+			} else {
+				AddItemWindow::GetSingleton()->Unload();
 			}
 		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (AddToggleButton("SETTING_SHOW_OBJECT", config.showObjectMenu)) {
-			if (Data::GetSingleton()->GetObjectList().empty()) {
+			Settings::GetSingleton()->SaveSettings();
+
+			if (config.showObjectMenu) {
 				Data::GetSingleton()->GenerateObjectList();
-				ObjectWindow::GetSingleton()->Refresh();
+				ObjectWindow::GetSingleton()->Load();
+			} else {
+				ObjectWindow::GetSingleton()->Unload();
 			}
 		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (AddToggleButton("SETTING_SHOW_NPC", config.showNPCMenu)) {
-			if (Data::GetSingleton()->GetNPCList().empty()) {
+			Settings::GetSingleton()->SaveSettings();
+
+			if (config.showNPCMenu) {
 				Data::GetSingleton()->GenerateNPCList();
-				NPCWindow::GetSingleton()->Refresh();
+				Data::GetSingleton()->GenerateNPCClassList();
+				Data::GetSingleton()->GenerateNPCFactionList();
+				Data::GetSingleton()->GenerateNPCRaceList();
+				NPCWindow::GetSingleton()->Load();
+			} else {
+				NPCWindow::GetSingleton()->Unload();
 			}
 		}
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (AddToggleButton("SETTING_SHOW_TELEPORT", config.showTeleportMenu)) {
-			if (Data::GetSingleton()->GetTeleportList().empty()) {
-				Data::GetSingleton()->GenerateCellList();
-				TeleportWindow::GetSingleton()->Refresh();
+			Settings::GetSingleton()->SaveSettings();
+
+			if (config.showTeleportMenu) {
+				TeleportWindow::GetSingleton()->Load();
+			} else {
+				TeleportWindow::GetSingleton()->Unload();
 			}
 		}
 	}
@@ -644,6 +692,7 @@ namespace Modex
 			changes.store(false);
 		}
 
+		ImGui::SubCategoryHeader("WARNING: v1.2.0 broke a lot of functionality in here. Colors may work. Work In Progress! Sorry :(", ImVec4(1.0f, 0.3f, 0.2f, 1.0f));
 		AddSubCategoryHeader(_T("THEME_PRESET_SELECT"));
 
 		constexpr auto combo_flags = ImGuiComboFlags_HeightLarge;
@@ -778,8 +827,8 @@ namespace Modex
 		AddColorPicker("THEME_TEXT_DISABLED_COLOR", style.textDisabled);
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		AddColorPicker("THEME_TEXT_SELECTED_BG_COLOR", style.textSelectedBg);
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		AddToggleButton("THEME_DISABLE_ICON_TEXT", style.noIconText);
+		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		// AddToggleButton("THEME_DISABLE_ICON_TEXT", style.noIconText);
 
 		AddSubCategoryHeader(_T("THEME_TABLE_COLUMN_STYLE"));
 
@@ -854,46 +903,58 @@ namespace Modex
 
 	void SettingsWindow::Draw()
 	{
-		constexpr auto child_flags = ImGuiChildFlags_Border;
-		constexpr auto header_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
-		if (ImGui::BeginChild("##SettingsTable", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 30.0f), child_flags)) {
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 15.0f));
-			if (ImGui::CollapsingHeader(_T("THEME_GENERAL"), header_flags)) {
-				ImGui::PopStyleVar();
+		const float button_width = ImGui::GetContentRegionAvail().x / static_cast<int>(Viewport::Count);
+		const float button_height = ImGui::GetFontSize() * 1.5f;
+		const float window_padding = ImGui::GetStyle().WindowPadding.y;
+		const float tab_bar_height = button_height + (window_padding * 2.0f);
 
-				ImGui::Indent();
-				DrawGeneralSettings();
-				ImGui::Unindent();
-			} else {
-				ImGui::PopStyleVar();
+		ImGui::SameLine();
+		ImGui::SetCursorPosY(window_padding);
+
+		const ImVec2 backup_pos = ImGui::GetCursorPos();
+		if (ImGui::BeginChild("##Settings::TabBar", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+			if (ImGui::Selectable(_T("USER_SETTINGS"), activeViewport == Viewport::UserSettings, 0, ImVec2(button_width, 0.0f))) {
+				activeViewport = Viewport::UserSettings;
 			}
 
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 15.0f));
-			if (ImGui::CollapsingHeader(_T("THEME_THEME"), header_flags)) {
-				ImGui::PopStyleVar();
+			ImGui::SameLine();
 
-				ImGui::Indent();
-				DrawThemeSelector();
-				ImGui::Unindent();
-			} else {
-				ImGui::PopStyleVar();
+			if (ImGui::Selectable(_T("THEME_SETTINGS"), activeViewport == Viewport::ThemeSettings, 0, ImVec2(button_width, 0.0f))) {
+				activeViewport = Viewport::ThemeSettings;
 			}
+
+			ImGui::PopStyleVar();
 		}
-
 		ImGui::EndChild();
 
-		auto& config = Settings::GetSingleton()->GetConfig();
-		auto& style = Settings::GetSingleton()->GetStyle();
+		ImGui::SameLine();
+		ImGui::SetCursorPos(backup_pos);
+		ImGui::SetCursorPosY(tab_bar_height - window_padding);
 
-		if (SettingsWindow::file_changes.load()) {
-			const float alpha = 1.0f;
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
-			if (ImGui::Button(_T("THEME_SAVE_CHANGES"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0))) {
-				SaveThemeToFile(config.theme, style);
-				SettingsWindow::file_changes.store(false);
+		if (ImGui::BeginChild("##Settings::View", ImGui::GetContentRegionAvail(), ImGuiChildFlags_Borders)) {
+			ImGui::Indent();
+			if (activeViewport == Viewport::UserSettings) {
+				DrawGeneralSettings();
+			} else if (activeViewport == Viewport::ThemeSettings) {
+				DrawThemeSelector();
 			}
-			ImGui::PopStyleColor(1);
+			ImGui::Unindent();
+
+			auto& config = Settings::GetSingleton()->GetConfig();
+			auto& style = Settings::GetSingleton()->GetStyle();
+
+			if (SettingsWindow::file_changes.load()) {
+				const float alpha = 1.0f;
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
+				if (ImGui::Button(_T("THEME_SAVE_CHANGES"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0))) {
+					SaveThemeToFile(config.theme, style);
+					SettingsWindow::file_changes.store(false);
+				}
+				ImGui::PopStyleColor(1);
+			}
 		}
+		ImGui::EndChild();
 	}
 
 	// Called from XSEPlugin -> Frame::Install() -> Modules::Init()
