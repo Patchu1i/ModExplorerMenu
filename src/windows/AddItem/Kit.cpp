@@ -297,8 +297,6 @@ namespace Modex
 			ImGui::EndPopup();
 		}
 
-		ImGui::NewLine();
-
 #ifdef DEBUG
 		if (ImGui::Button("Patcher", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
 			auto& collection = PersistentData::GetLoadedKits();

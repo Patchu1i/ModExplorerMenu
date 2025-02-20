@@ -190,7 +190,6 @@ namespace Modex
 
 			// Equip the last FormID.
 			SKSE::GetTaskInterface()->AddTask([lastID]() {
-				logger::info("Running Task");
 				auto* player = RE::PlayerCharacter::GetSingleton();
 				RE::TESForm* form = RE::TESForm::LookupByID(lastID);
 
@@ -203,12 +202,10 @@ namespace Modex
 				if (RE::TESObjectWEAP* weapon = form->As<RE::TESObjectWEAP>()) {
 					equipSlot = weapon->GetEquipSlot();
 				} else if (RE::TESObjectARMO* armor = form->As<RE::TESObjectARMO>()) {
-					logger::info("Setting Armor Up");
 					equipSlot = armor->GetEquipSlot();
 				}
 
 				if (player) {
-					logger::info("Equipping Object");
 					RE::ActorEquipManager::GetSingleton()->EquipObject(player, equipObject, extraData, 1, equipSlot);
 				}
 			});

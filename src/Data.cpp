@@ -170,9 +170,6 @@ namespace Modex
 	template <class T>
 	void Data::CacheItems(RE::TESDataHandler* a_data)
 	{
-		auto dataPath = Settings::GetSingleton()->GetConfig().dataPath;
-		dataPath = Utils::RemoveQuotesInPath(dataPath);
-
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::TESFile* mod = form->GetFile(0);
 
@@ -182,14 +179,6 @@ namespace Modex
 			if (!_itemModList.contains(mod)) {
 				_itemModList.insert(mod);
 				_modList.insert(mod);
-
-				std::filesystem::path path = dataPath + "/" + mod->fileName;
-				if (std::filesystem::exists(path)) {
-					std::time_t creationTime = GetFileCreationTime(path);
-					_modListLastModified[mod] = creationTime;
-				} else {
-					logger::warn("File does not exist: {}", path.string());
-				}
 			}
 
 			if (_itemModList.contains(mod)) {

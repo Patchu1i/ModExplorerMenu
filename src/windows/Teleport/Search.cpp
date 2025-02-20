@@ -54,7 +54,7 @@ namespace Modex
 				continue;
 			}
 
-			if (selectedMod != "All Mods" && item.GetPluginName() != selectedMod) {
+			if (selectedMod != _T("Show All Plugins") && item.GetPluginName() != selectedMod) {
 				continue;
 			}
 
@@ -119,11 +119,11 @@ namespace Modex
 		// Mod List sort and filter.
 		const auto& config = Settings::GetSingleton()->GetConfig();
 		auto modListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::CELL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
-		modListVector.insert(modListVector.begin(), "All Mods");
-		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
-		if (InputTextComboBox("##TeleportWindow::ModField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
+		modListVector.insert(modListVector.begin(), _T("Show All Plugins"));
+		ImGui::Text(_TFM("GENERAL_FILTER_PLUGINS", ":"));
+		if (InputTextComboBox("##TeleportWindow::PluginField", modSearchBuffer, selectedMod, IM_ARRAYSIZE(modSearchBuffer), modListVector, totalWidth)) {
 			auto modList = Data::GetSingleton()->GetModulePluginList(Data::PLUGIN_TYPE::CELL);
-			selectedMod = "All Mods";
+			selectedMod = _T("Show All Plugins");
 
 			if (selectedMod.find(modSearchBuffer) != std::string::npos) {
 				ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
@@ -135,7 +135,7 @@ namespace Modex
 
 					std::string modName = ValidateTESFileName(mod);
 
-					if (modName == "All Mods") {
+					if (modName == _T("Show All Plugins")) {
 						ImFormatString(modSearchBuffer, IM_ARRAYSIZE(modSearchBuffer), "");
 						break;
 					}

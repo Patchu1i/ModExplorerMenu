@@ -62,7 +62,7 @@ namespace Modex
 
 		Frame::GetSingleton()->Draw(showSettingWindow);
 
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow(); // This could be added to the settings?
 
 		ImGui::EndFrame();
 

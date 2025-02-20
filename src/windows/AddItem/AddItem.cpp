@@ -26,7 +26,7 @@ namespace Modex
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"), MAX_SEARCH_WIDTH);
+		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"), MAX_SEARCH_WIDTH - 75.0f);  // 75.0f is padding for initial size.
 		float kitbar_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::KitBarHeight"), MAX_KITBAR_HEIGHT);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionAvail().x / static_cast<int>(Viewport::Count);

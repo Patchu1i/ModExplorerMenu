@@ -852,7 +852,12 @@ namespace Modex
 		ImGui::NewLine();
 
 		ImGui::SetCursorPosY(a_height - ImGui::GetFrameHeightWithSpacing() * 2.0f);
-		ImGui::Text(_TFM("GENERAL_FILTER_MODLIST", ":"));
+		ImGui::Text(_TFM("GENERAL_FILTER_PLUGINS", ":"));
+
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip(_T("TOOLTIP_FILTER_PLUGINS"));
+		}
+
 		if (InputTextComboBox("##Search::Filter::PluginField", this->pluginSearchBuffer, this->selectedPlugin, IM_ARRAYSIZE(this->pluginSearchBuffer), this->pluginList, total_width)) {
 			this->selectedPlugin = _T("SHOW_ALL_PLUGINS");
 
@@ -1621,7 +1626,7 @@ namespace Modex
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 1.0f));
 
 		if (this->HasFlag(ModexTableFlag_Kit)) {
-			button_offset += ImGui::GetFrameHeightWithSpacing() * 1.5f;
+			button_offset -= ImGui::GetFrameHeightWithSpacing() * 1.5f;
 		}
 
 		// Surely a better way to do this, lol..

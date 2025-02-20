@@ -95,7 +95,7 @@ namespace Modex
 						ImGui::SameLine();
 						ImGui::SetCursorPos(backup_pos);
 						ImGui::SetNextItemAllowOverlap();
-						ImGui::Image(overlay, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f), ImVec4(1, image_alpha, image_alpha, image_alpha));
+						ImGui::Image(overlay, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f), ImVec4(1, 1, 1, image_alpha));
 					}
 				}
 

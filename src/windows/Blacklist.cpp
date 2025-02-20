@@ -15,17 +15,12 @@ namespace Modex
 		const auto& config = Settings::GetSingleton()->GetConfig();
 		this->pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
 		this->pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
-		pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
+		pluginListVector.insert(pluginListVector.begin(), _T("Show All Plugins"));
 	}
 
 	void Blacklist::Draw(float a_offset)
 	{
 		(void)a_offset;
-
-		// const auto& config = Settings::GetSingleton()->GetConfig();
-		// const auto pluginList = Data::GetSingleton()->GetModulePluginListSorted(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort);
-		// auto pluginListVector = Data::GetSingleton()->GetFilteredListOfPluginNames(Data::PLUGIN_TYPE::ALL, (Data::SORT_TYPE)config.modListSort, RE::FormType::None);
-		// pluginListVector.insert(pluginListVector.begin(), _T("All Mods"));
 
 		const auto& blacklist = PersistentData::GetBlacklist();
 
@@ -200,6 +195,6 @@ namespace Modex
 	{
 		hiddenPlugins = 0;
 		updateHidden = true;
-		selectedMod = _T("All Mods");
+		selectedMod = _T("Show All Plugins");
 	}
 }
