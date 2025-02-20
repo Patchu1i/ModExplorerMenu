@@ -16,8 +16,8 @@ namespace Modex
 	public:
 		// void LoadStyleTheme(ImGuiStyle a_theme); - DEPRECATED
 
-		void GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func);
-		void LoadSettings(const wchar_t* a_path);
+		void GetIni(const std::filesystem::path& a_path, const std::function<void(CSimpleIniA&)> a_func);
+		void LoadSettings(const std::filesystem::path& a_path);
 		void LoadUserFontSetting();
 		void SaveSettings();
 		void LoadMasterIni(CSimpleIniA& a_ini);
@@ -35,8 +35,8 @@ namespace Modex
 			return &singleton;
 		}
 
-		constexpr inline static const wchar_t* ini_theme_path = L"Data/Interface/Modex/themes/";
-		constexpr inline static const wchar_t* ini_mem_path = L"Data/Interface/Modex/Modex.ini";
+		static inline const std::filesystem::path ini_theme_path = "Data/Interface/Modex/themes/";
+		static inline const std::filesystem::path ini_mem_path = "Data/Interface/Modex/Modex.ini";
 
 		enum SECTION
 		{
@@ -94,8 +94,6 @@ namespace Modex
 			bool showObjectMenu = true;
 			bool showNPCMenu = true;
 			bool showTeleportMenu = true;
-
-			std::string dataPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data";
 
 			// Hiden from User
 			ImVec2 screenScaleRatio;
@@ -181,7 +179,7 @@ namespace Modex
 		Setting def;
 		Setting user;
 
-		void ExportThemeToIni(const wchar_t* a_path, Style user);
+		void ExportThemeToIni(const std::filesystem::path& a_path, Style user);
 		void InstantiateDefaultTheme(Style& a_out);
 
 		// https://github.com/powerof3/PhotoMode | License: MIT
@@ -273,7 +271,7 @@ namespace Modex
 		static std::vector<std::string> GetListOfThemes()
 		{
 			std::vector<std::string> themes;
-			std::string path_to_themes = "Data/Interface/Modex/themes";
+			const std::filesystem::path path_to_themes = "Data/Interface/Modex/themes";
 
 			// TODO: Implement scope wide error handling.
 			if (std::filesystem::exists(path_to_themes) == false) {
@@ -288,46 +286,44 @@ namespace Modex
 					continue;  // Pass invalid file types
 				}
 
-				auto index = entry.path().filename().stem().string();
-				themes.push_back(index);
+				// When reading paths or files from the users system, we interpret them as a wide string
+				// then convert it to a utf-8 string for storage. Since we do not want to store paths or
+				// filenames using wide chars. This ensures utf-8 is used for all strings.
+
+				auto index = entry.path().filename().stem().wstring();
+				std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+				auto theme_string = converter.to_bytes(index);
+				themes.push_back(theme_string);
 			}
 
 			return themes;
 		}
 
-		static std::wstring GetThemePath(std::string& a_str)
-		{
-			std::wstring path(ini_theme_path);
-			return path + std::wstring(a_str.begin(), a_str.end()) + L".ini";
-		}
-
-		// Searches theme directory, and executes SetThemeFromIni(a_path) on the first matching theme
-		// passed in. Returns the name of the theme if it was found, and a bool if it was successful.
-		static std::pair<std::string, bool> SetThemeFromIni(std::string a_str)
+		static std::pair<std::string, bool> SetThemeFromIni(std::string a_theme)
 		{
 			std::vector<std::string> themes = GetListOfThemes();
-			std::wstring full_path = GetThemePath(a_str);
 
 			// Case-insensitive comparison for Steamdeck support, and common sense.
-			std::transform(a_str.begin(), a_str.end(), a_str.begin(), ::tolower);
+			std::transform(a_theme.begin(), a_theme.end(), a_theme.begin(), ::tolower);
+			std::filesystem::path full_path = ini_theme_path / (a_theme + ".ini");
 
 			for (auto entry : themes) {
 				std::transform(entry.begin(), entry.end(), entry.begin(), ::tolower);
 
-				if (entry == a_str) {
-					Settings::GetSingleton()->GetIni(full_path.c_str(), [](CSimpleIniA& a_ini) {
+				if (entry == a_theme) {
+					Settings::GetSingleton()->GetIni(full_path, [](CSimpleIniA& a_ini) {
 						Settings::GetSingleton()->LoadThemeFromIni(a_ini);
 					});
-					return { a_str, true };
+					return { a_theme, true };
 				}
 			}
 
 			// If we did not find it, create a new ini with defaults and retry.
 			// Mainly a fail-safe if the user edits the master config and breaks the theme.
-			Settings::GetSingleton()->ExportThemeToIni(full_path.c_str(), Settings::GetSingleton()->def.style);
-			SetThemeFromIni(a_str);
+			Settings::GetSingleton()->ExportThemeToIni(full_path, Settings::GetSingleton()->def.style);
+			SetThemeFromIni(a_theme);
 
-			return { a_str, false };
+			return { a_theme, false };
 		}
 
 		// Horrendous de-serialization.

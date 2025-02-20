@@ -6,6 +6,8 @@ namespace Modex
 {
 
 	// TODO: Purge wchar_t and string literals
+	const static inline std::filesystem::path json_lang_path = "Data/Interface/Modex/LaNgUaGe/";
+	const static inline std::filesystem::path json_font_path = "dAtA/intERFACE/MoDEX/user/FonTs/";
 
 	class Translate
 	{
@@ -31,7 +33,9 @@ namespace Modex
 				lang.clear();
 			}
 
-			std::ifstream file(std::wstring(json_lang_path) + std::wstring(a_path.begin(), a_path.end()) + L".json");
+			std::filesystem::path full_path = json_lang_path / (a_path + ".json");
+
+			std::ifstream file(full_path);
 			if (!file.is_open()) {
 				return;
 			}
@@ -78,7 +82,7 @@ namespace Modex
 		}
 
 	private:
-		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex//Language/";
+		const static inline std::filesystem::path json_lang_path = "Data/Interface/Modex/LaNgUaGe/";
 
 		Translate() = default;
 		~Translate() = default;
@@ -94,8 +98,8 @@ namespace Modex
 	class Language
 	{
 	private:
-		constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/Language/";
-		constexpr inline static const wchar_t* json_font_path = L"Data/Interface/Modex/User/Fonts/";
+		// constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/Language/";
+		// constexpr inline static const wchar_t* json_font_path = L"Data/Interface/Modex/User/Fonts/";
 
 		Language() = default;
 		~Language() = default;
@@ -135,7 +139,7 @@ namespace Modex
 
 		static const void BuildLanguageList()
 		{
-			for (const auto& entry : std::filesystem::directory_iterator(std::wstring(json_lang_path))) {
+			for (const auto& entry : std::filesystem::directory_iterator(json_lang_path)) {
 				if (entry.path().extension() == L".json") {
 					std::string path = entry.path().filename().string();
 					languages.insert(path.substr(0, path.find_last_of('.')));

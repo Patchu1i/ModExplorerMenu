@@ -427,17 +427,14 @@ namespace Modex
 
 	void SaveThemeToFile(std::string a_path, Settings::Style& a_style)
 	{
-		std::wstring path(Settings::ini_theme_path);
-
 		// Add the .ini extension if it doesn't exist
 		if (a_path.rfind(".ini") != a_path.length() - 4) {
 			a_path += ".ini";
 		}
 
-		std::wstring full_path = path + std::wstring(a_path.begin(), a_path.end());
-		const wchar_t* new_path = full_path.c_str();
+		std::filesystem::path full_path = Settings::ini_theme_path / a_path;
 
-		Settings::GetSingleton()->ExportThemeToIni(new_path, a_style);
+		Settings::GetSingleton()->ExportThemeToIni(full_path, a_style);
 		Settings::GetSingleton()->SaveSettings();
 	}
 
@@ -518,7 +515,7 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		if (AddToggleButton("SETTINGS_FULLSCREEN", config.fullscreen)) {
+		if (AddToggleButton("SETTING_FULLSCREEN", config.fullscreen)) {
 			Frame::GetSingleton()->RefreshStyle();
 			Settings::GetSingleton()->SaveSettings();
 		}
@@ -914,13 +911,13 @@ namespace Modex
 		const ImVec2 backup_pos = ImGui::GetCursorPos();
 		if (ImGui::BeginChild("##Settings::TabBar", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-			if (ImGui::Selectable(_T("USER_SETTINGS"), activeViewport == Viewport::UserSettings, 0, ImVec2(button_width, 0.0f))) {
+			if (ImGui::Selectable(_T("SETTING_USER"), activeViewport == Viewport::UserSettings, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::UserSettings;
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::Selectable(_T("THEME_SETTINGS"), activeViewport == Viewport::ThemeSettings, 0, ImVec2(button_width, 0.0f))) {
+			if (ImGui::Selectable(_T("SETTING_THEME"), activeViewport == Viewport::ThemeSettings, 0, ImVec2(button_width, 0.0f))) {
 				activeViewport = Viewport::ThemeSettings;
 			}
 

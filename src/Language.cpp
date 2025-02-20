@@ -7,7 +7,7 @@ namespace Modex
 	// Convert wide string to UTF-8 string.
 	std::string WideToUTF8(const std::wstring& a_wide)
 	{
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 		return converter.to_bytes(a_wide);
 	}
 
@@ -24,6 +24,11 @@ namespace Modex
 			if (entry.path().filename().extension() != ".ttf" && entry.path().filename().extension() != ".otf") {
 				continue;  // Pass invalid file types
 			}
+
+			// ***
+			// Since we're reading from the filesystem, we interpret the path as a wide string
+			// then convert it to a utf-8 string for storage. Since we do not want to store paths or
+			// filenames using wide chars. This ensures utf-8 is used for all strings.
 
 			FontData data;
 			data.name = WideToUTF8(entry.path().filename().stem().wstring());

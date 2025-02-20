@@ -10,21 +10,28 @@ using namespace IniHelper;
 namespace Modex
 {
 
-	void Settings::GetIni(const wchar_t* a_path, const std::function<void(CSimpleIniA&)> a_func)
+	void Settings::GetIni(const std::filesystem::path& a_path, const std::function<void(CSimpleIniA&)> a_func)
 	{
 		CSimpleIniA ini;
 
+		if (a_path.empty()) {
+			logger::critical("[Settings.cpp] Invalid Path provided to GetIni");
+		}
+
+		// This is okay since we're interfacing with an external API
+		const std::wstring wide_path = a_path.wstring();
+
 		ini.SetUnicode();
 
-		if (const auto rc = ini.LoadFile(a_path)) {
+		if (const auto rc = ini.LoadFile(wide_path.c_str())) {
 			if (rc < SI_OK) {
-				(void)ini.SaveFile(a_path);  // Could not locate, let's procreate.
+				(void)ini.SaveFile(wide_path.c_str());  // Could not locate, let's procreate.
 			}
 		}
 
 		a_func(ini);
 
-		(void)ini.SaveFile(a_path);
+		(void)ini.SaveFile(wide_path.c_str());
 	}
 
 	template <class T>
@@ -114,16 +121,12 @@ namespace Modex
 			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(_default.showObjectMenu).c_str(), GetComment(iComment::ConfigShowObjectMenu));
 			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(_default.showNPCMenu).c_str(), GetComment(iComment::ConfigShowNPCMenu));
 			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(_default.showTeleportMenu).c_str(), GetComment(iComment::ConfigShowTeleportMenu));
-
-			a_ini.SetValue(rSections[Modules], "DataPath", _default.dataPath.c_str(), GetComment(iComment::ConfigDataPath));
 		});
 	}
 
 	// Execute ini value assignment where necessary.
-	void Settings::LoadSettings(const wchar_t* a_path)
+	void Settings::LoadSettings(const std::filesystem::path& a_path)
 	{
-		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-
 		// If master ini doesn't exist this will default it to "Default"
 		if (!std::filesystem::exists(a_path)) {
 			logger::info("[Settings.cpp] Master ini not found! Creating default master ini...");
@@ -131,7 +134,14 @@ namespace Modex
 			CreateDefaultMaster();
 		}
 
-		logger::info("[Settings.cpp] Loading settings from: {}", converter.to_bytes(a_path));
+		// LogExpert won't show proper unicode support!
+		const std::u8string path_string = a_path.u8string();
+
+		if (path_string.c_str()) {
+			logger::info("[Settings.cpp] Loading settings from: {}", std::string(path_string.begin(), path_string.end()));
+		} else {
+			logger::critical("[Settings.cpp] Critical Error: Failed to convert path to wide string! Please report this immediately");
+		}
 
 		// Master
 		GetIni(a_path, [](CSimpleIniA& a_ini) {
@@ -147,7 +157,11 @@ namespace Modex
 		InstantiateDefaultTheme(def.style);
 		Settings::GetSingleton()->SetThemeFromIni(user.config.theme);
 
-		logger::info("[Settings.cpp] Loaded settings from: {}", converter.to_bytes(a_path));
+		if (path_string.c_str()) {
+			logger::info("[Settings.cpp] Loaded settings from: {}", std::string(path_string.begin(), path_string.end()));
+		} else {
+			logger::critical("[Settings.cpp] Critical Error: Failed to convert path to wide string! Please report this immediately");
+		}
 
 		Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 
@@ -192,8 +206,6 @@ namespace Modex
 			a_ini.SetValue(rSections[Modules], "ShowObjectMenu", ToString(Settings::GetSingleton()->user.config.showObjectMenu).c_str());
 			a_ini.SetValue(rSections[Modules], "ShowNPCMenu", ToString(Settings::GetSingleton()->user.config.showNPCMenu).c_str());
 			a_ini.SetValue(rSections[Modules], "ShowTeleportMenu", ToString(Settings::GetSingleton()->user.config.showTeleportMenu).c_str());
-
-			a_ini.SetValue(rSections[Modules], "DataPath", Settings::GetSingleton()->user.config.dataPath.c_str());
 		});
 
 		// This function body is called when a change is made, so send updates out:
@@ -226,8 +238,6 @@ namespace Modex
 		user.config.showObjectMenu = GET_VALUE<bool>(rSections[Modules], "ShowObjectMenu", _default.showObjectMenu, a_ini);
 		user.config.showNPCMenu = GET_VALUE<bool>(rSections[Modules], "ShowNPCMenu", _default.showNPCMenu, a_ini);
 		user.config.showTeleportMenu = GET_VALUE<bool>(rSections[Modules], "ShowTeleportMenu", _default.showTeleportMenu, a_ini);
-
-		user.config.dataPath = GET_VALUE<std::string>(rSections[Modules], "DataPath", _default.dataPath, a_ini);
 	}
 
 	void Settings::InstantiateDefaultTheme(Settings::Style& a_out)
@@ -363,7 +373,7 @@ namespace Modex
 
 	// Export theme and style values to a standalone ini file.
 	// Decentralized from the main ini configuration to allow for easy sharing of themes.
-	void Settings::ExportThemeToIni(const wchar_t* a_path, Style a_user)
+	void Settings::ExportThemeToIni(const std::filesystem::path& a_path, Style a_user)
 	{
 		GetIni(a_path, [a_user](CSimpleIniA& a_ini) {
 			FormatThemeIni(a_ini);
