@@ -26,7 +26,7 @@ HRESULT WINAPI hk_D3D11CreateDeviceAndSwapChain(
 	[[maybe_unused]] D3D_FEATURE_LEVEL* pFeatureLevel,
 	ID3D11DeviceContext** ppImmediateContext)
 {
-	logger::info("Upgrading D3D11 feature level to 11.1");
+	logger::info("[Hook] Upgrading D3D11 feature level to 11.1");
 
 	const D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_1;  // Create a device with only the latest feature level
 
@@ -131,16 +131,16 @@ namespace Hooks
 	{
 		SKSE::AllocTrampoline(14);
 		auto& trampoline = SKSE::GetTrampoline();
-		logger::info("Hooking BSInputDeviceManager::PollInputDevices");
+		logger::info("[Hook] Hooking BSInputDeviceManager::PollInputDevices");
 		_InputHandler = trampoline.write_call<5>(REL::RelocationID(67315, 68617).address() + REL::Relocate(0x7B, 0x7B, 0x81), hk_PollInputDevices);  //BSInputDeviceManager::PollInputDevices -> Inputfunc
 
-		logger::info("Hooking BSGraphics::Renderer::InitD3D");
+		logger::info("[Hook] Hooking BSGraphics::Renderer::InitD3D");
 		stl::write_thunk_call<D3DInitHook>(REL::RelocationID(75595, 77226).address() + REL::Relocate(0x50, 0x2BC));
 
-		logger::info("Hooking WndProcHandler");
+		logger::info("[Hook] Hooking WndProcHandler");
 		stl::write_thunk_call_6<RegisterClassA_Hook>(REL::VariantID(75591, 77226, 0xDC4B90).address() + REL::VariantOffset(0x8E, 0x15C, 0x99).offset());
 
-		logger::info("Hooking DXGI Present");
+		logger::info("[Hook] Hooking DXGI Present");
 		stl::write_thunk_call<DXGIPresentHook>(REL::RelocationID(75461, 77246).address() + REL::VariantOffset(0x9, 0x9, 0x15).offset());
 	}
 }

@@ -92,7 +92,7 @@ namespace Modex
 	void Data::MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map)
 	{
 		if (npc_ref_map->empty()) {
-			logger::warn("No NPC references found.");
+			logger::warn("[Data] No NPC references found.");
 		} else {
 			for (auto& npc : _npcCache) {
 				auto it = npc_ref_map->find(npc.GetBaseForm());
@@ -139,7 +139,7 @@ namespace Modex
 				RE::FormID ref = actor->GetFormID();
 
 				if (npc_ref_map->find(base) != npc_ref_map->end()) {
-					logger::warn("Duplicate NPC reference found (middleLow): {}", actor->GetName());
+					logger::warn("[Data] Duplicate NPC reference found (middleLow): {}", actor->GetName());
 				} else {
 					npc_ref_map->insert_or_assign(base, ref);
 				}
@@ -156,7 +156,7 @@ namespace Modex
 				RE::FormID ref = actor->GetFormID();
 
 				if (npc_ref_map->find(base) != npc_ref_map->end()) {
-					logger::warn("Duplicate NPC reference found (highActorHandle): {}", actor->GetName());
+					logger::warn("[Data] Duplicate NPC reference found (highActorHandle): {}", actor->GetName());
 				} else {
 					npc_ref_map->insert_or_assign(base, ref);
 				}
@@ -277,7 +277,7 @@ namespace Modex
 	{
 		auto tesFile = const_cast<RE::TESFile*>(a_file);
 		if (!tesFile->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
-			logger::warn(FMT_STRING("failed to open file: {:s}"sv), a_file->fileName);
+			logger::warn(FMT_STRING("[Data] failed to open file: {:s}"sv), a_file->fileName);
 			return;
 		}
 
@@ -329,7 +329,7 @@ namespace Modex
 		} while (tesFile->SeekNextForm(true));
 
 		if (!tesFile->CloseTES(false)) {
-			logger::warn(FMT_STRING("failed to close file: {:s}"sv), tesFile->fileName);
+			logger::error(FMT_STRING("[Data] failed to close file: {:s}"sv), tesFile->fileName);
 		}
 	}
 

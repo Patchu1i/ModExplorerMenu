@@ -46,7 +46,7 @@ namespace Modex
 
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)
 	{
-		// Since inputs can be listened to outside of the menu.
+		// Since inputs can be listened to outside of the menu. Issue #48
 		if (ImGui::GetCurrentContext() == nullptr) {
 			return;
 		}

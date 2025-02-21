@@ -95,55 +95,6 @@ namespace Modex
 		}
 	}
 
-	// void AddItemWindow::RemoveItemFromKit(const std::shared_ptr<KitItem>& a_item)
-	// {
-	// 	auto& collection = PersistentData::GetLoadedKits();
-	// 	auto& kit = collection.at(selectedKit);
-
-	// 	if (kit.items.empty()) {
-	// 		return;
-	// 	}
-
-	// 	for (auto it = kit.items.begin(); it != kit.items.end();) {
-	// 		if ((*it)->editorid == a_item->editorid) {
-	// 			it = kit.items.erase(it);
-	// 		} else {
-	// 			++it;
-	// 		}
-	// 	}
-
-	// 	PersistentData::GetSingleton()->SaveKitToJSON(kit);
-	// }
-
-	// std::shared_ptr<KitItem> AddItemWindow::CreateKitItem(const ItemData* a_item)
-	// {
-	// 	assert(a_item);
-
-	// 	auto newItem = std::make_shared<KitItem>();
-	// 	newItem->plugin = a_item->GetPluginName();
-	// 	newItem->name = a_item->GetName();
-	// 	newItem->editorid = a_item->GetEditorID();
-	// 	newItem->amount = a_item->kitAmount;
-	// 	newItem->equipped = a_item->kitEquipped;
-
-	// 	return newItem;
-	// }
-
-	// void AddItemWindow::AddItemToKit(const std::shared_ptr<KitItem>& a_item)
-	// {
-	// 	assert(a_item);
-
-	// 	auto& collection = PersistentData::GetLoadedKits();
-	// 	auto& kit = collection.at(selectedKit);
-
-	// 	if (kit.items.contains(a_item)) {
-	// 		return;
-	// 	}
-
-	// 	kit.items.emplace(a_item);
-	// 	PersistentData::GetSingleton()->SaveKitToJSON(kit);
-	// }
-
 	/*
 --------------------------------------------------------------------------------
     Kit Action Bar

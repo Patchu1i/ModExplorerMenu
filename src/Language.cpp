@@ -5,6 +5,7 @@ namespace Modex
 {
 
 	// Convert wide string to UTF-8 string.
+	// TODO: Replace this with the functions declared in Util.h
 	std::string WideToUTF8(const std::wstring& a_wide)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
@@ -19,13 +20,12 @@ namespace Modex
 			return;
 		}
 
-		// Search for fonts relative to Modex directory.
+		// Search for fonts relative to Modex mod directory.
 		for (const auto& entry : std::filesystem::directory_iterator(font_path)) {
 			if (entry.path().filename().extension() != ".ttf" && entry.path().filename().extension() != ".otf") {
 				continue;  // Pass invalid file types
 			}
 
-			// ***
 			// Since we're reading from the filesystem, we interpret the path as a wide string
 			// then convert it to a utf-8 string for storage. Since we do not want to store paths or
 			// filenames using wide chars. This ensures utf-8 is used for all strings.
@@ -50,7 +50,7 @@ namespace Modex
 
 				font_library[data.name] = data;
 
-				logger::info("Font Index Names: {}", data.name);
+				logger::info("[FontManager] Loaded and Registered Font: {}", data.name);
 			}
 		}
 	}
@@ -63,16 +63,14 @@ namespace Modex
 		imFontConfig.GlyphMinAdvanceX = 10.0f;
 		imFontConfig.GlyphExtraSpacing.x = 5.0f;
 		imFontConfig.GlyphOffset.y = (size / 2.0f) / 1.5f;
-		// imFontConfig.GlyphOffset.y = size / 6.0f;
-		// imFontConfig.GlyphOffset.x = 1.0f;
 
 		static const ImWchar icon_ranges[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
 		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/lucide.ttf", size + 3.0f, &imFontConfig, icon_ranges);
 	}
 
+	// TODO: Replace default font from ImGui proggy with a better font.
 	void FontManager::AddDefaultFont()
 	{
-		// auto& style = Settings::GetSingleton()->GetStyle();
 		auto& config = Settings::GetSingleton()->GetConfig();
 		auto& io = ImGui::GetIO();
 
@@ -136,8 +134,6 @@ namespace Modex
 			logger::info("[Font Manager] No Custom font specified. Loading default font.");
 			AddDefaultFont();
 		}
-
-		// io.FontDefault = io.Fonts->Fonts[0];
 	}
 
 }

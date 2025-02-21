@@ -7,6 +7,7 @@
 namespace Modex
 {
 
+	// TODO: Deprecated
 	// Returns the creationjj time of the file at the specified path.
 	//
 	// @param path - The path to the file.
@@ -80,9 +81,10 @@ namespace Modex
 			return _cellModList;
 		case PLUGIN_TYPE::ALL:
 			return _modList;
+		default:
+			logger::warn("[PluginList] Invalid PLUGIN_TYPE argument passed to GetModulePluginList");
+			return _modList;
 		}
-
-		throw std::invalid_argument("Invalid PLUGIN_TYPE");
 	}
 
 	// Returns a copy of the specified plugin list as a sorted vector.
@@ -109,6 +111,10 @@ namespace Modex
 		case PLUGIN_TYPE::ALL:
 			copy.assign(_modList.begin(), _modList.end());
 			break;
+		default:
+			logger::error("[PluginList] Invalid PLUGIN_TYPE argument passed to GetModulePluginListSorted");
+			copy.assign(_modList.begin(), _modList.end());
+			break;
 		}
 
 		if (a_sortType == SORT_TYPE::ALPHABETICAL) {
@@ -117,6 +123,8 @@ namespace Modex
 			std::sort(copy.begin(), copy.end(), CompileIndexCompareTESFileAsc);
 		} else if (a_sortType == SORT_TYPE::COMPILEINDEX_DESC) {
 			std::sort(copy.begin(), copy.end(), CompileIndexCompareTESFileDesc);
+		} else {
+			logger::error("[PluginList] Invalid SORT_TYPE argument passed to GetModulePluginListSorted");
 		}
 
 		return copy;
@@ -128,9 +136,11 @@ namespace Modex
 	std::vector<std::string> Data::GetSortedListOfPluginNames()
 	{
 		std::vector<std::string> modList;
+
 		for (auto& mod : _modListSorted) {
 			modList.push_back(mod);
 		}
+
 		return modList;
 	}
 
@@ -180,10 +190,12 @@ namespace Modex
 		case RE::FormType::Cell:
 			return _itemListModFormTypeMap[a_plugin].cell;
 		default:
-			stl::report_and_fail("Invalid FormType passed to IsFormTypeInPlugin");
+			logger::error("[PluginList] Invalid FormType argument passed to IsFormTypeInPlugin");
+			return false;
 		}
 	}
 
+	// TODO: Naming Convention Mod -> Plugin.
 	// Returns an alphabetically sorted vector of plugin names that are cross-compared to the supplied
 	// ItemFilterType filter selected. Primarily used to populate the "Filter By Modlist" list in the
 	// table-view modules.
@@ -198,7 +210,6 @@ namespace Modex
 		std::vector<std::string> modList;
 		const auto& blacklist = PersistentData::GetBlacklist();
 
-		//for (auto& modName : _modListSorted) {
 		for (auto& mod : masterList) {
 			auto modName = Modex::ValidateTESFileName(mod);
 
@@ -206,14 +217,13 @@ namespace Modex
 				continue;
 			}
 
+			// We only step through the secondary filter if it's not None. This allows us to polymorphically
+			// filter the list based on whether the module supports a secondary filter or not. Which most do by now.
 			if (a_secondaryFilter == RE::FormType::None) {
 				modList.push_back(modName);
 			} else {
 				auto plugin = RE::TESDataHandler::GetSingleton()->LookupModByName(modName.c_str());
 				auto pluginFormTypeFlag = _itemListModFormTypeMap[plugin];
-
-				// Only applicable in modules that utilize a secondary filter.
-				// (e.g. AddItemWindow, ObjectWindow).
 
 				switch (a_secondaryFilter) {
 				case RE::FormType::Armor:
@@ -301,7 +311,8 @@ namespace Modex
 					}
 					break;
 				default:
-					stl::report_and_fail("Invalid PriamryFilter FormType passed to GetFilteredListOfPlugins");
+					logger::error("[PluginList] Invalid FormType argument passed to GetFilteredListOfPluginNames");
+					modList.push_back(modName);
 					break;
 				}
 			}

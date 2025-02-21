@@ -16,10 +16,10 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#ifdef NDEBUG
-#	include <spdlog/sinks/basic_file_sink.h>
-#else
+#ifdef DEBUG
 #	include <spdlog/sinks/msvc_sink.h>
+#else
+#	include <spdlog/sinks/basic_file_sink.h>
 #endif
 
 #pragma warning(pop)
@@ -81,11 +81,6 @@ namespace stl
 }
 
 namespace logger = SKSE::log;
-
-namespace util
-{
-	using SKSE::stl::report_and_fail;
-}
 
 #include "Plugin.h"
 

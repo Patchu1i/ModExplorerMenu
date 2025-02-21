@@ -128,8 +128,6 @@ namespace Modex
 		auto& style = ImGui::GetStyle();
 		auto& colors = style.Colors;
 
-		// ImGui::GetIO().FontGlobalScale = user.globalFontSize;
-
 		colors[ImGuiCol_Text] = user.text;
 		colors[ImGuiCol_TextDisabled] = user.textDisabled;
 		colors[ImGuiCol_WindowBg] = user.windowBg;

@@ -13,7 +13,7 @@ namespace Modex
 
 		auto* render_manager = RE::BSGraphics::Renderer::GetSingleton();
 		if (!render_manager) {
-			logger::error("Cannot find render manager. Initialization failed."sv);
+			logger::error("[GraphicManager] Cannot find render manager. Initialization failed."sv);
 			return false;
 		}
 
@@ -22,7 +22,7 @@ namespace Modex
 		int image_height = 0;
 		unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
 		if (image_data == NULL) {
-			logger::error("Failed to load image: {}", filename);
+			logger::error("[GraphicManager] Failed to load image: {}", filename);
 			return false;
 		}
 
@@ -70,10 +70,12 @@ namespace Modex
 	void GraphicManager::LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct)
 	{
 		if (std::filesystem::exists(a_path) == false) {
-			auto warning = std::string("FATAL ERROR: Font and/or Graphic asset directory not found. This is because Modex cannot locate the path '") + a_path + "'. Check your installation.";
-			stl::report_and_fail(warning);
+			auto error_message = std::string("[GraphicManager] Font and/or Graphic asset directory not found. This is because Modex cannot locate the path '") + a_path + "'. Check your installation.";
+			logger::error("{}", error_message);
 			return;
 		}
+
+		logger::error("TEST ERROR");
 
 		for (const auto& entry : std::filesystem::directory_iterator(a_path)) {
 			if (entry.path().filename().extension() != ".png") {
@@ -86,7 +88,7 @@ namespace Modex
 				out_struct[index.c_str()].width, out_struct[index.c_str()].height);
 
 			if (!success) {
-				logger::error("Failed to load image: {}", entry.path().string());
+				logger::error("[GraphicManager] Failed to load image: {}", entry.path().string());
 			}
 		}
 	}
@@ -130,7 +132,7 @@ namespace Modex
 		// Detect ImGui Icons mod and load it if it exists.
 		if (std::filesystem::exists("Data/Interface/ImGuiIcons")) {
 			GraphicManager::LoadImagesFromFilepath(std::string("Data/Interface/ImGuiIcons/Icons"), GraphicManager::imgui_library);
-			logger::info("Successfully found and loaded ImGui Icon Library.");
+			logger::info("[GraphicManager] Successfully found and loaded ImGui Icon Library.");
 		}
 
 		// TODO: This doesn't belong here. Way to coupled.
