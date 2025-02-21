@@ -75,6 +75,8 @@ namespace Modex
 			return;
 		}
 
+		logger::error("TEST ERROR");
+
 		for (const auto& entry : std::filesystem::directory_iterator(a_path)) {
 			if (entry.path().filename().extension() != ".png") {
 				continue;
