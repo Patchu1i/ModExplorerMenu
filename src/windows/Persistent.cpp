@@ -33,10 +33,11 @@ namespace Modex
 			file.close();
 		} catch (const nlohmann::json::parse_error& e) {
 			file.close();
-			stl::report_and_fail(std::string("[JSON] Error parsing JSON file:\n\nDid you modify it manually?\n") + a_path + e.what());
+			logger::error("[PersistentData] Error parsing JSON file: {}", e.what());
+			logger::error("[PersistentData] Did you modify it manually?");
 		} catch (const nlohmann::json::exception& e) {
 			file.close();
-			stl::report_and_fail(std::string("[JSON] Error Exception reading JSON file: ") + e.what());
+			logger::error("[PersistentData] Error reading JSON file: {}", e.what());
 		}
 
 		return JSON;
@@ -57,7 +58,7 @@ namespace Modex
 		try {
 			file << a_json.dump(4);
 		} catch (const std::exception& e) {
-			logger::warn("Failed to save JSON file: {}", e.what());
+			logger::warn("[PersistentData] Failed to save JSON file: {}", e.what());
 			return false;
 		}
 
@@ -91,7 +92,7 @@ namespace Modex
 		}
 
 		if (!SaveJSONFile(json_user_path + "blacklist.json", JSON)) {
-			logger::warn("Failed to save changes to blacklist.json.");
+			logger::warn("[PersistentData] Failed to save changes to blacklist.json.");
 		}
 	}
 
@@ -109,7 +110,7 @@ namespace Modex
 		}
 
 		if (!SaveJSONFile(json_user_path + "blacklist.json", JSON)) {
-			logger::warn("Failed to save changes to blacklist.json.");
+			logger::warn("[PersistentData] Failed to save changes to blacklist.json.");
 		}
 	}
 
@@ -148,7 +149,8 @@ namespace Modex
 				std::filesystem::remove(json_user_path + "/kits/" + old_name + ".json");
 			}
 		} catch (const std::exception& e) {
-			logger::warn("Failed to rename kit: {}", e.what());
+			logger::warn("[PersistentData] Failed to rename kit: {}", e.what());
+			return a_kit;
 		}
 
 		a_kit.name = a_new_name;
@@ -170,7 +172,8 @@ namespace Modex
 			}
 
 		} catch (const std::exception& e) {
-			logger::warn("Failed to delete kit JSON file: {}", e.what());
+			logger::warn("[PersistentData] Failed to delete kit JSON file: {}", e.what());
+			return;
 		}
 
 		m_kits.erase(a_name);
@@ -230,15 +233,15 @@ namespace Modex
 					item->equipped = data["Equipped"].get<bool>();
 
 					if (kit.items.contains(item)) {
-						logger::warn("Duplicate item found in kit {}. (EditorID: {})", kit_name, item_eid);
+						logger::info("[PersistentData] Duplicate item found in kit {}. (EditorID: {})", kit_name, item_eid);
 						continue;
 					}
 
 					kit.items.emplace(item);
 				}
 			} catch (const nlohmann::json::exception& e) {
-				logger::warn("Failed to load items from kit {}. (ERROR:  {})", kit_name, e.what());
-				logger::warn("If you manually edited the JSON file, please ensure the format is correct!");
+				logger::warn("[PersistentData] Failed to load items from kit {}. (ERROR:  {})", kit_name, e.what());
+				logger::warn("[PersistentData] If you manually edited the JSON file, please ensure the format is correct!");
 				break;
 			}
 
@@ -276,11 +279,11 @@ namespace Modex
 
 		if (a_kit.collection.empty()) {
 			if (!SaveJSONFile(json_user_path + "/kits/" + a_kit.name + ".json", JSON)) {
-				logger::warn("Failed to save changes to kit JSON file. {}", a_kit.name);
+				logger::warn("[PersistentData] Failed to save changes to kit JSON file. {}", a_kit.name);
 			}
 		} else {
 			if (!SaveJSONFile(json_user_path + "/kits/" + a_kit.collection + ".json", JSON)) {
-				logger::warn("Failed to save changes to kit with collection name {}.", a_kit.collection);
+				logger::warn("[PersistentData] Failed to save changes to kit with collection name {}.", a_kit.collection);
 			}
 		}
 	}

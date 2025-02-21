@@ -937,21 +937,21 @@ namespace Modex
 				DrawThemeSelector();
 			}
 			ImGui::Unindent();
-
-			auto& config = Settings::GetSingleton()->GetConfig();
-			auto& style = Settings::GetSingleton()->GetStyle();
-
-			if (SettingsWindow::file_changes.load()) {
-				const float alpha = 1.0f;
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
-				if (ImGui::Button(_T("THEME_SAVE_CHANGES"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0))) {
-					SaveThemeToFile(config.theme, style);
-					SettingsWindow::file_changes.store(false);
-				}
-				ImGui::PopStyleColor(1);
-			}
 		}
 		ImGui::EndChild();
+
+		auto& config = Settings::GetSingleton()->GetConfig();
+		auto& style = Settings::GetSingleton()->GetStyle();
+
+		if (SettingsWindow::file_changes.load()) {
+			const float alpha = 1.0f;
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.7f, 0.2f, alpha));
+			if (ImGui::Button(_T("THEME_SAVE_CHANGES"), ImVec2(ImGui::GetContentRegionAvail().x - 20.0f, 0))) {
+				SaveThemeToFile(config.theme, style);
+				SettingsWindow::file_changes.store(false);
+			}
+			ImGui::PopStyleColor(1);
+		}
 	}
 
 	// Called from XSEPlugin -> Frame::Install() -> Modules::Init()

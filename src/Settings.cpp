@@ -3,6 +3,7 @@
 #include "include/I/INI.h"
 #include "include/I/InputManager.h"
 #include "include/M/Menu.h"
+#include "include/U/Util.h"
 #include <format>
 
 using namespace IniHelper;
@@ -15,7 +16,7 @@ namespace Modex
 		CSimpleIniA ini;
 
 		if (a_path.empty()) {
-			logger::critical("[Settings.cpp] Invalid Path provided to GetIni");
+			logger::critical("[Settings] Invalid Path provided to GetIni");
 		}
 
 		// This is okay since we're interfacing with an external API
@@ -47,7 +48,8 @@ namespace Modex
 		}
 
 		if (value.empty()) {
-			stl::report_and_fail("Failed to parse value from .ini file! Ensure you're using the correct format!");
+			logger::warn("[Settings] Failed to parse value from .ini file! Ensure you're using the correct format!");
+			return a_default;
 		}
 
 		// A+ plus de-serialization.
@@ -70,7 +72,7 @@ namespace Modex
 		} else if constexpr (std::is_same_v<T, Language::GlyphRanges>) {
 			return Language::GetGlyphRange(value);
 		} else {
-			stl::report_and_fail("Unhandled type passed to GET_VALUE in Menu.cpp!");
+			logger::error("[Settings] Unhandled type passed to GET_VALUE in Menu.cpp!");
 			return a_default;
 		}
 	}
@@ -129,7 +131,7 @@ namespace Modex
 	{
 		// If master ini doesn't exist this will default it to "Default"
 		if (!std::filesystem::exists(a_path)) {
-			logger::info("[Settings.cpp] Master ini not found! Creating default master ini...");
+			logger::warn("[Settings] Master ini not found! Creating default master ini...");
 
 			CreateDefaultMaster();
 		}
@@ -138,9 +140,9 @@ namespace Modex
 		const std::u8string path_string = a_path.u8string();
 
 		if (path_string.c_str()) {
-			logger::info("[Settings.cpp] Loading settings from: {}", std::string(path_string.begin(), path_string.end()));
+			logger::info("[Settings] Loading settings from: {}", std::string(path_string.begin(), path_string.end()));
 		} else {
-			logger::critical("[Settings.cpp] Critical Error: Failed to convert path to wide string! Please report this immediately");
+			logger::error("[Settings] Critical Error: Failed to convert path to wide string! Please report this immediately");
 		}
 
 		// Master
@@ -148,7 +150,7 @@ namespace Modex
 			Settings::GetSingleton()->LoadMasterIni(a_ini);
 		});
 
-		logger::info("[Settings.cpp] Using Theme specified in Modex.ini: {}", user.config.theme);
+		logger::info("[Settings] Using Theme specified in Modex.ini: {}", user.config.theme);
 
 		// Language
 		Translate::GetSingleton()->LoadLanguage(user.config.language);
@@ -158,14 +160,14 @@ namespace Modex
 		Settings::GetSingleton()->SetThemeFromIni(user.config.theme);
 
 		if (path_string.c_str()) {
-			logger::info("[Settings.cpp] Loaded settings from: {}", std::string(path_string.begin(), path_string.end()));
+			logger::info("[Settings] Loaded settings from: {}", std::string(path_string.begin(), path_string.end()));
 		} else {
-			logger::critical("[Settings.cpp] Critical Error: Failed to convert path to wide string! Please report this immediately");
+			logger::error("[Settings] Critical Error: Failed to convert path to wide string! Please report this immediately");
 		}
 
 		Menu::GetSingleton()->SyncUserStyleToImGui(user.style);
 
-		logger::info("[Settings.cpp] Settings loaded successfully.");
+		logger::info("[Settings] Settings loaded successfully.");
 	}
 
 	// Load font separately to allow GraphicManager to read language config first.
@@ -176,7 +178,7 @@ namespace Modex
 			Settings::GetSingleton()->user.config.globalFont = GET_VALUE<std::string>(rSections[Main], "GlobalFont", Settings::GetSingleton()->def.config.globalFont, a_ini);
 		});
 
-		logger::info("[Settings.cpp] Loaded user font settings: {}", user.config.globalFont);
+		logger::info("[Settings] Loaded user font settings: {}", user.config.globalFont);
 	}
 
 	void Settings::SaveSettings()
@@ -439,5 +441,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Table], "TableRowBGColor", Settings::ToString(a_user.tableRowBg, false).c_str());
 			a_ini.SetValue(rSections[Table], "TableAltRowBGColor", Settings::ToString(a_user.tableAltRowBg, false).c_str());
 		});
+
+		logger::info("[Settings] Exported theme to: {}", Utils::utf8_encode(a_path.wstring()));
 	};
 }
