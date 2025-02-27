@@ -25,11 +25,19 @@ namespace Modex
 	// Sort Function for compileIndex aka Load Order used for Plugin Lists.
 	bool CompileIndexCompareTESFileAsc(const RE::TESFile* a, const RE::TESFile* b)
 	{
+		if (!a or !b) {
+			return false;
+		}
+
 		return a->GetCombinedIndex() < b->GetCombinedIndex();
 	}
 
 	bool CompileIndexCompareTESFileDesc(const RE::TESFile* a, const RE::TESFile* b)
 	{
+		if (!a or !b) {
+			return false;
+		}
+
 		return a->GetCombinedIndex() > b->GetCombinedIndex();
 	}
 
@@ -65,25 +73,34 @@ namespace Modex
 	{
 		std::vector<const RE::TESFile*> copy;
 
+		auto safeCopy = [&copy](const std::unordered_set<const RE::TESFile*>& a_set) {
+			// copy.reserve(std::ssize(a_set));
+			for (const auto& mod : a_set) {
+				if (mod != nullptr) {
+					copy.push_back(mod);
+				}
+			}
+		};
+
 		switch (a_type) {
 		case PLUGIN_TYPE::ITEM:
-			copy.assign(_itemModList.begin(), _itemModList.end());
+			safeCopy(_itemModList);
 			break;
 		case PLUGIN_TYPE::NPC:
-			copy.assign(_npcModList.begin(), _npcModList.end());
+			safeCopy(_npcModList);
 			break;
 		case PLUGIN_TYPE::OBJECT:
-			copy.assign(_staticModList.begin(), _staticModList.end());
+			safeCopy(_staticModList);
 			break;
 		case PLUGIN_TYPE::CELL:
-			copy.assign(_cellModList.begin(), _cellModList.end());
+			safeCopy(_cellModList);
 			break;
 		case PLUGIN_TYPE::ALL:
-			copy.assign(_modList.begin(), _modList.end());
+			safeCopy(_modList);
 			break;
 		default:
 			logger::error("[PluginList] Invalid PLUGIN_TYPE argument passed to GetModulePluginListSorted");
-			copy.assign(_modList.begin(), _modList.end());
+			safeCopy(_modList);
 			break;
 		}
 

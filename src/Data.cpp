@@ -63,6 +63,9 @@ namespace Modex
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::TESFile* mod = form->GetFile(0);
 
+			if (!mod)
+				continue;
+
 			// RE::TESNPC* npc = form->As<RE::TESNPC>();
 
 			if (RE::TESNPC* npc = form->As<RE::TESNPC>(); npc->IsPlayerRef()) {
@@ -173,6 +176,9 @@ namespace Modex
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::TESFile* mod = form->GetFile(0);
 
+			if (!mod)
+				continue;
+
 			_cache.push_back(ItemData{ form });
 
 			//Add mod file to list.
@@ -226,6 +232,9 @@ namespace Modex
 	{
 		for (RE::TESForm* form : a_data->GetFormArray<T>()) {
 			const RE::TESFile* mod = form->GetFile(0);
+
+			if (!mod)
+				continue;
 
 			_staticCache.push_back(ObjectData{ form });
 
@@ -431,6 +440,9 @@ namespace Modex
 				std::string plugin = _plugin + ".esm";
 				const RE::TESFile* modFile = dataHandler->LookupModByName(plugin.c_str());
 
+				if (!modFile)
+					continue;
+
 				if (!_cellModList.contains(modFile)) {
 					_cellModList.insert(modFile);
 				}
@@ -440,6 +452,9 @@ namespace Modex
 
 			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
 				const RE::TESFile* mod = form->GetFile(0);
+
+				if (!mod)
+					continue;
 
 				if (!_cellModList.contains(mod)) {
 					CacheCells(mod, _cellCache);
