@@ -38,6 +38,7 @@ namespace Modex
         void        OnFocusKill();
         void        UpdateSettings();
         void        ProcessInputEvent(RE::InputEvent** a_event);
+        bool        ShouldProcessEvent(RE::InputEvent** a_event);
 
         // members
         uint32_t       showMenuKey;
