@@ -36,6 +36,56 @@ namespace Modex
 		captureInput = false;
 	}
 
+	// TODO: Is this the best way (?)
+	bool InputManager::ShouldProcessEvent(RE::InputEvent** a_event)
+	{
+		(void)a_event;
+
+		// Don't need this fix if we have a modifier, since it wouldn't fire anyway.
+		if (this->showMenuModifier != 0) {
+			return true;
+		}
+
+		// If the hotkey assigned to Modex doesn't overlap text-input behavioral keys, then we can process the event.
+		if (this->showMenuKey != 0x0E &&  // Backspace
+			this->showMenuKey != 0x0F &&  // Tab
+			this->showMenuKey != 0x3A &&  // Caps-Lock
+			this->showMenuKey != 0x45 &&  // Num-Lock
+			this->showMenuKey != 0x46 &&  // Scroll-Lock
+			this->showMenuKey != 0xB7 &&  // Prnt-Scrn
+			this->showMenuKey != 0xC5 &&  // Pause
+			this->showMenuKey != 0xC7 &&  // Home
+			this->showMenuKey != 0xC8 &&  // Up
+			this->showMenuKey != 0xC9 &&  // Page-Up
+			this->showMenuKey != 0xCB &&  // Left
+			this->showMenuKey != 0xCD &&  // Right
+			this->showMenuKey != 0xCF &&  // End
+			this->showMenuKey != 0xD0 &&  // Down
+			this->showMenuKey != 0xD1 &&  // Page-Down
+			this->showMenuKey != 0xD2 &&  // Insert
+			this->showMenuKey != 0xD3) {  // Delete
+			return true;
+		}
+
+		const auto UIManager = RE::UI::GetSingleton();
+
+		if (UIManager->IsMenuOpen("Console") ||         // Text Input
+			UIManager->IsMenuOpen("Dialogue Menu") ||   // Dialogue
+			UIManager->IsMenuOpen("Crafting Menu") ||   // Text Input
+			UIManager->IsMenuOpen("Training Menu") ||   // Just Incase
+			UIManager->IsMenuOpen("MagicMenu") ||       // Text Input
+			UIManager->IsMenuOpen("Quantity Menu") ||   // Text Input
+			UIManager->IsMenuOpen("RaceSex Menu") ||    // Text Input
+			UIManager->IsMenuOpen("BarterMenu") ||      // Text Input
+			UIManager->IsMenuOpen("InventoryMenu") ||   // Text Input
+			UIManager->IsMenuOpen("ContainerMenu") ||   // Text Input
+			UIManager->IsMenuOpen("MessageBoxMenu")) {  // Text Input
+			return false;
+		}
+
+		return true;
+	}
+
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)
 	{
 		// Since inputs can be listened to outside of the menu. Issue #48

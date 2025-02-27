@@ -8,7 +8,9 @@ static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;  // 
 void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events)
 {
 	if (a_events) {
-		Modex::InputManager::GetSingleton()->ProcessInputEvent(a_events);
+		if (Modex::InputManager::GetSingleton()->ShouldProcessEvent(a_events)) {
+			Modex::InputManager::GetSingleton()->ProcessInputEvent(a_events);
+		}
 	}
 
 	if (Modex::InputManager::GetSingleton()->captureInput) {
