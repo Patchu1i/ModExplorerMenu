@@ -271,25 +271,24 @@ namespace Modex
 							continue;
 						}
 
-						const auto spellName = spell->GetFullName();
+						if (const auto spellName = spell->GetFullName()) {
+							if (ImGui::TreeNode((std::string(spellName) + "##SpellName").c_str())) {
+								auto castType = Utils::GetCastingType(spell->data.castingType);
+								auto spellType = Utils::GetSpellType(spell->data.spellType);
+								auto delType = Utils::GetDeliveryType(spell->data.delivery);
+								auto cost = spell->CalculateMagickaCost(npc->GetForm()->As<RE::Actor>());
 
-						// Weird bug here where the spell name is empty. Patched with ##.
-						if (ImGui::TreeNode((std::string(spellName) + "##SpellName").c_str())) {
-							auto castType = Utils::GetCastingType(spell->data.castingType);
-							auto spellType = Utils::GetSpellType(spell->data.spellType);
-							auto delType = Utils::GetDeliveryType(spell->data.delivery);
-							auto cost = spell->CalculateMagickaCost(npc->GetForm()->As<RE::Actor>());
+								float costPercent = cost / npc->GetMagicka() * 100.0f;
+								std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
 
-							float costPercent = cost / npc->GetMagicka() * 100.0f;
-							std::string costPercentStr = std::format("{:.0f}", costPercent) + std::string("%%");
+								InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_CAST_TYPE", ":"), castType);
+								InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_SPELL_TYPE", ":"), spellType);
+								InlineText(_TICONM(Utils::IconMap["SPELL"], "NPC_DELIVERY_TYPE", ":"), delType);
+								InlineText(_TICONM(Utils::IconMap["MAGICKA"], "Cost", ":"), std::format("{:.0f}", cost).c_str());
+								InlineText((std::string(_TICON(Utils::IconMap["MAGICKA"], "Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
 
-							InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_CAST_TYPE", ":"), castType);
-							InlineText(_TICONM(Utils::IconMap["SKILL"], "NPC_SPELL_TYPE", ":"), spellType);
-							InlineText(_TICONM(Utils::IconMap["SPELL"], "NPC_DELIVERY_TYPE", ":"), delType);
-							InlineText(_TICONM(Utils::IconMap["MAGICKA"], "Cost", ":"), std::format("{:.0f}", cost).c_str());
-							InlineText((std::string(_TICON(Utils::IconMap["MAGICKA"], "Cost")) + "%%" + ":").c_str(), costPercentStr.c_str());  // https://github.com/ocornut/imgui/issues/7679
-
-							ImGui::TreePop();
+								ImGui::TreePop();
+							}
 						}
 					}
 					ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);

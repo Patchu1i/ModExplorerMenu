@@ -2289,9 +2289,16 @@ namespace Modex
 						if (teaches_skill) {
 							const std::string skill_string = ICON_LC_BRAIN + Utils::SkillMap[book->GetSkill()];
 							DrawList->AddText(teach_pos, text_color, skill_string.c_str());
-						} else if (teaches_spell) {
-							const std::string spell_string = ICON_LC_WAND + std::string(book->GetSpell()->GetFullName());
-							DrawList->AddText(teach_pos, text_color, spell_string.c_str());
+						} else if (teaches_spell) {  // Issue #54 : Spell name on tome is causing crash, maybe due to not validating string?
+							const auto spell = book->GetSpell();
+							if (spell) {
+								const auto string = spell->GetFullName();
+
+								if (string) {
+									const std::string spell_string = ICON_LC_WAND + std::string(string);
+									DrawList->AddText(teach_pos, text_color, spell_string.c_str());
+								}
+							}
 						}
 					}
 				}
