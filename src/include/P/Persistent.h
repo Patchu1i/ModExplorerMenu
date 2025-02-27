@@ -14,7 +14,7 @@ namespace Modex
 		static inline PersistentData* GetSingleton()
 		{
 			static PersistentData singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		void LoadBlacklist();

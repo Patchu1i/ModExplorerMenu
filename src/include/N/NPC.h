@@ -19,7 +19,7 @@ namespace Modex
 		static inline NPCWindow* GetSingleton()
 		{
 			static NPCWindow singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		NPCWindow() : tableView(TableView<NPCData>()) {}

@@ -9,13 +9,38 @@
 
 namespace Modex
 {
+
+	class BaseColumnList
+    {
+    public:
+        std::vector<BaseColumn> columns;
+
+        inline const int GetTotalColumns() const { return static_cast<int>(columns.size()); }
+    };
+
+    class TeleportColumns : public BaseColumnList
+    {
+    public:
+        static inline auto flag = ImGuiTableColumnFlags_WidthStretch;
+
+        TeleportColumns()
+        {
+            // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
+            columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
+            columns.push_back({ _T("Space"), flag, 0.0f, false, BaseColumn::ID::Space });
+            columns.push_back({ _T("Zone"), flag, 0.0f, false, BaseColumn::ID::Zone });
+            columns.push_back({ _T("Cell"), flag, 0.0f, false, BaseColumn::ID::CellName });
+            columns.push_back({ _T("Editor ID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
+        }
+    };
+	
 	class TeleportWindow : private ISortable, private ISearch
 	{
 	public:
 		static inline TeleportWindow* GetSingleton()
 		{
 			static TeleportWindow singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		TeleportWindow() = default;
@@ -36,7 +61,6 @@ namespace Modex
 
 		// Local State Variables.
 		bool 						b_ClickToTeleport;
-		// bool 						b_ClickToFavorite;
 
 		std::vector<CellData*> 		cellList;
 		TeleportColumns 			columnList;

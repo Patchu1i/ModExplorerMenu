@@ -32,7 +32,7 @@ namespace Modex
 		static inline Viewport			activeViewport = Viewport::UserSettings;
 	};
 
-	// ToDo implement a builder pattern for this class.
+	// TODO: implement a builder pattern for this class.
 	class ISettingManager
 	{
 	public:

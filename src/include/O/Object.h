@@ -18,7 +18,7 @@ namespace Modex
 		static inline ObjectWindow* GetSingleton()
 		{
 			static ObjectWindow singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		ObjectWindow() : tableView(TableView<ObjectData>()) {}

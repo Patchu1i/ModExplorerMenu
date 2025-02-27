@@ -19,7 +19,7 @@ namespace Modex
 		static inline AddItemWindow* GetSingleton()
 		{
 			static AddItemWindow singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		// AddItemWindow() = default;

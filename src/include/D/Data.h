@@ -54,7 +54,7 @@ namespace Modex
 		static inline Data* GetSingleton()
 		{
 			static Data singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		void Run();
@@ -81,7 +81,6 @@ namespace Modex
 		void 											GenerateNPCList();
 		void 											GenerateObjectList();
 		void 											GenerateCellList();
-		// void											GenerateCellTESTList();
 
 		void SortAddItemList();
 
@@ -118,11 +117,5 @@ namespace Modex
 
 		void CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_map);
 		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
-
-		// void CacheCellsTEST(RE::TESDataHandler* a_data);
-
-
-		// Windows Specific API for File Creation Time
-		[[nodiscard]] std::time_t GetFileCreationTime(const std::filesystem::path& path);
 	};
 }

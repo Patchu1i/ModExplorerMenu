@@ -19,13 +19,8 @@ namespace Modex
         public:
             virtual ~ISearch() = default;
             
-            // implementation
-            // virtual const std::string&      GetModSearchBuffer() = 0;
-            // virtual const std::string&      GetSelectedMod() = 0; 
-
-
             // interface
-            bool        InputTextComboBox(const char* a_label, char* a_buffer, std::string& a_preview, size_t a_size, std::vector<std::string> a_items, float a_width);
+            bool InputTextComboBox(const char* a_label, char* a_buffer, std::string& a_preview, size_t a_size, std::vector<std::string> a_items, float a_width);
 
             ImGuiKey                    _lastNavKey = ImGuiKey_None;
             bool                        forceDropdown;

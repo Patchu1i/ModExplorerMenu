@@ -6,36 +6,6 @@
 
 namespace Modex
 {
-
-	// TODO: Deprecated
-	// Returns the creationjj time of the file at the specified path.
-	//
-	// @param path - The path to the file.
-	// @return std::time_t - The creation time of the file.
-	std::time_t Data::GetFileCreationTime(const std::filesystem::path& path)
-	{
-		HANDLE hFile = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile == INVALID_HANDLE_VALUE) {
-			logger::warn("[Modex] Unable to open file: {}", path.string());
-			return std::time_t{};
-		}
-
-		FILETIME creationTime;
-		if (!GetFileTime(hFile, &creationTime, NULL, NULL)) {
-			logger::warn("[Modex] Unable to get file time: {}", path.string());
-			CloseHandle(hFile);
-			return std::time_t{};
-		}
-
-		CloseHandle(hFile);
-
-		ULARGE_INTEGER ull;
-		ull.LowPart = creationTime.dwLowDateTime;
-		ull.HighPart = creationTime.dwHighDateTime;
-
-		return std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(std::chrono::nanoseconds(ull.QuadPart * 100))));
-	}
-
 	// Sort Function for Case Insensitive comparing used for Plugin Lists.
 	// Doing additional checks to ensure the TESFile* pointer is not null.
 	// Due to reports of random crashing. #19 for example.

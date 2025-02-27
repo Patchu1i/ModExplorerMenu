@@ -208,8 +208,6 @@ namespace Modex
 
 	void AddItemWindow::Init(bool is_default)
 	{
-		// g_DescriptionFrameworkInterface = DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001();
-
 		b_AddToInventory = true;
 		b_PlaceOnGround = false;
 		clickToAddCount = 1;

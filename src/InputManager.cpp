@@ -34,14 +34,6 @@ namespace Modex
 		UpdateSettings();
 
 		captureInput = false;
-
-		mouseState = MOUSE_STATE::kIdle;
-		mouseSelectionStart = ImVec2(0.0f, 0.0f);
-		mouseSelectionEnd = ImVec2(0.0f, 0.0f);
-
-		mouseKitState = MOUSE_STATE::kIdle;
-		mouseKitSelectionStart = ImVec2(0.0f, 0.0f);
-		mouseKitSelectionEnd = ImVec2(0.0f, 0.0f);
 	}
 
 	void InputManager::ProcessInputEvent(RE::InputEvent** a_event)

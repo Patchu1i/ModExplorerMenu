@@ -32,7 +32,7 @@ namespace Modex
 		static inline Settings* GetSingleton()
 		{
 			static Settings singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		static inline const std::filesystem::path ini_theme_path = "Data/Interface/Modex/themes/";

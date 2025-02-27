@@ -16,7 +16,7 @@ namespace Modex
 	class BaseObject
 	{
 	private:
-		RE::TESForm* 		TESForm;  // cannot be const
+		RE::TESForm* 		TESForm;  // cannot be const (?)
 		
 		const std::string 	name;
 		const std::string 	editorid;
@@ -31,14 +31,15 @@ namespace Modex
 				return *this;
 			}
 
-			TESForm = other.TESForm;
-			refID = other.refID;
-			TableID = other.TableID;
-			const_cast<std::string&>(name) = other.name;
-			const_cast<std::string&>(editorid) = other.editorid;
-			const_cast<std::string&>(plugin) = other.plugin;
-			const_cast<std::string&>(formid) = other.formid;
-			const_cast<RE::FormID&>(baseid) = other.baseid;
+			TESForm 							= other.TESForm;
+			refID 								= other.refID;
+			TableID 							= other.TableID;
+			const_cast<std::string&>(name) 		= other.name;
+			const_cast<std::string&>(editorid) 	= other.editorid;
+			const_cast<std::string&>(plugin) 	= other.plugin;
+			const_cast<std::string&>(formid) 	= other.formid;
+			const_cast<RE::FormID&>(baseid) 	= other.baseid;
+			
 			return *this;
 		}
 
@@ -54,6 +55,7 @@ namespace Modex
 		// variables by doing a match against the KitItem editorID in the current TableList.
 
 		// It's not a very efficient model, but I can't imagine Kit's being large enough to care.
+
 		bool				kitEquipped = false;
 		int					kitAmount = 1;
 
@@ -71,17 +73,15 @@ namespace Modex
 
 		virtual ~BaseObject() = default;
 		
-		// TODO: Derefencing char* without safety checks. Danger zone.
-		[[nodiscard]] inline RE::TESForm* GetForm() const { return TESForm; }
-		[[nodiscard]] inline const std::string GetTableID() const { return fmt::format("{:08x}", TableID); }
-		// [[nodiscard]] inline const std::string GetPlugin() const { return plugin; }
-		[[nodiscard]] inline const std::string_view GetPluginView() const { return plugin; }
-		[[nodiscard]] inline const std::string GetFormID() const { return formid; }
-		[[nodiscard]] inline const RE::FormID GetBaseForm() const { return baseid; }
-		[[nodiscard]] inline const std::string GetEditorID() const { return editorid; }
-		[[nodiscard]] inline const std::string_view GetEditorIDView() const { return editorid; }
-		[[nodiscard]] inline const std::string GetName() const { return name; }
-		[[nodiscard]] inline const std::string_view GetNameView() const { 
+		[[nodiscard]] inline RE::TESForm* 				GetForm() const { return TESForm; }
+		[[nodiscard]] inline const std::string 			GetTableID() const { return fmt::format("{:08x}", TableID); }
+		[[nodiscard]] inline const std::string_view 	GetPluginView() const { return plugin; }
+		[[nodiscard]] inline const std::string 			GetFormID() const { return formid; }
+		[[nodiscard]] inline const RE::FormID 			GetBaseForm() const { return baseid; }
+		[[nodiscard]] inline const std::string 			GetEditorID() const { return editorid; }
+		[[nodiscard]] inline const std::string_view 	GetEditorIDView() const { return editorid; }
+		[[nodiscard]] inline const std::string 			GetName() const { return name; }
+		[[nodiscard]] inline const std::string_view 	GetNameView() const { 
 			if (!name.empty()) {
 				return name;
 			} else {
@@ -160,8 +160,6 @@ namespace Modex
 	public:
 		ObjectData(RE::TESForm* a_form, ImGuiID a_id = 0, RE::FormID a_refID = 0) :
 			BaseObject{ a_form, a_id, a_refID } {}
-
-
 	};
 
 	class ItemData : public BaseObject
@@ -234,11 +232,6 @@ namespace Modex
 			return SafeAccessNPC<float>(&RE::TESNPC::GetBaseActorValue, RE::ActorValue::kStamina, 0.0f);
 		}
 
-		// [[nodiscard]] inline float GetCarryWeight() const
-		// {
-		// 	return SafeAccessNPC<float>(&RE::TESNPC::GetBaseActorValue, RE::ActorValue::kCarryWeight, 0.0f);
-		// }
-
 		[[nodiscard]] inline RE::TESNPC::Skills GetSkills() const
 		{
 			return GetTESNPC()->playerSkills;
@@ -264,8 +257,6 @@ namespace Modex
 		}
 	};
 
-	// TODO: Pickup refactoring above changes past here.
-
 	class CellData
 	{
 	public:
@@ -277,13 +268,13 @@ namespace Modex
 
 		const RE::TESFile* 	mod;
 
-		[[nodiscard]] inline std::string_view GetPluginName() const { return filename; }
-		[[nodiscard]] inline std::string_view GetPluginNameView() const { return filename; }
-		[[nodiscard]] inline std::string_view GetSpace() const { return space; }
-		[[nodiscard]] inline std::string_view GetZone() const { return zone; }
-		[[nodiscard]] inline std::string_view GetCellName() const { return cellName; }
-		[[nodiscard]] inline std::string_view GetEditorIDView() const { return editorid; }
-		[[nodiscard]] inline std::string_view GetEditorID() const { return editorid; }  // TODO: separate these.
+		[[nodiscard]] inline std::string_view 		GetPluginName() const { return filename; }
+		[[nodiscard]] inline std::string_view 		GetPluginNameView() const { return filename; }
+		[[nodiscard]] inline std::string_view 		GetSpace() const { return space; }
+		[[nodiscard]] inline std::string_view 		GetZone() const { return zone; }
+		[[nodiscard]] inline std::string_view 		GetCellName() const { return cellName; }
+		[[nodiscard]] inline std::string_view 		GetEditorIDView() const { return editorid; }
+		[[nodiscard]] inline std::string_view 		GetEditorID() const { return editorid; }  // TODO: separate these.
 
 		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
 			filename(filename), 
@@ -361,11 +352,12 @@ namespace Modex
 	static std::shared_ptr<KitItem> CreateKitItem(const DataType& a_item)
 	{
 		auto new_item = std::make_shared<KitItem>();
-		new_item->plugin = a_item.GetPluginName();
-		new_item->name = a_item.GetName();
-		new_item->editorid = a_item.GetEditorID();
-		new_item->amount = a_item.kitAmount;
-		new_item->equipped = a_item.kitEquipped;
+		
+		new_item->plugin 	= a_item.GetPluginName();
+		new_item->name 		= a_item.GetName();
+		new_item->editorid 	= a_item.GetEditorID();
+		new_item->amount 	= a_item.kitAmount;
+		new_item->equipped 	= a_item.kitEquipped;
 
 		return new_item;
 	}

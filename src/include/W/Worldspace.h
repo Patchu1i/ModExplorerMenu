@@ -3,6 +3,8 @@
 #include <string>
 #include <tuple>
 
+// clang-format off
+
 // You might be asking yourself, "Wow, what tool did he use to generate this?"
 // The answer is, I didn't use a tool. I wrote this by hand.
 

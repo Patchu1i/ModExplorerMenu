@@ -98,9 +98,6 @@ namespace Modex
 	class Language
 	{
 	private:
-		// constexpr inline static const wchar_t* json_lang_path = L"Data/Interface/Modex/Language/";
-		// constexpr inline static const wchar_t* json_font_path = L"Data/Interface/Modex/User/Fonts/";
-
 		Language() = default;
 		~Language() = default;
 		Language(const Language&) = delete;
@@ -293,6 +290,7 @@ namespace Modex
 		static inline std::map<std::string, FontData> font_library;
 
 	private:
+		// TODO: Look at OAR and see how they handle file paths because I can't seem to get it right.
 		inline static const wchar_t* font_path = L"Data/Interface/Modex/Fonts/";
 		inline static const wchar_t* imgui_font_path = L"Data/Interface/ImGuiIcons/Fonts";
 

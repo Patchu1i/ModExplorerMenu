@@ -18,7 +18,7 @@ namespace Modex
 		static Frame* GetSingleton()
 		{
 			static Frame singleton;
-			return &singleton;
+			return std::addressof(singleton);
 		}
 
 		// GraphicManager::Image -> ImGui conversion.
@@ -86,16 +86,16 @@ namespace Modex
 			kTotal
 		};
 
-
 		float			sidebar_w;
 		float 			sidebar_h;
-		float 			home_w = 0.0f;
-		float			additem_w = 0.0f;
-		float 			npc_w = 0.0f;
-		float 			object_w = 0.0f;
-		float 			teleport_w = 0.0f;
-		float 			settings_w = 0.0f;
-		float 			exit_w = 0.0f;
+
+		float 			home_w 		= 0.0f;
+		float			additem_w 	= 0.0f;
+		float 			npc_w 		= 0.0f;
+		float 			object_w 	= 0.0f;
+		float 			teleport_w 	= 0.0f;
+		float 			settings_w 	= 0.0f;
+		float 			exit_w 		= 0.0f;
 
 		bool 			b_Home 		= true;
 		bool 			b_AddItem 	= false;

@@ -12,7 +12,6 @@ namespace Modex
 
 	class GraphicManager
 	{
-	private:
 	public:
 		using D3D11View = ID3D11ShaderResourceView*;
 
@@ -30,7 +29,7 @@ namespace Modex
 		static void 				DrawImage(Image& a_texture, ImVec2 a_center);
 		static void 				LoadImagesFromFilepath(std::string a_path, std::map<std::string, Image>& out_struct);
 
-		[[nodiscard]] static bool 	GetD3D11Texture(const char* filename, D3D11View* out_srv, int& out_width, int& out_height);
+		static bool 				GetD3D11Texture(const char* filename, D3D11View* out_srv, int& out_width, int& out_height);
 
 		[[nodiscard]] static Image 	GetImage(std::string a_name)
 		{
