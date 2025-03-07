@@ -1043,8 +1043,9 @@ namespace Modex
 			switch (this->sortBy) {
 			case SortType::Name:
 			case SortType::Plugin:
-			case SortType::FormID:
 				return "";
+			case SortType::FormID:
+				return a_item.GetFormID();
 			case SortType::Type:
 				if (a_item.GetFormType() == RE::FormType::Weapon) {
 					if (const auto& weapon = a_item.GetForm()->As<RE::TESObjectWEAP>()) {
