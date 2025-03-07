@@ -62,7 +62,7 @@ namespace Modex
 			ImGuiTableFlags_Resizable 				| ImGuiTableFlags_ScrollY;
 
 		static const ImGuiInputTextFlags INPUT_FLAGS =
-			ImGuiInputTextFlags_AutoSelectAll;
+			ImGuiInputTextFlags_AutoSelectAll		| ImGuiInputTextFlags_EnterReturnsTrue;
 
 		static const ImGuiTableFlags ACTIONBAR_FLAGS =
 			ImGuiTableFlags_Borders 				| ImGuiTableFlags_RowBg |

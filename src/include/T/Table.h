@@ -63,6 +63,9 @@ namespace Modex
             this->sortAscending = true;
             this->generalSearchBuffer[0] = '\0';
             this->pluginSearchBuffer[0] = '\0';
+            
+            this->lastSearchBuffer[0] = '\0';
+            this->generalSearchDirty = false;
 
             this->selectedPlugin = _T("SHOW_ALL_PLUGINS");
             this->primaryFilter = RE::FormType::None;
@@ -160,6 +163,8 @@ namespace Modex
         char                    generalSearchBuffer[256];
         char                    secondaryFilterBuffer[256];
         char                    pluginSearchBuffer[256];
+        bool                    generalSearchDirty;
+        char                    lastSearchBuffer[256];
         SortType                searchKey;
         SearchMap               inputSearchMap;
         

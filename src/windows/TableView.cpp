@@ -436,6 +436,9 @@ namespace Modex
 		tableList.clear();
 		tableList.reserve(std::ssize(a_data));
 
+		this->generalSearchDirty = false;
+		ImFormatString(this->lastSearchBuffer, IM_ARRAYSIZE(this->lastSearchBuffer), "%s", this->generalSearchBuffer);
+
 		this->totalGenerated = std::ssize(a_data);
 
 		std::string inputString = this->generalSearchBuffer;
@@ -1564,6 +1567,7 @@ namespace Modex
 		};
 
 		float button_offset = 0.0f;
+		const float center_x = ImGui::GetContentRegionAvail().x * 0.5f;
 
 		const std::string compact = this->compactView ? ICON_LC_ROWS_2 : ICON_LC_ROWS_4;
 		if (IconButton(compact.c_str(), "Enable/Disable Compact View", compactView)) {
@@ -1617,6 +1621,17 @@ namespace Modex
 		}
 
 		ImGui::SameLine();
+
+		// If we ever add a UI messaging system, this would be a good candidate for it.
+		const float prev_pos = ImGui::GetCursorPos().x;
+		const float search_pos = center_x - (ImGui::CalcTextSize(this->lastSearchBuffer).x * 0.5f);
+		ImGui::SetCursorPosX(search_pos);
+		ImGui::Text("\"%s\"", this->lastSearchBuffer);
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("Current search query being applied to results");
+		}
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(prev_pos);
 
 		constexpr auto combo_flags = ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge;
 		const auto preview_size = ImGui::CalcTextSize(SortTypeToString(this->sortBy).c_str()).x;
@@ -2408,6 +2423,12 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::Draw()
 	{
+		if (!this->generalSearchDirty) {
+			if (strcmp(this->generalSearchBuffer, this->lastSearchBuffer) != 0) {
+				this->generalSearchDirty = true;
+			}
+		}
+
 		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
 			if (this->showPluginKitView) {
 				PluginKitView();
