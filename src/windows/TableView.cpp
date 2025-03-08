@@ -39,6 +39,10 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::AddSelectionToInventory(int a_count)
 	{
+		if (this->tableList.empty()) {
+			return;
+		}
+
 		void* it = NULL;
 		ImGuiID id = 0;
 
@@ -56,6 +60,10 @@ namespace Modex
 	template <typename DataType>
 	void TableView<DataType>::PlaceSelectionOnGround(int a_count)
 	{
+		if (this->tableList.empty()) {
+			return;
+		}
+
 		void* it = NULL;
 		ImGuiID id = 0;
 
@@ -70,28 +78,53 @@ namespace Modex
 		this->selectionStorage.Clear();
 	}
 
+	// Since "All" commands may obscure large operations, we want to add a warning.
+	// This is also because passing a lambda with a while loop is a bit of a pain.
+
 	template <typename DataType>
 	void TableView<DataType>::AddAll()
 	{
-		UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+		if (this->tableList.empty()) {
+			return;
+		}
+
+		auto impl = [this]() {
 			for (auto& item : this->tableList) {
 				Console::AddItem(item->GetFormID().c_str(), 1);
 			}
 
 			Console::StartProcessThread();
 			this->selectionStorage.Clear();
-		});
+		};
+
+		if (this->tableList.size() > 50) {
+			UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this, impl]() { impl(); });
+		} else {
+			impl();
+		}
 	}
 
 	template <typename DataType>
 	void TableView<DataType>::PlaceAll()
 	{
-		for (auto& item : tableList) {
-			Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+		if (this->tableList.empty()) {
+			return;
 		}
 
-		Console::StartProcessThread();
-		this->selectionStorage.Clear();
+		auto impl = [this]() {
+			for (auto& item : this->tableList) {
+				Console::PlaceAtMe(item->GetFormID().c_str(), 1);
+			}
+
+			Console::StartProcessThread();
+			this->selectionStorage.Clear();
+		};
+
+		if (this->tableList.size() > 50) {
+			UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this, impl]() { impl(); });
+		} else {
+			impl();
+		}
 	}
 
 	// We instantiate a TableView with a specific Module handle so that
@@ -2702,25 +2735,26 @@ namespace Modex
 								if (ImGui::MenuItem(_T("AIM_ADD"))) {
 									if (selectionStorage.Size == 0) {
 										Console::AddItem(item_data->GetFormID().c_str(), click_amount);
+										Console::StartProcessThread();
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::AddItem(item_data->GetFormID().c_str(), click_amount);
 										} else {
-											void* it = NULL;
-											ImGuiID id = 0;
+											this->AddSelectionToInventory(click_amount);
 
-											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-												if (id < tableList.size() && id >= 0) {
-													const auto& item = tableList[id];
-													Console::AddItem(item->GetFormID().c_str(), click_amount);
-												}
-											}
+											// void* it = NULL;
+											// ImGuiID id = 0;
+
+											// while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+											// 	if (id < tableList.size() && id >= 0) {
+											// 		const auto& item = tableList[id];
+											// 		Console::AddItem(item->GetFormID().c_str(), click_amount);
+											// 	}
+											// }
 
 											this->selectionStorage.Clear();
 										}
 									}
-
-									Console::StartProcessThread();
 								}
 
 								if (itemData->GetFormType() == RE::FormType::Armor || itemData->GetFormType() == RE::FormType::Weapon) {
@@ -2734,6 +2768,7 @@ namespace Modex
 												void* it = NULL;
 												ImGuiID id = 0;
 
+												// TODO: Create a helper func for AddItemEx in TableView context?
 												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
 													if (id < tableList.size() && id >= 0) {
 														const auto& item = tableList[id];
@@ -2755,22 +2790,22 @@ namespace Modex
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
+											Console::StartProcessThread();
 										} else {
-											void* it = NULL;
-											ImGuiID id = 0;
+											this->PlaceSelectionOnGround(click_amount);
+											// void* it = NULL;
+											// ImGuiID id = 0;
 
-											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-												if (id < tableList.size() && id >= 0) {
-													const auto& item = tableList[id];
-													Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
-												}
-											}
+											// while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+											// 	if (id < tableList.size() && id >= 0) {
+											// 		const auto& item = tableList[id];
+											// 		Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
+											// 	}
+											// }
 
 											this->selectionStorage.Clear();
 										}
 									}
-
-									Console::StartProcessThread();
 								}
 
 								if (itemData->GetFormType() == RE::FormType::Book) {

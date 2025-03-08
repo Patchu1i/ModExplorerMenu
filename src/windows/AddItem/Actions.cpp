@@ -1,6 +1,7 @@
 #include "include/A/AddItem.h"
 #include "include/C/Console.h"
 #include "include/I/ItemPreview.h"
+#include "include/U/UIManager.h"
 
 namespace Modex
 {
@@ -57,48 +58,10 @@ namespace Modex
 
 		// Clear Inventory Shortcut
 		if (ImGui::GradientButton(_T("GENERAL_CLEAR_INVENTORY"), ImVec2(button_width, 0))) {
-			ImGui::OpenPopup("##Kit::ClearInventory::Confirmation");
-		}
-
-		constexpr auto popup_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
-		if (ImGui::BeginPopupModal(_T("##Kit::ClearInventory::Confirmation"), nullptr, popup_flags)) {
-			ImGui::SubCategoryHeader(_T("GENERAL_CLEAR_INVENTORY"));
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-
-			ImGui::NewLine();
-
-			const std::string instruction = _T("GENERAL_CLEAR_INVENTORY_INSTRUCTION");
-			float center_text = ImGui::GetCenterTextPosX(instruction.c_str());
-			ImGui::SetCursorPosX(center_text);
-			ImGui::Text(instruction.c_str());
-
-			ImGui::NewLine();
-
-			bool confirm = false;
-			if (ImGui::IsKeyPressed(ImGuiKey_Y, false)) {
-				confirm = true;
-			}
-
-			if (ImGui::IsKeyPressed(ImGuiKey_N, false)) {
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::Button("(Y)es", ImVec2(button_width, 0))) {
-				confirm = true;
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("(N)o", ImVec2(button_width, 0))) {
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (confirm) {
+			// ImGui::OpenPopup("##Kit::ClearInventory::Confirmation");
+			UIManager::GetSingleton()->ShowWarning(_T("GENERAL_CLEAR_INVENTORY_INSTRUCTION"), []() {
 				Console::ClearInventory();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
+			});
 		}
 
 		if (ImGui::GradientButton(_T("AIM_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
