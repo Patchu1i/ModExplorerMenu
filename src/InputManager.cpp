@@ -1,6 +1,5 @@
 #include "include/I/InputManager.h"
-#include "include/K/Keycode.h"
-#include <dinput.h>
+#include "include/U/UIManager.h"
 
 namespace Modex
 {
@@ -224,6 +223,8 @@ namespace Modex
 					// We don't check if menu is shown since we clear the input
 					// keys when the menu is closed or opened.
 
+					// Review: What is captureInput and why do we need that?
+
 					switch (buttonEvent->device.get()) {
 					case RE::INPUT_DEVICE::kMouse:
 						{
@@ -243,22 +244,22 @@ namespace Modex
 						}
 					case RE::INPUT_DEVICE::kKeyboard:
 						{
-							if (scanCode == 0x1 && buttonEvent->IsDown()) {
-								if (ImGui::IsPopupOpen("IgnoreCloseEvent", ImGuiPopupFlags_AnyPopup)) {
-									io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
-									break;
+							if (captureInput && buttonEvent->IsDown()) {
+								if (UIManager::GetSingleton()->InputHandler(imGuiKey)) {
+									lastKeyPress = scanCode;
+									break;  // early out, don't close menu.
 								}
+							}
 
-								Menu::GetSingleton()->Close();
-							} else if (scanCode == showMenuKey && buttonEvent->IsDown()) {
+							if (scanCode == showMenuKey && buttonEvent->IsDown()) {
 								if (showMenuModifier == 0) {
 									Menu::GetSingleton()->Toggle();
 								} else {
-									if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && shiftDown) {
+									if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && shiftDown) {
 										Menu::GetSingleton()->Toggle();
-									} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && ctrlDown) {
+									} else if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && ctrlDown) {
 										Menu::GetSingleton()->Toggle();
-									} else if (showMenuModifier == (uint32_t)ImGui::VirtualKeyToSkyrim(VK_LMENU) && altDown) {
+									} else if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LMENU) && altDown) {
 										Menu::GetSingleton()->Toggle();
 									}
 								}
@@ -266,10 +267,13 @@ namespace Modex
 								if (captureInput && scanCode != showMenuKey) {
 									io.AddKeyEvent(imGuiKey, buttonEvent->IsPressed());
 								}
+
+								if (buttonEvent->IsDown() && captureInput && scanCode == ImGui::VirtualKeyToSkyrim(VK_ESCAPE)) {  // esc
+									Menu::GetSingleton()->Close();
+								}
 							}
 
 							lastKeyPress = scanCode;
-
 							break;
 						}
 					}

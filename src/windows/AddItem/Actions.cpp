@@ -101,6 +101,10 @@ namespace Modex
 			ImGui::EndPopup();
 		}
 
+		if (ImGui::GradientButton(_T("AIM_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
+			this->tableView.AddAll();
+		}
+
 		// Spawn Container with Table contents
 		if (ImGui::GradientButton(_T("AIM_ADD_TO_CONTAINER"), ImVec2(button_width, 0))) {
 			if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {

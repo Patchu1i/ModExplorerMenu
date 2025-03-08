@@ -3,6 +3,7 @@
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
 #include "include/I/InputManager.h"
+#include "include/U/UIManager.h"
 #include "include/U/UserSettings.h"
 
 namespace Modex
@@ -61,6 +62,8 @@ namespace Modex
 		ImGui::GetIO().MouseDrawCursor = true;
 
 		Frame::GetSingleton()->Draw(showSettingWindow);
+
+		UIManager::GetSingleton()->Draw();
 
 		// ImGui::ShowDemoWindow(); // This could be added to the settings?
 

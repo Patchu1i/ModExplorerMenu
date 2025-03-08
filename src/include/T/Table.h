@@ -63,7 +63,7 @@ namespace Modex
             this->sortAscending = true;
             this->generalSearchBuffer[0] = '\0';
             this->pluginSearchBuffer[0] = '\0';
-            
+
             this->lastSearchBuffer[0] = '\0';
             this->generalSearchDirty = false;
 
@@ -124,6 +124,7 @@ namespace Modex
         void                    AddSelectedToKit();
         void                    AddSelectionToInventory(int a_count);
         void                    PlaceSelectionOnGround(int a_count);
+        void                    AddAll();
         void                    PlaceAll();
 
         std::vector<DataType>   GetSelection();

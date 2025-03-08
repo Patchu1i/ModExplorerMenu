@@ -74,8 +74,8 @@ namespace Modex
 		{
 			// General
 			std::string theme = "Default";
-			int showMenuKey = 211;
-			int showMenuModifier = 0;
+			uint32_t showMenuKey = 211;
+			uint32_t showMenuModifier = 0;
 			int modListSort = 0;  // 0 = Alphabetical, 1 = Load Order (ASC) 2 = Load Order (DESC)
 			int uiScale = 100;    // 80, 90, 100, 110, 120 (Should be a slider..)
 			bool fullscreen = false;
@@ -329,6 +329,7 @@ namespace Modex
 		// Horrendous de-serialization.
 		[[nodiscard]] static inline float GetFloat(std::string& a_str) { return std::stof(a_str); };
 		[[nodiscard]] static inline int GetInt(std::string& a_str) { return std::stoi(a_str); };
+		[[nodiscard]] static inline uint32_t GetUInt(std::string& a_str) { return std::stoul(a_str); };
 		[[nodiscard]] static inline bool GetBool(std::string& a_str) { return a_str == "true"; };
 		[[nodiscard]] static inline std::string GetString(std::string& a_str) { return a_str; };  // lol
 		[[nodiscard]] inline Style& GetStyle() { return user.style; };

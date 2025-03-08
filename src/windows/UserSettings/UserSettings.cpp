@@ -8,6 +8,7 @@
 #include "include/O/Object.h"
 #include "include/P/Persistent.h"
 #include "include/T/Teleport.h"
+#include "include/U/UIManager.h"
 #include "include/U/Util.h"
 
 // TODO: God this is a mess. It started out strong, but as I've added more and more settings without
@@ -84,124 +85,7 @@ namespace Modex
 		ImGui::Spacing();
 	}
 
-	// ASyncKeyState is so fast that I store the new keybind in the below variable
-	// and check if the key is still pressed in the next frame.
-	static int newModifier = 0;
-
-	// I have separated the AddModifier and AddKeybind functions into two separate functions
-	// because the AddModifier function requires a different implementation than the AddKeybind function.
-	// More specifically, the behavior for checking valid modifier keys and confirmation.
-	void AddModifier(const char* a_text, int& a_modifier, int defaultKey, ImVec4& a_hover)
-	{
-		Settings::Config& config = Settings::GetSingleton()->GetConfig();
-		Settings::Style& style = Settings::GetSingleton()->GetStyle();
-
-		auto id = "##Modifier" + std::string(a_text);
-		ImGui::Spacing();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.itemSpacing.y / 2 + ImGui::GetFontSize() / 2);
-		ImGui::Text(_T(a_text));
-
-		if (GraphicManager::imgui_library.empty()) {
-			const float width = ImGui::GetFontSize() * 8.0f;
-			const float height = ((config.uiScale / 100) * 20.0f) + 10.0f;
-
-			ImGui::SameLine(ImGui::GetContentRegionAvail().x - width + 20.0f);   // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);  // Center Align
-
-			ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-			if (ImGui::Button(ImGui::SkyrimKeymap.at(a_modifier), ImVec2(width, height + 5.0f))) {
-				ImGui::OpenPopup("##ModifierPopup");
-				newModifier = 0;
-			}
-			ImGui::PopStyleVar();
-		} else {
-			const ImVec2& uv0 = ImVec2(0, 0);
-			const ImVec2& uv1 = ImVec2(1, 1);
-			const ImVec4& bg_col = ImVec4(0, 0, 0, 0);
-			const float alpha = 1.0f;
-
-			GraphicManager::Image img = GraphicManager::imgui_library[ImGui::ImGuiKeymap.at(a_modifier)];
-
-			float scale = config.uiScale / 100.0f;
-			const float imageWidth = ((float)img.width * 0.5f) * scale;
-			const float imageHeight = ((float)img.height * 0.5f) * scale;
-			const ImVec2& size = ImVec2(imageWidth, imageHeight);
-
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - (p_fixedWidth - p_padding) + imageWidth / scale);  // Center Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                            // Center Align
-
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
-
-			ImTextureID texture = (ImTextureID)(intptr_t)img.texture;
-			if (ImGui::ImageButton("##ImGuiHotkeyModifier", texture, size, uv0, uv1, bg_col, a_hover)) {
-				ImGui::OpenPopup("##ModifierPopup");
-				newModifier = 0;
-			}
-
-			if (ImGui::IsItemHovered()) {
-				a_hover = ImVec4(1.f, 1.f, 1.f, 1.f);
-			} else {
-				a_hover = ImVec4(0.9f, 0.9f, 0.9f, 0.9f);
-			}
-
-			ImGui::PopStyleVar();
-			ImGui::PopStyleColor(5);
-		}
-
-		ImGui::Spacing();
-
-		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-		if (ImGui::BeginPopup("##ModifierPopup", flags)) {
-			auto _prevModifier = a_modifier;
-			int _newModifier = 0;
-
-			ImGui::Text(_T("CONFIG_MODIFIER_SET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_RESET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
-
-			if (ImGui::IsKeyPressed(ImGuiMod_Alt)) {
-				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LMENU);
-			} else if (ImGui::IsKeyPressed(ImGuiMod_Ctrl)) {
-				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LCONTROL);
-			} else if (ImGui::IsKeyPressed(ImGuiMod_Shift)) {
-				_newModifier = ImGui::VirtualKeyToSkyrim(VK_LSHIFT);
-			}
-
-			if (_newModifier != 0) {
-				if (_newModifier != _prevModifier) {
-					a_modifier = _newModifier;
-					Settings::GetSingleton()->SaveSettings();
-				}
-
-				ImGui::CloseCurrentPopup();
-			} else {
-				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
-					a_modifier = defaultKey;
-					Settings::GetSingleton()->SaveSettings();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			ImGui::EndPopup();
-		}
-	}
-
-	static int newKeybind = 0;
-	void AddKeybind(const char* a_text, int& a_keybind, int defaultKey, ImVec4& a_hover)
+	void AddKeybind(const char* a_text, uint32_t& a_keybind, uint32_t defaultKey, bool a_modifierOnly, ImVec4& a_hover)
 	{
 		Settings::Config& config = Settings::GetSingleton()->GetConfig();
 		Settings::Style& style = Settings::GetSingleton()->GetStyle();
@@ -212,16 +96,16 @@ namespace Modex
 		ImGui::Text(_T(a_text));
 
 		if (GraphicManager::imgui_library.empty()) {
-			const float width = ImGui::GetFontSize() * 8.0f;
 			const float height = ((config.uiScale / 100) * 20.0f) + 10.0f;
 
-			ImGui::SameLine(ImGui::GetContentRegionAvail().x - width + 20.0f);   // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);  // Center Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);  // Right Align
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);                                            // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-			if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind), ImVec2(width, height + 5.0f))) {
-				ImGui::OpenPopup("##KeybindPopup");
-				newKeybind = 0;
+			if (ImGui::Button(ImGui::SkyrimKeymap.at(a_keybind), ImVec2(p_fixedWidth, height + 5.0f))) {
+				UIManager::GetSingleton()->ShowHotkey(&a_keybind, defaultKey, a_modifierOnly, [&]() {
+					Settings::GetSingleton()->SaveSettings();
+				});
 			}
 			ImGui::PopStyleVar();
 		} else {
@@ -249,8 +133,9 @@ namespace Modex
 
 			ImTextureID texture = (ImTextureID)(intptr_t)img.texture;
 			if (ImGui::ImageButton("##ImGuiHotkey", texture, size, uv0, uv1, bg_col, a_hover)) {
-				ImGui::OpenPopup("##KeybindPopup");
-				newModifier = 0;
+				UIManager::GetSingleton()->ShowHotkey(&a_keybind, defaultKey, a_modifierOnly, [&]() {
+					Settings::GetSingleton()->SaveSettings();
+				});
 			}
 
 			if (ImGui::IsItemHovered()) {
@@ -264,61 +149,6 @@ namespace Modex
 		}
 
 		ImGui::Spacing();
-
-		constexpr auto flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-		if (ImGui::BeginPopup("##KeybindPopup", flags)) {
-			if (ImGui::IsWindowAppearing()) {
-				ImGui::GetIO().ClearInputKeys();
-			}
-			auto _prevKeybind = a_keybind;
-			int _newKeybind = 0;
-
-			ImGui::Text(_T("CONFIG_HOTKEY_SET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_RESET"));
-			ImGui::NewLine();
-			ImGui::Text(_T("CONFIG_KEY_CANCEL"));
-
-			for (int key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END; key++) {
-				ImGuiKey imGuiKey = static_cast<ImGuiKey>(key);
-
-				if (ImGui::IsKeyPressed(imGuiKey)) {
-					auto skyrimKey = ImGui::ImGuiKeyToSkyrimKey(imGuiKey);
-
-					if (skyrimKey != 0 && ImGui::IsKeyboardWhitelist(imGuiKey)) {
-						_newKeybind = skyrimKey;
-					}
-
-					if (_newKeybind == a_keybind) {
-						ImGui::CloseCurrentPopup();
-					}
-				}
-			}
-
-			if (_newKeybind != 0) {
-				if (_newKeybind != _prevKeybind) {
-					a_keybind = _newKeybind;
-					Settings::GetSingleton()->SaveSettings();
-				}
-
-				ImGui::CloseCurrentPopup();
-			} else {
-				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::IsKeyPressed(ImGuiKey_T)) {
-					a_keybind = defaultKey;
-					Settings::GetSingleton()->SaveSettings();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			ImGui::EndPopup();
-		}
 	}
 
 	bool AddToggleButton(const char* a_text, bool& a_boolRef)
@@ -480,11 +310,11 @@ namespace Modex
 
 		AddSubCategoryHeader(_T("SETTING_GENERAL"));
 
-		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, keyHoverTintColor);
+		AddKeybind("SETTING_MENU_KEYBIND", config.showMenuKey, 211, false, keyHoverTintColor);
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		AddModifier("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, modifierHoverTint);
+		AddKeybind("SETTING_MENU_MODIFIER", config.showMenuModifier, 0, true, modifierHoverTint);
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 

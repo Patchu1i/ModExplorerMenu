@@ -2,6 +2,7 @@
 #include "include/I/ItemPreview.h"
 #include "include/M/Menu.h"
 #include "include/T/Table.h"
+#include "include/U/UIManager.h"
 #include <execution>
 
 namespace Modex
@@ -67,6 +68,19 @@ namespace Modex
 
 		Console::StartProcessThread();
 		this->selectionStorage.Clear();
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::AddAll()
+	{
+		UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+			for (auto& item : this->tableList) {
+				Console::AddItem(item->GetFormID().c_str(), 1);
+			}
+
+			Console::StartProcessThread();
+			this->selectionStorage.Clear();
+		});
 	}
 
 	template <typename DataType>

@@ -1,4 +1,9 @@
 
+#pragma once
+
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+
 #define IM_VK_KEYPAD_ENTER (VK_RETURN + 256)
 
 // TODO: ImGui Impl has its own functions for Virtual key to ImGui key conversions.
@@ -6,28 +11,34 @@
 namespace ImGui
 {
 	// Used for conditional hotkey assignment. Prevent users from assigning invalid keys to hotkey.
-	static inline bool IsKeyboardWhitelist(ImGuiKey key)
+	static inline bool IsKeyboardWhitelist(ImGuiKey a_key)
 	{
-		return (key != ImGuiKey_MouseLeft &&    // Left mouse button
-				key != ImGuiKey_MouseRight &&   // Right mouse button
-				key != ImGuiKey_MouseMiddle &&  // Middle mouse button
-				key != ImGuiKey_MouseX1 &&      // Mouse 3 button
-				key != ImGuiKey_MouseX2 &&      // Mouse 4 button
-				key != ImGuiKey_Enter &&        // ENTER key
-				key != ImGuiKey_LeftShift &&    // SHIFT key
-				key != ImGuiKey_RightShift &&   // Left SHIFT key
-				key != ImGuiKey_LeftCtrl &&     // Right SHIFT key
-				key != ImGuiKey_RightCtrl &&    // CTRL key
-				key != ImGuiKey_LeftAlt &&      // Left CTRL key
-				key != ImGuiKey_RightAlt &&     // Right CTRL key
-				key != ImGuiKey_CapsLock &&     // Left ALT key
-				key != ImGuiKey_Escape &&       // Right ALT key
-				key != ImGuiKey_T &&            // T key (default)
-				key != ImGuiKey_Space           // ALT key
+		return (a_key != ImGuiKey_MouseLeft &&    // Left mouse button
+				a_key != ImGuiKey_MouseRight &&   // Right mouse button
+				a_key != ImGuiKey_MouseMiddle &&  // Middle mouse button
+				a_key != ImGuiKey_MouseX1 &&      // Mouse 3 button
+				a_key != ImGuiKey_MouseX2 &&      // Mouse 4 button
+				a_key != ImGuiKey_Enter &&        // ENTER key
+				a_key != ImGuiKey_Tab &&          // TAB key
+				a_key != ImGuiKey_CapsLock &&     // Left ALT key
+				a_key != ImGuiKey_Escape &&       // Right ALT key
+				a_key != ImGuiKey_T &&            // T key (default)
+				a_key != ImGuiKey_Space           // ALT key
 		);
 	}
 
-	static inline int ImGuiKeyToSkyrimKey(ImGuiKey a_key)
+	static inline bool IsKeyboardModifier(ImGuiKey a_key)
+	{
+		return (a_key == ImGuiKey_LeftShift ||   // Left Shift key
+				a_key == ImGuiKey_RightShift ||  // Right Shift key
+				a_key == ImGuiKey_LeftCtrl ||    // Left Control key
+				a_key == ImGuiKey_RightCtrl ||   // Right Control key
+				a_key == ImGuiKey_LeftAlt ||     // Left Alt key
+				a_key == ImGuiKey_RightAlt       // Right Alt key
+		);
+	}
+
+	static inline uint32_t ImGuiKeyToSkyrimKey(ImGuiKey a_key)
 	{
 		switch (a_key) {
 		case ImGuiKey_Tab:
@@ -462,7 +473,7 @@ namespace ImGui
 
 	// Translates Virtual Key Codes into Skyrim compatible codes for Skyrim specific Input.
 	// This is needed to recieve the correct key codes for opening the menu.
-	static inline int VirtualKeyToSkyrim(WPARAM wParam)
+	static inline uint32_t VirtualKeyToSkyrim(WPARAM wParam)
 	{
 		switch (wParam) {
 		case VK_TAB:

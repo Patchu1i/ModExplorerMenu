@@ -65,6 +65,8 @@ namespace Modex
 			return Settings::GetBool(value);
 		} else if constexpr (std::is_same_v<T, int>) {
 			return Settings::GetInt(value);
+		} else if constexpr (std::is_same_v<T, uint32_t>) {
+			return Settings::GetUInt(value);
 		} else if constexpr (std::is_same_v<T, float>) {
 			return Settings::GetFloat(value);
 		} else if constexpr (std::is_same_v<T, GraphicManager::Image>) {
@@ -222,8 +224,8 @@ namespace Modex
 		auto& _default = def.config;
 
 		user.config.theme = GET_VALUE<std::string>(rSections[Main], "Theme", _default.theme, a_ini);
-		user.config.showMenuKey = GET_VALUE<int>(rSections[Main], "ShowMenuKey", _default.showMenuKey, a_ini);
-		user.config.showMenuModifier = GET_VALUE<int>(rSections[Main], "ShowMenuModifier", _default.showMenuModifier, a_ini);
+		user.config.showMenuKey = GET_VALUE<uint32_t>(rSections[Main], "ShowMenuKey", _default.showMenuKey, a_ini);
+		user.config.showMenuModifier = GET_VALUE<uint32_t>(rSections[Main], "ShowMenuModifier", _default.showMenuModifier, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", _default.modListSort, a_ini);
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", _default.uiScale, a_ini);
 		user.config.fullscreen = GET_VALUE<bool>(rSections[Main], "Fullscreen", _default.fullscreen, a_ini);
