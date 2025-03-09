@@ -150,6 +150,7 @@ namespace Modex
 			RE::FormType::Ingredient,
 			RE::FormType::KeyMaster,
 			RE::FormType::Misc,
+			RE::FormType::Scroll,
 			RE::FormType::Weapon
 		};
 
@@ -792,7 +793,7 @@ namespace Modex
 		ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
 		ImGui::SetNextItemWidth(total_width);
 		const std::string filter_name = RE::FormTypeToString(this->primaryFilter).data();  // Localize?
-		if (ImGui::BeginCombo("##Search::Filter::PrimaryFilter", filter_name.c_str())) {
+		if (ImGui::BeginCombo("##Search::Filter::PrimaryFilter", filter_name.c_str(), ImGuiComboFlags_HeightLarge)) {
 			if (ImGui::Selectable(_T("None"), this->primaryFilter == RE::FormType::None)) {
 				ImGui::SetItemDefaultFocus();
 				this->primaryFilter = RE::FormType::None;
@@ -825,7 +826,7 @@ namespace Modex
 		if (this->primaryFilter == RE::FormType::Armor) {
 			ImGui::SetNextItemWidth(total_width);
 
-			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str())) {
+			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
 					ImGui::SetItemDefaultFocus();
 					this->secondaryFilter = _T("All");
@@ -855,7 +856,7 @@ namespace Modex
 
 		if (this->primaryFilter == RE::FormType::Weapon) {
 			ImGui::SetNextItemWidth(total_width);
-			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str())) {
+			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
 					ImGui::SetItemDefaultFocus();
 					this->secondaryFilter = _T("All");

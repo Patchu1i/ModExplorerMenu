@@ -656,6 +656,7 @@ namespace Utils
 		{ "INGREDIENT", ICON_LC_TEST_TUBE },
 		{ "AMMO", ICON_LC_CONTAINER },
 		{ "ALCHEMY", ICON_LC_FLASK_CONICAL },
+		{ "SCROLL", ICON_LC_SCROLL },
 		{ "MISC", ICON_LC_PUZZLE },
 		{ "SKILL", ICON_LC_BRAIN },
 		{ "GOLD", ICON_LC_COINS },
@@ -709,6 +710,8 @@ namespace Utils
 			return IconMap["KEY"];
 		case RE::FormType::Misc:
 			return IconMap["MISC"];
+		case RE::FormType::Scroll:
+			return IconMap["Scroll"];
 		case RE::FormType::Weapon:
 			return IconMap["WEAPON"];
 
@@ -763,6 +766,8 @@ namespace Utils
 			return IM_COL32(255, 153, 51, 255);  // Orange
 		case RE::FormType::Misc:
 			return IM_COL32(153, 0, 153, 255);  // Purple
+		case RE::FormType::Scroll:
+			return IM_COL32(255, 204, 153, 255);  // Light Orange
 		case RE::FormType::Weapon:
 			return IM_COL32(255, 51, 51, 255);  // Bright Red
 		case RE::FormType::NPC:

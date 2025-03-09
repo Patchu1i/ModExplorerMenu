@@ -132,7 +132,7 @@ namespace Modex
 			ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
 
 			ImTextureID texture = (ImTextureID)(intptr_t)img.texture;
-			if (ImGui::ImageButton("##ImGuiHotkey", texture, size, uv0, uv1, bg_col, a_hover)) {
+			if (ImGui::ImageButton(id.c_str(), texture, size, uv0, uv1, bg_col, a_hover)) {
 				UIManager::GetSingleton()->ShowHotkey(&a_keybind, defaultKey, a_modifierOnly, [&]() {
 					Settings::GetSingleton()->SaveSettings();
 				});
