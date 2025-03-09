@@ -5,6 +5,8 @@
 
 namespace Modex
 {
+	static inline uint32_t ADDITEM_MAX_QUERY = 100;
+
 	void AddItemWindow::ShowActions()
 	{
 		auto a_style = Settings::GetSingleton()->GetStyle();
@@ -14,6 +16,7 @@ namespace Modex
 
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float button_width = ImGui::GetContentRegionAvail().x;
+		const float button_split_width = (button_width / 2.0f) - (ImGui::GetStyle().WindowPadding.x / 2.0f);
 
 		ImGui::SubCategoryHeader(_T("GENERAL_DOUBLE_CLICK_BEHAVIOR"));
 
@@ -44,14 +47,39 @@ namespace Modex
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(a_style.secondaryButtonActive.x, a_style.secondaryButtonActive.y, a_style.secondaryButtonActive.z, a_style.secondaryButtonActive.w));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(a_style.secondaryButtonHovered.x, a_style.secondaryButtonHovered.y, a_style.secondaryButtonHovered.z, a_style.secondaryButtonHovered.w));
 
-		// Add All From Table Shortcut.
-		if (ImGui::GradientButton(_T("GENERAL_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
-			this->tableView.AddSelectionToInventory(clickToAddCount);
+		// Add Selection To Inventory
+		if (ImGui::GradientButton(_T("GENERAL_ADD_TO_INVENTORY"), ImVec2(button_split_width, 0))) {
+			if (this->tableView.GetSelectionCount() >= ADDITEM_MAX_QUERY) {
+				UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+					this->tableView.AddSelectionToInventory(clickToAddCount);
+				});
+			} else {
+				this->tableView.AddSelectionToInventory(clickToAddCount);
+			}
 		}
 
-		// Place All from Table Shortcut.
-		if (ImGui::GradientButton(_T("GENERAL_PLACE_ON_GROUND"), ImVec2(button_width, 0))) {
-			this->tableView.PlaceSelectionOnGround(clickToAddCount);
+		ImGui::SameLine();
+
+		// Place Selection On Ground
+		if (ImGui::GradientButton(_T("GENERAL_PLACE_ON_GROUND"), ImVec2(button_split_width, 0))) {
+			if (this->tableView.GetSelectionCount() >= ADDITEM_MAX_QUERY) {
+				UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+					this->tableView.PlaceSelectionOnGround(clickToAddCount);
+				});
+			} else {
+				this->tableView.PlaceSelectionOnGround(clickToAddCount);
+			}
+		}
+
+		// Equip Selection to Actor
+		if (ImGui::GradientButton(_T("AIM_EQUIP"), ImVec2(button_width, 0))) {
+			if (this->tableView.GetSelectionCount() >= ADDITEM_MAX_QUERY) {
+				UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+					this->tableView.EquipSelection();
+				});
+			} else {
+				this->tableView.EquipSelection();
+			}
 		}
 
 		ImGui::PopStyleColor(3);  // End of Secondary Buttons
@@ -64,8 +92,28 @@ namespace Modex
 			});
 		}
 
-		if (ImGui::GradientButton(_T("AIM_ADD_TO_INVENTORY"), ImVec2(button_width, 0))) {
-			this->tableView.AddAll();
+		// Add All to Inventory
+		if (ImGui::GradientButton(_T("AIM_ADD_ALL"), ImVec2(button_split_width, 0))) {
+			if (this->tableView.GetTableListRefr().size() >= ADDITEM_MAX_QUERY) {
+				UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+					this->tableView.AddAll();
+				});
+			} else {
+				this->tableView.AddAll();
+			}
+		}
+
+		ImGui::SameLine();
+
+		// Place All on Ground
+		if (ImGui::GradientButton(_T("AIM_PLACE_ALL"), ImVec2(button_split_width, 0))) {
+			if (this->tableView.GetTableListRefr().size() >= ADDITEM_MAX_QUERY) {
+				UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this]() {
+					this->tableView.PlaceAll();
+				});
+			} else {
+				this->tableView.PlaceAll();
+			}
 		}
 
 		// Spawn Container with Table contents
