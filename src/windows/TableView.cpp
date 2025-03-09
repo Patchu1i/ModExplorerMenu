@@ -2476,6 +2476,17 @@ namespace Modex
 			}
 		}
 
+		// Should this be routed through the input manager?
+		if (!ImGui::GetIO().WantTextInput) {
+			if (ImGui::IsKeyPressed(ImGuiKey_A, false) && ImGui::GetIO().KeyCtrl) {
+				for (auto& item : tableList) {
+					if (item) {
+						selectionStorage.SetItemSelected(item->TableID, true);
+					}
+				}
+			}
+		}
+
 		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
 			if (this->showPluginKitView) {
 				PluginKitView();
