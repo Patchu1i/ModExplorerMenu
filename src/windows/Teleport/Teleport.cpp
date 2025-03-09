@@ -29,6 +29,10 @@ namespace Modex
 
 		// Search Area
 		if (ImGui::BeginChild("##Teleport::SearchArea", ImVec2(search_width - a_offset, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			if (ImGui::IsWindowAppearing()) {
+				ImGui::SetKeyboardFocusHere();
+			}
+
 			ShowSearch();
 		}
 		ImGui::EndChild();

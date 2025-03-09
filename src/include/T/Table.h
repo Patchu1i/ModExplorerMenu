@@ -123,11 +123,13 @@ namespace Modex
         void                    RemoveSelectedFromKit();
         void                    AddSelectedToKit();
         void                    AddSelectionToInventory(int a_count);
+        void                    EquipSelection();
         void                    PlaceSelectionOnGround(int a_count);
         void                    AddAll();
         void                    PlaceAll();
 
         std::vector<DataType>   GetSelection();
+        uint32_t                GetSelectionCount() const;
         TableItem&              GetItemPreview() { return itemPreview; }
 
         // some backported accessors

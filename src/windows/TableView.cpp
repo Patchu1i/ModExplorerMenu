@@ -2,7 +2,6 @@
 #include "include/I/ItemPreview.h"
 #include "include/M/Menu.h"
 #include "include/T/Table.h"
-#include "include/U/UIManager.h"
 #include <execution>
 
 namespace Modex
@@ -58,6 +57,27 @@ namespace Modex
 	}
 
 	template <typename DataType>
+	void TableView<DataType>::EquipSelection()
+	{
+		if (this->tableList.empty()) {
+			return;
+		}
+
+		void* it = NULL;
+		ImGuiID id = 0;
+
+		while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+			if (id < std::ssize(tableList) && id >= 0) {
+				const auto& item = tableList[id];
+				Console::AddItemEx(item->GetBaseForm(), 1, true);
+			}
+		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
+	}
+
+	template <typename DataType>
 	void TableView<DataType>::PlaceSelectionOnGround(int a_count)
 	{
 		if (this->tableList.empty()) {
@@ -88,20 +108,12 @@ namespace Modex
 			return;
 		}
 
-		auto impl = [this]() {
-			for (auto& item : this->tableList) {
-				Console::AddItem(item->GetFormID().c_str(), 1);
-			}
-
-			Console::StartProcessThread();
-			this->selectionStorage.Clear();
-		};
-
-		if (this->tableList.size() > 50) {
-			UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this, impl]() { impl(); });
-		} else {
-			impl();
+		for (auto& item : this->tableList) {
+			Console::AddItem(item->GetFormID().c_str(), 1);
 		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
 	}
 
 	template <typename DataType>
@@ -111,20 +123,12 @@ namespace Modex
 			return;
 		}
 
-		auto impl = [this]() {
-			for (auto& item : this->tableList) {
-				Console::PlaceAtMe(item->GetFormID().c_str(), 1);
-			}
-
-			Console::StartProcessThread();
-			this->selectionStorage.Clear();
-		};
-
-		if (this->tableList.size() > 50) {
-			UIManager::GetSingleton()->ShowWarning(_T("WARNING_LARGE_QUERY"), [this, impl]() { impl(); });
-		} else {
-			impl();
+		for (auto& item : this->tableList) {
+			Console::PlaceAtMe(item->GetFormID().c_str(), 1);
 		}
+
+		Console::StartProcessThread();
+		this->selectionStorage.Clear();
 	}
 
 	// We instantiate a TableView with a specific Module handle so that
@@ -316,6 +320,12 @@ namespace Modex
 		}
 
 		return selectedItems;
+	}
+
+	template <typename DataType>
+	uint32_t TableView<DataType>::GetSelectionCount() const
+	{
+		return selectionStorage.Size;
 	}
 
 	template <typename DataType>
@@ -2473,6 +2483,17 @@ namespace Modex
 		if (!this->generalSearchDirty) {
 			if (strcmp(this->generalSearchBuffer, this->lastSearchBuffer) != 0) {
 				this->generalSearchDirty = true;
+			}
+		}
+
+		// Should this be routed through the input manager?
+		if (!ImGui::GetIO().WantTextInput) {
+			if (ImGui::IsKeyPressed(ImGuiKey_A, false) && ImGui::GetIO().KeyCtrl) {
+				for (auto& item : tableList) {
+					if (item) {
+						selectionStorage.SetItemSelected(item->TableID, true);
+					}
+				}
 			}
 		}
 

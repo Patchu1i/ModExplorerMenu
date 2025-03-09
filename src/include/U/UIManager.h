@@ -82,19 +82,27 @@ namespace Modex
 		bool InputHandler(ImGuiKey a_key)
 		{
 			if (IsWarningPending()) {
-				if (a_key == ImGuiKey_Enter) {  // enter
-					AcceptWarning();
+				if (a_key == ImGuiKey_UpArrow || a_key == ImGuiKey_DownArrow) {
+					nav_accept = !nav_accept;  // lol
+				}
+
+				if (a_key == ImGuiKey_Enter) {
+					if (nav_accept) {
+						AcceptWarning();
+					} else {
+						DeclineWarning();
+					}
 					return false;
 
-				} else if (a_key == ImGuiKey_Escape) {  // esc
+				} else if (a_key == ImGuiKey_Escape) {
 					DeclineWarning();
 					return true;
 
-				} else if (a_key == ImGuiKey_Y) {  // y
+				} else if (a_key == ImGuiKey_Y) {
 					AcceptWarning();
 					return false;
 
-				} else if (a_key == ImGuiKey_N) {  // n
+				} else if (a_key == ImGuiKey_N) {
 					DeclineWarning();
 					return false;
 				}
@@ -149,6 +157,8 @@ namespace Modex
 	private:
 		UIManager() = default;
 		~UIManager() = default;
+
+		bool nav_accept = true;
 
 		std::string m_pendingWarningMessage;
 		std::function<void()> m_onConfirmCallback;
@@ -226,7 +236,7 @@ namespace Modex
 				ImGui::SetCursorPosY(ImGui::GetWindowSize().y - (buttonHeight * 2) - 20.0f);  // subtract button size * 2 + separator
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 				const ImVec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-				ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+				ImGui::PushStyleColor(ImGuiCol_Button, nav_accept ? buttonColor : ImGui::GetStyleColorVec4(ImGuiCol_Button));
 				if (ImGui::GradientButton("(Y)es", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
 					AcceptWarning();
 
@@ -234,11 +244,14 @@ namespace Modex
 				}
 				ImGui::PopStyleColor();
 
+				ImGui::PushStyleColor(ImGuiCol_Button, nav_accept ? ImGui::GetStyleColorVec4(ImGuiCol_Button) : buttonColor);
 				if (ImGui::GradientButton("(N)o", ImVec2(ImGui::GetContentRegionAvail().x, buttonHeight))) {
 					DeclineWarning();
 
 					ImGui::CloseCurrentPopup();
 				}
+				ImGui::PopStyleColor();
+
 				ImGui::EndPopup();
 			}
 		}
