@@ -2761,19 +2761,9 @@ namespace Modex
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::AddItem(item_data->GetFormID().c_str(), click_amount);
+											Console::StartProcessThread();
 										} else {
 											this->AddSelectionToInventory(click_amount);
-
-											// void* it = NULL;
-											// ImGuiID id = 0;
-
-											// while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-											// 	if (id < tableList.size() && id >= 0) {
-											// 		const auto& item = tableList[id];
-											// 		Console::AddItem(item->GetFormID().c_str(), click_amount);
-											// 	}
-											// }
-
 											this->selectionStorage.Clear();
 										}
 									}
@@ -2783,9 +2773,11 @@ namespace Modex
 									if (ImGui::MenuItem(_T("AIM_EQUIP"))) {
 										if (selectionStorage.Size == 0) {
 											Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
+											Console::StartProcessThread();
 										} else {
 											if (item_data == itemPreview && !is_item_selected) {
 												Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
+												Console::StartProcessThread();
 											} else {
 												void* it = NULL;
 												ImGuiID id = 0;
@@ -2798,6 +2790,7 @@ namespace Modex
 													}
 												}
 
+												Console::StartProcessThread();
 												this->selectionStorage.Clear();
 											}
 										}
@@ -2809,22 +2802,13 @@ namespace Modex
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
 										Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
+										Console::StartProcessThread();
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
 											Console::StartProcessThread();
 										} else {
 											this->PlaceSelectionOnGround(click_amount);
-											// void* it = NULL;
-											// ImGuiID id = 0;
-
-											// while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-											// 	if (id < tableList.size() && id >= 0) {
-											// 		const auto& item = tableList[id];
-											// 		Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
-											// 	}
-											// }
-
 											this->selectionStorage.Clear();
 										}
 									}
@@ -2865,7 +2849,6 @@ namespace Modex
 											}
 
 											this->Refresh();
-
 											this->selectionStorage.Clear();
 										}
 									}
@@ -2892,8 +2875,8 @@ namespace Modex
 
 												dragDropSourceTable->SyncChangesToKit();
 												this->LoadKitsFromSelectedPlugin();
-												dragDropSourceTable->Refresh();
 
+												dragDropSourceTable->Refresh();
 												this->selectionStorage.Clear();
 											}
 										}
@@ -2906,9 +2889,11 @@ namespace Modex
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
 										Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
+										Console::StartProcessThread();
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
+											Console::StartProcessThread();
 										} else {
 											void* it = NULL;
 											ImGuiID id = 0;
@@ -2920,11 +2905,10 @@ namespace Modex
 												}
 											}
 
+											Console::StartProcessThread();
 											this->selectionStorage.Clear();
 										}
 									}
-
-									Console::StartProcessThread();
 								}
 
 								// TODO: What if we have a selection that contains some npcs with references
