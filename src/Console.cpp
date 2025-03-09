@@ -141,12 +141,14 @@ namespace Modex
 				RE::TESForm* form = RE::TESForm::LookupByID(lastID);
 
 				if (form == nullptr) {
+					logger::debug("Form not found for <read_last> command: {}", lastID);
 					return;
 				}
 
 				RE::TESObjectBOOK* book = form->As<RE::TESObjectBOOK>();
 
 				if (book == nullptr) {
+					logger::debug("Form is not a book for <read_last> command: {}", lastID);
 					return;
 				}
 
@@ -170,8 +172,11 @@ namespace Modex
 
 				RE::TESObjectREFR* bookRef = equipObject->As<RE::TESObjectREFR>();
 
-				if (bookRef != nullptr) {
+				if (equipObject) {
 					RE::BookMenu::OpenBookMenu(buf, extraData, bookRef, book, defaultPos, defaultPos, 1.0f, true);
+					logger::debug("Opened book menu for <read_last> command: {}", lastID);
+				} else {
+					logger::debug("Failed to open book menu for <read_last> command: {}", lastID);
 				}
 			});
 
@@ -427,8 +432,7 @@ namespace Modex
 	{
 		if (IsPlayerLoaded()) [[likely]] {
 			AddToQueue("player.additem " + a_formid + " 1");
-
-			AddToQueue("<read_last>");
+			AddToQueue("<read_last>", 20ms);
 		}
 	}
 
