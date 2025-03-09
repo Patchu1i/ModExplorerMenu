@@ -64,6 +64,8 @@ namespace Modex
 		ImGui::SetNextWindowPos(ImVec2(center_x, center_y));
 		if (ImGui::Begin("##ModexMenu", nullptr, WINDOW_FLAGS)) {
 			ImGui::SetCursorPos(ImVec2(0, 0));
+
+			ImGui::SetNextItemAllowOverlap();
 			if (ImGui::BeginChild("##SideBar", ImVec2(sidebar_w, ImGui::GetContentRegionAvail().y + ImGui::GetStyle().WindowPadding.y), ImGuiChildFlags_Borders, SIDEBAR_FLAGS)) {
 				const float button_width = ImGui::GetContentRegionAvail().x;
 				constexpr float button_height = 40.0f;
@@ -76,16 +78,29 @@ namespace Modex
 
 					// Using a fixed image width and height, since the sidebar is also a fixed width and height.
 					constexpr float image_height = 54.0f;
-					const float image_width = max_sidebar_width;
+					const float image_width = max_sidebar_width - ImGui::GetStyle().WindowPadding.x;
 					const ImVec2 backup_pos = ImGui::GetCursorPos();
 
 					// Calculate the UV for the image based on the sidebar width.
-					float uv_x = 1.0f - std::min(0.40f, 1.0f - (sidebar_w / max_sidebar_width));
+					float uv_x = 1.0f - std::min(0.35f, 1.0f - (sidebar_w / max_sidebar_width));
 					uv_x *= (sidebar_w / image_width);
 
 					// Minor tweak because of bad UV calculation.
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 2.0f);
-					ImGui::Image(texture, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f));
+					// ImGui::Image(texture, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f));
+					// ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 1.0f);
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+					if (ImGui::ImageButton("Modex::Sidebar::Expand", texture, ImVec2(image_width * (sidebar_w / image_width) - 15.0f, image_height), ImVec2(0, 0), ImVec2(uv_x, 1.0f))) {
+						this->expand_sidebar = !this->expand_sidebar;
+					}
+
+					// ImGui::PopStyleVar();
+					ImGui::PopStyleColor(5);
 
 					// This is an alternative to doing the same UV scaling to the Y axis on a single image.
 					// Instead, I just overlay a second image on the first one, which yields the same results.
@@ -111,7 +126,10 @@ namespace Modex
 
 				bool is_expanded = false;
 				const auto ExpandButton = [&]() {
-					if (ImGui::IsWindowHovered() || ImGui::IsItemHovered()) {
+					// if (ImGui::IsWindowHovered() || ImGui::IsItemHovered()) {
+					// 	is_expanded = true;
+					// }
+					if (this->expand_sidebar) {
 						is_expanded = true;
 					}
 				};
@@ -202,6 +220,12 @@ namespace Modex
 			ImGui::EndChild();
 			ImGui::SameLine();
 
+			// Need to push a clip rect here so that sidebar overlaps contents while maintaining transparency.
+			// Otherwise, the overlap will be transparent, and the overlapped content will show under.
+			ImVec2 min = { sidebar_w + ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
+			ImVec2 max = { min.x + ImGui::GetWindowSize().x, min.y + ImGui::GetWindowSize().y };
+			ImGui::PushClipRect(min, max, true);
+
 			switch (activeWindow) {
 			case ActiveWindow::Home:
 				HomeWindow::Draw();
@@ -225,6 +249,8 @@ namespace Modex
 				break;
 			}
 
+			ImGui::PopClipRect();
+
 			GraphicManager::DrawImage(style.splashImage, ImVec2(displaySize.x * 0.5f, displaySize.y * 0.5f));
 
 			ImGui::End();
@@ -234,6 +260,7 @@ namespace Modex
 	void Frame::Install()
 	{
 		Frame::activeWindow = static_cast<ActiveWindow>(Settings::GetSingleton()->GetConfig().defaultShow);
+		this->expand_sidebar = false;
 		ResetSelectable();
 
 		// Initalize elements

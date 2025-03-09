@@ -33,11 +33,12 @@ namespace Modex
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float tab_bar_height = button_height + (window_padding * 2.0f);
 
-		// Tab Button Area
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
-
+		ImGui::SetCursorPosX(window_padding + a_offset);
 		ImVec2 backup_pos = ImGui::GetCursorPos();
+
+		// Tab Button Area
 		if (ImGui::BeginChild("##AddItem::TabBar", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
@@ -69,95 +70,28 @@ namespace Modex
 		}
 		ImGui::EndChild();
 
-		if (activeViewport == Viewport::KitView) {
-			search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchKitWidth"), ImGui::GetContentRegionAvail().x / 2);
-
-			ImVec2 temp_cursor = backup_pos;
-			// Search Input Area
-			ImGui::SameLine();
-			ImGui::SetCursorPos(temp_cursor);
-			ImGui::SetCursorPosY(tab_bar_height - window_padding);
-			temp_cursor = ImGui::GetCursorPos();
-			if (ImGui::BeginChild("##AddItem::SearchArea", ImVec2(search_width + 1.0f, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				// ShowSearch();
-				tableView.ShowSearch(search_height);
-			}
-			ImGui::EndChild();
-
-			// Horizontal Search / Table Splitter
-			float full_width = search_width;
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
-			ImGui::SetCursorPosY(temp_cursor.y + search_height);
-			ImGui::DrawSplitter("##AddItem::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
-
-			// Table Area
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-			if (ImGui::BeginChild("##AddItem::TableArea", ImVec2(search_width, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				tableView.ShowSort();
-				tableView.Draw();
-			}
-			ImGui::EndChild();
-
-			// Vertical Search Table / Action Splitter
-			ImGui::SameLine();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
-			ImGui::SetCursorPosY(tab_bar_height - window_padding);
-			float full_height = ImGui::GetContentRegionAvail().y;
-			ImGui::DrawSplitter("##AddItem::VerticalSplitter2", false, &search_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
-
-			// Action Area
-			ImGui::SameLine();
-			temp_cursor = ImGui::GetCursorPos();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
-			ImGui::SetCursorPosY(tab_bar_height - window_padding);
-			float action_width = ImGui::GetContentRegionAvail().x;
-			if (ImGui::BeginChild("##AddItem::KitbarArea",
-					ImVec2(ImGui::GetContentRegionAvail().x, kitbar_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				ShowKitBar();
-			}
-			ImGui::EndChild();
-
-			// Horizontal KitBar / KitTable splitter
-			ImGui::SetCursorPos(temp_cursor);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
-			ImGui::SetCursorPosY(tab_bar_height + kitbar_height - window_padding);
-			ImGui::DrawSplitter("##AddItem::KitActionTableSplitter", true, &kitbar_height, &action_width, MIN_KITBAR_HEIGHT, MAX_KITBAR_HEIGHT);
-
-			ImGui::SameLine();
-			ImGui::SetCursorPosX(temp_cursor.x - window_padding);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + window_padding);
-			if (ImGui::BeginChild("##AddItem::KitBarTableViewThing", ImVec2(0, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				kitTableView.ShowSort();
-				kitTableView.Draw();
-			}
-			ImGui::EndChild();
-
-			// Persist Search Area Width/Height
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchKitWidth"), search_width);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
-		}
-
+		// Blacklist Tab
 		if (activeViewport == Viewport::BlacklistView) {
 			ImGui::SetCursorPos(backup_pos);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			Blacklist::GetSingleton()->Draw(0.0f);
 		}
 
-		if (activeViewport == Viewport::TableView) {
+		// Table View Table
+		if (activeViewport == Viewport::TableView || activeViewport == Viewport::KitView) {
 			// Search Input Area
 			ImGui::SameLine();
 			ImGui::SetCursorPos(backup_pos);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
+			// ImGui::SetCursorPosX(window_padding + a_offset);
 			backup_pos = ImGui::GetCursorPos();
-			if (ImGui::BeginChild("##AddItem::SearchArea", ImVec2(search_width + 1.0f, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				tableView.ShowSearch(search_height);
+			if (ImGui::BeginChild("##AddItem::SearchArea", ImVec2(search_width - a_offset, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+				this->tableView.ShowSearch(search_height);
 			}
 			ImGui::EndChild();
 
 			// Horizontal Search / Table Splitter
-			float full_width = search_width;
+			float full_width = search_width - a_offset;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(backup_pos.y + search_height);
 			ImGui::DrawSplitter("##AddItem::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
@@ -165,9 +99,9 @@ namespace Modex
 			// Table Area
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-			if (ImGui::BeginChild("##AddItem::TableArea", ImVec2(search_width, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				tableView.ShowSort();
-				tableView.Draw();
+			if (ImGui::BeginChild("##AddItem::TableArea", ImVec2(search_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+				this->tableView.ShowSort();
+				this->tableView.Draw();
 			}
 			ImGui::EndChild();
 
@@ -178,17 +112,48 @@ namespace Modex
 			float full_height = ImGui::GetContentRegionAvail().y;
 			ImGui::DrawSplitter("##AddItem::VerticalSplitter2", false, &search_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
 
-			// Action Area
-			ImGui::SameLine();
-			ImGui::SetCursorPosY(tab_bar_height - window_padding);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
-			if (ImGui::BeginChild("##AddItem::ActionArea",
-					ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				ShowActions();
+			if (activeViewport == Viewport::TableView) {
+				// Action Area
+				ImGui::SameLine();
+				ImGui::SetCursorPosY(tab_bar_height - window_padding);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
+				if (ImGui::BeginChild("##AddItem::ActionArea",
+						ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+					this->ShowActions();
+				}
+				ImGui::EndChild();
+			} else {
+				// Kit Action Area
+				ImGui::SameLine();
+				backup_pos = ImGui::GetCursorPos();
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
+				ImGui::SetCursorPosY(tab_bar_height - window_padding);
+				float action_width = ImGui::GetContentRegionAvail().x;
+				if (ImGui::BeginChild("##AddItem::KitbarArea",
+						ImVec2(ImGui::GetContentRegionAvail().x, kitbar_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+					this->ShowKitBar();
+				}
+				ImGui::EndChild();
+
+				// Horizontal KitBar / KitTable splitter
+				ImGui::SetCursorPos(backup_pos);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
+				ImGui::SetCursorPosY(tab_bar_height + kitbar_height - window_padding);
+				ImGui::DrawSplitter("##AddItem::KitActionTableSplitter", true, &kitbar_height, &action_width, MIN_KITBAR_HEIGHT, MAX_KITBAR_HEIGHT);
+
+				// Kit Table View
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(backup_pos.x - window_padding);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + window_padding);
+				if (ImGui::BeginChild("##AddItem::KitBarTableViewThing", ImVec2(0, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+					this->kitTableView.ShowSort();
+					this->kitTableView.Draw();
+				}
+				ImGui::EndChild();
 			}
-			ImGui::EndChild();
 
 			// Persist Search Area Width/Height
+			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchWidth"), search_width);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
 		}

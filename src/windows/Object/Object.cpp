@@ -14,14 +14,16 @@ namespace Modex
 		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchHeight"), MIN_SEARCH_HEIGHT);
 		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchWidth"), MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
-		const float button_width = ImGui::GetContentRegionAvail().x / 2.0f;
+		const float button_width = ImGui::GetContentRegionMax().x / 2.0f;
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float tab_bar_height = button_height + (window_padding * 2);
 
-		// Tab Button Area
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
+		ImGui::SetCursorPosX(window_padding + a_offset);
 		ImVec2 backup_pos = ImGui::GetCursorPos();
+
+		// Tab Button Area
 		if (ImGui::BeginChild("##Object::Blacklist", ImVec2(0.0f, button_height), 0, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 			if (ImGui::Selectable("Table View", activeViewport == Viewport::TableView, 0, ImVec2(button_width, 0.0f))) {
@@ -55,13 +57,13 @@ namespace Modex
 			ImGui::SetCursorPos(backup_pos);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			backup_pos = ImGui::GetCursorPos();
-			if (ImGui::BeginChild("##Object::SearchArea", ImVec2(search_width + 1.0f, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			if (ImGui::BeginChild("##Object::SearchArea", ImVec2(search_width - a_offset, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 				this->tableView.ShowSearch(search_height);
 			}
 			ImGui::EndChild();
 
 			// Horizontal Search / Table Splitter
-			float full_width = search_width;
+			float full_width = search_width - a_offset;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(backup_pos.y + search_height);
 			ImGui::DrawSplitter("##Object::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
@@ -69,7 +71,7 @@ namespace Modex
 			// Table Area
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-			if (ImGui::BeginChild("##Object::TableArea", ImVec2(search_width, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			if (ImGui::BeginChild("##Object::TableArea", ImVec2(search_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 				this->tableView.ShowSort();
 				this->tableView.Draw();
 			}
@@ -88,7 +90,7 @@ namespace Modex
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
 			if (ImGui::BeginChild("##Object::ActionArea",
 					ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				ShowActions();
+				this->ShowActions();
 			}
 			ImGui::EndChild();
 

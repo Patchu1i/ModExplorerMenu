@@ -22,17 +22,19 @@ namespace Modex
 		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Teleport::SearchWidth"), MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 
-		// Search Input Area
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
+		ImGui::SetCursorPosX(window_padding + a_offset);
 		const ImVec2 backup_pos = ImGui::GetCursorPos();
-		if (ImGui::BeginChild("##Teleport::SearchArea", ImVec2(search_width + 1.0f, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+
+		// Search Area
+		if (ImGui::BeginChild("##Teleport::SearchArea", ImVec2(search_width - a_offset, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ShowSearch();
 		}
 		ImGui::EndChild();
 
 		// Horizontal Search / Table Splitter
-		float full_width = search_width;
+		float full_width = search_width - a_offset;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 		ImGui::SetCursorPosY(backup_pos.y + search_height);
 		ImGui::DrawSplitter("##Teleport::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
@@ -40,7 +42,7 @@ namespace Modex
 		// Table Area
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-		if (ImGui::BeginChild("##Teleport::TableArea", ImVec2(search_width, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+		if (ImGui::BeginChild("##Teleport::TableArea", ImVec2(search_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 			ShowFormTable();
 		}
 		ImGui::EndChild();

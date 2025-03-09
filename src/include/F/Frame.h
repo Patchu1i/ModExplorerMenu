@@ -86,6 +86,7 @@ namespace Modex
 			kTotal
 		};
 
+		bool			expand_sidebar;
 		float			sidebar_w;
 		float 			sidebar_h;
 
