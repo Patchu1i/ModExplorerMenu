@@ -26,7 +26,7 @@ namespace
 
 			Modex::Settings::GetSingleton()->LoadSettings(Modex::Settings::ini_mem_path);
 			Modex::Settings::GetSingleton()->LoadUserFontSetting();
-			Modex::FontManager::GetSingleton()->SetStartupFont();
+			Modex::Menu::GetSingleton()->RefreshFont();
 			logger::info("[kDataLoaded] Loaded User Settings from ini");
 
 			Modex::GraphicManager::Init();

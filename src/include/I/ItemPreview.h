@@ -198,7 +198,7 @@ namespace Modex
 				InlineText(_TICONM(ICON_LC_BOOK_USER, "Type", ":"), _T(type));
 			}
 
-			InlineInt(ICON_LC_WEIGHT " WT:", (int)a_object->GetWeight());
+			InlineInt(ICON_LC_WEIGHT "WT:", (int)a_object->GetWeight());
 			InlineInt(_TICONM(ICON_LC_COINS, "Value", ":"), a_object->GetValue());
 
 			// Load Order Info Pane

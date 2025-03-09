@@ -85,7 +85,7 @@ namespace Modex
 			std::string language = "English";
 			Language::GlyphRanges glyphRange = Language::GlyphRanges::English;
 			std::string globalFont = "Default";
-			int globalFontSize = 16;
+			float globalFontSize = 16.0f;
 
 			// Modules
 			int defaultShow = 1;  // 0 = Home, 1 = AddItem, 2 = Object, 3 = NPC, 4 = Teleport, 5 = Settings

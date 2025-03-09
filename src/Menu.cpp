@@ -65,7 +65,9 @@ namespace Modex
 
 		UIManager::GetSingleton()->Draw();
 
-		// ImGui::ShowDemoWindow(); // This could be added to the settings?
+#ifdef DEBUG
+		ImGui::ShowDemoWindow();  // This could be added to the settings?
+#endif
 
 		ImGui::EndFrame();
 
@@ -84,6 +86,9 @@ namespace Modex
 		io.Fonts->Clear();
 
 		FontManager::GetSingleton()->SetStartupFont();
+
+		io.Fonts->FontBuilderIO = ImGuiFreeType::GetBuilderForFreeType();
+		io.Fonts->FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_ForceAutoHint;
 
 		io.Fonts->Build();
 		ImGui_ImplDX11_InvalidateDeviceObjects();

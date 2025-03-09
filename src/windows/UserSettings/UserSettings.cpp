@@ -428,7 +428,7 @@ namespace Modex
 		ImGui::SliderInt("##FontSizeSelection", &_fontSize, 8, 28, "%d");
 
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			config.globalFontSize = _fontSize;
+			config.globalFontSize = static_cast<float>(_fontSize);
 
 			// SettingsWindow::changes.store(true);
 			// SettingsWindow::file_changes.store(true);
@@ -789,6 +789,6 @@ namespace Modex
 	void SettingsWindow::Init()
 	{
 		_uiScale = Settings::GetSingleton()->GetConfig().uiScale;
-		_fontSize = Settings::GetSingleton()->GetConfig().globalFontSize;
+		_fontSize = (int)Settings::GetSingleton()->GetConfig().globalFontSize;
 	}
 }

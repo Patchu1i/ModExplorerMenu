@@ -234,7 +234,7 @@ namespace Modex
 		user.config.language = GET_VALUE<std::string>(rSections[Main], "Language", _default.language, a_ini);
 		user.config.glyphRange = GET_VALUE<Language::GlyphRanges>(rSections[Main], "GlyphRange", _default.glyphRange, a_ini);
 		user.config.globalFont = GET_VALUE<std::string>(rSections[Main], "GlobalFont", _default.globalFont, a_ini);
-		user.config.globalFontSize = GET_VALUE<int>(rSections[Main], "GlobalFontSize", _default.globalFontSize, a_ini);
+		user.config.globalFontSize = GET_VALUE<float>(rSections[Main], "GlobalFontSize", _default.globalFontSize, a_ini);
 
 		user.config.defaultShow = GET_VALUE<int>(rSections[Modules], "DefaultShow", _default.defaultShow, a_ini);
 		user.config.showHomeMenu = GET_VALUE<bool>(rSections[Modules], "ShowHomeMenu", _default.showHomeMenu, a_ini);

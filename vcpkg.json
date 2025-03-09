@@ -13,6 +13,7 @@
     "nlohmann-json",
     "clib-util",
     "simpleini",
+    "freetype",
     {
       "name": "imgui",
       "features": [

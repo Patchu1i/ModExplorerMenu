@@ -56,16 +56,17 @@ namespace Modex
 	}
 
 	// Subtracting -1 from size results in odd font sizes. Good idea?
-	void FontManager::MergeIconFont(ImGuiIO& io, float size)
+	void FontManager::MergeIconFont(ImGuiIO& io, float a_size)
 	{
-		ImFontConfig imFontConfig;
-		imFontConfig.MergeMode = true;
-		imFontConfig.GlyphMinAdvanceX = 10.0f;
-		imFontConfig.GlyphExtraSpacing.x = 5.0f;
-		imFontConfig.GlyphOffset.y = (size / 2.0f) / 1.5f;
+		ImFontConfig config;
+		config.MergeMode = true;
+		config.GlyphMinAdvanceX = 10.0f;
+		config.GlyphExtraSpacing.x = 5.0f;
+		config.SizePixels = a_size;
+		config.GlyphOffset.y = (a_size / 2.0f) / 1.5f;
 
 		static const ImWchar icon_ranges[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
-		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/lucide.ttf", size + 3.0f, &imFontConfig, icon_ranges);
+		io.Fonts->AddFontFromFileTTF("Data/Interface/Modex/icons/lucide.ttf", a_size + 3.0f, &config, icon_ranges);
 	}
 
 	// TODO: Replace default font from ImGui proggy with a better font.
@@ -74,46 +75,46 @@ namespace Modex
 		auto& config = Settings::GetSingleton()->GetConfig();
 		auto& io = ImGui::GetIO();
 
-		ImFontConfig imFontConfig;
-		imFontConfig.SizePixels = (float)config.globalFontSize;
+		float size = config.globalFontSize;
 
 		auto glyphRange = Language::GetUserGlyphRange(config.glyphRange);
 
 		switch (config.glyphRange) {
 		case Language::GlyphRanges::ChineseFull:
 		case Language::GlyphRanges::ChineseSimplified:
-			io.Fonts->AddFontFromFileTTF(chinese_font, imFontConfig.SizePixels, NULL, glyphRange);
+			io.Fonts->AddFontFromFileTTF(chinese_font, size, NULL, glyphRange);
 			break;
 		case Language::GlyphRanges::Japanese:
-			io.Fonts->AddFontFromFileTTF(japanese_font, imFontConfig.SizePixels, NULL, glyphRange);
+			io.Fonts->AddFontFromFileTTF(japanese_font, size, NULL, glyphRange);
 			break;
 		case Language::GlyphRanges::Korean:
-			io.Fonts->AddFontFromFileTTF(korean_font, imFontConfig.SizePixels, NULL, glyphRange);
+			io.Fonts->AddFontFromFileTTF(korean_font, size, NULL, glyphRange);
 			break;
 		case Language::GlyphRanges::Cyrillic:
-			io.Fonts->AddFontFromFileTTF(russian_font, imFontConfig.SizePixels, NULL, glyphRange);
+			io.Fonts->AddFontFromFileTTF(russian_font, size, NULL, glyphRange);
 			break;
 		default:  // English / Latin; Greek; Cyrillic; Thai; Vietnamese (?)
-			io.Fonts->AddFontDefault(&imFontConfig);
+			io.Fonts->AddFontFromFileTTF(russian_font, size, NULL, glyphRange);
+			//io.Fonts->AddFontDefault(&imFontConfig);
 			break;
 		}
 
-		MergeIconFont(io, imFontConfig.SizePixels);
+		MergeIconFont(io, size);
 	}
 
 	// Do not call this function directly. See Menu::RebuildFontAtlas().
 	// Builds a single font from file with appropriate glyph range.
-	void FontManager::LoadCustomFont(FontData& a_font, float a_size)
+	void FontManager::LoadCustomFont(FontData& a_font)
 	{
 		auto& io = ImGui::GetIO();
 		auto& config = Settings::GetSingleton()->GetConfig();
-		// auto& style = Settings::GetSingleton()->GetStyle();
 
+		float size = config.globalFontSize;
 		const auto& glyphRange = Language::GetUserGlyphRange(config.glyphRange);
 
-		io.Fonts->AddFontFromFileTTF(a_font.fullPath.c_str(), a_size, NULL, glyphRange);
+		io.Fonts->AddFontFromFileTTF(a_font.fullPath.c_str(), size, NULL, glyphRange);
 
-		MergeIconFont(io, a_size);
+		MergeIconFont(io, size);
 	}
 
 	// Runs after Settings are loaded.
@@ -128,7 +129,7 @@ namespace Modex
 
 		if (std::filesystem::exists(fontData.fullPath) == true) {
 			logger::info("[Font Manager] Loading custom font: {}", fontData.name);
-			LoadCustomFont(fontData, (float)config.globalFontSize);
+			LoadCustomFont(fontData);
 
 		} else {
 			logger::info("[Font Manager] No Custom font specified. Loading default font.");

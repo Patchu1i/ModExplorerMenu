@@ -10,6 +10,9 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset, cons
 #include "SKSE/SKSE.h"
 #include <xbyak/xbyak.h>
 
+#define IMGUI_USER_CONFIG "imgui_user_config.h"
+#include "extern/imgui_freetype.h"
+
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 

@@ -57,6 +57,7 @@ include(XSEPlugin)
 find_package(xbyak CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
 
 target_include_directories(
@@ -64,12 +65,14 @@ target_include_directories(
 	PRIVATE
 	${CLIB_UTIL_INCLUDE_DIRS}
   ${SIMPLEINI_INCLUDE_DIRS}
+  ${FREETYPE_INCLUDE_DIRS}
 )
 
 target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 	xbyak::xbyak
+  Freetype::Freetype
 	nlohmann_json::nlohmann_json
 	imgui::imgui
 )

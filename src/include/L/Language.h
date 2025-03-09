@@ -254,8 +254,8 @@ namespace Modex
 			return &singleton;
 		}
 
-		void LoadCustomFont(FontData& a_font, float a_size);
-		void MergeIconFont(ImGuiIO& io, float size);
+		void LoadCustomFont(FontData& a_font);
+		void MergeIconFont(ImGuiIO& io, float a_size);
 		void SetStartupFont();
 		void BuildFontLibrary();
 

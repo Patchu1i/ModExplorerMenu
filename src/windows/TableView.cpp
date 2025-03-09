@@ -1871,7 +1871,7 @@ namespace Modex
 
 		const auto& style = Settings::GetSingleton()->GetStyle();
 		const auto& config = Settings::GetSingleton()->GetConfig();
-		const auto fontSize = config.globalFontSize;
+		const float fontSize = config.globalFontSize;
 
 		// Setup box and bounding box for positioning and drawing.
 		const ImVec2 box_min(a_pos.x - 1, a_pos.y - 1);
@@ -2141,7 +2141,7 @@ namespace Modex
 
 		const auto& style = Settings::GetSingleton()->GetStyle();
 		const auto& config = Settings::GetSingleton()->GetConfig();
-		const auto fontSize = config.globalFontSize;
+		const float fontSize = config.globalFontSize;
 
 		// Setup box and bounding box for positioning and drawing.
 		const ImVec2 box_min(a_pos.x - 1, a_pos.y - 1);
@@ -2284,7 +2284,7 @@ namespace Modex
 			// Draw ItemData specific stuff
 			if (const ItemData* itemData = dynamic_cast<const ItemData*>(&a_item)) {
 				{  // Draw Value (Top-Right Align)
-					const std::string string = itemData->GetValueString() + ICON_LC_COINS;
+					const std::string string = itemData->GetValueString() + " " + ICON_LC_COINS;
 					const ImVec2 size = ImGui::CalcTextSize(string.c_str());
 					if (!compactView) {
 						const ImVec2 pos = ImVec2(top_right_align.x - size.x + fontSize, top_right_align.y);
@@ -2298,7 +2298,7 @@ namespace Modex
 				if (!compactView) {
 					{  // Draw Weight (Bottom-Right Align)
 						const int weight = static_cast<int>(floorf(itemData->GetWeight()));
-						const std::string string = std::to_string(weight) + ICON_LC_WEIGHT;
+						const std::string string = std::to_string(weight) + " " + ICON_LC_WEIGHT;
 						const ImVec2 size = ImGui::CalcTextSize(string.c_str());
 						const ImVec2 pos = ImVec2(bot_right_align.x - size.x + fontSize, bot_right_align.y);
 						DrawList->AddText(pos, text_color, string.c_str());
