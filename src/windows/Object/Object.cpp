@@ -58,10 +58,6 @@ namespace Modex
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			backup_pos = ImGui::GetCursorPos();
 			if (ImGui::BeginChild("##Object::SearchArea", ImVec2(search_width - a_offset, search_height), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
-				if (ImGui::IsWindowAppearing()) {
-					ImGui::SetKeyboardFocusHere();
-				}
-
 				this->tableView.ShowSearch(search_height);
 			}
 			ImGui::EndChild();

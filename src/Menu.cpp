@@ -20,7 +20,12 @@ namespace Modex
 
 		InputManager::GetSingleton()->captureInput = true;
 
-		// ImGui::SetWindowFocus(NULL);  // Reset InputBox Focus
+		if (ImGui::GetCurrentContext() != nullptr) {
+			auto& io = ImGui::GetIO();
+
+			io.ClearInputCharacters();
+			ImGui::SetWindowFocus(NULL);  // Reset InputBox Focus
+		}
 	}
 
 	void Menu::Close()
