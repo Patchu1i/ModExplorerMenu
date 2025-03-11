@@ -45,6 +45,11 @@ namespace Modex
 			return true;
 		}
 
+		// Allot I/O to the menu if it's open.
+		if (Menu::GetSingleton()->isEnabled) {
+			return true;
+		}
+
 		// If the hotkey assigned to Modex doesn't overlap text-input behavioral keys, then we can process the event.
 		if (this->showMenuKey != 0x0E &&  // Backspace
 			this->showMenuKey != 0x0F &&  // Tab
