@@ -255,11 +255,11 @@ namespace Modex
 								if (showMenuModifier == 0) {
 									Menu::GetSingleton()->Toggle();
 								} else {
-									if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LSHIFT) && shiftDown) {
+									if ((showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LSHIFT) || showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_RSHIFT)) && shiftDown) {
 										Menu::GetSingleton()->Toggle();
-									} else if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LCONTROL) && ctrlDown) {
+									} else if ((showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LCONTROL) || showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_RCONTROL)) && ctrlDown) {
 										Menu::GetSingleton()->Toggle();
-									} else if (showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LMENU) && altDown) {
+									} else if ((showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_LMENU) || showMenuModifier == ImGui::VirtualKeyToSkyrim(VK_RMENU)) && altDown) {
 										Menu::GetSingleton()->Toggle();
 									}
 								}
