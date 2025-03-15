@@ -10,7 +10,7 @@
 
 namespace ImGui
 {
-	// Used for conditional hotkey assignment. Prevent users from assigning invalid keys to hotkey.
+	// Used for conditional hotkey assignment. Prevent users from assigning invalid keys to open/close hotkey.
 	static inline bool IsKeyboardWhitelist(ImGuiKey a_key)
 	{
 		return (a_key != ImGuiKey_MouseLeft &&    // Left mouse button
@@ -27,6 +27,7 @@ namespace ImGui
 		);
 	}
 
+	// Used for conditional hotkey assignment, referenced by InputManager and UserSettings.
 	static inline bool IsKeyboardModifier(ImGuiKey a_key)
 	{
 		return (a_key == ImGuiKey_LeftShift ||   // Left Shift key
@@ -38,7 +39,26 @@ namespace ImGui
 		);
 	}
 
-	static inline uint32_t ImGuiKeyToSkyrimKey(ImGuiKey a_key)
+	// Used to determine if a key is associated with text-input for conditional hotkey usage.
+	static inline bool IsKeyboardTextShortcut(ImGuiKey a_key)
+	{
+		return (a_key == ImGuiKey_Backspace ||
+				a_key == ImGuiKey_Delete ||
+				a_key == ImGuiKey_Enter ||
+				a_key == ImGuiKey_Space ||
+				a_key == ImGuiKey_Tab ||
+				a_key == ImGuiKey_End ||
+				a_key == ImGuiKey_Home ||
+				a_key == ImGuiKey_PageUp ||
+				a_key == ImGuiKey_PageDown ||
+				a_key == ImGuiKey_LeftArrow ||
+				a_key == ImGuiKey_RightArrow ||
+				a_key == ImGuiKey_UpArrow ||
+				a_key == ImGuiKey_DownArrow);
+	}
+
+	// Convert ImGui native keycodes to Skyrim input scan codes.
+	static inline uint32_t ImGuiKeyToScanCode(ImGuiKey a_key)
 	{
 		switch (a_key) {
 		case ImGuiKey_Tab:
@@ -254,444 +274,226 @@ namespace ImGui
 		}
 	}
 
-	// Translates Virtual Key Codes into ImGui compatible codes for ImGui specific Input.
-	static inline ImGuiKey VirtualKeyToImGuiKey(WPARAM wParam)
+	// Convert Skyrim input scan codes to ImGui native keycodes.
+	static inline ImGuiKey ScanCodeToImGuiKey(const uint32_t a_key)
 	{
-		switch (wParam) {
-		case VK_TAB:
+		switch (a_key) {
+		case 0x0F:
 			return ImGuiKey_Tab;
-		case VK_LEFT:
+		case 0xCB:
 			return ImGuiKey_LeftArrow;
-		case VK_RIGHT:
+		case 0xCD:
 			return ImGuiKey_RightArrow;
-		case VK_UP:
+		case 0xC8:
 			return ImGuiKey_UpArrow;
-		case VK_DOWN:
+		case 0xD0:
 			return ImGuiKey_DownArrow;
-		case VK_PRIOR:
+		case 0xC9:
 			return ImGuiKey_PageUp;
-		case VK_NEXT:
+		case 0xD1:
 			return ImGuiKey_PageDown;
-		case VK_HOME:
+		case 0xC7:
 			return ImGuiKey_Home;
-		case VK_END:
+		case 0xCF:
 			return ImGuiKey_End;
-		case VK_INSERT:
+		case 0xD2:
 			return ImGuiKey_Insert;
-		case VK_DELETE:
+		case 0xD3:
 			return ImGuiKey_Delete;
-		case VK_BACK:
+		case 0x0E:
 			return ImGuiKey_Backspace;
-		case VK_SPACE:
+		case 0x39:
 			return ImGuiKey_Space;
-		case VK_RETURN:
+		case 0x1C:
 			return ImGuiKey_Enter;
-		case VK_ESCAPE:
+		case 0x01:
 			return ImGuiKey_Escape;
-		case VK_OEM_7:
+		case 0x28:
 			return ImGuiKey_Apostrophe;
-		case VK_OEM_COMMA:
+		case 0x33:
 			return ImGuiKey_Comma;
-		case VK_OEM_MINUS:
+		case 0x0C:
 			return ImGuiKey_Minus;
-		case VK_OEM_PERIOD:
+		case 0x34:
 			return ImGuiKey_Period;
-		case VK_OEM_2:
+		case 0x35:
 			return ImGuiKey_Slash;
-		case VK_OEM_1:
+		case 0x27:
 			return ImGuiKey_Semicolon;
-		case VK_OEM_PLUS:
+		case 0x0D:
 			return ImGuiKey_Equal;
-		case VK_OEM_4:
+		case 0x1A:
 			return ImGuiKey_LeftBracket;
-		case VK_OEM_5:
+		case 0x2B:
 			return ImGuiKey_Backslash;
-		case VK_OEM_6:
+		case 0x1B:
 			return ImGuiKey_RightBracket;
-		case VK_OEM_3:
+		case 0x29:
 			return ImGuiKey_GraveAccent;
-		case VK_CAPITAL:
+		case 0x3A:
 			return ImGuiKey_CapsLock;
-		case VK_SCROLL:
+		case 0x46:
 			return ImGuiKey_ScrollLock;
-		case VK_NUMLOCK:
+		case 0x45:
 			return ImGuiKey_NumLock;
-		case VK_SNAPSHOT:
+		case 0xB7:
 			return ImGuiKey_PrintScreen;
-		case VK_PAUSE:
+		case 0xC5:
 			return ImGuiKey_Pause;
-		case VK_NUMPAD0:
+		case 0x52:
 			return ImGuiKey_Keypad0;
-		case VK_NUMPAD1:
+		case 0x4F:
 			return ImGuiKey_Keypad1;
-		case VK_NUMPAD2:
+		case 0x50:
 			return ImGuiKey_Keypad2;
-		case VK_NUMPAD3:
+		case 0x51:
 			return ImGuiKey_Keypad3;
-		case VK_NUMPAD4:
+		case 0x4B:
 			return ImGuiKey_Keypad4;
-		case VK_NUMPAD5:
+		case 0x4C:
 			return ImGuiKey_Keypad5;
-		case VK_NUMPAD6:
+		case 0x4D:
 			return ImGuiKey_Keypad6;
-		case VK_NUMPAD7:
+		case 0x47:
 			return ImGuiKey_Keypad7;
-		case VK_NUMPAD8:
+		case 0x48:
 			return ImGuiKey_Keypad8;
-		case VK_NUMPAD9:
+		case 0x49:
 			return ImGuiKey_Keypad9;
-		case VK_DECIMAL:
+		case 0x53:
 			return ImGuiKey_KeypadDecimal;
-		case VK_DIVIDE:
+		case 0xB5:
 			return ImGuiKey_KeypadDivide;
-		case VK_MULTIPLY:
+		case 0x37:
 			return ImGuiKey_KeypadMultiply;
-		case VK_SUBTRACT:
+		case 0x4A:
 			return ImGuiKey_KeypadSubtract;
-		case VK_ADD:
+		case 0x4E:
 			return ImGuiKey_KeypadAdd;
-		case IM_VK_KEYPAD_ENTER:
+		case 0x9C:
 			return ImGuiKey_KeypadEnter;
-		case VK_LSHIFT:
+		case 0x2A:
 			return ImGuiKey_LeftShift;
-		case VK_LCONTROL:
+		case 0x1D:
 			return ImGuiKey_LeftCtrl;
-		case VK_LMENU:
+		case 0x38:
 			return ImGuiKey_LeftAlt;
-		case VK_LWIN:
+		case 0x5B:
 			return ImGuiKey_LeftSuper;
-		case VK_RSHIFT:
+		case 0x36:
 			return ImGuiKey_RightShift;
-		case VK_RCONTROL:
+		case 0x9D:
 			return ImGuiKey_RightCtrl;
-		case VK_RMENU:
+		case 0xB8:
 			return ImGuiKey_RightAlt;
-		case VK_RWIN:
+		case 0x5C:
 			return ImGuiKey_RightSuper;
-		case VK_APPS:
+		case 0x5D:
 			return ImGuiKey_Menu;
-		case '0':
+		case 0x0B:
 			return ImGuiKey_0;
-		case '1':
+		case 0x02:
 			return ImGuiKey_1;
-		case '2':
+		case 0x03:
 			return ImGuiKey_2;
-		case '3':
+		case 0x04:
 			return ImGuiKey_3;
-		case '4':
+		case 0x05:
 			return ImGuiKey_4;
-		case '5':
+		case 0x06:
 			return ImGuiKey_5;
-		case '6':
+		case 0x07:
 			return ImGuiKey_6;
-		case '7':
+		case 0x08:
 			return ImGuiKey_7;
-		case '8':
+		case 0x09:
 			return ImGuiKey_8;
-		case '9':
+		case 0x0A:
 			return ImGuiKey_9;
-		case 'A':
+		case 0x1E:
 			return ImGuiKey_A;
-		case 'B':
+		case 0x30:
 			return ImGuiKey_B;
-		case 'C':
+		case 0x2E:
 			return ImGuiKey_C;
-		case 'D':
+		case 0x20:
 			return ImGuiKey_D;
-		case 'E':
+		case 0x12:
 			return ImGuiKey_E;
-		case 'F':
+		case 0x21:
 			return ImGuiKey_F;
-		case 'G':
+		case 0x22:
 			return ImGuiKey_G;
-		case 'H':
+		case 0x23:
 			return ImGuiKey_H;
-		case 'I':
+		case 0x17:
 			return ImGuiKey_I;
-		case 'J':
+		case 0x24:
 			return ImGuiKey_J;
-		case 'K':
+		case 0x25:
 			return ImGuiKey_K;
-		case 'L':
+		case 0x26:
 			return ImGuiKey_L;
-		case 'M':
+		case 0x32:
 			return ImGuiKey_M;
-		case 'N':
+		case 0x31:
 			return ImGuiKey_N;
-		case 'O':
+		case 0x18:
 			return ImGuiKey_O;
-		case 'P':
+		case 0x19:
 			return ImGuiKey_P;
-		case 'Q':
+		case 0x10:
 			return ImGuiKey_Q;
-		case 'R':
+		case 0x13:
 			return ImGuiKey_R;
-		case 'S':
+		case 0x1F:
 			return ImGuiKey_S;
-		case 'T':
+		case 0x14:
 			return ImGuiKey_T;
-		case 'U':
+		case 0x16:
 			return ImGuiKey_U;
-		case 'V':
+		case 0x2F:
 			return ImGuiKey_V;
-		case 'W':
+		case 0x11:
 			return ImGuiKey_W;
-		case 'X':
+		case 0x2D:
 			return ImGuiKey_X;
-		case 'Y':
+		case 0x15:
 			return ImGuiKey_Y;
-		case 'Z':
+		case 0x2C:
 			return ImGuiKey_Z;
-		case VK_F1:
+		case 0x3B:
 			return ImGuiKey_F1;
-		case VK_F2:
+		case 0x3C:
 			return ImGuiKey_F2;
-		case VK_F3:
+		case 0x3D:
 			return ImGuiKey_F3;
-		case VK_F4:
+		case 0x3E:
 			return ImGuiKey_F4;
-		case VK_F5:
+		case 0x3F:
 			return ImGuiKey_F5;
-		case VK_F6:
+		case 0x40:
 			return ImGuiKey_F6;
-		case VK_F7:
+		case 0x41:
 			return ImGuiKey_F7;
-		case VK_F8:
+		case 0x42:
 			return ImGuiKey_F8;
-		case VK_F9:
+		case 0x43:
 			return ImGuiKey_F9;
-		case VK_F10:
+		case 0x44:
 			return ImGuiKey_F10;
-		case VK_F11:
+		case 0x57:
 			return ImGuiKey_F11;
-		case VK_F12:
+		case 0x58:
 			return ImGuiKey_F12;
 		default:
 			return ImGuiKey_None;
 		}
 	}
 
-	// Translates Virtual Key Codes into Skyrim compatible codes for Skyrim specific Input.
-	// This is needed to recieve the correct key codes for opening the menu.
-	static inline uint32_t VirtualKeyToSkyrim(WPARAM wParam)
-	{
-		switch (wParam) {
-		case VK_TAB:
-			return 0x0F;
-		case VK_LEFT:
-			return 0xCB;
-		case VK_RIGHT:
-			return 0xCD;
-		case VK_UP:
-			return 0xC8;
-		case VK_DOWN:
-			return 0xD0;
-		case VK_PRIOR:
-			return 0xC9;
-		case VK_NEXT:
-			return 0xD1;
-		case VK_HOME:
-			return 0xC7;
-		case VK_END:
-			return 0xCF;
-		case VK_INSERT:
-			return 0xD2;
-		case VK_DELETE:
-			return 0xD3;
-		case VK_BACK:
-			return 0x0E;
-		case VK_SPACE:
-			return 0x39;
-		case VK_RETURN:
-			return 0x1C;
-		case VK_ESCAPE:
-			return 0x01;
-		case VK_OEM_7:
-			return 0x28;
-		case VK_OEM_COMMA:
-			return 0x33;
-		case VK_OEM_MINUS:
-			return 0x0C;
-		case VK_OEM_PERIOD:
-			return 0x34;
-		case VK_OEM_2:
-			return 0x35;
-		case VK_OEM_1:
-			return 0x27;
-		case VK_OEM_PLUS:
-			return 0x0D;
-		case VK_OEM_4:
-			return 0x1A;
-		case VK_OEM_5:
-			return 0x2B;
-		case VK_OEM_6:
-			return 0x1B;
-		case VK_OEM_3:
-			return 0x29;
-		case VK_CAPITAL:
-			return 0x3A;
-		case VK_SCROLL:
-			return 0x46;
-		case VK_NUMLOCK:
-			return 0x45;
-		case VK_SNAPSHOT:
-			return 0xB7;
-		case VK_PAUSE:
-			return 0xC5;
-		case VK_NUMPAD0:
-			return 0x52;
-		case VK_NUMPAD1:
-			return 0x4F;
-		case VK_NUMPAD2:
-			return 0x50;
-		case VK_NUMPAD3:
-			return 0x51;
-		case VK_NUMPAD4:
-			return 0x4B;
-		case VK_NUMPAD5:
-			return 0x4C;
-		case VK_NUMPAD6:
-			return 0x4D;
-		case VK_NUMPAD7:
-			return 0x47;
-		case VK_NUMPAD8:
-			return 0x48;
-		case VK_NUMPAD9:
-			return 0x49;
-		case VK_DECIMAL:
-			return 0x53;
-		case VK_DIVIDE:
-			return 0xB5;
-		case VK_MULTIPLY:
-			return 0x37;
-		case VK_SUBTRACT:
-			return 0x4A;
-		case VK_ADD:
-			return 0x4E;
-		case IM_VK_KEYPAD_ENTER:
-			return 0x9C;
-		case VK_LSHIFT:
-			return 0x2A;
-		case VK_LCONTROL:
-			return 0x1D;
-		case VK_LMENU:
-			return 0x38;
-		// case VK_LWIN:
-		// 	return ImGuiKey_LeftSuper;
-		case VK_RSHIFT:
-			return 0x36;
-		case VK_RCONTROL:
-			return 0x9D;
-		case VK_RMENU:
-			return 0xB8;
-		// case VK_RWIN:
-		// 	return ImGuiKey_RightSuper;
-		// case VK_APPS:
-		// 	return ImGuiKey_Menu;
-		case '0':
-			return 0x0B;
-		case '1':
-			return 0x02;
-		case '2':
-			return 0x03;
-		case '3':
-			return 0x04;
-		case '4':
-			return 0x05;
-		case '5':
-			return 0x06;
-		case '6':
-			return 0x07;
-		case '7':
-			return 0x08;
-		case '8':
-			return 0x09;
-		case '9':
-			return 0x0A;
-		case 'A':
-			return 0x1E;
-		case 'B':
-			return 0x30;
-		case 'C':
-			return 0x2E;
-		case 'D':
-			return 0x20;
-		case 'E':
-			return 0x12;
-		case 'F':
-			return 0x21;
-		case 'G':
-			return 0x22;
-		case 'H':
-			return 0x23;
-		case 'I':
-			return 0x17;
-		case 'J':
-			return 0x24;
-		case 'K':
-			return 0x25;
-		case 'L':
-			return 0x26;
-		case 'M':
-			return 0x32;
-		case 'N':
-			return 0x31;
-		case 'O':
-			return 0x18;
-		case 'P':
-			return 0x19;
-		case 'Q':
-			return 0x10;
-		case 'R':
-			return 0x13;
-		case 'S':
-			return 0x1F;
-		case 'T':
-			return 0x14;
-		case 'U':
-			return 0x16;
-		case 'V':
-			return 0x2F;
-		case 'W':
-			return 0x11;
-		case 'X':
-			return 0x2D;
-		case 'Y':
-			return 0x15;
-		case 'Z':
-			return 0x2C;
-		case VK_F1:
-			return 0x3B;
-		case VK_F2:
-			return 0x3C;
-		case VK_F3:
-			return 0x3D;
-		case VK_F4:
-			return 0x3E;
-		case VK_F5:
-			return 0x3F;
-		case VK_F6:
-			return 0x40;
-		case VK_F7:
-			return 0x41;
-		case VK_F8:
-			return 0x42;
-		case VK_F9:
-			return 0x43;
-		case VK_F10:
-			return 0x44;
-		case VK_F11:
-			return 0x57;
-		case VK_F12:
-			return 0x58;
-		default:
-			return 0x01;
-		}
-	};
-
-	// Specifically used for mapping Key Codes for ImGuiIcon Library.
+	// Specifically used for mapping Skyrim scan codes to ImGuiIcon Libraries.
 	static const std::unordered_map<int, const char*> ImGuiKeymap = {
-		{ 0x0, "Slash" },  // Using "Slash" as "Empty" for ImGui Icons
+		{ 0x0, "UnknownKey" },  // Using "Slash" as "Empty" for ImGui Icons
 		{ 0x01, "Escape" },
 		{ 0x02, "1" },
 		{ 0x03, "2" },
@@ -794,7 +596,7 @@ namespace ImGui
 		{ 0xD3, "Delete" }
 	};
 
-	// Map of Skyrim Key Codes to Key Names.
+	// Map of Skyrim scan codes to Key Names. Used for displaying key names.
 	static const std::unordered_map<int, const char*> SkyrimKeymap = {
 		{ 0x0, "Undefined" },
 		{ 0x01, "Escape" },

@@ -111,6 +111,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScale).c_str(), GetComment(iComment::ConfigUIScale));
 			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(_default.fullscreen).c_str(), GetComment(iComment::ConfigFullscreen));
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(_default.pauseGame).c_str(), GetComment(iComment::ConfigPauseGame));
+			a_ini.SetValue(rSections[Main], "DisableInMenu", ToString(_default.disableInMenu).c_str(), GetComment(iComment::ConfigDisableInMenu));
 
 			// Font & Localization
 			a_ini.SetValue(rSections[Main], "Language", ToString(_default.language, false).c_str(), GetComment(iComment::ConfigLanguage));
@@ -196,6 +197,7 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
 			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(Settings::GetSingleton()->user.config.fullscreen).c_str());
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(Settings::GetSingleton()->user.config.pauseGame).c_str());
+			a_ini.SetValue(rSections[Main], "DisableInMenu", ToString(Settings::GetSingleton()->user.config.disableInMenu).c_str());
 
 			// Font & Localization
 			a_ini.SetValue(rSections[Main], "Language", ToString(Settings::GetSingleton()->user.config.language).c_str());
@@ -230,6 +232,7 @@ namespace Modex
 		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", _default.uiScale, a_ini);
 		user.config.fullscreen = GET_VALUE<bool>(rSections[Main], "Fullscreen", _default.fullscreen, a_ini);
 		user.config.pauseGame = GET_VALUE<bool>(rSections[Main], "PauseGame", _default.pauseGame, a_ini);
+		user.config.disableInMenu = GET_VALUE<bool>(rSections[Main], "DisableInMenu", _default.disableInMenu, a_ini);
 
 		user.config.language = GET_VALUE<std::string>(rSections[Main], "Language", _default.language, a_ini);
 		user.config.glyphRange = GET_VALUE<Language::GlyphRanges>(rSections[Main], "GlyphRange", _default.glyphRange, a_ini);

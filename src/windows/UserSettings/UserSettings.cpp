@@ -121,8 +121,9 @@ namespace Modex
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
 
-			ImGui::SameLine(ImGui::GetContentRegionMax().x - (p_fixedWidth - p_padding) + imageWidth / scale);  // Right Align
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);                            // Center Align
+			// ImGui::SameLine(ImGui::GetContentRegionMax().x - (p_fixedWidth - p_padding) + imageWidth / scale);  // Right Align
+			ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::GetStyle().IndentSpacing - p_padding - imageWidth);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (imageHeight / 2) + 5.0f);  // Center Align
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
@@ -353,6 +354,12 @@ namespace Modex
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
 		if (AddToggleButton("SETTINGS_PAUSE_GAME", config.pauseGame)) {
+			Settings::GetSingleton()->SaveSettings();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		if (AddToggleButton("SETTINGS_DISABLE_IN_MENU", config.disableInMenu)) {
 			Settings::GetSingleton()->SaveSettings();
 		}
 

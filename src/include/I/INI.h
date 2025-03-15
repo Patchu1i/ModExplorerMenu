@@ -22,6 +22,7 @@ namespace IniHelper
 		ConfigUIScale,
 		ConfigFullscreen,
 		ConfigPauseGame,
+		ConfigDisableInMenu,
 		ConfigLanguage,
 		ConfigGlyphRange,
 		ConfigGlobalFont,
@@ -66,6 +67,10 @@ namespace IniHelper
 		{ iComment::ConfigPauseGame,
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"
 			"# PauseGame = <bool> (true, false) (Determines if menu pauses the game or not)\n"
+			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #" },
+		{ iComment::ConfigDisableInMenu,
+			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"
+			"# DisableInMenu = <bool> (true, false) (Determines if Modex is disabled while in-game menus)\n"
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #" },
 		{ iComment::ConfigLanguage,
 			"# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #\n"

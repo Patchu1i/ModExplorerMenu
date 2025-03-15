@@ -101,7 +101,16 @@ using json = nlohmann::json;
 #include <cstring>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <shared_mutex>
 #include <unordered_set>
+
+// I believe this implementation can be attributed to Ersh:
+using ExclusiveLock = std::mutex;
+using Locker = std::lock_guard<ExclusiveLock>;
+
+using SharedLock = std::shared_mutex;
+using ReadLocker = std::shared_lock<SharedLock>;
+using WriteLocker = std::unique_lock<SharedLock>;
 
 using uint = uint32_t;
 

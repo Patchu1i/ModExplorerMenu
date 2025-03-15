@@ -120,20 +120,20 @@ namespace Modex
 					return true;
 				}
 
-				if (ImGui::ImGuiKeyToSkyrimKey(a_key) == *m_hotkeyCurrent) {
+				if (ImGui::ImGuiKeyToScanCode(a_key) == *m_hotkeyCurrent) {
 					DeclineHotkey();
 					return true;
 				}
 
 				if (!m_modifierOnly) {
 					if (ImGui::IsKeyboardWhitelist(a_key)) {
-						*m_hotkeyCurrent = ImGui::ImGuiKeyToSkyrimKey(a_key);
+						*m_hotkeyCurrent = ImGui::ImGuiKeyToScanCode(a_key);
 						AcceptHotkey();
 						return true;
 					}
 				} else {
 					if (ImGui::IsKeyboardModifier(a_key)) {
-						*m_hotkeyCurrent = ImGui::ImGuiKeyToSkyrimKey(a_key);
+						*m_hotkeyCurrent = ImGui::ImGuiKeyToScanCode(a_key);
 						AcceptHotkey();
 						return true;
 					}

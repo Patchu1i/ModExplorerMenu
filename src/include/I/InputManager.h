@@ -6,27 +6,13 @@
 // clang-format off
 namespace Modex
 {
-    class CharEvent : public RE::InputEvent
-	{
-	public:
-		uint32_t keyCode;  // 18 (ascii code)
-	};
-
-	enum : std::uint32_t
-	{
-		kInvalid = static_cast<std::uint32_t>(-1),
-		kKeyboardOffset = 0,
-		kMouseOffset = 256,
-		kGamepadOffset = 266
-	};
-
     class InputManager
     {
     public:
         static inline InputManager* GetSingleton()
         {
             static InputManager singleton;
-            return &singleton;
+            return std::addressof(singleton);
         }
 
         InputManager() = default;
@@ -35,22 +21,30 @@ namespace Modex
         InputManager& operator=(const InputManager&) = delete;
 
         void        Init();
-        void        OnFocusKill();
+        void        OnFocusChange(bool a_focus);
         void        UpdateSettings();
-        void        ProcessInputEvent(RE::InputEvent** a_event);
-        bool        ShouldProcessEvent(RE::InputEvent** a_event);
+        void        AddEventToQueue(RE::InputEvent** a_event);
+        void        ProcessInputEvents();
+        bool        IsBoundModifierDown();
 
+        static inline void ProcessInput() 
+        {
+            InputManager::GetSingleton()->ProcessInputEvents();
+        }
+
+    private:
         // members
         uint32_t       showMenuKey;
         uint32_t       showMenuModifier;
         uint32_t       lastKeyPress;
-        bool           captureInput;
-        bool           captureIMEMode;
 
         bool           shiftDown;
         bool           ctrlDown;
         bool           altDown;
         bool           modifierDown;
+
+        mutable SharedLock _inputLock;
+        std::vector<RE::InputEvent*> inputQueue;
     };
 }
 // clang-format on

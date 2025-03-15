@@ -8,29 +8,98 @@
 
 namespace Modex
 {
+	bool Menu::AllowMenuOpen()
+	{
+		const auto& config = Settings::GetSingleton()->GetConfig();
+
+		if (!config.disableInMenu)
+			return true;
+
+		if (config.showMenuModifier != 0)
+			return true;
+
+		if (Menu::GetSingleton()->isEnabled)
+			return true;
+
+		// If the hotkey assigned to Modex doesn't overlap text-input behavioral keys, then we can process the event.
+		if (config.showMenuKey != 0x0E &&  // Backspace
+			config.showMenuKey != 0x0F &&  // Tab
+			config.showMenuKey != 0x3A &&  // Caps-Lock
+			config.showMenuKey != 0x45 &&  // Num-Lock
+			config.showMenuKey != 0x46 &&  // Scroll-Lock
+			config.showMenuKey != 0xB7 &&  // Prnt-Scrn
+			config.showMenuKey != 0xC5 &&  // Pause
+			config.showMenuKey != 0xC7 &&  // Home
+			config.showMenuKey != 0xC8 &&  // Up
+			config.showMenuKey != 0xC9 &&  // Page-Up
+			config.showMenuKey != 0xCB &&  // Left
+			config.showMenuKey != 0xCD &&  // Right
+			config.showMenuKey != 0xCF &&  // End
+			config.showMenuKey != 0xD0 &&  // Down
+			config.showMenuKey != 0xD1 &&  // Page-Down
+			config.showMenuKey != 0xD2 &&  // Insert
+			config.showMenuKey != 0xD3) {  // Delete
+			return true;
+		}
+
+		const auto UIManager = RE::UI::GetSingleton();
+
+		if (UIManager->IsMenuOpen("Console") ||         // Text Input
+			UIManager->IsMenuOpen("Dialogue Menu") ||   // Dialogue
+			UIManager->IsMenuOpen("Crafting Menu") ||   // Text Input
+			UIManager->IsMenuOpen("Training Menu") ||   // Just Incase
+			UIManager->IsMenuOpen("MagicMenu") ||       // Text Input
+			UIManager->IsMenuOpen("Quantity Menu") ||   // Text Input
+			UIManager->IsMenuOpen("RaceSex Menu") ||    // Text Input
+			UIManager->IsMenuOpen("BarterMenu") ||      // Text Input
+			UIManager->IsMenuOpen("InventoryMenu") ||   // Text Input
+			UIManager->IsMenuOpen("ContainerMenu") ||   // Text Input
+			UIManager->IsMenuOpen("MessageBoxMenu")) {  // Text Input
+			return false;
+		}
+
+		return true;
+	}
 
 	void Menu::Open()
 	{
-		isEnabled = true;
-		prevFreezeState = RE::Main::GetSingleton()->freezeTime;
-
-		if (Settings::GetSingleton()->GetConfig().pauseGame) {
-			RE::Main::GetSingleton()->freezeTime = true;
+		if (!AllowMenuOpen()) {
+			return;
 		}
 
-		InputManager::GetSingleton()->captureInput = true;
+		if (RE::Main* Game = RE::Main::GetSingleton()) {
+			prevFreezeState = Game->freezeTime;
+
+			if (Settings::GetSingleton()->GetConfig().pauseGame) {
+				Game->freezeTime = true;
+			}
+		}
 
 		if (ImGui::GetCurrentContext() != nullptr) {
 			auto& io = ImGui::GetIO();
 
-			io.ClearInputCharacters();
-			ImGui::SetWindowFocus(NULL);  // Reset InputBox Focus
+			io.MouseDrawCursor = true;
+			io.ClearInputKeys();
+
+			// TODO: Revisit when assigning default focus on open/close.
+			ImGui::SetWindowFocus(NULL);
 		}
+
+		isEnabled = true;
 	}
 
 	void Menu::Close()
 	{
-		RE::Main::GetSingleton()->freezeTime = prevFreezeState;
+		if (RE::Main* Game = RE::Main::GetSingleton()) {
+			Game->freezeTime = prevFreezeState;
+		}
+
+		if (ImGui::GetCurrentContext() != nullptr) {
+			auto& io = ImGui::GetIO();
+
+			io.MouseDrawCursor = false;
+			io.ClearInputKeys();
+		}
 
 		isEnabled = false;
 	}
@@ -46,12 +115,10 @@ namespace Modex
 
 	void Menu::Draw()
 	{
-		// TODO: Maybe hook this into an update call?
 		Console::ProcessMainThreadTasks();
+		InputManager::ProcessInput();
 
 		if (!isEnabled) {
-			ImGui::GetIO().MouseDrawCursor = false;
-			InputManager::GetSingleton()->captureInput = false;
 			return;
 		}
 
@@ -64,18 +131,11 @@ namespace Modex
 		ImGui_ImplDX11_NewFrame();
 
 		ImGui::NewFrame();
-		ImGui::GetIO().MouseDrawCursor = true;
 
 		Frame::GetSingleton()->Draw(showSettingWindow);
-
 		UIManager::GetSingleton()->Draw();
 
-#ifdef DEBUG
-		ImGui::ShowDemoWindow();  // This could be added to the settings?
-#endif
-
 		ImGui::EndFrame();
-
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
@@ -123,7 +183,7 @@ namespace Modex
 		ImGui_ImplWin32_Init(desc.OutputWindow);
 		ImGui_ImplDX11_Init(a_device, a_context);
 
-		this->device = a_device;
+		this->device = a_device;  // (?)
 		this->context = a_context;
 	}
 

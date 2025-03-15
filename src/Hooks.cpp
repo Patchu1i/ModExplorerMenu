@@ -5,15 +5,16 @@
 static void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events);
 static inline REL::Relocation<decltype(hk_PollInputDevices)> _InputHandler;  // local
 
+// Note to self: It's important that we read and process all events from the engine. When applying any sort of
+// conditional logic, we become suseptible to bugs caused by press/release events not being matched.
+
 void hk_PollInputDevices(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent** a_events)
 {
 	if (a_events) {
-		if (Modex::InputManager::GetSingleton()->ShouldProcessEvent(a_events)) {
-			Modex::InputManager::GetSingleton()->ProcessInputEvent(a_events);
-		}
+		Modex::InputManager::GetSingleton()->AddEventToQueue(a_events);
 	}
 
-	if (Modex::InputManager::GetSingleton()->captureInput) {
+	if (Modex::Menu::IsEnabled()) {
 		static RE::InputEvent* dummy[] = { nullptr };
 		_InputHandler(a_dispatcher, dummy);
 	} else {
@@ -38,6 +39,7 @@ namespace Hooks
 		}
 
 		static inline REL::Relocation<decltype(thunk)> func;
+		static inline std::atomic<bool> init{ false };
 	};
 
 	struct WndProcHandler_Hook
@@ -45,8 +47,11 @@ namespace Hooks
 		static LRESULT thunk(HWND a_hwnd, UINT a_msg, WPARAM a_wParam, LPARAM a_lParam)
 		{
 			switch (a_msg) {
+			case WM_SETFOCUS:
+				Modex::InputManager::GetSingleton()->OnFocusChange(true);  // TODO: On Focus Change
+				break;
 			case WM_KILLFOCUS:
-				Modex::InputManager::GetSingleton()->OnFocusKill();
+				Modex::InputManager::GetSingleton()->OnFocusChange(false);
 				break;
 			}
 
@@ -89,6 +94,7 @@ namespace Hooks
 
 		logger::info("[Hook] Hooking BSGraphics::Renderer::InitD3D");
 		stl::write_thunk_call<D3DInitHook>(REL::RelocationID(75595, 77226).address() + REL::Relocate(0x50, 0x2BC));
+		D3DInitHook::init.store(true);
 
 		logger::info("[Hook] Hooking WndProcHandler");
 		stl::write_thunk_call_6<RegisterClassA_Hook>(REL::VariantID(75591, 77226, 0xDC4B90).address() + REL::VariantOffset(0x8E, 0x15C, 0x99).offset());

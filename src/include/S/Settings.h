@@ -80,6 +80,7 @@ namespace Modex
 			int uiScale = 100;    // 80, 90, 100, 110, 120 (Should be a slider..)
 			bool fullscreen = false;
 			bool pauseGame = false;
+			bool disableInMenu = false;
 
 			// Font Stuff
 			std::string language = "English";

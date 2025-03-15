@@ -11,6 +11,7 @@ namespace Modex
 		void 					Open();
 		void 					Close();
 		void 					Toggle();
+		bool					AllowMenuOpen();
 
 		void 					RefreshStyle();
 		void 					RefreshFont();
@@ -23,6 +24,11 @@ namespace Modex
 		{
 			static Menu singleton;
 			return std::addressof(singleton);
+		}
+
+		static inline bool IsEnabled()
+		{
+			return Menu::GetSingleton()->isEnabled;
 		}
 
 		Menu() = default;
