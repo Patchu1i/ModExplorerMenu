@@ -1,4 +1,5 @@
 #include "include/P/Persistent.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/T/Teleport.h"
 
 namespace Modex
@@ -87,6 +88,13 @@ namespace Modex
 				IM_ARRAYSIZE(inputBuffer),
 				ImGuiInputTextFlags_EscapeClearsAll)) {
 			Refresh();
+		}
+		auto& imeIntegration = SimpleIME::SimpleImeIntegration::GetSingleton();
+		if (ImGui::IsItemActivated()) {
+			imeIntegration.EnableIme(true);
+			imeIntegration.UpdateImeWindowPosition();
+		} else if (ImGui::IsItemDeactivated()) {
+			imeIntegration.EnableIme(false);
 		}
 
 		ImGui::SameLine();

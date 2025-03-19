@@ -8,6 +8,7 @@
 #include "include/L/Language.h"
 #include "include/P/Persistent.h"
 #include "include/S/Settings.h"
+#include "include/S/SimpleImeIntegration.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace
@@ -82,6 +83,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	// Install SKSE hooks.
 	auto messaging = SKSE::GetMessagingInterface();
 	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
+		return false;
+	}
+	if (!messaging->RegisterListener("SimpleIME", SimpleIME::SimpleImeIntegration::HandleMessage)) {
 		return false;
 	}
 
