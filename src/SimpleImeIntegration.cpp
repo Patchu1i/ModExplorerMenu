@@ -61,6 +61,7 @@ namespace SimpleIME
 		logger::debug("SimpleIme: Received message IME_INTEGRATION_INIT");
 		if (isIntegrated.load()) {
 			logger::warn("SimpleIme: already integrated, message will be ignore");
+			return;
 		}
 
 		if (a_msg->data != nullptr && a_msg->dataLen == sizeof(IntegrationData*)) {
