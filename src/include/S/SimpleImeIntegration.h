@@ -27,9 +27,11 @@ namespace SimpleIME
 		bool (*EnableIme)(bool enable) = nullptr;
 		// update IME window position (the candidate and composition window)
 		void (*UpdateImeWindowPosition)(float posX, float posY) = nullptr;
+		// Is IME enabled?(in candidate choose, composition)
+		bool (*IsEnabled)() = nullptr;
 	};
 
-	static_assert(sizeof(IntegrationData) == 24);
+	static_assert(sizeof(IntegrationData) == 32);
 
 	class SimpleImeIntegration
 	{
@@ -52,7 +54,11 @@ namespace SimpleIME
 
 		auto IsEnabled() -> bool
 		{
-			return isEnabled.load();
+			if (!isIntegrated || integrationData == nullptr) {
+				return false;
+			}
+
+			return integrationData->IsEnabled();
 		}
 
 		static auto GetSingleton() -> SimpleImeIntegration&
