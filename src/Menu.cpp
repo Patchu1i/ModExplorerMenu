@@ -3,6 +3,7 @@
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
 #include "include/I/InputManager.h"
+#include "include/P/Papyrus.h"
 #include "include/U/UIManager.h"
 #include "include/U/UserSettings.h"
 
@@ -118,7 +119,7 @@ namespace Modex
 		Console::ProcessMainThreadTasks();
 		InputManager::ProcessInput();
 
-		if (!isEnabled) {
+		if (!isEnabled && !PapyrusWindow::GetSingleton()->IsOverlayEnabled()) {
 			return;
 		}
 
@@ -132,12 +133,27 @@ namespace Modex
 
 		ImGui::NewFrame();
 
-		Frame::GetSingleton()->Draw(showSettingWindow);
-		UIManager::GetSingleton()->Draw();
+		if (!isEnabled) {
+			if (const auto& ProfilerUI = PapyrusWindow::GetSingleton(); ProfilerUI) {
+				if (ProfilerUI->IsOverlayEnabled()) {
+					ProfilerUI->DrawOverlay();
+				}
+			}
+		} else {
+			Frame::GetSingleton()->Draw(showSettingWindow);
+			UIManager::GetSingleton()->Draw();
+		}
 
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void Menu::Update()
+	{
+		if (const auto& ProfilerUI = PapyrusWindow::GetSingleton(); ProfilerUI) {
+			ProfilerUI->Update();
+		}
 	}
 
 	void Menu::RefreshFont()

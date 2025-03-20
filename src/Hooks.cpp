@@ -80,6 +80,7 @@ namespace Hooks
 		{
 			func(a_p1);
 
+			Modex::Menu::GetSingleton()->Update();
 			Modex::Menu::GetSingleton()->Draw();
 		}
 		static inline REL::Relocation<decltype(thunk)> func;

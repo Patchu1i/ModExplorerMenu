@@ -186,7 +186,7 @@ namespace Modex
 							functionData.emplace(identifier, FunctionData{ functionName, identifier });
 						}
 
-						logger::info("[LogReader] Found function: {}", identifier);  // TODO: Fix formatting here, check logs
+						// logger::info("[LogReader] Found function: {}", identifier);  // TODO: Fix formatting here, check logs
 						functionData[identifier].callCount++;
 
 						// Get the parent function

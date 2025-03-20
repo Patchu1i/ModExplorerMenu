@@ -8,6 +8,7 @@ namespace Modex
 	{
 	public:
 		void 					Draw();
+		void					Update();
 		void 					Open();
 		void 					Close();
 		void 					Toggle();

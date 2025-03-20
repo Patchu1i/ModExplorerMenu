@@ -6,6 +6,23 @@
 
 namespace Modex
 {
+	// Separate the implementation of the overlay since it requires a different child window.
+	// In the future, should probably draw this directly onto a dedicated overlay window / handler.
+	void PapyrusWindow::DrawOverlay()
+	{
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+
+		constexpr auto overlay_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav |
+		                               ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove;
+
+		if (ImGui::Begin("PapyrusProfiler Overlay", nullptr, overlay_flags)) {
+			this->DrawHistogram(true);
+		}
+
+		ImGui::End();
+	}
+
 	void PapyrusWindow::Draw(float a_offset)
 	{
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
@@ -51,12 +68,6 @@ namespace Modex
 				ImGui::SameLine();
 				ImGui::TextUnformatted(std::to_string(logReader.GetLastPos()).c_str());
 
-				interval += ImGui::GetIO().DeltaTime;
-				if (interval >= 1.0f) {
-					logReader.UpdateLog(papyrusPath / currentLog.c_str());
-					interval = 0.0f;
-				}
-
 				if (logReader.GetFunctionData().empty()) {
 					ImGui::Text("No function data available.");
 				} else {
@@ -72,7 +83,7 @@ namespace Modex
 
 					switch (currentView) {
 					case LogView::Histogram:
-						DrawHistogram();
+						DrawHistogram(false);
 						break;
 					}
 				}
@@ -115,11 +126,32 @@ namespace Modex
 		return clicked;
 	}
 
-	void PapyrusWindow::RenderFlameGraph(const FunctionData* func, float xOffset, float yOffset, float a_maxWidth, bool a_rootOnly = false, float a_opacity = 1.0f)
+	void PapyrusWindow::Update()
 	{
+		if (currentLog.empty() || currentLog == "None") {
+			return;
+		}
+
+		if (paused) {
+			return;
+		}
+
+		interval += ImGui::GetIO().DeltaTime;
+		if (interval >= 1.0f) {
+			this->logReader.UpdateLog(papyrusPath / currentLog.c_str());
+			interval = 0.0f;
+		}
+	}
+
+	void PapyrusWindow::RenderFlameGraph(const FunctionData* func, float xOffset, float yOffset, float a_maxWidth, bool a_rootOnly = false, bool a_overlay = false, float a_opacity = 1.0f)
+	{
+		const bool flipped = flipY ? true : a_overlay;
+
 		ImGui::SetCursorPos(ImVec2(xOffset, yOffset));
+
 		if (FlameGraphNode(func, a_maxWidth, a_opacity)) {
 			root_node = func->id;  // Update the root node if clicked
+			this->zoom = 1.0f;     // Reset zoom on click
 		}
 
 		// if (ImGui::IsItemHovered()) {
@@ -143,10 +175,14 @@ namespace Modex
 			return;
 		}
 
+		float total_child_width = 0.0f;
+
 		// Now, recursively render the children of the current function
 		if (!func->children.empty()) {
 			float childXOffset = xOffset;  // Starting X position for child nodes
-			float childYOffset = yOffset + 30.0f;
+			// float childYOffset = yOffset + 30.0f;
+			float childYOffset = yOffset;
+			this->ApplyOffset(flipped, childYOffset);
 
 			for (const auto& [identifier, child] : func->children) {
 				float ratio;
@@ -165,27 +201,52 @@ namespace Modex
 					spacing = 0.0f;
 				}
 
+				total_child_width += child_width + spacing;
+
+				if (total_child_width > a_maxWidth + 5.0f) {
+					continue;
+				}
+
 				RenderFlameGraph(child, childXOffset, childYOffset, child_width);
 				childXOffset += child_width + spacing;  // Move the X offset for the next child (stack them horizontally with spacing)
 			}
 		}
 	}
 
-	void PapyrusWindow::DrawHistogram()
+	void PapyrusWindow::ApplyOffset(bool a_overlay, float& a_currentOffset)
 	{
-		ImGui::InputInt("Call Stack Level", &level);
-		ImGui::SliderInt("Call Threshold", &threshold, 0, 1000);
-		ImGui::Checkbox("Full Width", &fullwidth);
-		ImGui::SliderFloat("Zoom", &zoom, 1.0f, 5.0f);
+		if (a_overlay) {
+			a_currentOffset -= this->nodeOffset;
+		} else {
+			a_currentOffset += this->nodeOffset;
+		}
+	}
 
-		ImGui::NewLine();
+	// a_overlay is passed to determine if overlay is drawn externally in Menu.
+	void PapyrusWindow::DrawHistogram(bool a_overlay = false)
+	{
+		bool flipped = flipY ? true : a_overlay;
 
-		if (logReader.GetFunctionData().find(root_node) == logReader.GetFunctionData().end()) {
-			ImGui::Text("No function data available. %s", root_node.c_str());
-			return;
+		if (!a_overlay) {
+			ImGui::Checkbox("Show Overlay", &showOverlay);
+			ImGui::Checkbox("Flip Y", &flipY);
+			ImGui::Checkbox("Full Width", &fullwidth);
+			ImGui::SliderInt("Call Threshold", &threshold, 0, 1000);
+			ImGui::SliderFloat("Zoom", &zoom, minZoom, maxZoom);
+
+			ImGui::NewLine();
+
+			if (logReader.GetFunctionData().find(root_node) == logReader.GetFunctionData().end()) {
+				ImGui::Text("No function data available. %s", root_node.c_str());
+				return;
+			}
 		}
 
-		constexpr auto flame_graph_flags = ImGuiWindowFlags_HorizontalScrollbar;
+		auto flame_graph_flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+		if (a_overlay) {
+			flame_graph_flags |= ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+		}
 
 		// Just realized that using the scrollbar size/pos is problematic, this is a workaround.
 		ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -199,7 +260,13 @@ namespace Modex
 			FunctionData* parentFunction = rootFunction.parent;
 
 			std::vector<FunctionData*> orderedParentNodes;
-			float yOffset = 0.0f;
+			float yOffset;
+
+			if (flipped) {
+				yOffset = region.y;
+			} else {
+				yOffset = 0.0f;
+			}
 
 			while (parentFunction != nullptr) {
 				orderedParentNodes.push_back(parentFunction);
@@ -210,24 +277,35 @@ namespace Modex
 
 			float width;
 			if (fullwidth) {
-				width = (region.x - padding) * zoom;
+				width = (region.x - (padding * 2.0f)) * zoom;
 			} else {
 				width = ImGui::GetContentRegionMax().x - padding;  // Adjust for some fixed width
 			}
 
-			RenderFlameGraphMinimap(&rootFunction, padding, yOffset, width, region);
-			yOffset += this->minimapHeight + padding;
+			if (!a_overlay) {
+				float minimapStartPos = flipped ? yOffset - this->minimapHeight : yOffset;
+
+				RenderFlameGraphMinimap(&rootFunction, 0.0f, minimapStartPos, width, region);
+
+				if (flipped) {
+					yOffset -= this->minimapHeight + (padding * 2.0f);
+				} else {
+					yOffset += this->minimapHeight + (padding * 2.0f);
+				}
+				// yOffset += this->minimapHeight + padding;
+			}
 
 			if (!orderedParentNodes.empty()) {
 				std::reverse(orderedParentNodes.begin(), orderedParentNodes.end());
 
 				for (const auto& parent : orderedParentNodes) {
-					RenderFlameGraph(parent, padding, yOffset, width, true, 0.5f);
-					yOffset += 30.0f;
+					RenderFlameGraph(parent, padding, yOffset, width, true, a_overlay, 0.5f);
+					// yOffset += 30.0f;
+					this->ApplyOffset(flipped, yOffset);
 				}
 			}
 
-			RenderFlameGraph(&rootFunction, padding, yOffset, width - padding);
+			RenderFlameGraph(&rootFunction, padding, yOffset, width, false, a_overlay);
 		}
 
 		ImGui::EndChild();
@@ -235,14 +313,16 @@ namespace Modex
 		ImGui::PopStyleColor(4);  // scrollbar
 	}
 
-	void PapyrusWindow::RenderFlameGraphMinimap(const FunctionData* func, float /*xOffset*/, float /*yOffset*/, float /*width*/, ImVec2 a_region)
+	void PapyrusWindow::RenderFlameGraphMinimap(const FunctionData* func, float /*xOffset*/, float yOffset, float /*width*/, ImVec2 a_region)
 	{
 		// Draw a minimap of the flamegraph
 		const float padding = ImGui::GetStyle().WindowPadding.x;
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		ImVec2 minimapStart = ImGui::GetCursorScreenPos();
+		// ImVec2 minimapStart = ImVec2(xOffset, yOffset);
 		minimapStart.x += ImGui::GetScrollX();
+		minimapStart.y += yOffset;
 		ImVec2 minimapEnd = ImVec2(minimapStart.x + a_region.x - padding, minimapStart.y + this->minimapHeight);
 
 		// Draw the minimap background
@@ -259,14 +339,14 @@ namespace Modex
 
 		if (window->ScrollbarX) {
 			const float scroll_max = window->ScrollMax.x;
-			const float grab_size = ((a_region.x / (scroll_max + a_region.x)) * minimapSize) + ((padding * 2.0f) / this->zoom);
-			previewBoxStart = ImVec2(minimapStart.x + (ImGui::GetScrollX() / this->zoom) - padding, minimapStart.y);
+			const float grab_size = ((a_region.x / (scroll_max + a_region.x)) * minimapSize) + ((padding * 1.0f) / this->zoom);
+			previewBoxStart = ImVec2(minimapStart.x + (ImGui::GetScrollX() / this->zoom), minimapStart.y);
 			previewBoxEnd = ImVec2(previewBoxStart.x + grab_size + (padding / this->zoom), minimapEnd.y);
 			drawList->AddRectFilled(previewBoxStart, previewBoxEnd, IM_COL32(255, 255, 255, 25));
 			drawList->AddRect(previewBoxStart, previewBoxEnd, IM_COL32(255, 255, 255, 255));
 		}
 
-		if (ImGui::IsMouseDragPastThreshold(0, 5.0f) && ImGui::IsMouseHoveringRect(previewBoxStart, previewBoxEnd)) {
+		if (ImGui::IsMouseDragPastThreshold(0, 0.1f) && ImGui::IsMouseHoveringRect(previewBoxStart, previewBoxEnd)) {
 			float dragDelta = ImGui::GetMouseDragDelta(0).x;
 			float newScrollX = ImGui::GetScrollX() + (dragDelta * this->zoom);
 			ImGui::SetScrollX(newScrollX);
@@ -276,17 +356,19 @@ namespace Modex
 			ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 		}
 
-		// if (ImGui::IsMouseDown(0) && this->isDragging) {
-		// 	// float deltaX = this->mouseEndDrag.x - this->mouseStartDrag.x;
-		// 	// float newScrollX = ImGui::GetScrollX() + deltaX / this->zoom;
+		if (ImGui::GetIO().MouseWheel != 0.0f) {
+			this->zoom *= std::pow(1.1f, ImGui::GetIO().MouseWheel);  // Adjust zoom exponentially
 
-		// 	const ImVec2 mouseStart = ImVec2(this->mouseStartDrag, minimapStart.y);
-		// 	const ImVec2 mouseEnd = ImVec2(this->mouseEndDrag, minimapEnd.y);
-		// 	drawList->AddRect(mouseStart, mouseEnd, IM_COL32(255, 255, 255, 255));
-		// }
+			if (this->zoom < minZoom) {  //min
+				this->zoom = minZoom;
+			} else if (this->zoom > maxZoom) {  //max
+				this->zoom = maxZoom;
+			}
+		}
 
 		// Render the flamegraph structure in the minimap
-		std::function<void(const FunctionData*, float, float, float)> renderMinimapNode;
+		std::function<void(const FunctionData*, float, float, float)>
+			renderMinimapNode;
 		renderMinimapNode = [&](const FunctionData* func, float xOffset, float yOffset, float width) {
 			ImVec2 nodeStart = ImVec2(minimapStart.x + xOffset, minimapStart.y + yOffset);
 			ImVec2 nodeEnd = ImVec2(nodeStart.x + width, nodeStart.y + 10.0f);
@@ -299,6 +381,10 @@ namespace Modex
 				float childXOffset = xOffset;
 				float childYOffset = yOffset + 12.0f;
 				for (const auto& [identifier, child] : func->children) {
+					if (childYOffset + 12.0f > this->minimapHeight) {
+						continue;  // Skip rendering if it exceeds the minimap height
+					}
+
 					float ratio = float(child->GetCallCount()) / float(func->GetCallCount());
 					float childWidth = width * ratio;
 					renderMinimapNode(child, childXOffset, childYOffset, childWidth);

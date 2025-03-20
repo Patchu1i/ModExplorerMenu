@@ -69,12 +69,16 @@ namespace Modex
 		}
 
 		void Draw(float a_offset);
+		void Update();
 		void Init(bool a_isDefault);
+		bool IsOverlayEnabled() const { return showOverlay; }
+		void DrawOverlay();
 
 	private:
-		void RenderFlameGraph(const FunctionData* func, float xOffset, float yOffset, float width, bool a_rootOnly, float a_opacity);
+		void RenderFlameGraph(const FunctionData* func, float xOffset, float yOffset, float width, bool a_rootOnly, bool a_overlay, float a_opacity);
 		void RenderFlameGraphMinimap(const FunctionData* func, float xOffset, float yOffset, float width, ImVec2 a_region);
-		void DrawHistogram();
+		void DrawHistogram(bool a_overlay);
+		void ApplyOffset(bool a_overlay, float& a_currentOffset);
 
 		std::filesystem::path papyrusPath;
 		std::string currentLog;
@@ -98,10 +102,16 @@ namespace Modex
 		// logger settings
 		int level = 0;
 		int threshold = 200;
+		bool showOverlay = false;
+		bool flipY = false;
+		bool paused = false;
 
+		float nodeOffset = 30.0f;
 		float minimapHeight = 125.0f;
 		bool fullwidth = true;
 		float zoom = 1.0f;
+		float minZoom = 1.0f;
+		float maxZoom = 10.0f;
 
 		static std::string GetViewName(LogView a_view)
 		{
