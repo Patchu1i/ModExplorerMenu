@@ -75,8 +75,8 @@ namespace Modex
 			switch (event->GetEventType()) {
 			case RE::INPUT_EVENT_TYPE::kChar:
 				if (Menu::IsEnabled()) {
-					// don't add input character when SimpleIME enabled.
-					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsEnabled())
+					// don't add input character when SimpleIME want capture input.
+					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput())
 					{
 						io.AddInputCharacter(static_cast<const RE::CharEvent*>(event)->keyCode);
 					}

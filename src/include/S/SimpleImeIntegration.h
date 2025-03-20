@@ -23,12 +23,25 @@ namespace SimpleIME
 	{
 		// Other mod must call this to render IME window
 		void (*RenderIme)() = nullptr;
-		// enable IME for other mod
+
+		/// <summary>
+		/// Try enable IME.
+		/// Must use IsWantCaptureInput to check current state because
+		/// IME enabled state is updated asynchronously.
+		/// </summary>
 		bool (*EnableIme)(bool enable) = nullptr;
+
 		// update IME window position (the candidate and composition window)
 		void (*UpdateImeWindowPosition)(float posX, float posY) = nullptr;
-		// Is IME enabled?(in candidate choose, composition)
-		bool (*IsEnabled)() = nullptr;
+
+		/// <summary>
+		//  Check current IME want to capture user keyboard input?
+		//  Note: iFly won't update conversion mode value
+		/// </summary>
+		/// <returns>return true if SimpleIME mod enabled and IME not in alphanumeric mode,
+		/// otherwise, return false.
+		/// </returns>
+		bool (*IsWantCaptureInput)() = nullptr;
 	};
 
 	static_assert(sizeof(IntegrationData) == 32);
@@ -46,19 +59,31 @@ namespace SimpleIME
 
 		static auto HandleMessage(Message* a_msg) -> void;
 
+		// a shortcut to add enable IME check.
+		static void EnableImeOnInputTextWidget()
+		{
+			auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
+			if (ImGui::IsItemActivated()) {
+				instance.EnableIme(true);
+				instance.UpdateImeWindowPosition();
+			} else if (ImGui::IsItemDeactivated()) {
+				instance.EnableIme(false);
+			}
+		}
+
 		auto EnableIme(bool enable) -> bool;
 		auto RenderIme() -> void;
 		auto UpdateImeWindowPosition(float posX, float posY) -> void;
 		// Update IME window position by last ImGui item position
 		auto UpdateImeWindowPosition() -> void;
 
-		auto IsEnabled() -> bool
+		auto IsWantCaptureInput() -> bool
 		{
 			if (!isIntegrated || integrationData == nullptr) {
 				return false;
 			}
 
-			return integrationData->IsEnabled();
+			return integrationData->IsWantCaptureInput();
 		}
 
 		static auto GetSingleton() -> SimpleImeIntegration&
