@@ -1,4 +1,5 @@
 #include "include/P/Persistent.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/T/Teleport.h"
 
 namespace Modex
@@ -88,6 +89,7 @@ namespace Modex
 				ImGuiInputTextFlags_EscapeClearsAll)) {
 			Refresh();
 		}
+		SimpleIME::SimpleImeIntegration::EnableImeOnInputTextWidget();
 
 		ImGui::SameLine();
 

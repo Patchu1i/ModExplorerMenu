@@ -2,6 +2,7 @@
 #include "include/I/ItemPreview.h"
 #include "include/M/Menu.h"
 #include "include/T/Table.h"
+#include "include/S/SimpleImeIntegration.h"
 #include <execution>
 
 namespace Modex
@@ -758,6 +759,7 @@ namespace Modex
 			// Refresh();
 			this->Refresh();
 		}
+		SimpleIME::SimpleImeIntegration::EnableImeOnInputTextWidget();
 
 		ImGui::SameLine();
 

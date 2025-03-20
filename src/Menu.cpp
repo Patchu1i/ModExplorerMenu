@@ -3,6 +3,7 @@
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
 #include "include/I/InputManager.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/U/UIManager.h"
 #include "include/U/UserSettings.h"
 
@@ -101,6 +102,7 @@ namespace Modex
 			io.ClearInputKeys();
 		}
 
+		SimpleIME::SimpleImeIntegration::GetSingleton().EnableIme(false);
 		isEnabled = false;
 	}
 
@@ -138,6 +140,8 @@ namespace Modex
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+		SimpleIME::SimpleImeIntegration::GetSingleton().RenderIme();
 	}
 
 	void Menu::RefreshFont()
