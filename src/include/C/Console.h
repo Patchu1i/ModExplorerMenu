@@ -37,6 +37,10 @@ namespace Modex
 		static void Freeze();
 		static void Teleport(std::string a_editorID);
 
+		// Papyrus Profiling nl_cmd API
+		static void StartProfiling();
+		static void StopProfiling();
+
 		// Multi-threaded command processing.
 		static inline std::vector<RE::FormID> npcPlaceHistoryVector;
 		static inline std::unordered_set<RE::FormID> npcPlaceHistorySet;

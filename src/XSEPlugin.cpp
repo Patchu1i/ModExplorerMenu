@@ -1,5 +1,7 @@
 #define DLLEXPORT __declspec(dllexport)
 
+#include "extern/DescriptionFrameworkAPI.h"
+#include "extern/PapyrusAPI.h"
 #include "include/C/Console.h"
 #include "include/D/Data.h"
 #include "include/F/Frame.h"
@@ -12,6 +14,20 @@
 
 namespace
 {
+	static DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
+
+	inline static void SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* a_interface)
+	{
+		g_DescriptionFrameworkInterface = a_interface;
+	}
+
+	static PapyrusProfilerAPI::IPapyrusProfilerInterface001* g_PapyrusProfilerInterface = nullptr;
+
+	inline static void SetPapyrusProfilerInterface(PapyrusProfilerAPI::IPapyrusProfilerInterface001* a_interface)
+	{
+		g_PapyrusProfilerInterface = a_interface;
+	}
+
 	void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	{
 		switch (a_msg->type) {
@@ -41,6 +57,9 @@ namespace
 			break;
 		case SKSE::MessagingInterface::kPostPostLoad:
 			Hooks::Install();
+			// TODO: Move this, doesn't make much sense for it to be here.
+			SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001());
+			SetPapyrusProfilerInterface(PapyrusProfilerAPI::GetPapyrusProfilerInterface001());
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 			break;

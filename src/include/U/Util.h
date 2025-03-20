@@ -1,6 +1,5 @@
 #pragma once
 
-#include "extern/DescriptionFrameworkAPI.h"
 #include "include/S/Settings.h"
 #include <PCH.h>
 
@@ -587,13 +586,6 @@ namespace ImGui
 
 namespace Utils
 {
-	static DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* g_DescriptionFrameworkInterface = nullptr;
-
-	inline static void SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::IDescriptionFrameworkInterface001* a_interface)
-	{
-		g_DescriptionFrameworkInterface = a_interface;
-	}
-
 	inline static float Pulse(float a_time, float a_frequency, float a_amplitude)
 	{
 		return a_amplitude * sin(a_time * a_frequency);
@@ -1206,13 +1198,15 @@ namespace Utils
 		// This entirely removes HTML tags in Descriptions from Description Framework
 		// I did not see an instance where a Tag was necessary, so if there is
 		// This will need modified to only remove unecessary HTML tags.
-		if (g_DescriptionFrameworkInterface != nullptr) {
-			desc = g_DescriptionFrameworkInterface->GetDescription(form);
-			if (!desc.empty()) {
-				Utils::RemoveHTMLTags(desc);
-				return desc;
-			}
-		}
+
+		// TODO: ADD BACK IN
+		// if (g_DescriptionFrameworkInterface != nullptr) {
+		// 	desc = g_DescriptionFrameworkInterface->GetDescription(form);
+		// 	if (!desc.empty()) {
+		// 		Utils::RemoveHTMLTags(desc);
+		// 		return desc;
+		// 	}
+		// }
 
 		if (auto tesDescription = form->As<RE::TESDescription>()) {
 			RE::BSString buf;

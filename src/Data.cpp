@@ -492,7 +492,5 @@ namespace Modex
 			std::string modName = ValidateTESFileName(file);
 			_modListSorted.insert(modName);
 		}
-
-		Utils::SetDescriptionFrameworkInterface(DescriptionFrameworkAPI::GetDescriptionFrameworkInterface001());
 	}
 }

@@ -604,4 +604,16 @@ namespace Modex
 	{
 		AddToQueue("coc " + a_editorID);
 	}
+
+	// Start a default papyrus live profiling session
+	void Console::StartProfiling()
+	{
+		AddToQueue("nl_cmd StartPapyrusProfilingConfig(ProfileForeverWriteRealtime.json)");
+	}
+
+	// Stop a papyrus live profiling session
+	void Console::StopProfiling()
+	{
+		AddToQueue("nl_cmd StopPapyrusProfilingConfig(ProfileForeverWriteRealtime.json)");
+	}
 }

@@ -5,6 +5,7 @@
 #include "include/M/Menu.h"
 #include "include/N/NPC.h"
 #include "include/O/Object.h"
+#include "include/P/Papyrus.h"
 #include "include/S/Settings.h"
 #include "include/T/Teleport.h"
 #include "include/U/UserSettings.h"
@@ -190,6 +191,14 @@ namespace Modex
 					ExpandButton();
 				}
 
+				if (true) {
+					if (ImGui::SidebarButton("Papyrus", activeWindow == ActiveWindow::Papyrus, teleport_image.texture, teleport_image.size, ImVec2(button_width, button_height), papyrus_w)) {
+						activeWindow = ActiveWindow::Papyrus;
+					}
+
+					ExpandButton();
+				}
+
 				if (ImGui::SidebarButton("Settings", activeWindow == ActiveWindow::Settings, settings_image.texture, settings_image.size, ImVec2(button_width, button_height), settings_w)) {
 					activeWindow = ActiveWindow::Settings;
 				}
@@ -242,6 +251,9 @@ namespace Modex
 			case ActiveWindow::Teleport:
 				TeleportWindow::GetSingleton()->Draw(sidebar_w);
 				break;
+			case ActiveWindow::Papyrus:
+				PapyrusWindow::GetSingleton()->Draw(sidebar_w);
+				break;
 			case ActiveWindow::Settings:
 				SettingsWindow::Draw();
 				break;
@@ -268,6 +280,7 @@ namespace Modex
 		NPCWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::NPC);
 		TeleportWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::Teleport);
 		ObjectWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::Object);
+		PapyrusWindow::GetSingleton()->Init(Frame::activeWindow == ActiveWindow::Papyrus);
 
 		Blacklist::GetSingleton()->Init();
 

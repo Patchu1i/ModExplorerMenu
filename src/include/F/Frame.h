@@ -82,6 +82,7 @@ namespace Modex
 			Object,
 			NPC,
 			Teleport,
+			Papyrus,
 			Settings,
 			kTotal
 		};
@@ -95,6 +96,7 @@ namespace Modex
 		float 			npc_w 		= 0.0f;
 		float 			object_w 	= 0.0f;
 		float 			teleport_w 	= 0.0f;
+		float			papyrus_w 	= 0.0f;
 		float 			settings_w 	= 0.0f;
 		float 			exit_w 		= 0.0f;
 
@@ -104,6 +106,7 @@ namespace Modex
 		bool 			b_NPC 		= false;
 		bool 			b_Settings 	= false;
 		bool 			b_Teleport 	= false;
+		bool			b_Papyrus 	= false;
 
 		ActiveWindow 	activeWindow = ActiveWindow::Home;
 
@@ -115,6 +118,7 @@ namespace Modex
 			b_NPC 		= (activeWindow == NPC);
 			b_Settings 	= (activeWindow == Settings);
 			b_Teleport 	= (activeWindow == Teleport);
+			b_Papyrus 	= (activeWindow == Papyrus);
 		}
 	};
 }
