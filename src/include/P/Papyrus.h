@@ -111,7 +111,7 @@ namespace Modex
 		bool fullwidth = true;
 		float zoom = 1.0f;
 		float minZoom = 1.0f;
-		float maxZoom = 10.0f;
+		float maxZoom = 50.0f;
 
 		static std::string GetViewName(LogView a_view)
 		{
