@@ -89,7 +89,7 @@ namespace Modex
 				ImGuiInputTextFlags_EscapeClearsAll)) {
 			Refresh();
 		}
-		SimpleIME::SimpleImeIntegration::EnableImeOnInputTextWidget();
+		SimpleIME::SimpleImeIntegration::UpdateIMEPosition();
 
 		ImGui::SameLine();
 

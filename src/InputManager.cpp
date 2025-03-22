@@ -1,6 +1,6 @@
 #include "include/I/InputManager.h"
-#include "include/U/UIManager.h"
 #include "include/S/SimpleImeIntegration.h"
+#include "include/U/UIManager.h"
 
 namespace Modex
 {
@@ -76,8 +76,7 @@ namespace Modex
 			case RE::INPUT_EVENT_TYPE::kChar:
 				if (Menu::IsEnabled()) {
 					// don't add input character when SimpleIME want capture input.
-					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput())
-					{
+					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput()) {
 						io.AddInputCharacter(static_cast<const RE::CharEvent*>(event)->keyCode);
 					}
 

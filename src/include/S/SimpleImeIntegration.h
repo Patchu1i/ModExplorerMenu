@@ -59,15 +59,25 @@ namespace SimpleIME
 
 		static auto HandleMessage(Message* a_msg) -> void;
 
-		// a shortcut to add enable IME check.
-		static void EnableImeOnInputTextWidget()
+		// a global listener to enable IME based on the internal WantTextInput state.
+		static void EnableIMEListener()
 		{
 			auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
-			if (ImGui::IsItemActivated()) {
+			if (ImGuiIO io = ImGui::GetIO(); io.WantTextInput) {  // last frame
 				instance.EnableIme(true);
-				instance.UpdateImeWindowPosition();
-			} else if (ImGui::IsItemDeactivated()) {
+			} else {
 				instance.EnableIme(false);
+			}
+		}
+
+		// maybe requires brute-force testing, but only a single input box can hold focus. So this will
+		// always update the IME position to the active text box. Found to be more reliable then IsItemActive(ated).
+		// @note: only call this function after a valid IME compatible widget. (i.e. InputText)
+		static void UpdateIMEPosition()
+		{
+			if (ImGui::IsItemFocused()) {
+				auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
+				instance.UpdateImeWindowPosition();
 			}
 		}
 

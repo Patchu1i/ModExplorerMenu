@@ -39,6 +39,11 @@ namespace
 			logger::info("[kDataLoaded] Modex has been successfully loaded");
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
+			// We want to register Modex as a listener *after* SimpleIME has been loaded. Otherwise, we'll fail.
+			// This method allows Modex to operate with or without SimpleIME installed, which would be intended behavior (?).
+			if (!SKSE::GetMessagingInterface()->RegisterListener("SimpleIME", SimpleIME::SimpleImeIntegration::HandleMessage)) {
+				logger::warn("[SimpleIME] Could not locate SimpleIME installation. IME integration disabled.");
+			}
 			break;
 		case SKSE::MessagingInterface::kPostPostLoad:
 			Hooks::Install();
@@ -83,9 +88,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	// Install SKSE hooks.
 	auto messaging = SKSE::GetMessagingInterface();
 	if (!messaging->RegisterListener("SKSE", MessageHandler)) {
-		return false;
-	}
-	if (!messaging->RegisterListener("SimpleIME", SimpleIME::SimpleImeIntegration::HandleMessage)) {
 		return false;
 	}
 

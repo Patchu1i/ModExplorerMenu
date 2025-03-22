@@ -129,6 +129,9 @@ namespace Modex
 			return;
 		}
 
+		// Listen for WantTextInput from previous frame.
+		SimpleIME::SimpleImeIntegration::EnableIMEListener();
+
 		ImGui_ImplWin32_NewFrame();
 		ImGui_ImplDX11_NewFrame();
 
@@ -141,6 +144,7 @@ namespace Modex
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+		// Render IME over the top of Modex.
 		SimpleIME::SimpleImeIntegration::GetSingleton().RenderIme();
 	}
 
