@@ -760,7 +760,6 @@ namespace Modex
 			// Refresh();
 			this->Refresh();
 		}
-		SimpleIME::SimpleImeIntegration::UpdateIMEPosition();
 
 		ImGui::SameLine();
 

@@ -194,6 +194,11 @@ namespace Modex
 
 		this->device = a_device;  // (?)
 		this->context = a_context;
+
+		ImGui::GetPlatformIO().Platform_SetImeDataFn = [](auto* /*ctx*/, ImGuiViewport* /*viewport*/, ImGuiPlatformImeData* data) {
+			auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
+			instance.UpdateImeWindowPosition(data->InputPos.x, data->InputPos.y + ImGui::GetTextLineHeight()); // avoid override text
+		};
 	}
 
 	void Menu::RefreshStyle()

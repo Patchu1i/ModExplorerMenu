@@ -99,24 +99,11 @@ namespace SimpleIME
 			}
 		}
 
-		// maybe requires brute-force testing, but only a single input box can hold focus. So this will
-		// always update the IME position to the active text box. Found to be more reliable then IsItemActive(ated).
-		// @note: only call this function after a valid IME compatible widget. (i.e. InputText)
-		static void UpdateIMEPosition()
-		{
-			if (ImGui::IsItemFocused()) {
-				auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
-				instance.UpdateImeWindowPosition();
-			}
-		}
-
 		auto EnableIme(bool enable) -> bool;
 		auto PushContext() -> uint32_t;
 		auto PopContext() -> uint32_t;
 		auto RenderIme() -> void;
 		auto UpdateImeWindowPosition(float posX, float posY) -> void;
-		// Update IME window position by last ImGui item position
-		auto UpdateImeWindowPosition() -> void;
 
 		auto IsWantCaptureInput() -> bool
 		{

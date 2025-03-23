@@ -66,13 +66,6 @@ namespace SimpleIME
 		integrationData->UpdateImeWindowPosition(posX, posY);
 	}
 
-	auto SimpleImeIntegration::UpdateImeWindowPosition() -> void
-	{
-		auto min = ImGui::GetItemRectMin();
-		auto max = ImGui::GetItemRectMax();
-		UpdateImeWindowPosition(min.x, max.y);
-	}
-
 	auto SimpleImeIntegration::OnMessageImeIntegrationInit(Message* a_msg) -> void
 	{
 		logger::debug("SimpleIme: Received message IME_INTEGRATION_INIT");
