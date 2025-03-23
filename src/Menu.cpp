@@ -86,6 +86,7 @@ namespace Modex
 			ImGui::SetWindowFocus(NULL);
 		}
 
+		SimpleIME::SimpleImeIntegration::GetSingleton().PushContext();
 		isEnabled = true;
 	}
 
@@ -102,7 +103,7 @@ namespace Modex
 			io.ClearInputKeys();
 		}
 
-		SimpleIME::SimpleImeIntegration::GetSingleton().EnableIme(false);
+		SimpleIME::SimpleImeIntegration::GetSingleton().PopContext();
 		isEnabled = false;
 	}
 

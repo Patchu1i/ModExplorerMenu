@@ -1,5 +1,6 @@
 #include "include/S/SimpleImeIntegration.h"
 #include "imgui.h"
+#include <cstdint>
 
 namespace SimpleIME
 {
@@ -31,9 +32,25 @@ namespace SimpleIME
 		return false;
 	}
 
+	auto SimpleImeIntegration::PushContext() -> uint32_t
+	{
+		if (!isIntegrated || integrationData == nullptr) {
+			return 0;
+		}
+		return integrationData->PushContext();
+	}
+
+	auto SimpleImeIntegration::PopContext() -> uint32_t
+	{
+		if (!isIntegrated || integrationData == nullptr) {
+			return 0;
+		}
+		return integrationData->PopContext();
+	}
+
 	auto SimpleImeIntegration::RenderIme() -> void
 	{
-		if (!isIntegrated || integrationData == nullptr || !isEnabled) {
+		if (!isIntegrated || integrationData == nullptr) {
 			return;
 		}
 
@@ -42,7 +59,7 @@ namespace SimpleIME
 
 	auto SimpleImeIntegration::UpdateImeWindowPosition(float posX, float posY) -> void
 	{
-		if (!isIntegrated || integrationData == nullptr || !isEnabled) {
+		if (!isIntegrated || integrationData == nullptr) {
 			return;
 		}
 
