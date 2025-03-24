@@ -70,7 +70,7 @@ namespace SimpleIME
 		/// <returns>return true if SimpleIME mod enabled and IME not in alphanumeric mode,
 		/// otherwise, return false.
 		/// </returns>
-		bool (*IsWantCaptureInput)() = nullptr;
+		bool (*IsWantCaptureInput)(uint32_t keycode) = nullptr;
 	};
 
 	static_assert(sizeof(IntegrationData) == 48);
@@ -105,13 +105,13 @@ namespace SimpleIME
 		auto RenderIme() -> void;
 		auto UpdateImeWindowPosition(float posX, float posY) -> void;
 
-		auto IsWantCaptureInput() -> bool
+		auto IsWantCaptureInput(uint32_t keycode) -> bool
 		{
 			if (!isIntegrated || integrationData == nullptr) {
 				return false;
 			}
 
-			return integrationData->IsWantCaptureInput();
+			return integrationData->IsWantCaptureInput(keycode);
 		}
 
 		static auto GetSingleton() -> SimpleImeIntegration&

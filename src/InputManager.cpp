@@ -76,8 +76,9 @@ namespace Modex
 			case RE::INPUT_EVENT_TYPE::kChar:
 				if (Menu::IsEnabled()) {
 					// don't add input character when SimpleIME want capture input.
-					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput()) {
-						io.AddInputCharacter(static_cast<const RE::CharEvent*>(event)->keyCode);
+					auto asciiCode = static_cast<const RE::CharEvent*>(event)->keyCode;
+					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(asciiCode)) {
+						io.AddInputCharacter(asciiCode);
 					}
 
 					if (!modifierDown) {
@@ -157,7 +158,10 @@ namespace Modex
 
 							// IMPORTANT: We break out of the above code on escape to prevent unpaired press/release events.
 
-							io.AddKeyEvent(imGuiKey, buttonEvent->IsDown());
+							if (!io.WantTextInput ||
+								!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(scanCode)) {
+								io.AddKeyEvent(imGuiKey, buttonEvent->IsDown());
+							}
 						}
 					}
 				}
