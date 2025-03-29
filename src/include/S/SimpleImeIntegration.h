@@ -67,6 +67,7 @@ namespace SimpleIME
 		//  Check current IME want to capture user keyboard input?
 		//  Note: iFly won't update conversion mode value
 		/// </summary>
+		/// <param name="keycode">must be DIK code(scan code)</param>
 		/// <returns>return true if SimpleIME mod enabled and IME not in alphanumeric mode,
 		/// otherwise, return false.
 		/// </returns>
