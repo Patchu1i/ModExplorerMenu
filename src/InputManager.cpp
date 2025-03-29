@@ -1,5 +1,7 @@
 #include "include/I/InputManager.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/U/UIManager.h"
+#include <cctype>
 
 namespace Modex
 {
@@ -74,7 +76,12 @@ namespace Modex
 			switch (event->GetEventType()) {
 			case RE::INPUT_EVENT_TYPE::kChar:
 				if (Menu::IsEnabled()) {
-					io.AddInputCharacter(static_cast<const RE::CharEvent*>(event)->keyCode);
+					// don't add input character when SimpleIME want capture input.
+					auto asciiCode = static_cast<const RE::CharEvent*>(event)->keyCode;
+					if (!std::isalpha(asciiCode) && 
+						!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(0)) {
+						io.AddInputCharacter(asciiCode);
+					}
 
 					if (!modifierDown) {
 						io.ClearInputKeys();
@@ -153,7 +160,10 @@ namespace Modex
 
 							// IMPORTANT: We break out of the above code on escape to prevent unpaired press/release events.
 
-							io.AddKeyEvent(imGuiKey, buttonEvent->IsDown());
+							if (!io.WantTextInput ||
+								!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(scanCode)) {
+								io.AddKeyEvent(imGuiKey, buttonEvent->IsDown());
+							}
 						}
 					}
 				}

@@ -1,8 +1,10 @@
 #include "include/C/Console.h"
 #include "include/I/ItemPreview.h"
 #include "include/M/Menu.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/T/Table.h"
 #include <execution>
+
 
 namespace Modex
 {

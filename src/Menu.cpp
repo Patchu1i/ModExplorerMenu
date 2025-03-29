@@ -3,6 +3,7 @@
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
 #include "include/I/InputManager.h"
+#include "include/S/SimpleImeIntegration.h"
 #include "include/U/UIManager.h"
 #include "include/U/UserSettings.h"
 
@@ -85,6 +86,7 @@ namespace Modex
 			ImGui::SetWindowFocus(NULL);
 		}
 
+		SimpleIME::SimpleImeIntegration::GetSingleton().PushContext();
 		isEnabled = true;
 	}
 
@@ -101,6 +103,7 @@ namespace Modex
 			io.ClearInputKeys();
 		}
 
+		SimpleIME::SimpleImeIntegration::GetSingleton().PopContext();
 		isEnabled = false;
 	}
 
@@ -127,6 +130,9 @@ namespace Modex
 			return;
 		}
 
+		// Listen for WantTextInput from previous frame.
+		SimpleIME::SimpleImeIntegration::EnableIMEListener();
+
 		ImGui_ImplWin32_NewFrame();
 		ImGui_ImplDX11_NewFrame();
 
@@ -138,6 +144,9 @@ namespace Modex
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+		// Render IME over the top of Modex.
+		SimpleIME::SimpleImeIntegration::GetSingleton().RenderIme();
 	}
 
 	void Menu::RefreshFont()
@@ -185,6 +194,11 @@ namespace Modex
 
 		this->device = a_device;  // (?)
 		this->context = a_context;
+
+		ImGui::GetPlatformIO().Platform_SetImeDataFn = [](auto* /*ctx*/, ImGuiViewport* /*viewport*/, ImGuiPlatformImeData* data) {
+			auto& instance = SimpleIME::SimpleImeIntegration::GetSingleton();
+			instance.UpdateImeWindowPosition(data->InputPos.x, data->InputPos.y + ImGui::GetTextLineHeight()); // avoid override text
+		};
 	}
 
 	void Menu::RefreshStyle()
