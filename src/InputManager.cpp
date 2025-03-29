@@ -58,6 +58,39 @@ namespace Modex
 		return false;
 	}
 
+	// Mapping table for ASCII to DIK scan codes (US QWERTY layout)
+	// This mapping is based on the standard keyboard layout for English (US).
+	static const std::unordered_map<char, uint8_t> asciiToDIKMap = {
+		{ 'A', 0x1E }, { 'B', 0x30 }, { 'C', 0x2E }, { 'D', 0x20 }, { 'E', 0x12 },
+		{ 'F', 0x21 }, { 'G', 0x22 }, { 'H', 0x23 }, { 'I', 0x17 }, { 'J', 0x24 },
+		{ 'K', 0x25 }, { 'L', 0x26 }, { 'M', 0x32 }, { 'N', 0x31 }, { 'O', 0x18 },
+		{ 'P', 0x19 }, { 'Q', 0x10 }, { 'R', 0x13 }, { 'S', 0x1F }, { 'T', 0x14 },
+		{ 'U', 0x16 }, { 'V', 0x2F }, { 'W', 0x11 }, { 'X', 0x2D }, { 'Y', 0x15 },
+		{ 'Z', 0x2C }, { '0', 0x0B }, { '1', 0x02 }, { '2', 0x03 }, { '3', 0x04 },
+		{ '4', 0x05 }, { '5', 0x06 }, { '6', 0x07 }, { '7', 0x08 }, { '8', 0x09 },
+		{ '9', 0x0A }, { ' ', 0x39 }, { '-', 0x0C }, { '=', 0x0D }, { '[', 0x1A },
+		{ ']', 0x1B }, { '\\', 0x2B }, { ';', 0x27 }, { '\'', 0x28 }, { ',', 0x33 },
+		{ '.', 0x34 }, { '/', 0x35 }, { '`', 0x29 }
+	};
+
+	// Function to convert an ASCII code to a DIK scan code
+	uint8_t AsciiToDIK(char ascii)
+	{
+		// Convert to uppercase if it's a lowercase letter
+		if (ascii >= 'a' && ascii <= 'z') {
+			ascii = ascii - 'a' + 'A';
+		}
+
+		// Look up the DIK scan code in the map
+		auto it = asciiToDIKMap.find(ascii);
+		if (it != asciiToDIKMap.end()) {
+			return it->second;
+		}
+
+		// Return 0 if no mapping is found
+		return 0;
+	}
+
 	void InputManager::ProcessInputEvents()
 	{
 		WriteLocker locker(_inputLock);
@@ -78,8 +111,9 @@ namespace Modex
 				if (Menu::IsEnabled()) {
 					// don't add input character when SimpleIME want capture input.
 					auto asciiCode = static_cast<const RE::CharEvent*>(event)->keyCode;
-					if (!std::isalpha(asciiCode) && 
-						!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(0)) {
+					auto dikCode = AsciiToDIK(static_cast<char>(asciiCode));
+
+					if (!SimpleIME::SimpleImeIntegration::GetSingleton().IsWantCaptureInput(dikCode)) {
 						io.AddInputCharacter(asciiCode);
 					}
 
@@ -87,7 +121,6 @@ namespace Modex
 						io.ClearInputKeys();
 					}
 				}
-
 				break;
 			case RE::INPUT_EVENT_TYPE::kButton:
 				const RE::ButtonEvent* buttonEvent = static_cast<const RE::ButtonEvent*>(event);
