@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <string>
 #pragma once
 
 #ifdef SIMPLE_EXPORTS
@@ -18,6 +19,16 @@ namespace SimpleIME
 		IME_INTEGRATION_INIT = 0x100,
 		IME_COMPOSITION_RESULT,
 	};
+	
+    enum class State : std::uint32_t
+    {
+        IN_COMPOSING           = 0x1,  // set when IME in composition
+        IN_CAND_CHOOSING       = 0x2,  // set when IME in candidate choosing
+        IN_ALPHANUMERIC        = 0x4,  // set when input method on english mode
+        LANG_PROFILE_ACTIVATED = 0x10, // set when activate any non-english language profile
+        IME_DISABLED           = 0x20, // if set, ignore any TextService change
+        TSF_FOCUS              = 0x40, // TSF has a valid document focus
+    };
 
 	struct SIMPLE_API IntegrationData
 	{
@@ -67,14 +78,27 @@ namespace SimpleIME
 		//  Check current IME want to capture user keyboard input?
 		//  Note: iFly won't update conversion mode value
 		/// </summary>
-		/// <param name="keycode">must be DIK code(scan code)</param>
+		/// <param name="unicodeOrScanCode"> Used to check if the first character input
+		/// will trigger the IME when the IME is not input.
+		/// </param>
 		/// <returns>return true if SimpleIME mod enabled and IME not in alphanumeric mode,
 		/// otherwise, return false.
 		/// </returns>
-		bool (*IsWantCaptureInput)(uint32_t keycode) = nullptr;
+        bool (*IsWantCaptureInput)(uint32_t unicodeOrScanCode, bool isUnicode) = nullptr;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Optional, These API be used read SimpleIME state
+		//////////////////////////////////////////////////////////////////////////
+
+		// Get current state
+		// You can use Commonlib-SSE Enumeration API check state flag.
+		std::uint32_t (*GetState)() = nullptr;
+
+		// the description equality to input method name.
+		std::string (*GetCurrentLangProfileDescription)() = nullptr;
 	};
 
-	static_assert(sizeof(IntegrationData) == 48);
+	static_assert(sizeof(IntegrationData) == 0x40);
 
 	class SimpleImeIntegration
 	{
@@ -106,13 +130,13 @@ namespace SimpleIME
 		auto RenderIme() -> void;
 		auto UpdateImeWindowPosition(float posX, float posY) -> void;
 
-		auto IsWantCaptureInput(uint32_t keycode) -> bool
+		auto IsWantCaptureInput(uint32_t unicodeOrScanCode, bool isUnicode = true) -> bool
 		{
 			if (!isIntegrated || integrationData == nullptr) {
 				return false;
 			}
 
-			return integrationData->IsWantCaptureInput(keycode);
+			return integrationData->IsWantCaptureInput(unicodeOrScanCode, isUnicode);
 		}
 
 		static auto GetSingleton() -> SimpleImeIntegration&
