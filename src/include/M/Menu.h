@@ -48,8 +48,12 @@ namespace Modex
 		bool 					prevFreezeState;
 		bool					showSettingWindow;
 
+		// IME Test
+		char inputBuffer[256] = { 0 };
 	private:
 		void 					RebuildFontAtlas(); // internal only
+
+
 	};
 
 }

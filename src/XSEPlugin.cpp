@@ -8,6 +8,7 @@
 #include "include/L/Language.h"
 #include "include/P/Persistent.h"
 #include "include/S/Settings.h"
+#include "include/S/SimpleImeIntegration.h"
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace
@@ -38,6 +39,11 @@ namespace
 			logger::info("[kDataLoaded] Modex has been successfully loaded");
 			break;
 		case SKSE::MessagingInterface::kPostLoad:
+			// We want to register Modex as a listener *after* SimpleIME has been loaded. Otherwise, we'll fail.
+			// This method allows Modex to operate with or without SimpleIME installed, which would be intended behavior (?).
+			if (!SKSE::GetMessagingInterface()->RegisterListener("SimpleIME", SimpleIME::SimpleImeIntegration::HandleMessage)) {
+				logger::warn("[SimpleIME] Could not locate SimpleIME installation. IME integration disabled.");
+			}
 			break;
 		case SKSE::MessagingInterface::kPostPostLoad:
 			Hooks::Install();
