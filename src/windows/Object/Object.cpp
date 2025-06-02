@@ -12,7 +12,7 @@ namespace Modex
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchHeight"), MIN_SEARCH_HEIGHT);
+		float search_height = MIN_SEARCH_HEIGHT;
 		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchWidth"), MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionMax().x / 2.0f;
@@ -96,8 +96,8 @@ namespace Modex
 			ImGui::EndChild();
 
 			// Persist Search Area Width/Height
+			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchHeight"), search_height);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchWidth"), search_width);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchHeight"), search_height);
 		}
 	}
 

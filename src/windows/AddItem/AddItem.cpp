@@ -17,7 +17,7 @@ namespace Modex
 		// I probably should handle this better, but It's kind of nice
 		// that the search data is in this class, so I can reference it for behavior like this.
 		if (this->tableView.GetPrimaryFilter() == RE::FormType::Armor || this->tableView.GetPrimaryFilter() == RE::FormType::Weapon) {
-			MIN_SEARCH_HEIGHT = 200.0f;
+			MIN_SEARCH_HEIGHT = 85.0f + fontScale;  // Increase height for armor/weapon search.
 
 			// Ensure minimum height after resizing.
 			if (ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
@@ -26,7 +26,7 @@ namespace Modex
 		}
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-		float search_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
+		float search_height = MIN_SEARCH_HEIGHT;
 		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"), MAX_SEARCH_WIDTH - 75.0f);  // 75.0f is padding for initial size.
 		float kitbar_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::KitBarHeight"), MAX_KITBAR_HEIGHT);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
@@ -154,9 +154,9 @@ namespace Modex
 			}
 
 			// Persist Search Area Width/Height
+			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
 			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchWidth"), search_width);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
 		}
 	}
 
