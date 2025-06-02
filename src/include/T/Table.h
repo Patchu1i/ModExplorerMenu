@@ -34,7 +34,8 @@ namespace Modex
             ModexTableFlag_EnableNonPlayableSort = 1 << 3,
             ModexTableFlag_EnableUniqueSort = 1 << 4,
             ModexTableFlag_EnableEssentialSort = 1 << 5,
-            ModexTableFlag_EnablePluginKitView = 1 << 6
+            ModexTableFlag_EnablePluginKitView = 1 << 6,
+            ModexTableFlag_EnableDisabledSort = 1 << 7
         };
 
         enum DragBehavior {
@@ -73,6 +74,7 @@ namespace Modex
 
             this->hideEnchanted = false;
             this->hideNonPlayable = true;
+            this->hideDisabled = false;
             this->compactView = false;
             this->showEditorID = false;
             this->itemPreview = nullptr;
@@ -196,6 +198,7 @@ namespace Modex
         bool                    hideNonPlayable;
         bool                    hideNonUnique;
         bool                    hideNonEssential;
+        bool                    hideDisabled;
         bool                    compactView;
         bool                    showEditorID;
         bool                    showPluginKitView;
