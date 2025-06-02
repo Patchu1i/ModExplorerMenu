@@ -5,7 +5,8 @@ namespace Modex
 {
 	void NPCWindow::Draw(float a_offset)
 	{
-		const float MIN_SEARCH_HEIGHT = 175.0f;
+		const auto fontScale = ImGui::GetFontSize() * 6.0f;
+		float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
 		const float MIN_SEARCH_WIDTH = 200.0f;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
