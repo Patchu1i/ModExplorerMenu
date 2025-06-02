@@ -122,6 +122,7 @@ namespace Modex
 		tableView.SetGenerator([]() { return Data::GetSingleton()->GetNPCList(); });
 		tableView.AddFlag(TableView<NPCData>::ModexTableFlag_EnableUniqueSort);
 		tableView.AddFlag(TableView<NPCData>::ModexTableFlag_EnableEssentialSort);
+		tableView.AddFlag(TableView<NPCData>::ModexTableFlag_EnableDisabledSort);
 		tableView.SetupSearch(Data::PLUGIN_TYPE::NPC);
 		tableView.SetClickAmount(&clickToPlaceCount);
 		tableView.Init();

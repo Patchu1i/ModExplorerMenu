@@ -680,6 +680,7 @@ namespace Utils
 		{ "SPELL", ICON_LC_WAND },
 		{ "UNIQUE", ICON_LC_GEM },
 		{ "ESSENTIAL", ICON_LC_SHIELD_ALERT },
+		{ "DISABLED", ICON_LC_CIRCLE_X },
 
 		// ObjectData
 		{ "CONTAINER", ICON_LC_PACKAGE },

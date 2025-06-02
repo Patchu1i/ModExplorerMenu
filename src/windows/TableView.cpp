@@ -580,6 +580,16 @@ namespace Modex
 				if (this->hideNonEssential && !item.GetTESNPC()->IsEssential()) {
 					continue;
 				}
+
+				if (this->hideDisabled) {
+					if (const auto& ref = RE::TESObjectREFR::LookupByID<RE::TESObjectREFR>(item.refID)) {
+						if (!ref->IsDisabled()) {
+							continue;
+						}
+					} else {
+						continue;
+					}
+				}
 			}
 
 			// Primary Filter
@@ -1720,6 +1730,10 @@ namespace Modex
 			button_offset += ImGui::GetFrameHeightWithSpacing() * 0.5f;
 		}
 
+		if (this->HasFlag(ModexTableFlag_EnableDisabledSort)) {
+			button_offset += (ImGui::GetFrameHeightWithSpacing() * 0.5f) * 3.25f;  // fuck
+		}
+
 		ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - preview_size - button_offset);
 		ImGui::SetNextItemWidth(preview_size + 5.0f);
 		if (ImGui::BeginCombo("##TableView::Sort::Combo", SortTypeToString(this->sortBy).c_str(), combo_flags)) {
@@ -1791,6 +1805,19 @@ namespace Modex
 
 			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
 			if (IconButton(Utils::IconMap["ESSENTIAL"].c_str(), tooltip.c_str(), this->hideNonEssential)) {
+				this->Refresh();
+			}
+			ImGui::PopStyleColor();
+		}
+
+		if (this->HasFlag(ModexTableFlag_EnableDisabledSort)) {
+			ImGui::SameLine();
+
+			const std::string tooltip = this->hideDisabled ? "Show All NPC's" : "Show Disabled NPC's";
+			const ImU32 icon_color = this->hideDisabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
+			if (IconButton(Utils::IconMap["DISABLED"].c_str(), tooltip.c_str(), this->hideDisabled)) {
 				this->Refresh();
 			}
 			ImGui::PopStyleColor();
@@ -2225,11 +2252,14 @@ namespace Modex
 
 						const ImVec2 unique_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, this->compactView ? center_align : top_align);
 						const ImVec2 essential_pos = ImVec2(unique_pos.x + fontSize + 2.0f, unique_pos.y);
+						ImVec2 disabled_pos = unique_pos;
 
 						const std::string unique_string = Utils::IconMap["UNIQUE"];
 						const std::string essential_string = Utils::IconMap["ESSENTIAL"];
+						const std::string disabled_string = Utils::IconMap["FAILURE"];
 
 						if (npc->IsUnique() && !npc->IsEssential()) {
+							disabled_pos = ImVec2(unique_pos.x + fontSize + 2.0f, unique_pos.y);
 							DrawList->AddText(unique_pos, text_color, unique_string.c_str());
 							DrawList->AddRectFilledMultiColor(
 								ImVec2(bb.Min.x, bb.Min.y),
@@ -2239,6 +2269,7 @@ namespace Modex
 								IM_COL32(0, 0, 0, 0),
 								IM_COL32(0, 0, 0, 0));
 						} else if (npc->IsEssential() && !npc->IsUnique()) {
+							disabled_pos = ImVec2(unique_pos.x + fontSize + 2.0f, unique_pos.y);
 							DrawList->AddText(unique_pos, text_color, essential_string.c_str());
 							DrawList->AddRectFilledMultiColor(
 								ImVec2(bb.Min.x, bb.Min.y),
@@ -2248,6 +2279,7 @@ namespace Modex
 								IM_COL32(0, 0, 0, 0),
 								IM_COL32(0, 0, 0, 0));
 						} else if (npc->IsEssential() && npc->IsUnique()) {
+							disabled_pos = ImVec2(essential_pos.x + fontSize + 2.0f, unique_pos.y);
 							DrawList->AddText(unique_pos, text_color, unique_string.c_str());
 							DrawList->AddText(essential_pos, text_color, essential_string.c_str());
 							DrawList->AddRectFilledMultiColor(
@@ -2257,6 +2289,16 @@ namespace Modex
 								unique_color,
 								essential_color,
 								essential_color);
+						}
+
+						if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(npcData->refID)) {
+							if (ref->IsDisabled()) {
+								DrawList->AddText(disabled_pos, text_color, disabled_string.c_str());
+							}
+
+							if (ImGui::IsMouseHoveringRect(disabled_pos, ImVec2(disabled_pos.x + fontSize, disabled_pos.y + fontSize))) {
+								ImGui::SetTooltip(_T("TOOLTIP_DISABLED"));
+							}
 						}
 
 						if (ImGui::IsMouseHoveringRect(unique_pos, ImVec2(unique_pos.x + fontSize, unique_pos.y + fontSize))) {
@@ -2911,6 +2953,31 @@ namespace Modex
 									}
 								}
 
+								// if (RE::TESObjectREFR* refr = npc_data->GetForm()->As<RE::TESObjectREFR>()) {
+								// 	if (ImGui::MenuItem(_T("NPC_DISABLE"))) {
+								// 		if (selectionStorage.Size == 0) {
+								// 			refr->Disable();
+								// 		} else {
+								// 			if (item_data == itemPreview && !is_item_selected) {
+								// 				refr->Disable();
+								// 			} else {
+								// 				void* it = NULL;
+								// 				ImGuiID id = 0;
+
+								// 				while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+								// 					if (id < tableList.size() && id >= 0) {
+								// 						// const auto& item = tableList[id];
+								// 						// Console::DisableNPC(item->refID, true);
+								// 					}
+								// 				}
+
+								// 				// Console::StartProcessThread();
+								// 				this->selectionStorage.Clear();
+								// 			}
+								// 		}
+								// 	}
+								// }
+
 								// TODO: What if we have a selection that contains some npcs with references
 								// and some without? This relies on the user hovering over a valid ref at the
 								// time of the context window. It will work regardless of the above case.
@@ -2960,6 +3027,62 @@ namespace Modex
 												}
 
 												this->selectionStorage.Clear();
+											}
+										}
+									}
+								}
+
+								if (npc_data->refID != 0) {
+									if (auto ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(npc_data->refID)) {
+										if (ref->IsDisabled()) {
+											if (ImGui::MenuItem(_T("Enable"))) {
+												if (selectionStorage.Size == 0) {
+													ref->Enable(false);
+												} else {
+													if (item_data == itemPreview && !is_item_selected) {
+														ref->Enable(false);
+													} else {
+														void* it = NULL;
+														ImGuiID id = 0;
+
+														while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+															if (id < tableList.size() && id >= 0) {
+																const auto& item = tableList[id];
+																auto item_ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(item->refID);
+																if (item_ref) {
+																	item_ref->Enable(false);
+																}
+															}
+														}
+
+														this->selectionStorage.Clear();
+													}
+												}
+											}
+										} else {
+											if (ImGui::MenuItem(_T("Disable"))) {
+												if (selectionStorage.Size == 0) {
+													ref->Disable();
+												} else {
+													if (item_data == itemPreview && !is_item_selected) {
+														ref->Disable();
+													} else {
+														void* it = NULL;
+														ImGuiID id = 0;
+
+														while (selectionStorage.GetNextSelectedItem(&it, &id)) {
+															if (id < tableList.size() && id >= 0) {
+																const auto& item = tableList[id];
+																auto item_ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(item->refID);
+																if (item_ref) {
+																	item_ref->Disable();
+																}
+															}
+														}
+
+														this->selectionStorage.Clear();
+													}
+												}
 											}
 										}
 									}
