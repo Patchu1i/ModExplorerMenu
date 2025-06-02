@@ -74,17 +74,7 @@ namespace Modex
 			switch (event->GetEventType()) {
 			case RE::INPUT_EVENT_TYPE::kChar:
 				if (Menu::IsEnabled()) {
-					const RE::CharEvent* charEvent = static_cast<const RE::CharEvent*>(event);
-					// Handle UTF-8 input for ImGui
-					auto newKey = MapVirtualKeyA(charEvent->keyCode, MAPVK_VK_TO_CHAR);  // Map the key code to UTF-8 character
-					char utf8Char[5] = { 0 };                                            // Buffer to hold UTF-8 encoded character
-					if (newKey != 0) {
-						int len = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(&newKey), 1, utf8Char, sizeof(utf8Char) - 1, nullptr, nullptr);
-						if (len > 0) {
-							io.AddInputCharactersUTF8(utf8Char);  // Add the character to ImGui's input buffer
-						}
-					}
-					logger::info("InputManager::ProcessInputEvents - CharEvent: keyCode={}", charEvent->keyCode);
+					io.AddInputCharacter(static_cast<const RE::CharEvent*>(event)->keyCode);
 
 					if (!modifierDown) {
 						io.ClearInputKeys();
