@@ -28,8 +28,8 @@ namespace Modex
 		displaySize.x *= config.screenScaleRatio.x;
 		displaySize.y *= config.screenScaleRatio.y;
 
-		const float window_w = config.fullscreen ? displaySize.x : (displaySize.x * 0.80f) * (config.uiScale / 100.0f);
-		const float window_h = config.fullscreen ? displaySize.y : (displaySize.y * 0.75f) * (config.uiScale / 100.0f);
+		const float window_w = std::min(displaySize.x, config.fullscreen ? displaySize.x : (displaySize.x * 0.80f) * (config.uiScaleHorizontal / 100.0f));
+		const float window_h = std::min(displaySize.y, config.fullscreen ? displaySize.y : (displaySize.y * 0.75f) * (config.uiScaleVertical / 100.0f));
 
 		// const float min_sidebar_width = window_w * 0.060f;
 		const float min_sidebar_width = 64.0f + (ImGui::GetStyle().WindowPadding.x * 2);

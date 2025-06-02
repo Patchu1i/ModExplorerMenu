@@ -76,8 +76,9 @@ namespace Modex
 			std::string theme = "Default";
 			uint32_t showMenuKey = 211;
 			uint32_t showMenuModifier = 0;
-			int modListSort = 0;  // 0 = Alphabetical, 1 = Load Order (ASC) 2 = Load Order (DESC)
-			int uiScale = 100;    // 80, 90, 100, 110, 120 (Should be a slider..)
+			int modListSort = 0;        // 0 = Alphabetical, 1 = Load Order (ASC) 2 = Load Order (DESC)
+			int uiScaleVertical = 100;  // 80, 90, 100, 110, 120 (Should be a slider..)
+			int uiScaleHorizontal = 100;
 			bool fullscreen = false;
 			bool pauseGame = false;
 			bool disableInMenu = false;

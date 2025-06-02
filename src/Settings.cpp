@@ -108,7 +108,8 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(_default.showMenuKey).c_str(), GetComment(iComment::ConfigShowMenuKey));
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(_default.showMenuModifier).c_str(), GetComment(iComment::ConfigShowMenuModifier));
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(_default.modListSort).c_str(), GetComment(iComment::ConfigModListSort));
-			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScale).c_str(), GetComment(iComment::ConfigUIScale));
+			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(_default.uiScaleVertical).c_str(), GetComment(iComment::ConfigUIScale));
+			a_ini.SetValue(rSections[Main], "UI Scale Horizontal", std::to_string(_default.uiScaleHorizontal).c_str(), GetComment(iComment::ConfigUIScaleHorizontal));
 			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(_default.fullscreen).c_str(), GetComment(iComment::ConfigFullscreen));
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(_default.pauseGame).c_str(), GetComment(iComment::ConfigPauseGame));
 			a_ini.SetValue(rSections[Main], "DisableInMenu", ToString(_default.disableInMenu).c_str(), GetComment(iComment::ConfigDisableInMenu));
@@ -194,7 +195,8 @@ namespace Modex
 			a_ini.SetValue(rSections[Main], "ShowMenuKey", std::to_string(Settings::GetSingleton()->user.config.showMenuKey).c_str());
 			a_ini.SetValue(rSections[Main], "ShowMenuModifier", std::to_string(Settings::GetSingleton()->user.config.showMenuModifier).c_str());
 			a_ini.SetValue(rSections[Main], "ModListSort", std::to_string(Settings::GetSingleton()->user.config.modListSort).c_str());
-			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScale).c_str());
+			a_ini.SetValue(rSections[Main], "UI Scale", std::to_string(Settings::GetSingleton()->user.config.uiScaleVertical).c_str());
+			a_ini.SetValue(rSections[Main], "UI Scale Horizontal", std::to_string(Settings::GetSingleton()->user.config.uiScaleHorizontal).c_str());
 			a_ini.SetValue(rSections[Main], "Fullscreen", ToString(Settings::GetSingleton()->user.config.fullscreen).c_str());
 			a_ini.SetValue(rSections[Main], "PauseGame", ToString(Settings::GetSingleton()->user.config.pauseGame).c_str());
 			a_ini.SetValue(rSections[Main], "DisableInMenu", ToString(Settings::GetSingleton()->user.config.disableInMenu).c_str());
@@ -229,7 +231,8 @@ namespace Modex
 		user.config.showMenuKey = GET_VALUE<uint32_t>(rSections[Main], "ShowMenuKey", _default.showMenuKey, a_ini);
 		user.config.showMenuModifier = GET_VALUE<uint32_t>(rSections[Main], "ShowMenuModifier", _default.showMenuModifier, a_ini);
 		user.config.modListSort = GET_VALUE<int>(rSections[Main], "ModListSort", _default.modListSort, a_ini);
-		user.config.uiScale = GET_VALUE<int>(rSections[Main], "UI Scale", _default.uiScale, a_ini);
+		user.config.uiScaleVertical = GET_VALUE<int>(rSections[Main], "UI Scale", _default.uiScaleVertical, a_ini);
+		user.config.uiScaleHorizontal = GET_VALUE<int>(rSections[Main], "UI Scale Horizontal", _default.uiScaleHorizontal, a_ini);
 		user.config.fullscreen = GET_VALUE<bool>(rSections[Main], "Fullscreen", _default.fullscreen, a_ini);
 		user.config.pauseGame = GET_VALUE<bool>(rSections[Main], "PauseGame", _default.pauseGame, a_ini);
 		user.config.disableInMenu = GET_VALUE<bool>(rSections[Main], "DisableInMenu", _default.disableInMenu, a_ini);

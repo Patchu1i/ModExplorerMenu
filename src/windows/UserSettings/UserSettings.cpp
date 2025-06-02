@@ -96,7 +96,7 @@ namespace Modex
 		ImGui::Text(_T(a_text));
 
 		if (GraphicManager::imgui_library.empty()) {
-			const float height = ((config.uiScale / 100) * 20.0f) + 10.0f;
+			const float height = ((config.uiScaleVertical / 100) * 20.0f) + 10.0f;
 
 			ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);  // Right Align
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (height / 2) + 5.0f);                                            // Center Align
@@ -116,7 +116,7 @@ namespace Modex
 
 			GraphicManager::Image img = GraphicManager::imgui_library[ImGui::ImGuiKeymap.at(a_keybind)];
 
-			float scale = config.uiScale / 100.0f;
+			float scale = config.uiScaleVertical / 100.0f;
 			const float imageWidth = ((float)img.width * 0.5f) * scale;
 			const float imageHeight = ((float)img.height * 0.5f) * scale;
 			const ImVec2& size = ImVec2(imageWidth, imageHeight);
@@ -328,13 +328,29 @@ namespace Modex
 
 		// UI Scale Setting
 		ImGui::Spacing();
-		ImGui::Text(_T("SETTING_UI_SCALE"));
+		ImGui::Text(_T("SETTINGS_UI_SCALE_VERTICAL"));
 		ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);
 		ImGui::PushItemWidth(p_fixedWidth);
-		ImGui::SliderInt("##UIScaleSelection", &_uiScale, 60, 120, "%d%%");
+		ImGui::SliderInt("##UIVerticalScaleSelection", &_uiScaleVertical, 50, 150, "%d%%");
 
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			config.uiScale = _uiScale;
+			config.uiScaleVertical = _uiScaleVertical;
+
+			// SettingsWindow::changes.store(true);
+			// SettingsWindow::file_changes.store(true);
+			Settings::GetSingleton()->SaveSettings();
+		}
+		ImGui::Spacing();
+		ImGui::PopItemWidth();
+
+		ImGui::Spacing();
+		ImGui::Text(_T("SETTINGS_UI_SCALE_HORIZONTAL"));
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - p_fixedWidth - p_padding - ImGui::GetStyle().IndentSpacing);
+		ImGui::PushItemWidth(p_fixedWidth);
+		ImGui::SliderInt("##UIHorizontalScaleSelection", &_uiScaleHorizontal, 50, 150, "%d%%");
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			config.uiScaleHorizontal = _uiScaleHorizontal;
 
 			// SettingsWindow::changes.store(true);
 			// SettingsWindow::file_changes.store(true);
@@ -795,7 +811,8 @@ namespace Modex
 	// This is important, because settings *must* be loaded before.
 	void SettingsWindow::Init()
 	{
-		_uiScale = Settings::GetSingleton()->GetConfig().uiScale;
+		_uiScaleVertical = Settings::GetSingleton()->GetConfig().uiScaleVertical;
+		_uiScaleHorizontal = Settings::GetSingleton()->GetConfig().uiScaleHorizontal;
 		_fontSize = (int)Settings::GetSingleton()->GetConfig().globalFontSize;
 	}
 }
