@@ -66,6 +66,70 @@ namespace Modex
 		return true;
 	}
 
+	// Loads the Userdata JSON into memory.
+	void PersistentData::LoadUserdata()
+	{
+		nlohmann::json JSON = OpenJSONFile(json_user_path + "userdata.json");
+
+		if (!JSON.contains("Userdata")) {
+			return;
+		}
+
+		for (auto& [key, value] : JSON["Userdata"].items()) {
+			if (value.is_null()) {
+				continue;  // Skip null values
+			}
+
+			if (value.is_string()) {
+				m_userdata[key] = value.get<std::string>();
+				continue;
+			}
+
+			if (value.is_boolean()) {
+				m_userdata[key] = value.get<bool>();
+				continue;
+			}
+
+			if (value.is_number_integer()) {
+				m_userdata[key] = value.get<int>();
+				continue;
+			}
+
+			if (value.is_number_float()) {
+				m_userdata[key] = value.get<float>();
+				continue;
+			}
+		}
+
+		// If you want true heterogeneous storage, use std::any or std::variant as the value type.
+	}
+
+	void PersistentData::SaveUserdata()
+	{
+		nlohmann::json JSON;
+
+		for (const auto& [key, value] : m_userdata) {
+			if (value.type() == typeid(std::string)) {
+				JSON["Userdata"][key] = std::any_cast<std::string>(value);
+			} else if (value.type() == typeid(bool)) {
+				JSON["Userdata"][key] = std::any_cast<bool>(value);
+			} else if (value.type() == typeid(int)) {
+				JSON["Userdata"][key] = std::any_cast<int>(value);
+			} else if (value.type() == typeid(float)) {
+				JSON["Userdata"][key] = std::any_cast<float>(value);
+			} else {
+				logger::warn("[PersistentData] Unsupported type for userdata key: {}", key);
+				continue;  // Skip unsupported types
+			}
+		}
+
+		if (!SaveJSONFile(json_user_path + "userdata.json", JSON)) {
+			logger::warn("[PersistentData] Failed to save userdata.json.");
+		} else {
+			logger::debug("[PersistentData] Userdata saved successfully.");
+		}
+	}
+
 	// Loads the blacklist JSON into the blacklist set.
 	void PersistentData::LoadBlacklist()
 	{

@@ -18,6 +18,7 @@ namespace
 		case SKSE::MessagingInterface::kDataLoaded:  // Skypatcher loads here
 			Modex::PersistentData::GetSingleton()->LoadAllKits();
 			Modex::PersistentData::GetSingleton()->LoadBlacklist();
+			Modex::PersistentData::GetSingleton()->LoadUserdata();
 			logger::info("[kDataLoaded] Loaded Persistent Data");
 
 			Modex::Language::GetSingleton()->BuildLanguageList();

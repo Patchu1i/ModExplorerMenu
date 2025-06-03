@@ -13,7 +13,8 @@ namespace Modex
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = MIN_SEARCH_HEIGHT;
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchWidth"), MAX_SEARCH_WIDTH);
+		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Object::SearchWidth"), MAX_SEARCH_WIDTH);
+		float search_width = PersistentData::GetUserdata<float>("Object::SearchWidth", MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionMax().x / 2.0f;
 		const float button_height = ImGui::GetFontSize() * 1.5f;
@@ -97,7 +98,8 @@ namespace Modex
 
 			// Persist Search Area Width/Height
 			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchHeight"), search_height);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchWidth"), search_width);
+			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Object::SearchWidth"), search_width);
+			PersistentData::SetUserdata<float>("Object::SearchWidth", search_width);
 		}
 	}
 
@@ -122,6 +124,11 @@ namespace Modex
 		tableView.SetupSearch(Data::PLUGIN_TYPE::OBJECT);
 		tableView.SetClickAmount(&clickToPlaceCount);
 		tableView.Init();
+		tableView.SetDataID("Object");
+		tableView.SetCompactView(PersistentData::GetUserdata<bool>("Object::CompactView", false));
+		tableView.SetShowEditorID(PersistentData::GetUserdata<bool>("Object::ShowEditorID", false));
+		tableView.SetSortBy(static_cast<SortType>(PersistentData::GetUserdata<int>("Object::SortBy", 3)));
+		tableView.SetSortAscending(PersistentData::GetUserdata<bool>("Object::SortAscending", true));
 
 		if (is_default) {
 			tableView.Refresh();

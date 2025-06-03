@@ -20,7 +20,8 @@ namespace Modex
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = MIN_SEARCH_HEIGHT;
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Teleport::SearchWidth"), MAX_SEARCH_WIDTH);
+		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("Teleport::SearchWidth"), MAX_SEARCH_WIDTH);
+		float search_width = PersistentData::GetUserdata<float>("Teleport::SearchWidth", MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 
 		ImGui::SameLine();
@@ -67,7 +68,8 @@ namespace Modex
 
 		// Persist Search Area Width/Height
 		// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Teleport::SearchHeight"), search_height);
-		ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Teleport::SearchWidth"), search_width);
+		// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("Teleport::SearchWidth"), search_width);
+		PersistentData::SetUserdata<float>("Teleport::SearchWidth", search_width);
 	}
 
 	void TeleportWindow::Unload()

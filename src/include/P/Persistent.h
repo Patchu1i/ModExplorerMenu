@@ -21,6 +21,9 @@ namespace Modex
 		void AddPluginToBlacklist(const RE::TESFile* mod);
 		void RemovePluginFromBlacklist(const RE::TESFile* mod);
 
+		void LoadUserdata();
+		void SaveUserdata();
+
 		void LoadKit(const std::string& a_name);
 		void LoadAllKits();
 		void SaveKitToJSON(const Kit& a_kit);
@@ -37,6 +40,24 @@ namespace Modex
 		static inline Collection& GetLoadedKits()
 		{
 			return GetSingleton()->m_kits;
+		}
+
+		template <typename T>
+		static inline T GetUserdata(const std::string& a_key, const T& a_default)
+		{
+			auto& userdata = GetSingleton()->m_userdata;
+
+			if (userdata.find(a_key) == userdata.end()) {
+				userdata[a_key] = a_default;
+			}
+
+			return std::any_cast<T>(userdata[a_key]);
+		}
+
+		template <typename T>
+		static void SetUserdata(const std::string& a_key, const T& a_value)
+		{
+			GetSingleton()->m_userdata[a_key] = a_value;
 		}
 
 		// Handles conversion from KitItem to ItemData
@@ -76,6 +97,7 @@ namespace Modex
 	private:
 		std::unordered_set<const RE::TESFile*> m_blacklist;
 		Collection m_kits;
+		std::unordered_map<std::string, std::any> m_userdata;
 
 		const std::string json_user_path = "Data/Interface/Modex/User/";
 	};

@@ -13,7 +13,8 @@ namespace Modex
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = MIN_SEARCH_HEIGHT;
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("NPC::SearchWidth"), MAX_SEARCH_WIDTH);
+		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("NPC::SearchWidth"), MAX_SEARCH_WIDTH);
+		float search_width = PersistentData::GetUserdata<float>("NPC::SearchWidth", MAX_SEARCH_WIDTH);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionMax().x / 2.0f;
 		const float button_height = ImGui::GetFontSize() * 1.5f;
@@ -97,7 +98,8 @@ namespace Modex
 
 			// Persist Search Area Width/Height
 			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("NPC::SearchHeight"), search_height);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("NPC::SearchWidth"), search_width);
+			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("NPC::SearchWidth"), search_width);
+			PersistentData::SetUserdata<float>("NPC::SearchWidth", search_width);
 		}
 	}
 
@@ -127,6 +129,14 @@ namespace Modex
 		tableView.SetupSearch(Data::PLUGIN_TYPE::NPC);
 		tableView.SetClickAmount(&clickToPlaceCount);
 		tableView.Init();
+		tableView.SetDataID("NPC");
+		tableView.SetCompactView(PersistentData::GetUserdata<bool>("NPC::CompactView", false));
+		tableView.SetShowEditorID(PersistentData::GetUserdata<bool>("NPC::ShowEditorID", false));
+		tableView.SetSortBy(static_cast<SortType>(PersistentData::GetUserdata<int>("NPC::SortBy", 3)));
+		tableView.SetSortAscending(PersistentData::GetUserdata<bool>("NPC::SortAscending", true));
+		tableView.SetHideNonUnique(PersistentData::GetUserdata<bool>("NPC::HideNonUnique", false));
+		tableView.SetHideNonEssential(PersistentData::GetUserdata<bool>("NPC::HideNonEssential", false));
+		tableView.SetHideDisabled(PersistentData::GetUserdata<bool>("NPC::HideDisabled", false));
 
 		if (is_default) {
 			tableView.Refresh();

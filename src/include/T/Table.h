@@ -64,6 +64,7 @@ namespace Modex
             this->sortAscending = true;
             this->generalSearchBuffer[0] = '\0';
             this->pluginSearchBuffer[0] = '\0';
+            this->data_id = "TableView::EMPTY_ID";
 
             this->lastSearchBuffer[0] = '\0';
             this->generalSearchDirty = false;
@@ -105,8 +106,18 @@ namespace Modex
         void                    SetDragDropID(const std::string& a_id);
         void                    SetClickAmount(int* a_amount) { clickAmount = a_amount; }
         void                    SetDoubleClickBehavior(bool* a_clickToAdd) { clickToAdd = a_clickToAdd; }
+        void                    SetDataID(const std::string& a_id) { data_id = a_id; } // used for persistent data reference
 
         void                    SetCompactView(bool a_compact) { compactView = a_compact; }
+        void                    SetHideEnchanted(bool a_hide) { hideEnchanted = a_hide; }
+        void                    SetHideNonPlayable(bool a_hide) { hideNonPlayable = a_hide; }
+        void                    SetHideNonUnique(bool a_hide) { hideNonUnique = a_hide; }
+        void                    SetHideNonEssential(bool a_hide) { hideNonEssential = a_hide; }
+        void                    SetHideDisabled(bool a_hide) { hideDisabled = a_hide; }
+        void                    SetShowEditorID(bool a_show) { showEditorID = a_show; }
+        void                    SetShowPluginKitView(bool a_show) { showPluginKitView = a_show; }
+        void                    SetSortBy(SortType a_sortBy) { sortBy = a_sortBy; }
+        void                    SetSortAscending(bool a_ascending) { sortAscending = a_ascending; }
         
         // drag n drop behaviors
         void                    AddDragDropTarget(const std::string a_id, TableView* a_view);
@@ -152,6 +163,7 @@ namespace Modex
         uint32_t                flags = 0;
         GeneratorList           generator;
         Data::PLUGIN_TYPE       pluginType;
+        std::string             data_id; // used for persistent data reference
 
         TableItem               itemPreview;
 

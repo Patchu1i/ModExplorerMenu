@@ -8,7 +8,7 @@ namespace Modex
 	{
 		const auto fontScale = ImGui::GetFontSize() * 6.0f;
 		float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
-		const float MIN_SEARCH_WIDTH = 200.0f * fontScale;
+		const float MIN_SEARCH_WIDTH = 200.0f;
 		const float MIN_KITBAR_HEIGHT = MIN_SEARCH_HEIGHT;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
 		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
@@ -20,15 +20,20 @@ namespace Modex
 			MIN_SEARCH_HEIGHT = 85.0f + fontScale;  // Increase height for armor/weapon search.
 
 			// Ensure minimum height after resizing.
-			if (ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
-				ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
+			// if (ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
+			// 	ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
+			// }
+			if (PersistentData::GetUserdata<float>("AddItem::SearchHeight", MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
+				PersistentData::SetUserdata<float>("AddItem::SearchHeight", MIN_SEARCH_HEIGHT);
 			}
 		}
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
 		float search_height = MIN_SEARCH_HEIGHT;
-		float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"), MAX_SEARCH_WIDTH - 75.0f);  // 75.0f is padding for initial size.
-		float kitbar_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::KitBarHeight"), MAX_KITBAR_HEIGHT);
+		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"));  // 75.0f is padding for initial size.
+		// float kitbar_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::KitBarHeight"), MAX_KITBAR_HEIGHT);
+		float search_width = PersistentData::GetUserdata<float>("AddItem::SearchWidth", MAX_SEARCH_WIDTH);
+		float kitbar_height = PersistentData::GetUserdata<float>("AddItem::KitBarHeight", MAX_KITBAR_HEIGHT);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionAvail().x / static_cast<int>(Viewport::Count);
 		const float button_height = ImGui::GetFontSize() * 1.5f;
@@ -155,8 +160,9 @@ namespace Modex
 
 			// Persist Search Area Width/Height
 			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
-			ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchWidth"), search_width);
+			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
+			PersistentData::SetUserdata<float>("AddItem::KitBarHeight", kitbar_height);
+			PersistentData::SetUserdata<float>("AddItem::SearchWidth", search_width);
 		}
 	}
 
@@ -191,6 +197,14 @@ namespace Modex
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableEnchantmentSort);
 		tableView.AddFlag(TableView<ItemData>::ModexTableFlag_EnableNonPlayableSort);
 		tableView.Init();
+		tableView.SetDataID("AddItem");
+		tableView.SetCompactView(PersistentData::GetUserdata<bool>("AddItem::CompactView", false));
+		tableView.SetHideEnchanted(PersistentData::GetUserdata<bool>("AddItem::HideEnchanted", false));
+		tableView.SetHideNonPlayable(PersistentData::GetUserdata<bool>("AddItem::HideNonPlayable", true));
+		tableView.SetShowEditorID(PersistentData::GetUserdata<bool>("AddItem::ShowEditorID", false));
+		tableView.SetShowPluginKitView(PersistentData::GetUserdata<bool>("AddItem::ShowPluginKitView", false));
+		tableView.SetSortBy(static_cast<SortType>(PersistentData::GetUserdata<int>("AddItem::SortBy", 3)));
+		tableView.SetSortAscending(PersistentData::GetUserdata<bool>("AddItem::SortAscending", true));
 
 		if (is_default) {
 			tableView.Refresh();

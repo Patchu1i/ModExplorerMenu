@@ -1639,7 +1639,7 @@ namespace Modex
 
 		const std::string compact = this->compactView ? ICON_LC_ROWS_2 : ICON_LC_ROWS_4;
 		if (IconButton(compact.c_str(), "Enable/Disable Compact View", compactView)) {
-			// nothing?
+			PersistentData::SetUserdata(this->data_id + "::CompactView", compactView);
 		}
 
 		ImGui::SameLine();
@@ -1647,7 +1647,7 @@ namespace Modex
 		const std::string showid = ICON_LC_SIGNATURE;
 		ImGui::PushStyleColor(ImGuiCol_Text, this->showEditorID ? ImGui::GetStyle().Colors[ImGuiCol_Text] : ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 		if (IconButton(showid.c_str(), "Show/Hide EditorID instead of Name", this->showEditorID)) {
-			// nothing?
+			PersistentData::SetUserdata(this->data_id + "::ShowEditorID", this->showEditorID);
 		}
 		ImGui::PopStyleColor();
 
@@ -1673,6 +1673,8 @@ namespace Modex
 					this->SortListBySpecs();
 					this->UpdateImGuiTableIDs();
 				}
+
+				PersistentData::SetUserdata(this->data_id + "::ShowPluginKitView", this->showPluginKitView);
 			}
 
 			ImGui::PopStyleColor();
@@ -1747,6 +1749,7 @@ namespace Modex
 					this->sortBy = sort;
 					this->SortListBySpecs();
 					this->UpdateImGuiTableIDs();
+					PersistentData::SetUserdata(this->data_id + "::SortBy", static_cast<int>(this->sortBy));
 				}
 
 				if (is_selected) {
@@ -1764,6 +1767,7 @@ namespace Modex
 		if (IconButton(arrow.c_str(), "Sort Ascending/Descending", this->sortAscending)) {
 			this->SortListBySpecs();
 			this->UpdateImGuiTableIDs();
+			PersistentData::SetUserdata(this->data_id + "::SortAscending", this->sortAscending);
 		}
 
 		if (this->HasFlag(ModexTableFlag_EnableEnchantmentSort)) {
@@ -1780,6 +1784,7 @@ namespace Modex
 
 			const std::string hidden = this->hideNonPlayable ? ICON_LC_EYE_CLOSED : ICON_LC_EYE;
 			if (IconButton(hidden.c_str(), "Show Hidden Items", this->hideNonPlayable)) {
+				PersistentData::SetUserdata(this->data_id + "::HideNonPlayable", this->hideNonPlayable);
 				this->Refresh();
 			}
 		}
@@ -1792,6 +1797,7 @@ namespace Modex
 
 			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
 			if (IconButton(Utils::IconMap["UNIQUE"].c_str(), tooltip.c_str(), this->hideNonUnique)) {
+				PersistentData::SetUserdata(this->data_id + "::HideNonUnique", this->hideNonUnique);
 				this->Refresh();
 			}
 			ImGui::PopStyleColor();
@@ -1805,6 +1811,7 @@ namespace Modex
 
 			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
 			if (IconButton(Utils::IconMap["ESSENTIAL"].c_str(), tooltip.c_str(), this->hideNonEssential)) {
+				PersistentData::SetUserdata(this->data_id + "::HideNonEssential", this->hideNonEssential);
 				this->Refresh();
 			}
 			ImGui::PopStyleColor();
@@ -1818,6 +1825,7 @@ namespace Modex
 
 			ImGui::PushStyleColor(ImGuiCol_Text, icon_color);
 			if (IconButton(Utils::IconMap["DISABLED"].c_str(), tooltip.c_str(), this->hideDisabled)) {
+				PersistentData::SetUserdata(this->data_id + "::HideDisabled", this->hideDisabled);
 				this->Refresh();
 			}
 			ImGui::PopStyleColor();

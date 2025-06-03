@@ -3,6 +3,7 @@
 #include "include/F/Frame.h"
 #include "include/G/Graphic.h"
 #include "include/I/InputManager.h"
+#include "include/P/Persistent.h"
 #include "include/U/UIManager.h"
 #include "include/U/UserSettings.h"
 
@@ -100,6 +101,8 @@ namespace Modex
 			io.MouseDrawCursor = false;
 			io.ClearInputKeys();
 		}
+
+		PersistentData::GetSingleton()->SaveUserdata();
 
 		isEnabled = false;
 	}
