@@ -7,37 +7,26 @@ namespace Modex
 	void AddItemWindow::Draw(float a_offset)
 	{
 		const auto fontScale = ImGui::GetFontSize() * 6.0f;
-		float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
-		const float MIN_SEARCH_WIDTH = 200.0f;
-		const float MIN_KITBAR_HEIGHT = MIN_SEARCH_HEIGHT;
+		const float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
+		const float MIN_SEARCH_WIDTH = 150.0f;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
-		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
+		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.75f;
+		const float MIN_KITBAR_HEIGHT = MIN_SEARCH_HEIGHT;
 		const float MAX_KITBAR_HEIGHT = 400.0f;
 
-		// I probably should handle this better, but It's kind of nice
-		// that the search data is in this class, so I can reference it for behavior like this.
-		if (this->tableView.GetPrimaryFilter() == RE::FormType::Armor || this->tableView.GetPrimaryFilter() == RE::FormType::Weapon) {
-			MIN_SEARCH_HEIGHT = 85.0f + fontScale;  // Increase height for armor/weapon search.
-
-			// Ensure minimum height after resizing.
-			// if (ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
-			// 	ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), MIN_SEARCH_HEIGHT);
-			// }
-			if (PersistentData::GetUserdata<float>("AddItem::SearchHeight", MIN_SEARCH_HEIGHT) < MIN_SEARCH_HEIGHT) {
-				PersistentData::SetUserdata<float>("AddItem::SearchHeight", MIN_SEARCH_HEIGHT);
-			}
-		}
-
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-		float search_height = MIN_SEARCH_HEIGHT;
-		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::SearchWidth"));  // 75.0f is padding for initial size.
-		// float kitbar_height = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("AddItem::KitBarHeight"), MAX_KITBAR_HEIGHT);
-		float search_width = PersistentData::GetUserdata<float>("AddItem::SearchWidth", MAX_SEARCH_WIDTH);
+		float search_height = PersistentData::GetUserdata<float>("AddItem::SearchHeight", MIN_SEARCH_HEIGHT);
+		float search_width = PersistentData::GetUserdata<float>("AddItem::SearchWidth", ImGui::GetContentRegionAvail().x * 0.45f);
+		float recent_width = PersistentData::GetUserdata<float>("AddItem::RecentWidth", ImGui::GetContentRegionAvail().x * 0.35f);
 		float kitbar_height = PersistentData::GetUserdata<float>("AddItem::KitBarHeight", MAX_KITBAR_HEIGHT);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionAvail().x / static_cast<int>(Viewport::Count);
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float tab_bar_height = button_height + (window_padding * 2.0f);
+
+		if (search_height < MIN_SEARCH_HEIGHT) {
+			search_height = MIN_SEARCH_HEIGHT;  // Ensure height after font scaling
+		}
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
@@ -83,21 +72,36 @@ namespace Modex
 			Blacklist::GetSingleton()->Draw(0.0f);
 		}
 
-		// Table View Table
+		// Table View Tab
 		if (activeViewport == Viewport::TableView || activeViewport == Viewport::KitView) {
 			// Search Input Area
 			ImGui::SameLine();
 			ImGui::SetCursorPos(backup_pos);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
-			// ImGui::SetCursorPosX(window_padding + a_offset);
 			backup_pos = ImGui::GetCursorPos();
-			if (ImGui::BeginChild("##AddItem::SearchArea", ImVec2(search_width - a_offset, search_height), flags)) {
+			if (ImGui::BeginChild("##AddItem::SearchArea", ImVec2(((search_width - a_offset)), search_height), flags)) {
 				this->tableView.ShowSearch(search_height);
 			}
 			ImGui::EndChild();
 
+			// Vertical Search / Recent Splitter
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
+			ImGui::SetCursorPosY(tab_bar_height - window_padding);
+			ImGui::DrawSplitter("##AddItem::VerticalSearchSplitter", false, &search_width, &search_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH, nullptr, &recent_width);
+
+			// Recent Items Area
+			ImGui::SameLine();
+			ImGui::SetCursorPos(backup_pos);
+			ImGui::SetCursorPosY(tab_bar_height - window_padding);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((search_width - a_offset)) + window_padding);
+			if (ImGui::BeginChild("##AddItem::Recent", ImVec2(recent_width - window_padding, search_height), flags)) {
+				this->tableView.ShowRecent(search_height);
+			}
+			ImGui::EndChild();
+
 			// Horizontal Search / Table Splitter
-			float full_width = search_width - a_offset;
+			float full_width = search_width + recent_width - a_offset;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(backup_pos.y + search_height);
 			ImGui::DrawSplitter("##AddItem::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
@@ -105,9 +109,10 @@ namespace Modex
 			// Table Area
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-			if (ImGui::BeginChild("##AddItem::TableArea", ImVec2(search_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			if (ImGui::BeginChild("##AddItem::TableArea", ImVec2(search_width + recent_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 				this->tableView.ShowSort();
-				this->tableView.Draw();
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				this->tableView.Draw(this->tableView.GetTableList(), 0);
 			}
 			ImGui::EndChild();
 
@@ -116,7 +121,7 @@ namespace Modex
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			float full_height = ImGui::GetContentRegionAvail().y;
-			ImGui::DrawSplitter("##AddItem::VerticalSplitter2", false, &search_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
+			ImGui::DrawSplitter("##AddItem::VerticalSplitter2", false, &recent_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
 
 			if (activeViewport == Viewport::TableView) {
 				// Action Area
@@ -153,16 +158,16 @@ namespace Modex
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + window_padding);
 				if (ImGui::BeginChild("##AddItem::KitBarTableViewThing", ImVec2(0, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 					this->kitTableView.ShowSort();
-					this->kitTableView.Draw();
+					this->kitTableView.Draw(this->kitTableView.GetTableList(), 0);
 				}
 				ImGui::EndChild();
 			}
 
 			// Persist Search Area Width/Height
-			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::SearchHeight"), search_height);
-			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("AddItem::KitBarHeight"), kitbar_height);
 			PersistentData::SetUserdata<float>("AddItem::KitBarHeight", kitbar_height);
 			PersistentData::SetUserdata<float>("AddItem::SearchWidth", search_width);
+			PersistentData::SetUserdata<float>("AddItem::RecentWidth", recent_width);
+			PersistentData::SetUserdata<float>("AddItem::SearchHeight", search_height);
 		}
 	}
 

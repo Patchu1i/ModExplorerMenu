@@ -90,7 +90,7 @@ namespace Modex
         ~TableView() = default;
 
         // core behaviors
-        void                    Draw();
+        void                    Draw(const TableList& a_tableList, int overrideLayout);
         void                    PluginKitView();
         void                    Refresh();
         void                    Unload();
@@ -130,6 +130,8 @@ namespace Modex
         
         // search and sort
         void                    ShowSearch(const float& a_height);
+        void                    ShowRecent(const float& a_height);
+        void                    ShowSearchStatistics();
         void                    ShowSort();
 
         // selection
@@ -145,6 +147,11 @@ namespace Modex
         uint32_t                GetSelectionCount() const;
         TableItem&              GetItemPreview() { return itemPreview; }
 
+        // Recently Used
+        void                    AddItemToRecent(const std::unique_ptr<DataType>& a_item);
+        void                    LoadRecentList();
+        bool                    refreshRecentList = false;
+
         // some backported accessors
         RE::FormType&                           GetPrimaryFilter() { return primaryFilter; }
         const std::vector<std::string>&         GetPluginList() const { return pluginList; };
@@ -155,6 +162,7 @@ namespace Modex
 
         // table meta data
         TableList               tableList;
+        TableList               recentList;
         TableList               searchList;
         TableList               filterList;
         KitList                 kitList;
@@ -217,8 +225,8 @@ namespace Modex
 
         // layout and drawing
         std::string             GetSortProperty(const DataType& a_item);
-        void                    UpdateLayout(float a_width);
-        void                    DrawItem(const DataType& a_item, const ImVec2& a_pos, const bool& a_selected);
+        void                    UpdateLayout(float a_width, int overrideLayout);
+        void                    DrawItem(const DataType& a_item, const ImVec2& a_pos, const bool& a_selected, const int& overrideLayout);
         void                    DrawKit(const Kit& a_kit, const ImVec2& a_pos, const bool& a_selected);
         
 		float                   LayoutRowSpacing;

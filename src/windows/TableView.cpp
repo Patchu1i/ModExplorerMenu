@@ -11,6 +11,39 @@ namespace Modex
 	template class TableView<NPCData>;
 	template class TableView<ObjectData>;
 
+	template <typename DataType>
+	void TableView<DataType>::AddItemToRecent(const std::unique_ptr<DataType>& a_item)
+	{
+		PersistentData::AddRecentItem<DataType>(a_item->GetEditorID(), a_item->refID);
+		this->refreshRecentList = true;  // Need to queue it for the next frame (but not actually, just end of logic)
+	}
+
+	template <typename DataType>
+	void TableView<DataType>::LoadRecentList()
+	{
+		std::vector<std::pair<std::string, std::uint32_t>> recentItems;
+		recentList.clear();
+
+		// Load recent items from PersistentData
+		PersistentData::GetSingleton()->GetRecentItems<DataType>(recentItems);
+
+		if (recentItems.empty()) {
+			return;
+		}
+
+		for (const auto& pair : recentItems) {
+			if (RE::TESForm* form = RE::TESForm::LookupByEditorID(pair.first)) {
+				recentList.emplace_back(std::make_unique<DataType>(form, 0, pair.second));
+			}
+		}
+
+		for (int i = 0; i < std::ssize(recentList); i++) {
+			recentList[i]->TableID = i;
+		}
+
+		this->refreshRecentList = false;
+	}
+
 	void AddKitToInventory(const std::unique_ptr<Kit>& a_kit)
 	{
 		if (a_kit->items.empty()) {
@@ -49,6 +82,7 @@ namespace Modex
 			if (id < std::ssize(tableList) && id >= 0) {
 				const auto& item = tableList[id];
 				Console::AddItem(item->GetFormID().c_str(), a_count);
+				this->AddItemToRecent(item);
 			}
 		}
 
@@ -70,6 +104,7 @@ namespace Modex
 			if (id < std::ssize(tableList) && id >= 0) {
 				const auto& item = tableList[id];
 				Console::AddItemEx(item->GetBaseForm(), 1, true);
+				this->AddItemToRecent(item);
 			}
 		}
 
@@ -91,6 +126,7 @@ namespace Modex
 			if (id < std::ssize(tableList) && id >= 0) {
 				const auto& item = tableList[id];
 				Console::PlaceAtMe(item->GetFormID().c_str(), a_count);
+				this->AddItemToRecent(item);
 			}
 		}
 
@@ -176,6 +212,7 @@ namespace Modex
 		};
 
 		this->BuildPluginList();
+		this->LoadRecentList();
 	}
 
 	void TableView<NPCData>::Init()
@@ -208,6 +245,7 @@ namespace Modex
 		};
 
 		this->BuildPluginList();
+		this->LoadRecentList();
 	}
 
 	void TableView<ObjectData>::Init()
@@ -237,6 +275,7 @@ namespace Modex
 		};
 
 		this->BuildPluginList();
+		this->LoadRecentList();
 	}
 
 	void TableView<CellData>::Init()
@@ -739,11 +778,52 @@ namespace Modex
 	}
 
 	template <class DataType>
+	void TableView<DataType>::ShowRecent(const float& a_height)
+	{
+		(void)a_height;  // Unused parameter, but required for the function signature.
+
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		if (ImGui::Selectable(_T("GENERAL_RECENT_ITEMS"), false, ImGuiSelectableFlags_SpanAllColumns)) {
+			std::reverse(this->recentList.begin(), this->recentList.end());
+		}
+		ImGui::PopStyleVar();
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+			ImGui::OpenPopup("RecentViewContextMenu");
+		}
+
+		if (ImGui::BeginPopup("RecentViewContextMenu")) {
+			if (ImGui::MenuItem(_T("Clear"))) {
+				PersistentData::ClearRecentItems<DataType>();
+				this->LoadRecentList();
+				this->refreshRecentList = true;
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (this->recentList.empty()) {
+			const float center_y = ImGui::GetCenterTextPosY(_T("GENERAL_NO_RECENT_ITEMS"));
+			const float center_x = ImGui::GetCenterTextPosX(_T("GENERAL_NO_RECENT_ITEMS"));
+			ImGui::SetCursorPos(ImVec2(center_x, center_y));
+			ImGui::TextDisabled(_T("GENERAL_NO_RECENT_ITEMS"));
+			return;
+		}
+
+		this->Draw(this->recentList, 1);
+	}
+
+	template <class DataType>
 	void TableView<DataType>::ShowSearch(const float& a_height)
 	{
-		const float key_width = ImGui::GetContentRegionAvail().x / 8.0f;
-		const float input_width = ImGui::GetContentRegionAvail().x / 2.0f - key_width;
-		const float total_width = input_width + key_width + 2.0f;
+		const float key_width = ImGui::GetContentRegionAvail().x / 4.0f;
+		const float window_padding = ImGui::GetStyle().WindowPadding.x;
+		const float input_width = ImGui::GetContentRegionAvail().x - key_width - 2.0f;
+		const float total_width = input_width + (key_width + 2.0f);
+
+		(void)a_height;  // Unused parameter, but required for the function signature.
 
 		// This is kind of a lazy method to detect if the secondary filter is present
 		// That way we can expand / reposition the primary filter drop-down to center align
@@ -756,16 +836,12 @@ namespace Modex
 			secondaryFilterExpanded = false;
 		}
 
-		ImGui::BeginColumns("##Search::Columns", 2, ImGuiOldColumnFlags_NoBorder);
-		ImGui::SetColumnWidth(0, total_width + ImGui::GetStyle().ItemSpacing.x);  // TODO: Why?
-
 		// Search bar for compare string.
 		ImGui::Text(_TFM("GENERAL_SEARCH_RESULTS", ":"));
 		ImGui::SetNextItemWidth(input_width);
 		if (ImGui::InputTextWithHint("##Search::Input::CompareField", _T("GENERAL_CLICK_TO_TYPE"), this->generalSearchBuffer,
 				IM_ARRAYSIZE(this->generalSearchBuffer),
 				Frame::INPUT_FLAGS)) {
-			// Refresh();
 			this->Refresh();
 		}
 
@@ -793,15 +869,15 @@ namespace Modex
 			ImGui::EndCombo();
 		}
 
-		if (secondaryFilterExpanded) {
-			ImGui::SetCursorPosY((a_height / 2) - (ImGui::GetFrameHeight() * 1.5f));
-		} else {
-			ImGui::SetCursorPosY((a_height / 2) - (ImGui::GetFrameHeight()));
-		}
-
 		// Primary RE::FormType filter.
 		ImGui::Text(_TFM("GENERAL_FILTER_ITEM_TYPE", ":"));
-		ImGui::SetNextItemWidth(total_width);
+
+		if (!secondaryFilterExpanded) {
+			ImGui::SetNextItemWidth(total_width);
+		} else {
+			ImGui::SetNextItemWidth((total_width / 2.0f) - window_padding);
+		}
+
 		const std::string filter_name = RE::FormTypeToString(this->primaryFilter).data();  // Localize?
 		if (ImGui::BeginCombo("##Search::Filter::PrimaryFilter", filter_name.c_str(), ImGuiComboFlags_HeightLarge)) {
 			if (ImGui::Selectable(_T("None"), this->primaryFilter == RE::FormType::None)) {
@@ -829,12 +905,11 @@ namespace Modex
 			ImGui::EndCombo();
 		}
 
-		// TODO: ImGuiComboFlag_HeightLarge ?!
-
 		// Conditional secondary filter. Not all modules may have these.
 		// We do not pass secondaryFilter through FormTypeToString since it's already a string.
 		if (this->primaryFilter == RE::FormType::Armor) {
-			ImGui::SetNextItemWidth(total_width);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth((total_width / 2.0f));
 
 			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
@@ -865,7 +940,9 @@ namespace Modex
 		}
 
 		if (this->primaryFilter == RE::FormType::Weapon) {
-			ImGui::SetNextItemWidth(total_width);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(total_width / 2.0f);
+
 			if (ImGui::BeginCombo("##Search::Filter::SecondaryFilter", this->secondaryFilter.c_str(), ImGuiComboFlags_HeightLarge)) {
 				if (ImGui::Selectable(_T("All"), this->secondaryFilter == _T("All"))) {
 					ImGui::SetItemDefaultFocus();
@@ -905,24 +982,30 @@ namespace Modex
 			}
 		}
 
+		// Have to set cursor pos after the secondary NPC filter beacuse it uses the custom InputTextComboBox which
+		// doesn't properly format the following UI element.
+
 		if (this->primaryFilter == RE::FormType::Class) {
 			const auto classList = Data::GetSingleton()->GetNPCClassList();
-			this->SecondaryNPCFilter(classList, total_width);
+			ImGui::SameLine();
+			this->SecondaryNPCFilter(classList, total_width / 2.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
 		}
 
 		if (this->primaryFilter == RE::FormType::Race) {
 			const auto raceList = Data::GetSingleton()->GetNPCRaceList();
-			this->SecondaryNPCFilter(raceList, total_width);
+			ImGui::SameLine();
+			this->SecondaryNPCFilter(raceList, total_width / 2.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
 		}
 
 		if (this->primaryFilter == RE::FormType::Faction) {
 			const auto factionList = Data::GetSingleton()->GetNPCFactionList();
-			this->SecondaryNPCFilter(factionList, total_width);
+			ImGui::SameLine();
+			this->SecondaryNPCFilter(factionList, total_width / 2.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
 		}
 
-		ImGui::NewLine();
-
-		ImGui::SetCursorPosY(a_height - ImGui::GetFrameHeightWithSpacing() * 2.0f);
 		ImGui::Text(_TFM("GENERAL_FILTER_PLUGINS", ":"));
 
 		if (ImGui::IsItemHovered()) {
@@ -959,9 +1042,11 @@ namespace Modex
 			this->selectionStorage.Clear();
 			this->Refresh();
 		}
+	}
 
-		ImGui::NextColumn();
-
+	template <typename DataType>
+	void TableView<DataType>::ShowSearchStatistics()
+	{
 		const float maxWidth = ImGui::GetContentRegionAvail().x;
 		const auto InlineText = [maxWidth](const char* label, const char* text, const char* tooltip) {
 			const auto width = std::max(maxWidth - ImGui::CalcTextSize(text).x, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x);
@@ -1027,19 +1112,10 @@ namespace Modex
 		}
 
 		ImGui::PopStyleVar();
-		ImGui::EndColumns();
-
-		// ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-		// // InlineText(_TICONM(ICON_LC_PACKAGE, "GENERAL_KITS_TOTAL", ":"), std::to_string(PersistentData::GetLoadedKits().size()).c_str());
-		// // InlineText(_TICONM(ICON_LC_PACKAGE_OPEN, "GENERAL_KITS_IN_PLUGIN", ":"), std::to_string(kitsFound.size()).c_str());
-
-		// ImGui::NewLine();
-
-		// ImGui::EndColumns();
 	}
 
 	template <typename DataType>
-	void TableView<DataType>::UpdateLayout(float a_width)
+	void TableView<DataType>::UpdateLayout(float a_width, int overrideLayout)
 	{
 		const auto& style = Settings::GetSingleton()->GetStyle();
 		const auto& config = Settings::GetSingleton()->GetConfig();
@@ -1055,7 +1131,7 @@ namespace Modex
 
 		LayoutColumnCount = 1;
 
-		if (compactView) {
+		if (compactView || overrideLayout == 1) {
 			ItemSize = ImVec2(a_width, config.globalFontSize * 1.75f);
 			LayoutItemSize = ImVec2(floorf(ItemSize.x), floorf(ItemSize.y));
 
@@ -2003,7 +2079,7 @@ namespace Modex
 
 			// Setup table layout based on available width
 			const float a_width = ImGui::GetContentRegionAvail().x;
-			UpdateLayout(a_width);
+			UpdateLayout(a_width, 0);
 
 			// Calculate and store start position of table.
 			const ImVec2 start_pos = ImGui::GetCursorScreenPos();
@@ -2170,13 +2246,21 @@ namespace Modex
 	}
 
 	template <typename DataType>
-	void TableView<DataType>::DrawItem(const DataType& a_item, const ImVec2& a_pos, const bool& a_selected)
+	void TableView<DataType>::DrawItem(const DataType& a_item, const ImVec2& a_pos, const bool& a_selected, const int& overrideLayout)
 	{
 		(void)a_selected;  // If we want to handle selection visuals manually.
 
 		const auto& style = Settings::GetSingleton()->GetStyle();
 		const auto& config = Settings::GetSingleton()->GetConfig();
 		const float fontSize = config.globalFontSize;
+
+		auto test_compactView = this->compactView;
+		auto test_tableRowBG = style.showTableRowBG;
+
+		if (overrideLayout == 1) {
+			test_compactView = true;
+			test_tableRowBG = false;
+		}
 
 		// Setup box and bounding box for positioning and drawing.
 		const ImVec2 box_min(a_pos.x - 1, a_pos.y - 1);
@@ -2190,7 +2274,7 @@ namespace Modex
 		const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
 		// Background
-		if (style.showTableRowBG) {
+		if (test_tableRowBG) {
 			if (a_item.TableID % 2 == 0) {
 				DrawList->AddRectFilled(bb.Min, bb.Max, bg_color);
 			} else {
@@ -2213,7 +2297,7 @@ namespace Modex
 		// We need to adjust the bounding box to account for the type pillar.
 		bb.Min.x += type_pillar_width * 2.0f;
 
-		const float spacing = LayoutItemSize.x / 6.0f;
+		float spacing = overrideLayout == 1 ? LayoutItemSize.x / 4.0f : LayoutItemSize.x / 6.0f;
 		const float top_align = bb.Min.y + LayoutOuterPadding;
 		const float bot_align = bb.Max.y - LayoutOuterPadding - fontSize;
 		const float center_align = bb.Min.y + ((LayoutOuterPadding + LayoutItemSize.y) / 2) - (fontSize / 2.0f);
@@ -2227,7 +2311,7 @@ namespace Modex
 		const ImVec2 center_right_align = ImVec2(right_align, center_align);
 
 		// Draw Type:FormID
-		if (!compactView) {
+		if (!test_compactView) {
 			const std::string type_icon = Utils::GetFormTypeIcon(a_item.GetFormType());
 			const std::string type_formid = type_icon + "[" + a_item.GetTypeName() + "] " + a_item.GetFormID();
 			DrawList->AddText(top_left_align, text_color, type_formid.c_str());
@@ -2247,8 +2331,16 @@ namespace Modex
 			name_string = FormatTextWidth(a_item.GetEditorID(), spacing * 1.5f);
 		}
 
+		if (overrideLayout == 1) {
+			if (a_item.GetName().empty()) {
+				name_string = FormatTextWidth(a_item.GetEditorID(), spacing * 2.0f);
+			} else {
+				name_string = FormatTextWidth(a_item.GetName(), spacing * 2.0f);
+			}
+		}
+
 		// Only apply below drawing to main table, not kit table.
-		if (!this->HasFlag(ModexTableFlag_Kit)) {
+		if (!this->HasFlag(ModexTableFlag_Kit) && overrideLayout == 0) {
 			// Draw NPCData specific stuff
 			if (const NPCData* npcData = dynamic_cast<const NPCData*>(&a_item)) {
 				if (npcData->GetFormType() == RE::FormType::NPC) {
@@ -2258,7 +2350,7 @@ namespace Modex
 						const ImU32 unique_color = IM_COL32(255, 179, 102, 20);
 						const ImU32 essential_color = IM_COL32(204, 153, 255, 20);
 
-						const ImVec2 unique_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, this->compactView ? center_align : top_align);
+						const ImVec2 unique_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, test_compactView ? center_align : top_align);
 						const ImVec2 essential_pos = ImVec2(unique_pos.x + fontSize + 2.0f, unique_pos.y);
 						ImVec2 disabled_pos = unique_pos;
 
@@ -2336,7 +2428,7 @@ namespace Modex
 				{  // Draw Value (Top-Right Align)
 					const std::string string = itemData->GetValueString() + " " + ICON_LC_COINS;
 					const ImVec2 size = ImGui::CalcTextSize(string.c_str());
-					if (!compactView) {
+					if (!test_compactView) {
 						const ImVec2 pos = ImVec2(top_right_align.x - size.x + fontSize, top_right_align.y);
 						DrawList->AddText(pos, text_color, string.c_str());
 					} else {
@@ -2345,7 +2437,7 @@ namespace Modex
 					}
 				}
 
-				if (!compactView) {
+				if (!test_compactView) {
 					{  // Draw Weight (Bottom-Right Align)
 						const int weight = static_cast<int>(floorf(itemData->GetWeight()));
 						const std::string string = std::to_string(weight) + " " + ICON_LC_WEIGHT;
@@ -2367,7 +2459,7 @@ namespace Modex
 						const std::string type_string = _TICON(ICON_LC_PUZZLE, armorType);
 						// const std::string slot_string = ICON_LC_BETWEEN_HORIZONTAL_START + equipSlots[0];
 
-						if (!compactView) {
+						if (!test_compactView) {
 							const ImVec2 armorRating_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
 							DrawList->AddText(armorRating_pos, text_color, rating_string.c_str());
 
@@ -2404,7 +2496,7 @@ namespace Modex
 
 						ImVec2 teach_pos;
 
-						if (!compactView) {
+						if (!test_compactView) {
 							teach_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
 						} else {
 							teach_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, center_align);
@@ -2453,7 +2545,7 @@ namespace Modex
 						const std::string skill_string = ICON_LC_BRAIN + std::to_string(skill);
 						const std::string type_string = _TICON(ICON_LC_PUZZLE, type);
 
-						if (!compactView) {
+						if (!test_compactView) {
 							const ImVec2 damage_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, top_align);
 							const ImVec2 skill_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 1.5f, bot_align);
 							// const ImVec2 type_pos = ImVec2(bb.Min.x + spacing + spacing * 1.5f, bot_align);
@@ -2472,7 +2564,7 @@ namespace Modex
 			}
 		}
 
-		if (compactView) {
+		if (test_compactView) {
 			const std::string plugin_name = Utils::GetFormTypeIcon(a_item.GetFormType()) + FormatTextWidth(a_item.GetPluginName(), ((spacing * 1.5f) - fontSize * 2.0f) - name_offset);
 			DrawList->AddText(center_left_align, text_color, plugin_name.c_str());
 		} else {
@@ -2482,7 +2574,7 @@ namespace Modex
 
 		const std::string sort_text = GetSortProperty(a_item);
 
-		if (compactView) {
+		if (test_compactView) {
 			const ImVec2 name_pos = ImVec2(bb.Min.x + (spacing * 1.5f) - name_offset, center_align);
 			DrawList->AddText(name_pos, text_color, name_string.c_str());
 
@@ -2494,6 +2586,12 @@ namespace Modex
 
 			const ImVec2 sort_pos = ImVec2(bb.Min.x + (spacing * 1.5f) + spacing * 2.5f, bot_align);
 			DrawList->AddText(sort_pos, text_color, sort_text.c_str());
+		}
+
+		if (overrideLayout == 1) {
+			const std::string item_id = std::to_string(a_item.TableID);
+			const ImVec2 id_pos = ImVec2(bb.Max.x - ((ImGui::CalcTextSize(item_id.c_str()).x + (LayoutOuterPadding * 2.0f))), center_align);
+			DrawList->AddText(id_pos, text_color, item_id.c_str());
 		}
 	}
 
@@ -2528,8 +2626,11 @@ namespace Modex
 		ImGui::PopStyleColor();
 	}
 
+	// temporary is to temporary enable/disable some visual features for the recent item list
+	// need to handle it better in the future, since we're using the Draw function
+
 	template <typename DataType>
-	void TableView<DataType>::Draw()
+	void TableView<DataType>::Draw(const TableList& _tableList, int overrideLayout)
 	{
 		if (!this->generalSearchDirty) {
 			if (strcmp(this->generalSearchBuffer, this->lastSearchBuffer) != 0) {
@@ -2540,7 +2641,7 @@ namespace Modex
 		// Should this be routed through the input manager?
 		if (!ImGui::GetIO().WantTextInput) {
 			if (ImGui::IsKeyPressed(ImGuiKey_A, false) && ImGui::GetIO().KeyCtrl) {
-				for (auto& item : tableList) {
+				for (auto& item : _tableList) {
 					if (item) {
 						selectionStorage.SetItemSelected(item->TableID, true);
 					}
@@ -2548,7 +2649,7 @@ namespace Modex
 			}
 		}
 
-		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)) {
+		if (ImGui::BeginChild("##TableView::Draw", ImVec2(0.0f, 0.0f), 0, ImGuiWindowFlags_NoMove)) {
 			if (this->showPluginKitView) {
 				PluginKitView();
 				ImGui::EndChild();
@@ -2566,7 +2667,7 @@ namespace Modex
 
 			// Setup table layout based on available width
 			const float a_width = ImGui::GetContentRegionAvail().x;
-			UpdateLayout(a_width);
+			UpdateLayout(a_width, overrideLayout);
 
 			// Calculate and store start position of table.
 			const ImVec2 start_pos = ImGui::GetCursorScreenPos();
@@ -2574,11 +2675,11 @@ namespace Modex
 
 			// Build table meta data and structures
 			const int COLUMN_COUNT = LayoutColumnCount;  // shouldn't stay const
-			const int ITEMS_COUNT = static_cast<int>(tableList.size());
+			const int ITEMS_COUNT = static_cast<int>(_tableList.size());
 
 			ImGuiListClipper clipper;
 			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, selectionStorage.Size, ITEMS_COUNT);
-			selectionStorage.UserData = (void*)&tableList;
+			selectionStorage.UserData = (void*)&_tableList;
 			selectionStorage.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self, int idx) {
 				TableList* a_items = (TableList*)self->UserData;
 				return (*a_items)[idx]->TableID;  // Index -> TableID
@@ -2600,15 +2701,15 @@ namespace Modex
 					const int item_max_idx_for_current_line = std::min((line_idx + 1) * COLUMN_COUNT, ITEMS_COUNT);
 
 					for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx) {
-						if (item_idx >= tableList.size()) {
+						if (item_idx >= _tableList.size()) {
 							continue;
 						}
 
-						if (!tableList[item_idx]) {
+						if (!_tableList[item_idx]) {
 							continue;
 						}
 
-						auto& item_data = tableList.at(item_idx);
+						auto& item_data = _tableList.at(item_idx);
 						ImGui::PushID((int)item_data->TableID);
 
 						// Double-click add amount behavior.
@@ -2620,9 +2721,14 @@ namespace Modex
 						ImGui::SetCursorScreenPos(pos);
 
 						// set next item selection user data
-						ImGui::SetNextItemSelectionUserData(item_idx);
 						bool is_item_selected = selectionStorage.Contains(item_data->TableID);
 						bool is_item_visible = ImGui::IsRectVisible(LayoutItemSize);
+
+						if (overrideLayout == 1) {
+							is_item_selected = false;
+						} else {
+							ImGui::SetNextItemSelectionUserData(item_idx);
+						}
 
 						// If we implement a grid or gapped layout, this will be needed.
 						// For now, it just removes the spacing so the selection is within the bounds of the item.
@@ -2694,6 +2800,8 @@ namespace Modex
 									Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
 									Console::StartProcessThread();
 								}
+
+								this->AddItemToRecent(item_data);
 							}
 						}
 
@@ -2716,7 +2824,7 @@ namespace Modex
 								if (!is_item_selected) {
 									payload_items.push_back(item_data->TableID);
 								} else {
-									if (id < tableList.size() && id >= 0) {
+									if (id < _tableList.size() && id >= 0) {
 										while (selectionStorage.GetNextSelectedItem(&it, &id)) {
 											payload_items.push_back(id);
 										}
@@ -2742,7 +2850,7 @@ namespace Modex
 
 						// if the item is visible, offload drawing to the table's draw function
 						if (is_item_visible && item_data != nullptr) {
-							DrawItem(*item_data, pos, is_item_selected);
+							DrawItem(*item_data, pos, is_item_selected, overrideLayout);
 
 							if (this->HasFlag(ModexTableFlag_Kit)) {
 								ImVec2 equippable_pos;
@@ -2803,44 +2911,65 @@ namespace Modex
 						}
 
 						if (ImGui::BeginPopup("TableViewContextMenu")) {
+							if (const ObjectData* objectData = dynamic_cast<const ObjectData*>(item_data.get())) {
+								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
+									if (selectionStorage.Size == 0) {
+										Console::PlaceAtMe(objectData->GetFormID().c_str(), click_amount);
+										this->AddItemToRecent(item_data);
+									} else {
+										if (item_data == itemPreview && !is_item_selected) {
+											Console::PlaceAtMe(objectData->GetFormID().c_str(), click_amount);
+											this->AddItemToRecent(item_data);
+										} else {
+											this->PlaceSelectionOnGround(click_amount);
+											this->selectionStorage.Clear();
+										}
+									}
+
+									Console::StartProcessThread();
+								}
+							}
+
 							if (const ItemData* itemData = dynamic_cast<const ItemData*>(item_data.get())) {
 								if (ImGui::MenuItem(_T("AIM_ADD"))) {
 									if (selectionStorage.Size == 0) {
 										Console::AddItem(item_data->GetFormID().c_str(), click_amount);
-										Console::StartProcessThread();
+										this->AddItemToRecent(item_data);
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::AddItem(item_data->GetFormID().c_str(), click_amount);
-											Console::StartProcessThread();
+											this->AddItemToRecent(item_data);
 										} else {
 											this->AddSelectionToInventory(click_amount);
 											this->selectionStorage.Clear();
 										}
 									}
+
+									Console::StartProcessThread();
 								}
 
 								if (itemData->GetFormType() == RE::FormType::Armor || itemData->GetFormType() == RE::FormType::Weapon) {
 									if (ImGui::MenuItem(_T("AIM_EQUIP"))) {
 										if (selectionStorage.Size == 0) {
 											Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
-											Console::StartProcessThread();
+											this->AddItemToRecent(item_data);
 										} else {
 											if (item_data == itemPreview && !is_item_selected) {
 												Console::AddItemEx(item_data->GetBaseForm(), click_amount, true);
-												Console::StartProcessThread();
+												this->AddItemToRecent(item_data);
 											} else {
 												void* it = NULL;
 												ImGuiID id = 0;
 
 												// TODO: Create a helper func for AddItemEx in TableView context?
 												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-													if (id < tableList.size() && id >= 0) {
-														const auto& item = tableList[id];
+													if (id < _tableList.size() && id >= 0) {
+														const auto& item = _tableList[id];
 														Console::AddItemEx(item->GetBaseForm(), click_amount, true);
+														this->AddItemToRecent(item);
 													}
 												}
 
-												Console::StartProcessThread();
 												this->selectionStorage.Clear();
 											}
 										}
@@ -2852,16 +2981,18 @@ namespace Modex
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
 										Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
-										Console::StartProcessThread();
+										this->AddItemToRecent(item_data);
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::PlaceAtMe(item_data->GetFormID().c_str(), click_amount);
-											Console::StartProcessThread();
+											this->AddItemToRecent(item_data);
 										} else {
 											this->PlaceSelectionOnGround(click_amount);
 											this->selectionStorage.Clear();
 										}
 									}
+
+									Console::StartProcessThread();
 								}
 
 								if (itemData->GetFormType() == RE::FormType::Book) {
@@ -2871,8 +3002,11 @@ namespace Modex
 										Console::ReadBook(itemData->GetFormID());
 										Console::StartProcessThread();
 										Menu::GetSingleton()->Close();
+										this->AddItemToRecent(item_data);
 									}
 								}
+
+								// TODO: Should Kit options be flagged for recently used?
 
 								if (this->selectedKit) {
 									const std::string selected_kit = *this->selectedKit;
@@ -2934,31 +3068,32 @@ namespace Modex
 								}
 							}
 
-							// TODO: Should we close menu?
 							if (const NPCData* npc_data = dynamic_cast<const NPCData*>(item_data.get())) {
 								if (ImGui::MenuItem(_T("AIM_PLACE"))) {
 									if (selectionStorage.Size == 0) {
 										Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
-										Console::StartProcessThread();
+										this->AddItemToRecent(item_data);
 									} else {
 										if (item_data == itemPreview && !is_item_selected) {
 											Console::PlaceAtMe(npc_data->GetFormID().c_str(), click_amount);
-											Console::StartProcessThread();
+											this->AddItemToRecent(item_data);
 										} else {
 											void* it = NULL;
 											ImGuiID id = 0;
 
 											while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-												if (id < tableList.size() && id >= 0) {
-													const auto& item = tableList[id];
+												if (id < _tableList.size() && id >= 0) {
+													const auto& item = _tableList[id];
 													Console::PlaceAtMe(item->GetFormID().c_str(), click_amount);
+													this->AddItemToRecent(item);
 												}
 											}
 
-											Console::StartProcessThread();
 											this->selectionStorage.Clear();
 										}
 									}
+
+									Console::StartProcessThread();
 								}
 
 								// if (RE::TESObjectREFR* refr = npc_data->GetForm()->As<RE::TESObjectREFR>()) {
@@ -2973,8 +3108,8 @@ namespace Modex
 								// 				ImGuiID id = 0;
 
 								// 				while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-								// 					if (id < tableList.size() && id >= 0) {
-								// 						// const auto& item = tableList[id];
+								// 					if (id < _tableList.size() && id >= 0) {
+								// 						// const auto& item = _tableList[id];
 								// 						// Console::DisableNPC(item->refID, true);
 								// 					}
 								// 				}
@@ -2994,17 +3129,20 @@ namespace Modex
 									if (ImGui::MenuItem(_T("NPC_BRING_REFERENCE"))) {
 										if (selectionStorage.Size == 0) {
 											Console::BringNPC(npc_data->refID, true);
+											this->AddItemToRecent(item_data);
 										} else {
 											if (item_data == itemPreview && !is_item_selected) {
 												Console::BringNPC(npc_data->refID, true);
+												this->AddItemToRecent(item_data);
 											} else {
 												void* it = NULL;
 												ImGuiID id = 0;
 
 												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-													if (id < tableList.size() && id >= 0) {
-														const auto& item = tableList[id];
+													if (id < _tableList.size() && id >= 0) {
+														const auto& item = _tableList[id];
 														Console::BringNPC(item->refID, true);
+														this->AddItemToRecent(item);
 													}
 												}
 
@@ -3018,16 +3156,18 @@ namespace Modex
 									if (ImGui::MenuItem(_T("NPC_GOTO_REFERENCE"))) {
 										if (selectionStorage.Size == 0) {
 											Console::GotoNPC(npc_data->refID, true);
+											this->AddItemToRecent(item_data);
 										} else {
 											if (item_data == itemPreview && !is_item_selected) {
 												Console::GotoNPC(npc_data->refID, true);
+												this->AddItemToRecent(item_data);
 											} else {
 												void* it = NULL;
 												ImGuiID id = 0;
 
 												while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-													if (id < tableList.size() && id >= 0) {
-														const auto& item = tableList[id];
+													if (id < _tableList.size() && id >= 0) {
+														const auto& item = _tableList[id];
 														Console::GotoNPC(item->refID, true);
 
 														break;  // Because how else do we handle multiple cases?
@@ -3054,8 +3194,8 @@ namespace Modex
 														ImGuiID id = 0;
 
 														while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-															if (id < tableList.size() && id >= 0) {
-																const auto& item = tableList[id];
+															if (id < _tableList.size() && id >= 0) {
+																const auto& item = _tableList[id];
 																auto item_ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(item->refID);
 																if (item_ref) {
 																	item_ref->Enable(false);
@@ -3079,8 +3219,8 @@ namespace Modex
 														ImGuiID id = 0;
 
 														while (selectionStorage.GetNextSelectedItem(&it, &id)) {
-															if (id < tableList.size() && id >= 0) {
-																const auto& item = tableList[id];
+															if (id < _tableList.size() && id >= 0) {
+																const auto& item = _tableList[id];
 																auto item_ref = RE::TESForm::LookupByID<RE::TESObjectREFR>(item->refID);
 																if (item_ref) {
 																	item_ref->Disable();
@@ -3138,6 +3278,10 @@ namespace Modex
 
 			ms_io = ImGui::EndMultiSelect();
 			selectionStorage.ApplyRequests(ms_io);
+
+			if (this->refreshRecentList) {
+				this->LoadRecentList();
+			}
 
 			ImGui::EndChild();
 		}

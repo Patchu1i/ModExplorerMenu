@@ -100,8 +100,17 @@ namespace Modex
 				continue;
 			}
 		}
+		for (auto& [key, value] : JSON["Userdata"]["Recently Used (AddItem)"].items()) {
+			m_additem_recently_used.emplace_back(key, value.get<uint32_t>());
+		}
 
-		// If you want true heterogeneous storage, use std::any or std::variant as the value type.
+		for (auto& [key, value] : JSON["Userdata"]["Recently Used (NPC)"].items()) {
+			m_npc_recently_used.emplace_back(key, value.get<uint32_t>());
+		}
+
+		for (auto& [key, value] : JSON["Userdata"]["Recently Used (Object)"].items()) {
+			m_object_recently_used.emplace_back(key, value.get<uint32_t>());
+		}
 	}
 
 	void PersistentData::SaveUserdata()
@@ -121,6 +130,24 @@ namespace Modex
 				logger::warn("[PersistentData] Unsupported type for userdata key: {}", key);
 				continue;  // Skip unsupported types
 			}
+		}
+
+		JSON["Userdata"]["Recently Used (AddItem)"] = nlohmann::json::object();
+		for (const auto& pair : m_additem_recently_used) {
+			JSON["Userdata"]["Recently Used (AddItem)"][pair.first] = pair.second;
+			// JSON["Userdata"]["Recently Used (AddItem)"].push_back(item);
+		}
+
+		JSON["Userdata"]["Recently Used (NPC)"] = nlohmann::json::object();
+		for (const auto& pair : m_npc_recently_used) {
+			JSON["Userdata"]["Recently Used (NPC)"][pair.first] = pair.second;
+			// JSON["Userdata"]["Recently Used (NPC)"].push_back(npc);
+		}
+
+		JSON["Userdata"]["Recently Used (Object)"] = nlohmann::json::object();
+		for (const auto& pair : m_object_recently_used) {
+			JSON["Userdata"]["Recently Used (Object)"][pair.first] = pair.second;
+			// JSON["Userdata"]["Recently Used (Object)"].push_back(object);
 		}
 
 		if (!SaveJSONFile(json_user_path + "userdata.json", JSON)) {

@@ -60,6 +60,84 @@ namespace Modex
 			GetSingleton()->m_userdata[a_key] = a_value;
 		}
 
+		template <typename DataType>
+		static void AddRecentItem(const std::string& a_editorid, uint32_t a_refID)
+		{
+			std::list<std::pair<std::string, std::uint32_t>>* recently_used;
+
+			if (std::is_same_v<DataType, ItemData>) {
+				recently_used = &GetSingleton()->m_additem_recently_used;
+			} else if (std::is_same_v<DataType, NPCData>) {
+				recently_used = &GetSingleton()->m_npc_recently_used;
+			} else if (std::is_same_v<DataType, ObjectData>) {
+				recently_used = &GetSingleton()->m_object_recently_used;
+			} else {
+				return;
+			}
+
+			if (recently_used == nullptr) {
+				return;  // No list to add to
+			}
+
+			// Check if the item is already in the list
+			for (auto it = recently_used->begin(); it != recently_used->end(); ++it) {
+				if (it->first == a_editorid) {
+					// If found, update the refID and move to the front
+					it->second = a_refID;
+					recently_used->splice(recently_used->begin(), *recently_used, it);
+					return;
+				}
+			}
+
+			// If not found, add a new item to the front
+			recently_used->emplace_front(a_editorid, a_refID);
+
+			// If the list exceeds a certain size, remove the oldest item
+			if (recently_used->size() > 21) {  // Example size limit
+				recently_used->pop_back();     // Remove the oldest item
+			}
+		}
+
+		template <typename DataType>
+		static void ClearRecentItems()
+		{
+			if (std::is_same_v<DataType, ItemData>) {
+				GetSingleton()->m_additem_recently_used.clear();
+			} else if (std::is_same_v<DataType, NPCData>) {
+				GetSingleton()->m_npc_recently_used.clear();
+			} else if (std::is_same_v<DataType, RE::TESObjectREFR>) {
+				GetSingleton()->m_object_recently_used.clear();
+			}
+		}
+
+		template <typename DataType>
+		static void GetRecentItems(std::vector<std::pair<std::string, std::uint32_t>>& a_out)
+		{
+			std::list<std::pair<std::string, std::uint32_t>>* recently_used;
+
+			// auto& recently_used = GetSingleton()->m_additem_recently_used;
+
+			if (std::is_same_v<DataType, ItemData>) {
+				recently_used = &GetSingleton()->m_additem_recently_used;
+			} else if (std::is_same_v<DataType, NPCData>) {
+				recently_used = &GetSingleton()->m_npc_recently_used;
+			} else if (std::is_same_v<DataType, ObjectData>) {
+				recently_used = &GetSingleton()->m_object_recently_used;
+			} else {
+				return;
+			}
+
+			if (recently_used == nullptr) {
+				return;  // No list to retrieve from
+			}
+
+			a_out.clear();
+
+			for (const auto& pair : *recently_used) {
+				a_out.push_back(pair);
+			}
+		}
+
 		// Handles conversion from KitItem to ItemData
 		static inline std::vector<ItemData> GetKitItems(const std::string& a_name)
 		{
@@ -98,6 +176,9 @@ namespace Modex
 		std::unordered_set<const RE::TESFile*> m_blacklist;
 		Collection m_kits;
 		std::unordered_map<std::string, std::any> m_userdata;
+		std::list<std::pair<std::string, std::uint32_t>> m_additem_recently_used;
+		std::list<std::pair<std::string, std::uint32_t>> m_npc_recently_used;
+		std::list<std::pair<std::string, std::uint32_t>> m_object_recently_used;
 
 		const std::string json_user_path = "Data/Interface/Modex/User/";
 	};

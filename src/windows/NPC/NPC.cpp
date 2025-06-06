@@ -6,19 +6,23 @@ namespace Modex
 	void NPCWindow::Draw(float a_offset)
 	{
 		const auto fontScale = ImGui::GetFontSize() * 6.0f;
-		float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
-		const float MIN_SEARCH_WIDTH = 200.0f;
+		const float MIN_SEARCH_HEIGHT = 65.0f + fontScale;
+		const float MIN_SEARCH_WIDTH = 150.0f;
 		const float MAX_SEARCH_HEIGHT = ImGui::GetContentRegionAvail().y * 0.75f;
-		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.85f;
+		const float MAX_SEARCH_WIDTH = ImGui::GetContentRegionAvail().x * 0.75f;
 
 		const ImGuiChildFlags flags = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-		float search_height = MIN_SEARCH_HEIGHT;
-		// float search_width = ImGui::GetStateStorage()->GetFloat(ImGui::GetID("NPC::SearchWidth"), MAX_SEARCH_WIDTH);
-		float search_width = PersistentData::GetUserdata<float>("NPC::SearchWidth", MAX_SEARCH_WIDTH);
+		float search_height = PersistentData::GetUserdata<float>("NPC::SearchHeight", MIN_SEARCH_HEIGHT);
+		float search_width = PersistentData::GetUserdata<float>("NPC::SearchWidth", ImGui::GetContentRegionAvail().x * 0.45f);
+		float recent_width = PersistentData::GetUserdata<float>("NPC::RecentWidth", ImGui::GetContentRegionAvail().x * 0.35f);
 		float window_padding = ImGui::GetStyle().WindowPadding.y;
 		const float button_width = ImGui::GetContentRegionMax().x / 2.0f;
 		const float button_height = ImGui::GetFontSize() * 1.5f;
 		const float tab_bar_height = button_height + (window_padding * 2);
+
+		if (search_height < MIN_SEARCH_HEIGHT) {
+			search_height = MIN_SEARCH_HEIGHT;  // Ensure height after font scaling
+		}
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosY(window_padding);
@@ -47,12 +51,14 @@ namespace Modex
 		}
 		ImGui::EndChild();
 
+		// Blacklist Tab
 		if (activeViewport == Viewport::BlacklistView) {
 			ImGui::SetCursorPos(backup_pos);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			Blacklist::GetSingleton()->Draw(0.0f);
 		}
 
+		// Table View Table
 		if (activeViewport == Viewport::TableView) {
 			// Search Input Area
 			ImGui::SameLine();
@@ -64,8 +70,24 @@ namespace Modex
 			}
 			ImGui::EndChild();
 
+			// Vertical Search / Recent Splitter
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
+			ImGui::SetCursorPosY(tab_bar_height - window_padding);
+			ImGui::DrawSplitter("##NPC::VerticalSearchSplitter", false, &search_width, &search_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH, nullptr, &recent_width);
+
+			// Recent Items Area
+			ImGui::SameLine();
+			ImGui::SetCursorPos(backup_pos);
+			ImGui::SetCursorPosY(tab_bar_height - window_padding);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((search_width - a_offset)) + window_padding);
+			if (ImGui::BeginChild("##NPC::Recent", ImVec2(recent_width - window_padding, search_height), flags)) {
+				this->tableView.ShowRecent(search_height);
+			}
+			ImGui::EndChild();
+
 			// Horizontal Search / Table Splitter
-			float full_width = search_width - a_offset;
+			float full_width = search_width + recent_width - a_offset;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(backup_pos.y + search_height);
 			ImGui::DrawSplitter("##NPC::HorizontalSplitter", true, &search_height, &full_width, MIN_SEARCH_HEIGHT, MAX_SEARCH_HEIGHT);
@@ -73,9 +95,10 @@ namespace Modex
 			// Table Area
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + a_offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - (window_padding / 2));
-			if (ImGui::BeginChild("##NPC::TableArea", ImVec2(search_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
+			if (ImGui::BeginChild("##NPC::TableArea", ImVec2(search_width + recent_width - a_offset, 0), flags, ImGuiWindowFlags_NoFocusOnAppearing)) {
 				this->tableView.ShowSort();
-				this->tableView.Draw();
+				ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+				this->tableView.Draw(this->tableView.GetTableList(), 0);
 			}
 			ImGui::EndChild();
 
@@ -84,7 +107,7 @@ namespace Modex
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() - window_padding);
 			ImGui::SetCursorPosY(tab_bar_height - window_padding);
 			float full_height = ImGui::GetContentRegionAvail().y;
-			ImGui::DrawSplitter("##NPC::VerticalSplitter2", false, &search_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
+			ImGui::DrawSplitter("##NPC::VerticalSplitter2", false, &recent_width, &full_height, MIN_SEARCH_WIDTH, MAX_SEARCH_WIDTH);
 
 			// Action Area
 			ImGui::SameLine();
@@ -97,9 +120,9 @@ namespace Modex
 			ImGui::EndChild();
 
 			// Persist Search Area Width/Height
-			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("NPC::SearchHeight"), search_height);
-			// ImGui::GetStateStorage()->SetFloat(ImGui::GetID("NPC::SearchWidth"), search_width);
 			PersistentData::SetUserdata<float>("NPC::SearchWidth", search_width);
+			PersistentData::SetUserdata<float>("NPC::RecentWidth", recent_width);
+			PersistentData::SetUserdata<float>("NPC::SearchHeight", search_height);
 		}
 	}
 
