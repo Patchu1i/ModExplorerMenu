@@ -464,6 +464,23 @@ namespace Modex
 		}
 	}
 
+	CellData& Data::GetCellByEditorID(const std::string& a_editorid)
+	{
+		for (auto& cell : _cellCache) {
+			if (cell.GetEditorID() == a_editorid) {
+				return cell;
+			}
+		}
+
+		return _cellCache.emplace_back(
+			"MODEX_ERR",
+			"MODEX_ERR",
+			"MODEX_ERR",
+			"MODEX_ERR",
+			a_editorid,
+			nullptr);
+	}
+
 	void Data::Run()
 	{
 		Settings::Config& config = Settings::GetSingleton()->GetConfig();
