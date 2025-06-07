@@ -27,7 +27,6 @@ namespace Modex
 	{
 		std::vector<std::pair<std::string, std::uint32_t>> recentItems;
 		this->recentList.clear();
-		this->recentList.reserve(recentItems.size());  // TODO: Use configurable size.
 
 		// Load recent items from PersistentData
 		PersistentData::GetSingleton()->GetRecentItems<CellData>(recentItems);
@@ -35,6 +34,8 @@ namespace Modex
 		if (recentItems.empty()) {
 			return;
 		}
+
+		this->recentList.reserve(recentItems.size());  // TODO: Use configurable size.
 
 		for (const auto& pair : recentItems) {
 			auto& cellData = Data::GetSingleton()->GetCellByEditorID(pair.first);
