@@ -76,11 +76,13 @@ namespace Modex
 		[[nodiscard]] inline std::set<std::string> 		GetNPCClassList() 	{ return _npcClassList; 	}
 		[[nodiscard]] inline std::set<std::string> 		GetNPCRaceList() 	{ return _npcRaceList; 		}
 		[[nodiscard]] inline std::set<std::string> 		GetNPCFactionList() { return _npcFactionList; 	}
+		[[nodiscard]] CellData& 					GetCellByEditorID(const std::string& a_editorid);
 
 		void 											GenerateItemList();
 		void 											GenerateNPCList();
 		void 											GenerateObjectList();
 		void 											GenerateCellList();
+
 
 		void SortAddItemList();
 

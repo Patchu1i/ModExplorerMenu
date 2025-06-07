@@ -101,5 +101,11 @@ namespace Modex
 		if (is_default) {
 			this->Refresh();
 		}
+
+		this->refreshRecentList = false;
+		this->refreshFavoriteList = false;
+
+		this->LoadRecentCells();
+		this->LoadFavoriteCells();
 	}
 }

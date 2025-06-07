@@ -111,6 +111,18 @@ namespace Modex
 		for (auto& [key, value] : JSON["Userdata"]["Recently Used (Object)"].items()) {
 			m_object_recently_used.emplace_back(key, value.get<uint32_t>());
 		}
+
+		if (JSON["Userdata"].contains("Recently Used (Teleport)")) {
+			for (auto& [key, value] : JSON["Userdata"]["Recently Used (Teleport)"].items()) {
+				m_teleport_recently_used.emplace_back(key, value.get<uint32_t>());
+			}
+		}
+
+		if (JSON["Userdata"].contains("Favorite Cells")) {
+			for (auto& cell : JSON["Userdata"]["Favorite Cells"]) {
+				m_teleport_favorites.emplace_back(cell.get<std::string>());
+			}
+		}
 	}
 
 	void PersistentData::SaveUserdata()
@@ -135,19 +147,26 @@ namespace Modex
 		JSON["Userdata"]["Recently Used (AddItem)"] = nlohmann::json::object();
 		for (const auto& pair : m_additem_recently_used) {
 			JSON["Userdata"]["Recently Used (AddItem)"][pair.first] = pair.second;
-			// JSON["Userdata"]["Recently Used (AddItem)"].push_back(item);
 		}
 
 		JSON["Userdata"]["Recently Used (NPC)"] = nlohmann::json::object();
 		for (const auto& pair : m_npc_recently_used) {
 			JSON["Userdata"]["Recently Used (NPC)"][pair.first] = pair.second;
-			// JSON["Userdata"]["Recently Used (NPC)"].push_back(npc);
 		}
 
 		JSON["Userdata"]["Recently Used (Object)"] = nlohmann::json::object();
 		for (const auto& pair : m_object_recently_used) {
 			JSON["Userdata"]["Recently Used (Object)"][pair.first] = pair.second;
-			// JSON["Userdata"]["Recently Used (Object)"].push_back(object);
+		}
+
+		JSON["Userdata"]["Recently Used (Teleport)"] = nlohmann::json::object();
+		for (const auto& pair : m_teleport_recently_used) {
+			JSON["Userdata"]["Recently Used (Teleport)"][pair.first] = pair.second;
+		}
+
+		JSON["Userdata"]["Favorite Cells"] = nlohmann::json::array();
+		for (const auto& cell : m_teleport_favorites) {
+			JSON["Userdata"]["Favorite Cells"].push_back(cell);
 		}
 
 		if (!SaveJSONFile(json_user_path + "userdata.json", JSON)) {

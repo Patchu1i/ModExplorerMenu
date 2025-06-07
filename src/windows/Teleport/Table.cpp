@@ -13,6 +13,29 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+		bool is_favorite = PersistentData::IsCellFavorite(a_cell.editorid);
+
+		if (is_favorite) {
+			if (ImGui::Selectable(_T("FAVORITE_REMOVE"), false, flags)) {
+				this->RemoveCellFromFavorite(a_cell.editorid);
+				ImGui::CloseCurrentPopup();
+			}
+		} else {
+			if (ImGui::Selectable(_T("FAVORITE_ADD"), false, flags)) {
+				this->AddCellToFavorite(a_cell.editorid);
+				ImGui::CloseCurrentPopup();
+			}
+		}
+
+		if (ImGui::Selectable(_T("Teleport"), false, flags)) {
+			Console::Teleport(a_cell.editorid);
+			Console::StartProcessThread();
+			this->AddCellToRecent(a_cell.editorid);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
 		if (ImGui::Selectable(_T("GENERAL_COPY_WORLDSPACE_NAME"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_cell.space.c_str());
@@ -152,6 +175,7 @@ namespace Modex
 							if (selectedCell != nullptr) {
 								Console::Teleport(selectedCell->editorid);
 								Console::StartProcessThread();
+								this->AddCellToRecent(selectedCell->editorid);
 								Menu::GetSingleton()->Close();
 							}
 						}
@@ -167,6 +191,16 @@ namespace Modex
 			}
 
 			ImGui::EndTable();
+
+			if (this->refreshRecentList) {
+				this->LoadRecentCells();
+				this->refreshRecentList = false;
+			}
+
+			if (this->refreshFavoriteList) {
+				this->LoadFavoriteCells();
+				this->refreshFavoriteList = false;
+			}
 		}
 	}
 }

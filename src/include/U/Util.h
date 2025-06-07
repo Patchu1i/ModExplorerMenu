@@ -690,7 +690,12 @@ namespace Utils
 		{ "FURNITURE", ICON_LC_ARMCHAIR },
 		{ "ACTIVATOR", ICON_LC_TARGET },
 		{ "TREE", ICON_LC_TREE_PINE },
-		{ "FLOWER", ICON_LC_FLOWER }
+		{ "FLOWER", ICON_LC_FLOWER },
+
+		// CellData
+		{ "LAND", ICON_LC_MAP }, // plugin
+		{ "CELL", ICON_LC_MAP_PIN },
+
 	};
 
 	static inline std::string GetFormTypeIcon(const RE::FormType& a_type)

@@ -60,6 +60,48 @@ namespace Modex
 			GetSingleton()->m_userdata[a_key] = a_value;
 		}
 
+		static void AddCellToFavorite(const std::string& a_editorid)
+		{
+			auto& favorites = GetSingleton()->m_teleport_favorites;
+
+			// Check if the item is already in the list
+			for (const auto& favorite : favorites) {
+				if (favorite == a_editorid) {
+					return;  // Already in favorites, no need to add again
+				}
+			}
+
+			// If not found, add a new item to the front
+			favorites.emplace_front(a_editorid);
+		}
+
+		static void RemoveCellFromFavorite(const std::string& a_editorid)
+		{
+			auto& favorites = GetSingleton()->m_teleport_favorites;
+
+			// Find and remove the item from the list
+			for (auto it = favorites.begin(); it != favorites.end(); ++it) {
+				if (*it == a_editorid) {
+					favorites.erase(it);
+					return;  // Item found and removed
+				}
+			}
+		}
+
+		static bool IsCellFavorite(const std::string& a_editorid)
+		{
+			const auto& favorites = GetSingleton()->m_teleport_favorites;
+
+			// Check if the item is in the favorites list
+			for (const auto& favorite : favorites) {
+				if (favorite == a_editorid) {
+					return true;  // Item is a favorite
+				}
+			}
+
+			return false;  // Item not found in favorites
+		}
+
 		template <typename DataType>
 		static void AddRecentItem(const std::string& a_editorid, uint32_t a_refID)
 		{
@@ -71,8 +113,10 @@ namespace Modex
 				recently_used = &GetSingleton()->m_npc_recently_used;
 			} else if (std::is_same_v<DataType, ObjectData>) {
 				recently_used = &GetSingleton()->m_object_recently_used;
+			} else if (std::is_same_v<DataType, CellData>) {
+				recently_used = &GetSingleton()->m_teleport_recently_used;
 			} else {
-				return;
+				return;  // Unsupported type
 			}
 
 			if (recently_used == nullptr) {
@@ -105,8 +149,12 @@ namespace Modex
 				GetSingleton()->m_additem_recently_used.clear();
 			} else if (std::is_same_v<DataType, NPCData>) {
 				GetSingleton()->m_npc_recently_used.clear();
-			} else if (std::is_same_v<DataType, RE::TESObjectREFR>) {
+			} else if (std::is_same_v<DataType, ObjectData>) {
 				GetSingleton()->m_object_recently_used.clear();
+			} else if (std::is_same_v<DataType, CellData>) {
+				GetSingleton()->m_teleport_recently_used.clear();
+			} else {
+				return;  // Unsupported type
 			}
 		}
 
@@ -123,6 +171,8 @@ namespace Modex
 				recently_used = &GetSingleton()->m_npc_recently_used;
 			} else if (std::is_same_v<DataType, ObjectData>) {
 				recently_used = &GetSingleton()->m_object_recently_used;
+			} else if (std::is_same_v<DataType, CellData>) {
+				recently_used = &GetSingleton()->m_teleport_recently_used;
 			} else {
 				return;
 			}
@@ -135,6 +185,18 @@ namespace Modex
 
 			for (const auto& pair : *recently_used) {
 				a_out.push_back(pair);
+			}
+		}
+
+		// Can set this up as a template function for additional types in the future.
+		static void GetFavoriteItems(std::list<std::string>& a_out)
+		{
+			auto& favorites = GetSingleton()->m_teleport_favorites;
+
+			a_out.clear();
+			
+			for (const auto& favorite : favorites) {
+				a_out.push_back(favorite);
 			}
 		}
 
@@ -179,6 +241,8 @@ namespace Modex
 		std::list<std::pair<std::string, std::uint32_t>> m_additem_recently_used;
 		std::list<std::pair<std::string, std::uint32_t>> m_npc_recently_used;
 		std::list<std::pair<std::string, std::uint32_t>> m_object_recently_used;
+		std::list<std::pair<std::string, std::uint32_t>> m_teleport_recently_used;
+		std::list<std::string> m_teleport_favorites;
 
 		const std::string json_user_path = "Data/Interface/Modex/User/";
 	};

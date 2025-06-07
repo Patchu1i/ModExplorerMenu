@@ -59,6 +59,12 @@ namespace Modex
 		void 			ShowFormTable();
 		void 			ShowTeleportContextMenu(CellData& a_cell);
 
+		void 			RemoveCellFromFavorite(const std::string& a_editorid);
+		void 			AddCellToFavorite(const std::string& a_editorid);
+		void 			AddCellToRecent(const std::string& a_editorid);
+		void 			LoadRecentCells();
+		void 			LoadFavoriteCells();
+
 		// Local State Variables.
 		bool 						b_ClickToTeleport;
 
@@ -96,5 +102,12 @@ namespace Modex
 		// ISearch Interface
 		char 						modSearchBuffer[256];
 		std::string 				selectedMod;
+
+		// Recent/Favorite List
+		std::string 				hoveredCellEditorID;
+		bool 						refreshFavoriteList;
+		bool 						refreshRecentList;
+		std::vector<std::unique_ptr<CellData>> recentList;
+		std::list<std::string> favoriteList;
 	};
 }
