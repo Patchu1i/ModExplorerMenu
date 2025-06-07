@@ -27,6 +27,7 @@ namespace Modex
 	{
 		std::vector<std::pair<std::string, std::uint32_t>> recentItems;
 		this->recentList.clear();
+		this->recentList.reserve(recentItems.size());  // TODO: Use configurable size.
 
 		// Load recent items from PersistentData
 		PersistentData::GetSingleton()->GetRecentItems<CellData>(recentItems);
@@ -109,12 +110,12 @@ namespace Modex
 				// Remove middle-click handler for recent items as it doesn't apply here
 
 				if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-					ImGui::OpenPopup("##ShowTeleportContextMenu2");
+					ImGui::OpenPopup("##Teleport::Favorite::ContextMenu");
 					this->hoveredCellEditorID = editorid;
 				}
 			}
 
-			if (ImGui::BeginPopup("##ShowTeleportContextMenu2")) {
+			if (ImGui::BeginPopup("##Teleport::Favorite::ContextMenu")) {
 				if (auto cell = &Data::GetSingleton()->GetCellByEditorID(this->hoveredCellEditorID)) {
 					this->ShowTeleportContextMenu(*cell);
 				}
@@ -177,12 +178,12 @@ namespace Modex
 				}
 
 				if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-					ImGui::OpenPopup("##ShowTeleportContextMenu2");
+					ImGui::OpenPopup("##Teleport::Recent::ContextMenu");
 					this->hoveredCellEditorID = editorid;
 				}
 			}
 
-			if (ImGui::BeginPopup("##ShowTeleportContextMenu2")) {
+			if (ImGui::BeginPopup("##Teleport::Recent::ContextMenu")) {
 				if (auto cell = &Data::GetSingleton()->GetCellByEditorID(this->hoveredCellEditorID)) {
 					this->ShowTeleportContextMenu(*cell);
 				}

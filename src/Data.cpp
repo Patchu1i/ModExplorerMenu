@@ -472,13 +472,15 @@ namespace Modex
 			}
 		}
 
-		return _cellCache.emplace_back(
+		static CellData emptyCell(
 			"MODEX_ERR",
 			"MODEX_ERR",
 			"MODEX_ERR",
 			"MODEX_ERR",
-			a_editorid,
+			"MODEX_ERR",
 			nullptr);
+		logger::error("[Data] Cell with editor ID '{}' not found.", a_editorid);
+		return emptyCell;
 	}
 
 	void Data::Run()

@@ -112,12 +112,16 @@ namespace Modex
 			m_object_recently_used.emplace_back(key, value.get<uint32_t>());
 		}
 
-		for (auto& [key, value] : JSON["Userdata"]["Recently Used (Teleport)"].items()) {
-			m_teleport_recently_used.emplace_back(key, value.get<uint32_t>());
+		if (JSON["Userdata"].contains("Recently Used (Teleport)")) {
+			for (auto& [key, value] : JSON["Userdata"]["Recently Used (Teleport)"].items()) {
+				m_teleport_recently_used.emplace_back(key, value.get<uint32_t>());
+			}
 		}
 
-		for (auto& cell : JSON["Userdata"]["Favorite Cells"]) {
-			m_teleport_favorites.emplace_back(cell.get<std::string>());
+		if (JSON["Userdata"].contains("Favorite Cells")) {
+			for (auto& cell : JSON["Userdata"]["Favorite Cells"]) {
+				m_teleport_favorites.emplace_back(cell.get<std::string>());
+			}
 		}
 	}
 

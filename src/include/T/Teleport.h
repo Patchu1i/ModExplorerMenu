@@ -51,7 +51,6 @@ namespace Modex
 		void			Unload();
 		void			Load();
 		void 			Refresh();
-		void 			DrawWorldMap();
 
 	private:
 		void 			ApplyFilters();
