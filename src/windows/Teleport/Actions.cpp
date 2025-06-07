@@ -77,7 +77,6 @@ namespace Modex
 		auto constexpr flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration |
 		                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
 
-		// TODO: Need to style the buttons here, gradientbutton is not fitting.
 		bool showScrollArrow = false;
 		if (ImGui::BeginChild("##TeleportFavoriteScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y / 2.0f), false, flags)) {
 			for (auto& editorid : this->favoriteList) {
@@ -107,10 +106,7 @@ namespace Modex
 
 				ImGui::PopID();
 
-				if (ImGui::IsItemClicked(ImGuiMouseButton_Middle)) {
-					PersistentData::GetSingleton()->RemoveCellFromFavorite(editorid);
-					this->refreshFavoriteList = true;
-				}
+				// Remove middle-click handler for recent items as it doesn't apply here
 
 				if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
 					ImGui::OpenPopup("##ShowTeleportContextMenu2");
@@ -146,6 +142,7 @@ namespace Modex
 
 		ImGui::SubCategoryHeader(_T("Recent"));
 
+		showScrollArrow = false;
 		if (ImGui::BeginChild("##TeleportRecentScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), false, flags)) {
 			for (const auto& cell : this->recentList) {
 				const auto& editorid = cell.get()->editorid;
