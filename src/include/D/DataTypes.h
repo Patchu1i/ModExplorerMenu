@@ -261,19 +261,7 @@ namespace Modex
 			mod(mod) 
 		{}
 
-		CellData& operator=(const CellData& other)
-		{
-			if (this == &other) {
-				return *this;
-			}
-
-			const_cast<std::string&>(filename) = other.filename;
-			const_cast<std::string&>(cellName) = other.cellName;
-			const_cast<std::string&>(editorid) = other.editorid;
-			mod = other.mod;
-
-			return *this;
-		}
+		CellData& operator=(const CellData& other) = default;
 	};
 
 	struct KitBase

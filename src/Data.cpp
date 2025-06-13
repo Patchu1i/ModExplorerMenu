@@ -322,7 +322,9 @@ namespace Modex
 						gotLUFF = tesFile->ReadData(luff, tesFile->actualChunkSize);
 						if (gotEDID && gotLUFF) {
 							if (tesFile->actualChunkSize == 4) {
-								strcpy(luff, "Unknown");  // Workaround for missing / scrambled LUFF record | Due to load order
+								// Workaround for missing / scrambled LUFF record | Due to load order
+								strncpy(luff, "Unknown", sizeof(luff) - 1);
+                            	luff[sizeof(luff) - 1] = '\0';
 							}
 							out_map.insert_or_assign(std::make_tuple(cidx, edid, luff), tesFile->fileName);
 							continue;
