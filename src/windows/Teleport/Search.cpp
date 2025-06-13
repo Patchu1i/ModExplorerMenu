@@ -39,7 +39,7 @@ namespace Modex
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 			// If the input is wrapped in quotes, we do an exact match across all parameters.
-			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+			if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
 				std::string match = input.substr(1, input.size() - 2);
 
 				if (compare == match) {

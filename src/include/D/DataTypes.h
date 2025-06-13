@@ -25,24 +25,6 @@ namespace Modex
 		const RE::FormID 	baseid;
 
 	public:
-		BaseObject& operator=(const BaseObject& other)
-		{
-			if (this == &other) {
-				return *this;
-			}
-
-			TESForm 							= other.TESForm;
-			refID 								= other.refID;
-			TableID 							= other.TableID;
-			const_cast<std::string&>(name) 		= other.name;
-			const_cast<std::string&>(editorid) 	= other.editorid;
-			const_cast<std::string&>(plugin) 	= other.plugin;
-			const_cast<std::string&>(formid) 	= other.formid;
-			const_cast<RE::FormID&>(baseid) 	= other.baseid;
-			
-			return *this;
-		}
-
 		RE::FormID 			refID;
 		ImGuiID 			TableID = 0;
 

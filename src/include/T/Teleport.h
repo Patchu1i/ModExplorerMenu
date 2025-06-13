@@ -84,7 +84,7 @@ namespace Modex
 		ImVec2							mouseDragEnd;
 
 		// Input Fuzzy Search
-		BaseColumn::ID 				searchKey;
+ 		BaseColumn::ID              searchKey = BaseColumn::ID::EditorID;
 		char 						inputBuffer[256];
 		bool 						dirty;
 
