@@ -1477,13 +1477,6 @@ namespace Modex
 				delta = (lhs->GetStamina() > rhs->GetStamina()) ? -1 : (lhs->GetStamina() < rhs->GetStamina()) ? 1 :
 				                                                                                                 0;
 			break;
-		// case SortType::CarryWeight:
-		// 	if constexpr (!std::is_same<DataType, NPCData>::value)
-		// 		break;
-		// 	else
-		// 		delta = (lhs->GetCarryWeight() < rhs->GetCarryWeight()) ? -1 : (lhs->GetCarryWeight() > rhs->GetCarryWeight()) ? 1 :
-		// 		                                                                                                                 0;
-		// 	break;
 		case SortType::Value:
 			if constexpr (!std::is_same<DataType, ItemData>::value)
 				break;
@@ -1491,24 +1484,6 @@ namespace Modex
 				delta = (lhs->GetValue() > rhs->GetValue()) ? -1 : (lhs->GetValue() < rhs->GetValue()) ? 1 :
 				                                                                                         0;
 			break;
-		// case SortType::Space:
-		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
-		// 		break;
-		// 	else
-		// 		delta = lhs->space.compare(rhs->space);
-		// 	break;
-		// case SortType::Zone:
-		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
-		// 		break;
-		// 	else
-		// 		delta = lhs->zone.compare(rhs->zone);
-		// 	break;
-		// case SortType::Cell:
-		// 	if constexpr (!std::is_same<DataType, CellTEST>::value)
-		// 		break;
-		// 	else
-		// 		delta = lhs->cellName.compare(rhs->cellName);
-		// 	break;
 		case SortType::Damage:
 			if constexpr (!std::is_same<DataType, ItemData>::value) {
 				break;

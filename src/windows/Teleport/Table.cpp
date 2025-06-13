@@ -36,20 +36,6 @@ namespace Modex
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
-		if (ImGui::Selectable(_T("GENERAL_COPY_WORLDSPACE_NAME"), false, flags)) {
-			ImGui::LogToClipboard();
-			ImGui::LogText(a_cell.space.c_str());
-			ImGui::LogFinish();
-			ImGui::CloseCurrentPopup();
-		}
-
-		if (ImGui::Selectable(_T("GENERAL_COPY_ZONE_NAME"), false, flags)) {
-			ImGui::LogToClipboard();
-			ImGui::LogText(a_cell.zone.c_str());
-			ImGui::LogFinish();
-			ImGui::CloseCurrentPopup();
-		}
-
 		if (ImGui::Selectable(_T("GENERAL_COPY_CELL_NAME"), false, flags)) {
 			ImGui::LogToClipboard();
 			ImGui::LogText(a_cell.cellName.c_str());
@@ -128,14 +114,6 @@ namespace Modex
 
 					//	Plugin
 					ImGui::Text(cell->GetPluginName().data());
-
-					// Space
-					ImGui::TableNextColumn();
-					ImGui::Text(cell->GetSpace().data());
-
-					// Zone
-					ImGui::TableNextColumn();
-					ImGui::Text(cell->GetZone().data());
 
 					// CellName
 					ImGui::TableNextColumn();

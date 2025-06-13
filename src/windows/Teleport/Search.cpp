@@ -24,12 +24,6 @@ namespace Modex
 			case BaseColumn::ID::Plugin:
 				compare = item.GetPluginName();
 				break;
-			case BaseColumn::ID::Space:
-				compare = item.GetSpace();
-				break;
-			case BaseColumn::ID::Zone:
-				compare = item.GetZone();
-				break;
 			case BaseColumn::ID::CellName:
 				compare = item.GetCellName();
 				break;

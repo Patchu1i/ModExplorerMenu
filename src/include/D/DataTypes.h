@@ -261,8 +261,6 @@ namespace Modex
 	{
 	public:
 		const std::string 	filename;
-		const std::string 	space;
-		const std::string 	zone;
 		const std::string 	cellName;
 		const std::string 	editorid;
 
@@ -270,20 +268,30 @@ namespace Modex
 
 		[[nodiscard]] inline std::string_view 		GetPluginName() const { return filename; }
 		[[nodiscard]] inline std::string_view 		GetPluginNameView() const { return filename; }
-		[[nodiscard]] inline std::string_view 		GetSpace() const { return space; }
-		[[nodiscard]] inline std::string_view 		GetZone() const { return zone; }
 		[[nodiscard]] inline std::string_view 		GetCellName() const { return cellName; }
 		[[nodiscard]] inline std::string_view 		GetEditorIDView() const { return editorid; }
 		[[nodiscard]] inline std::string_view 		GetEditorID() const { return editorid; }  // TODO: separate these.
 
-		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
+		CellData(std::string filename, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
 			filename(filename), 
-			space(space),
-			 zone(zone), 
-			 cellName(cellName), 
-			 editorid(editorid), 
-			 mod(mod) 
+			cellName(cellName), 
+			editorid(editorid), 
+			mod(mod) 
 		{}
+
+		CellData& operator=(const CellData& other)
+		{
+			if (this == &other) {
+				return *this;
+			}
+
+			const_cast<std::string&>(filename) = other.filename;
+			const_cast<std::string&>(cellName) = other.cellName;
+			const_cast<std::string&>(editorid) = other.editorid;
+			mod = other.mod;
+
+			return *this;
+		}
 	};
 
 	struct KitBase

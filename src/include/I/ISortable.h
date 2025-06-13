@@ -95,8 +95,6 @@ namespace Modex
 			CriticalDamage,
 			Skill,
 			DamagePerSecond,
-			Space,
-			Zone,
 			Cell,
 			ReferenceID,
 			Race,
@@ -144,10 +142,6 @@ namespace Modex
 				return "Skill";
 			case SortType::DamagePerSecond:
 				return "DPS";
-			case SortType::Space:
-				return "Space";
-			case SortType::Zone:
-				return "Zone";
 			case SortType::Cell:
 				return "Cell";
 			case SortType::ReferenceID:
@@ -285,18 +279,6 @@ namespace Modex
 				else
 					delta = (lhs->GetValue() < rhs->GetValue()) ? -1 : (lhs->GetValue() > rhs->GetValue()) ? 1 :
 					                                                                                         0;
-				break;
-			case BaseColumn::ID::Space:
-				if constexpr (!std::is_same<Object, CellData>::value)
-					break;
-				else
-					delta = lhs->space.compare(rhs->space);
-				break;
-			case BaseColumn::ID::Zone:
-				if constexpr (!std::is_same<Object, CellData>::value)
-					break;
-				else
-					delta = lhs->zone.compare(rhs->zone);
 				break;
 			case BaseColumn::ID::CellName:
 				if constexpr (!std::is_same<Object, CellData>::value)

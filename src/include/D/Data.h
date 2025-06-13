@@ -76,7 +76,7 @@ namespace Modex
 		[[nodiscard]] inline std::set<std::string> 		GetNPCClassList() 	{ return _npcClassList; 	}
 		[[nodiscard]] inline std::set<std::string> 		GetNPCRaceList() 	{ return _npcRaceList; 		}
 		[[nodiscard]] inline std::set<std::string> 		GetNPCFactionList() { return _npcFactionList; 	}
-		[[nodiscard]] CellData& 					GetCellByEditorID(const std::string& a_editorid);
+		[[nodiscard]] CellData& 						GetCellByEditorID(const std::string& a_editorid);
 
 		void 											GenerateItemList();
 		void 											GenerateNPCList();
@@ -117,7 +117,9 @@ namespace Modex
 		template <class T>
 		void CacheStaticObjects(RE::TESDataHandler* a_data);
 
-		void CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_map);
+		// void CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_map);
+		// void CacheCells(const RE::TESFile* a_file, std::map<std::uint32_t, CellData>& out_map);
+		void CacheCells(const RE::TESFile* a_file, std::map<std::tuple<std::uint32_t, const std::string, const std::string>, std::string_view>& out_map);
 		void MergeNPCRefIds(std::shared_ptr<std::unordered_map<RE::FormID, RE::FormID>> npc_ref_map);
 	};
 }
