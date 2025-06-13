@@ -25,24 +25,6 @@ namespace Modex
 		const RE::FormID 	baseid;
 
 	public:
-		BaseObject& operator=(const BaseObject& other)
-		{
-			if (this == &other) {
-				return *this;
-			}
-
-			TESForm 							= other.TESForm;
-			refID 								= other.refID;
-			TableID 							= other.TableID;
-			const_cast<std::string&>(name) 		= other.name;
-			const_cast<std::string&>(editorid) 	= other.editorid;
-			const_cast<std::string&>(plugin) 	= other.plugin;
-			const_cast<std::string&>(formid) 	= other.formid;
-			const_cast<RE::FormID&>(baseid) 	= other.baseid;
-			
-			return *this;
-		}
-
 		RE::FormID 			refID;
 		ImGuiID 			TableID = 0;
 
@@ -261,8 +243,6 @@ namespace Modex
 	{
 	public:
 		const std::string 	filename;
-		const std::string 	space;
-		const std::string 	zone;
 		const std::string 	cellName;
 		const std::string 	editorid;
 
@@ -270,20 +250,18 @@ namespace Modex
 
 		[[nodiscard]] inline std::string_view 		GetPluginName() const { return filename; }
 		[[nodiscard]] inline std::string_view 		GetPluginNameView() const { return filename; }
-		[[nodiscard]] inline std::string_view 		GetSpace() const { return space; }
-		[[nodiscard]] inline std::string_view 		GetZone() const { return zone; }
 		[[nodiscard]] inline std::string_view 		GetCellName() const { return cellName; }
 		[[nodiscard]] inline std::string_view 		GetEditorIDView() const { return editorid; }
 		[[nodiscard]] inline std::string_view 		GetEditorID() const { return editorid; }  // TODO: separate these.
 
-		CellData(std::string filename, std::string space, std::string zone, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
+		CellData(std::string filename, std::string cellName, std::string editorid, const RE::TESFile* mod = nullptr) :
 			filename(filename), 
-			space(space),
-			 zone(zone), 
-			 cellName(cellName), 
-			 editorid(editorid), 
-			 mod(mod) 
+			cellName(cellName), 
+			editorid(editorid), 
+			mod(mod) 
 		{}
+
+		CellData& operator=(const CellData& other) = default;
 	};
 
 	struct KitBase

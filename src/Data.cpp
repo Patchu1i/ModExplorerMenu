@@ -3,7 +3,6 @@
 #include "include/P/Persistent.h"
 #include "include/S/Settings.h"
 #include "include/U/Util.h"
-#include "include/W/Worldspace.h"
 
 namespace Modex
 {
@@ -277,12 +276,8 @@ namespace Modex
 	}
 
 	// https://github.com/shad0wshayd3-TES5/BakaHelpExtender | License : MIT
-	// Absolute unit of code here. Super grateful for the author.
-	// NOTE: This doesn't seem to collect all cells, specifically cells under worldspaces which are typically
-	// exterior cells. Can't find a work around as of 2/19/2025. Since worldspace cellmap hash only contains
-	// a grid of loaded cells, not every cell. Still need to figure a more reliable method out.
-	// TODO: Need to re-implement idx for load order (?)
-	void Data::CacheCells(const RE::TESFile* a_file, std::vector<CellData>& a_cellMap)
+	// Absolute unit of code here. Super grateful for the author's work!
+	void Data::CacheCells(const RE::TESFile* a_file, std::map<std::tuple<std::uint32_t, const std::string, const std::string>, std::string_view>& out_map)
 	{
 		auto tesFile = const_cast<RE::TESFile*>(a_file);
 		if (!tesFile->OpenTES(RE::NiFile::OpenMode::kReadOnly, false)) {
@@ -295,42 +290,47 @@ namespace Modex
 				char edid[512]{ '\0' };
 				bool gotEDID{ false };
 
-				char luff[512]{ '\0' };
+				char luff[1024]{ '\0' };
 				bool gotLUFF{ false };
+
+				std::uint16_t data{ 0 };
+				bool gotDATA{ false };
+
+				std::uint32_t cidx{ 0 };
+				cidx += tesFile->compileIndex << 24;
+				cidx += tesFile->smallFileCompileIndex << 12;
 
 				do {
 					switch (tesFile->GetCurrentSubRecordType()) {
 					case 'DIDE':
 						gotEDID = tesFile->ReadData(edid, tesFile->actualChunkSize);
+						if (gotEDID && gotDATA && ((data & 1) == 0)) {
+							out_map.insert_or_assign(std::make_tuple(cidx, edid, "Unknown"), tesFile->fileName);
+							continue;
+						}
+
+						break;
+					case 'ATAD':
+						gotDATA = tesFile->ReadData(&data, tesFile->actualChunkSize);
+						if (gotEDID && gotDATA && ((data & 1) == 0)) {
+							out_map.insert_or_assign(std::make_tuple(cidx, edid, "Unknown"), tesFile->fileName);
+							continue;
+						}
+
 						break;
 					case 'LLUF':
 						gotLUFF = tesFile->ReadData(luff, tesFile->actualChunkSize);
+						if (gotEDID && gotLUFF) {
+							if (tesFile->actualChunkSize == 4) {
+								// Workaround for missing / scrambled LUFF record | Due to load order
+								strncpy(luff, "Unknown", sizeof(luff) - 1);
+                            	luff[sizeof(luff) - 1] = '\0';
+							}
+							out_map.insert_or_assign(std::make_tuple(cidx, edid, luff), tesFile->fileName);
+							continue;
+						}
 						break;
 					default:
-						break;
-					}
-
-					if (gotEDID) {
-						if (gotLUFF) {
-							a_cellMap.push_back(CellData(ValidateTESFileName(tesFile), "Unknown", "Unknown", luff, edid, tesFile));
-						} else {
-							a_cellMap.push_back(CellData(ValidateTESFileName(tesFile), "Unknown", "Unknown", "Unknown", edid, tesFile));
-						}
-
-						if (!_cellModList.contains(tesFile)) {
-							_cellModList.insert(tesFile);
-							_modList.insert(tesFile);
-						}
-
-						if (_cellModList.contains(tesFile)) {
-							auto it = _itemListModFormTypeMap.find(tesFile);
-							if (it == _itemListModFormTypeMap.end()) {
-								_itemListModFormTypeMap[tesFile] = ModFileItemFlags();
-							}
-
-							_itemListModFormTypeMap[tesFile].cell = true;
-						}
-
 						break;
 					}
 				} while (tesFile->SeekNextSubrecord());
@@ -432,24 +432,8 @@ namespace Modex
 	{
 		_cellCache.clear();
 
-		WorldspaceCells cells;
-
 		if (auto dataHandler = RE::TESDataHandler::GetSingleton()) {
-			for (const auto& cell : cells.table) {
-				const auto& [_plugin, space, place, name, editorid] = cell;
-				std::string plugin = _plugin + ".esm";
-				const RE::TESFile* modFile = dataHandler->LookupModByName(plugin.c_str());
-
-				if (!modFile)
-					continue;
-
-				if (!_cellModList.contains(modFile)) {
-					_cellModList.insert(modFile);
-				}
-
-				_cellCache.push_back(CellData(plugin, space, place, name, editorid, modFile));
-			}
-
+			std::map<std::tuple<std::uint32_t, const std::string, const std::string>, std::string_view> rawCellMap;
 			for (const RE::TESForm* form : dataHandler->GetFormArray<RE::TESWorldSpace>()) {
 				const RE::TESFile* mod = form->GetFile(0);
 
@@ -457,13 +441,30 @@ namespace Modex
 					continue;
 
 				if (!_cellModList.contains(mod)) {
-					CacheCells(mod, _cellCache);
+					CacheCells(mod, rawCellMap);
 					_cellModList.insert(mod);
+				}
+			}
+
+			if (rawCellMap.empty()) {
+				logger::warn("[Data] No cells found in loaded worldspaces.");
+			} else {
+				for (const auto& [key, value] : rawCellMap) {
+					const std::string& editorID = std::get<1>(key);
+					const std::string& full = std::get<2>(key);
+					const RE::TESFile* modFile = dataHandler->LookupLoadedModByName(value);
+
+					_cellCache.emplace_back(
+						ValidateTESFileName(modFile),
+						full,
+						editorID,
+						modFile);
 				}
 			}
 		}
 	}
 
+	// Returns a reference to the CellData object with the specified editor ID for PersistentData
 	CellData& Data::GetCellByEditorID(const std::string& a_editorid)
 	{
 		for (auto& cell : _cellCache) {
@@ -473,8 +474,6 @@ namespace Modex
 		}
 
 		static CellData emptyCell(
-			"MODEX_ERR",
-			"MODEX_ERR",
 			"MODEX_ERR",
 			"MODEX_ERR",
 			"MODEX_ERR",

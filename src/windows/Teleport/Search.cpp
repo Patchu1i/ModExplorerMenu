@@ -24,12 +24,6 @@ namespace Modex
 			case BaseColumn::ID::Plugin:
 				compare = item.GetPluginName();
 				break;
-			case BaseColumn::ID::Space:
-				compare = item.GetSpace();
-				break;
-			case BaseColumn::ID::Zone:
-				compare = item.GetZone();
-				break;
 			case BaseColumn::ID::CellName:
 				compare = item.GetCellName();
 				break;
@@ -45,7 +39,7 @@ namespace Modex
 				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 			// If the input is wrapped in quotes, we do an exact match across all parameters.
-			if (!input.empty() && input.front() == '"' && input.back() == '"') {
+			if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
 				std::string match = input.substr(1, input.size() - 2);
 
 				if (compare == match) {

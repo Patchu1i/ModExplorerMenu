@@ -27,8 +27,6 @@ namespace Modex
         {
             // columns.push_back({ ICON_RPG_HEART, ImGuiTableColumnFlags_WidthFixed, 15.0f, false, BaseColumn::ID::Favorite });
             columns.push_back({ _T("Plugin"), flag, 0.0f, false, BaseColumn::ID::Plugin });
-            columns.push_back({ _T("Space"), flag, 0.0f, false, BaseColumn::ID::Space });
-            columns.push_back({ _T("Zone"), flag, 0.0f, false, BaseColumn::ID::Zone });
             columns.push_back({ _T("Cell"), flag, 0.0f, false, BaseColumn::ID::CellName });
             columns.push_back({ _T("Editor ID"), flag, 0.0f, false, BaseColumn::ID::EditorID });
         }
@@ -86,15 +84,13 @@ namespace Modex
 		ImVec2							mouseDragEnd;
 
 		// Input Fuzzy Search
-		BaseColumn::ID 				searchKey;
+ 		BaseColumn::ID              searchKey = BaseColumn::ID::EditorID;
 		char 						inputBuffer[256];
 		bool 						dirty;
 
 		// Sorting & Filtering
 		const std::map<BaseColumn::ID, const char*> InputSearchMap = {
 			{ BaseColumn::ID::Plugin, "Plugin" },
-			{ BaseColumn::ID::Space, "Worldspace" },
-			{ BaseColumn::ID::Zone, "Zone" },
 			{ BaseColumn::ID::CellName, "Cell" },
 			{ BaseColumn::ID::EditorID, "Editor ID" }
 		};

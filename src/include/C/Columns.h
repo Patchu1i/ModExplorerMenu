@@ -35,7 +35,6 @@ namespace Modex
             Skill, 
             Weight, 
             DPS,
-            Space, 
             Zone, 
             CellName, 
             ReferenceID, 
